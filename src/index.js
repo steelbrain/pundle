@@ -44,6 +44,7 @@ class Pundle {
   async compileFile(filePath: string): Promise {
     const contents = (await readFile(filePath)).toString()
     const parsed = parseModule(this.config, filePath, contents)
+    console.log(parsed)
   }
   generate(): string {
     return ''

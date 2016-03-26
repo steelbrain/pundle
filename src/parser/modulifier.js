@@ -3,7 +3,7 @@
 /* @flow */
 /* eslint-disable new-cap */
 
-function PundleTransformer({ types: t }: Object): Object {
+function PundleModulifier({ types: t }: Object): Object {
   return {
     visitor: {
       Program(path) {
@@ -13,7 +13,7 @@ function PundleTransformer({ types: t }: Object): Object {
 
         this.pundle_modulified = true
         path.replaceWith(t.Program([
-          t.FunctionDeclaration(t.Identifier('moduleBody'),
+          t.FunctionDeclaration(t.Identifier('__pundle_module_body'),
             [t.Identifier('require'), t.Identifier('module'), t.Identifier('exports')],
             t.BlockStatement(path.node.body))
         ]))
@@ -22,4 +22,4 @@ function PundleTransformer({ types: t }: Object): Object {
   }
 }
 
-module.exports = PundleTransformer
+module.exports = PundleModulifier
