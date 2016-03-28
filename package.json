@@ -37,7 +37,9 @@
     "ucompiler-plugin-babel": "^3.1.1"
   },
   "dependencies": {
-    "babel-core": "^6.7.4",
+    "babel-traverse": "^6.7.4",
+    "babylon": "^6.7.0",
+    "sb-memoize": "^1.0.0",
     "sb-promisify": "^1.2.0"
   }
 }

@@ -3,82 +3,56 @@
 /* @flow */
 
 import Path from 'path'
-import FileSystem from './fs'
-import parseModule from './parser'
-import { getModuleId } from './helpers'
-import type { Stats } from 'fs'
-import type { Pundle$Config, Pundle$Module } from './types'
+import { normalizeConfig } from './helpers'
+import type { Pundle$Config } from './types'
 
 class Pundle {
   config: Pundle$Config;
-  modules: Map<string, Pundle$Module>;
-  processed: WeakMap<Pundle$Module, string>;
 
   constructor(config: Pundle$Config) {
     this.config = config
-    this.modules = new Map()
-    this.processed = new WeakMap()
 
-    if (!Path.isAbsolute(this.config.mainFile)) {
-      this.config.mainFile = Path.resolve(this.config.rootDirectory, this.config.mainFile)
-    }
-    if (!this.config.fileSystem) {
-      this.config.fileSystem = new FileSystem(config)
-    }
+    normalizeConfig(config)
   }
   async compile(): Promise {
-    await this.read(this.config.mainFile)
+
   }
-  generate(): string {
-    console.log(this.modules)
-    return ''
+  async generate(): Promise<string> {
+    return 'Hey!'
   }
-  push(filePath: string, stats: Stats, contents: string): Pundle$Module {
-    const moduleId = getModuleId(filePath, this.config.rootDirectory)
+  async push(filePath: string, content: string): Promise<Pundle$Module> {
+    if (Path.isAbsolute(filePath)) {
+      filePath = Path.relative(this.config.rootDirectory, filePath)
+    }
     let module = this.modules.get(moduleId)
     if (module) {
-      module.body = contents
+      module.content = content
     } else {
       module = {
-        body: contents,
-        stats,
+        content,
         filePath,
-        imports: [],
-        compiled: ''
+        imports: []
       }
     }
     this.modules.set(moduleId, module)
-    this.parse(filePath)
+    await Promise.all(module.imports.map(dependency =>
+      this.read(dependency, Path.dirname(filePath))
+    ))
     return module
   }
-  parse(filePath: string): boolean {
-    const moduleId = getModuleId(filePath, this.config.rootDirectory)
-    const module = this.modules.get(moduleId)
-    if (!module) {
-      return false
+  async read(moduleName: string, requestDirectory: ?string = null): Promise {
+    if (!requestDirectory) {
+      requestDirectory = this.config.rootDirectory
     }
-    const compiled = parseModule(this.config, filePath, module.body)
-    module.compiled = compiled.code
-    module.imports = compiled.imports
-    return true
-  }
-  async read(filePath: string): Promise {
-    const moduleId = getModuleId(filePath, this.config.rootDirectory)
-    const module = this.modules.get(moduleId)
-    const lastStats = module && module.stats || null
-    const newStats = await this.config.fileSystem.stat(filePath)
 
-    if (!newStats) {
-      throw new Error(`File '${filePath}' not found`)
-    }
-    if ((lastStats && lastStats.mtime.getTime()) === (newStats.mtime.getTime())) {
-      return
-    }
+    const filePath = Path.relative(this.config.rootDirectory,
+        await this.config.fileSystem.resolve(moduleName, requestDirectory))
+
     const contents = await this.config.fileSystem.readFile(filePath)
-    this.push(filePath, newStats, contents)
+    await this.push(filePath, contents)
   }
   remove(filePath: string): boolean {
-    return this.modules.delete(filePath)
+
   }
 }
 
