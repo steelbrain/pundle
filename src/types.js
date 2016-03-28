@@ -9,3 +9,9 @@ export type Pundle$Config = {
   fileSystem: FileSystem,
   rootDirectory: string
 }
+
+export type Pundle$Module = {
+  content: string,
+  imports: Array<string>,
+  filePath: string
+}

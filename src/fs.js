@@ -3,7 +3,8 @@
 /* @flow */
 
 import FS from 'fs'
-import memoize from 'memoize'
+import { isCore } from 'resolve'
+import memoize from 'sb-memoize'
 import promisify from 'sb-promisify'
 import type { Pundle$Config } from './types'
 
@@ -26,13 +27,19 @@ export default class FileSystem {
     return (await readFile(path)).toString()
   }
   async _resolve(moduleName: string, basedir: string): Promise<string> {
+    if (isCore(moduleName)) {
+      throw new Error('is core')
+    }
     const path = await resolve(moduleName, { basedir })
     if (path) {
       return path
     }
     throw new Error('NPM install the module here for ' + moduleName + ' in ' + basedir)
   }
+  getResolvedPath(moduleName: string, basedir: string): ?string {
+    return this.resolve.__sb_cache[JSON.stringify([moduleName, basedir])]
+  }
   clearCache() {
-    this.resolve.cache = {}
+    this.resolve.__sb_cache = {}
   }
 }
