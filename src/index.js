@@ -3,54 +3,57 @@
 /* @flow */
 
 import Path from 'path'
-import scanImports from './scanner'
-import { normalizeConfig, getModuleId, moduleDirectory } from './helpers'
-import type { Pundle$Config, Pundle$Module } from './types'
+import Puth from './puth'
+import scanModule from './transformer/scanner'
+import { normalizeConfig } from './helpers'
+import type { Pundle$State, Pundle$Config, Pundle$Module } from './types'
 
 class Pundle {
-  config: Pundle$Config;
+  state: Pundle$State;
   modules: Map<string, Pundle$Module>;
 
   constructor(config: Pundle$Config) {
-    this.config = config
+    this.state = {
+      puth: new Puth(config),
+      config
+    }
     this.modules = new Map()
 
     normalizeConfig(config)
   }
   async compile(): Promise {
-    await Promise.all(this.config.entry.map(entry => this.read(entry)))
+    await Promise.all(this.state.config.entry.map(entry => this.read(entry)))
   }
   async generate(): Promise<string> {
     return 'Hey!'
   }
   async read(moduleName: string, requestDirectory: ?string = null): Promise {
     if (!requestDirectory) {
-      requestDirectory = this.config.rootDirectory
+      requestDirectory = this.state.config.rootDirectory
     }
 
-    const filePath = await this.config.fileSystem.resolve(moduleName, requestDirectory)
-    const contents = await this.config.fileSystem.readFile(filePath)
+    moduleName = this.state.puth.out(moduleName)
+    const filePath = Path.isAbsolute(moduleName) ?
+      moduleName :
+      await this.state.config.fileSystem.resolve(moduleName, requestDirectory)
+    const contents = await this.state.config.fileSystem.readFile(filePath)
     await this.push(filePath, contents)
   }
   async push(filePath: string, content: string): Promise<Pundle$Module> {
-    if (!Path.isAbsolute(filePath)) {
-      filePath = Path.join(this.config.rootDirectory, filePath)
-    }
-
-    const id = getModuleId(filePath, this.config)
+    const id = this.state.puth.in(filePath)
     let module = this.modules.get(id)
-    const imports = scanImports(content)
+    const scanned = scanModule(filePath, content, this.state)
     if (module) {
-      if (content === module.content) {
+      if (content === scanned.content) {
         return module
       }
 
-      module.content = content
-      module.imports = imports
+      module.content = scanned.content
+      module.imports = scanned.imports
     } else {
       module = {
-        content,
-        imports,
+        content: scanned.content,
+        imports: scanned.imports,
         filePath
       }
       this.modules.set(id, module)
@@ -59,9 +62,8 @@ class Pundle {
     // NOTE: Workaround a babel bug, where async arrow functions and `this` is messed up
     const _this = this
     await Promise.all(module.imports.map(async function(dependency) {
-      const depDir = moduleDirectory(filePath, _this.config)
-      const cachedPath = await _this.config.fileSystem.getResolvedPath(dependency, depDir)
-      if (!cachedPath || !_this.modules.has(getModuleId(cachedPath, _this.config))) {
+      if (!_this.modules.has(_this.state.puth.in(dependency))) {
+        console.log(dependency, Path.dirname(filePath))
         return await _this.read(dependency, Path.dirname(filePath))
       }
       return null

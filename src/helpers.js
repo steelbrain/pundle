@@ -3,22 +3,15 @@
 /* @flow */
 
 import Path from 'path'
+import resolve from 'resolve'
 import FileSystem from './fs'
-import type { Pundle$Config } from './types'
+import type { Pundle$Config, Pundle$State } from './types'
 
-export function moduleDirectory(filePath: string, config: Pundle$Config): string {
-  const requestDirectory = Path.dirname(filePath)
-  if (!Path.isAbsolute(requestDirectory)) {
-    return Path.resolve(config.rootDirectory, requestDirectory)
+export function getModulePath(moduleName: string, filePath: string, state: Pundle$State): string {
+  if (resolve.isCore(moduleName)) {
+    return moduleName
   }
-  return requestDirectory
-}
-
-export function getModuleId(filePath: string, config: Pundle$Config): string {
-  if (Path.isAbsolute(filePath)) {
-    return Path.relative(config.rootDirectory, filePath)
-  }
-  return filePath
+  return state.puth.in(state.config.fileSystem.resolveSync(moduleName, Path.dirname(filePath)))
 }
 
 export function normalizeConfig(config: Pundle$Config) {
