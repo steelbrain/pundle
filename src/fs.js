@@ -2,7 +2,6 @@
 
 /* @flow */
 
-import Path from 'path'
 import FS from 'fs'
 import { isCore, sync as resolveSync } from 'resolve'
 import memoize from 'sb-memoize'
@@ -27,15 +26,9 @@ export default class FileSystem {
     this.resolveSync.__sb_cache = this.resolve.__sb_cache
   }
   async stat(path: string): Promise<?FS.Stats> {
-    if (!Path.isAbsolute(path)) {
-      path = Path.join(this.config.rootDirectory, path)
-    }
     return await stat(path)
   }
   async readFile(path: string): Promise<string> {
-    if (!Path.isAbsolute(path)) {
-      path = Path.join(this.config.rootDirectory, path)
-    }
     return (await readFile(path)).toString()
   }
   async _resolve(moduleName: string, basedir: string): Promise<string> {
