@@ -23,6 +23,15 @@ class Pundle {
   async generate(): Promise<string> {
     return 'Hey!'
   }
+  async read(moduleName: string, requestDirectory: ?string = null): Promise {
+    if (!requestDirectory) {
+      requestDirectory = this.config.rootDirectory
+    }
+
+    const filePath = await this.config.fileSystem.resolve(moduleName, requestDirectory)
+    const contents = await this.config.fileSystem.readFile(filePath)
+    await this.push(filePath, contents)
+  }
   async push(filePath: string, content: string): Promise<Pundle$Module> {
     if (!Path.isAbsolute(filePath)) {
       filePath = Path.join(this.config.rootDirectory, filePath)
@@ -53,21 +62,12 @@ class Pundle {
       const depDir = moduleDirectory(filePath, _this.config)
       const cachedPath = await _this.config.fileSystem.getResolvedPath(dependency, depDir)
       if (!cachedPath || !_this.modules.has(getModuleId(cachedPath, _this.config))) {
-        return _this.read(dependency, Path.dirname(filePath))
+        return await _this.read(dependency, Path.dirname(filePath))
       }
       return null
     }))
 
     return module
-  }
-  async read(moduleName: string, requestDirectory: ?string = null): Promise {
-    if (!requestDirectory) {
-      requestDirectory = this.config.rootDirectory
-    }
-
-    const filePath = await this.config.fileSystem.resolve(moduleName, requestDirectory)
-    const contents = await this.config.fileSystem.readFile(filePath)
-    await this.push(filePath, contents)
   }
 }
 
