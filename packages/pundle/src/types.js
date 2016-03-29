@@ -2,25 +2,26 @@
 
 /* @flow */
 
-import type Puth from './puth'
-import type FileSystem from './fs'
+import type { Stats } from 'fs'
+
+export type Pundle$FileSystem = {
+  stat: ((path: string) => Promise<?Stats>),
+  statSync: ((path: string) => Stats),
+  resolve: ((moduleName: string, basedir: string) => Promise<string>),
+  resolveSync: ((moduleName: string, basedir: string) => string),
+  readFile: ((filePath: string) => Promise<string>),
+  readFileSync: ((filePath: string) => string)
+}
 
 export type Pundle$Config = {
   entry: Array<string>,
-  fileSystem: FileSystem,
   rootDirectory: string,
-  resolve: {
-    aliases: Object // <string, string>
-  }
+  FileSystem: Function
 }
 
-export type Pundle$State = {
-  puth: Puth,
-  config: Pundle$Config
-}
-
-export type Pundle$Module = {
-  content: string,
-  imports: Array<string>,
-  filePath: string
+// Not used anywhere
+export type Pundle$Config$User = {
+  entry: string | Array<string>,
+  rootDirectory: string,
+  FileSystem?: Function
 }

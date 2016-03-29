@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "babel-core": "^6.7.4",
+    "pundle-fs": "0.0.1",
     "resolve": "^1.1.7",
     "sb-event-kit": "^1.1.2",
     "sb-memoize": "^1.0.1",

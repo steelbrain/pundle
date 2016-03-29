@@ -2,11 +2,10 @@
 
 /* @flow */
 
-// NOTE: Puth = Pundle + Path
-import { posix as Path } from 'path'
+import { posix as PosixPath } from 'path'
 import type { Pundle$Config } from './types'
 
-export default class Puth {
+export default class Path {
   config: Pundle$Config;
 
   constructor(config: Pundle$Config) {
@@ -14,13 +13,13 @@ export default class Puth {
   }
   in(filePath: string): string {
     if (filePath.indexOf(this.config.rootDirectory) === 0) {
-      filePath = Path.join('$root', Path.relative(this.config.rootDirectory, filePath))
+      filePath = PosixPath.join('$root', PosixPath.relative(this.config.rootDirectory, filePath))
     }
     return filePath
   }
   out(filePath: string): string {
     if (filePath.indexOf('$root') === 0) {
-      filePath = Path.join(this.config.rootDirectory, Path.relative('$root', filePath))
+      filePath = PosixPath.join(this.config.rootDirectory, PosixPath.relative('$root', filePath))
     }
     return filePath
   }

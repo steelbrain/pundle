@@ -1,39 +1,31 @@
-'use strict'
+'use babel'
 
 /* @flow */
 
 import Path from 'path'
-import resolve from 'resolve'
-import FileSystem from './fs'
-import type { Pundle$Config, Pundle$State } from './types'
+import type { Pundle$Config } from './types'
 
-export function getModulePath(moduleName: string, filePath: string, state: Pundle$State): string {
-  if (resolve.isCore(moduleName)) {
-    return moduleName
-  }
-  if (state.config.resolve.aliases[moduleName]) {
-    moduleName = state.config.resolve.aliases[moduleName]
-  }
-  return state.puth.in(state.config.fileSystem.resolveSync(moduleName, Path.dirname(filePath)))
-}
+let FileSystem
 
-export function normalizeConfig(config: Pundle$Config) {
+export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
+  const config = Object.assign({}, givenConfig)
+  // Make sure config.entry is an array
   if (!Array.isArray(config.entry)) {
     config.entry = [config.entry]
   }
+  // Make sure config.entry is filled with absolute paths
   for (let i = 0; i < config.entry.length; ++i) {
     const entry = config.entry[i]
     if (!Path.isAbsolute(entry)) {
       config.entry[i] = Path.join(config.rootDirectory, entry)
     }
   }
-  if (!config.fileSystem) {
-    config.fileSystem = new FileSystem(config)
+  // Make sure we have a FileSystem on board
+  if (!config.FileSystem) {
+    if (!FileSystem) {
+      FileSystem = require('pundle-fs')
+    }
+    config.FileSystem = FileSystem
   }
-  if (!config.resolve) {
-    config.resolve = {}
-  }
-  if (!config.resolve.aliases) {
-    config.resolve.aliases = {}
-  }
+  return config
 }

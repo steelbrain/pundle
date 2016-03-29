@@ -2,74 +2,30 @@
 
 /* @flow */
 
-import Path from 'path'
-import Puth from './puth'
-import generateBundle from './transformer/generator'
-import transform from './transformer/transformer'
+import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import { normalizeConfig } from './helpers'
-import type { Pundle$State, Pundle$Config, Pundle$Module } from './types'
+import Path from './path'
+import type { Pundle$Config, Pundle$FileSystem } from './types'
 
 class Pundle {
-  state: Pundle$State;
-  modules: Map<string, Pundle$Module>;
+  path: Path;
+  config: Pundle$Config;
+  emitter: Emitter;
+  fileSystem: Pundle$FileSystem;
+  subscriptions: CompositeDisposable;
 
   constructor(config: Pundle$Config) {
-    this.state = {
-      puth: new Puth(config),
-      config
-    }
-    this.modules = new Map()
+    this.config = normalizeConfig(config)
 
-    normalizeConfig(config)
+    this.path = new Path(this.config)
+    this.emitter = new Emitter()
+    this.fileSystem = new config.FileSystem(this.config)
+    this.subscriptions = new CompositeDisposable()
+
+    this.subscriptions.add(this.emitter)
   }
-  async compile(): Promise {
-    await Promise.all(this.state.config.entry.map(entry => this.read(entry)))
-  }
-  generate(): string {
-    return generateBundle(this.state, this.modules)
-  }
-  async read(moduleName: string, requestDirectory: ?string = null): Promise {
-    if (!requestDirectory) {
-      requestDirectory = this.state.config.rootDirectory
-    }
-
-    moduleName = this.state.puth.out(moduleName)
-    const filePath = Path.isAbsolute(moduleName) ?
-      moduleName :
-      await this.state.config.fileSystem.resolve(moduleName, requestDirectory)
-    const contents = await this.state.config.fileSystem.readFile(filePath)
-    await this.push(filePath, contents)
-  }
-  async push(filePath: string, content: string): Promise<Pundle$Module> {
-    const id = this.state.puth.in(filePath)
-    let module = this.modules.get(id)
-    const scanned = transform(filePath, content, this.state)
-    if (module) {
-      if (content === scanned.content) {
-        return module
-      }
-
-      module.content = scanned.content
-      module.imports = scanned.imports
-    } else {
-      module = {
-        content: scanned.content,
-        imports: scanned.imports,
-        filePath
-      }
-      this.modules.set(id, module)
-    }
-
-    // NOTE: Workaround a babel bug, where async arrow functions and `this` is messed up
-    const _this = this
-    await Promise.all(module.imports.map(async function(dependency) {
-      if (!_this.modules.has(dependency)) {
-        return await _this.read(dependency, Path.dirname(filePath))
-      }
-      return null
-    }))
-
-    return module
+  dispose() {
+    this.subscriptions.dispose()
   }
 }
 
