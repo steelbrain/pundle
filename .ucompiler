@@ -16,6 +16,6 @@
         "extensions": ["js"]
       }
     ],
-    "outputPath": "lib/{relativePath:4}"
+    "outputPath": "{relativeDirectory:0:-4}/lib/{name}.js"
   }]
 }
