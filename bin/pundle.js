@@ -4,5 +4,5 @@
 const Pundle = require('../')
 const pundle = new Pundle({ rootDirectory: process.cwd(), entry: 'index.js' })
 pundle.compile()
-  .then(() => pundle.generate())
+  .then(() => console.log(pundle.generate()))
   .catch(e => console.log(e && e.stack || e))

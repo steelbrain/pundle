@@ -41,7 +41,7 @@ export default function generateBundle(state: Pundle$State, modules: Map<string,
   }
   for (const entry of content) {
     processedContent.push(
-      `__sb_pundle_register('${state.puth.in(entry.filePath)}', \nfunction(module, exports){\n${entry.content}\n})`
+      `__sb_pundle_register('${state.puth.in(entry.filePath)}', function(module, exports){\n${entry.content}\n})`
     )
   }
   for (const entry of state.config.entry) {
