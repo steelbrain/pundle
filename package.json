@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "test": "./scripts/test.sh",
+    "bootstrap": "./scripts/bootstrap.sh",
+    "compile": "./scripts/build.sh",
+    "watch": "./scripts/build.sh --watch"
+  }
+}
