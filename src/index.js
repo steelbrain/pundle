@@ -4,6 +4,7 @@
 
 import Path from 'path'
 import Puth from './puth'
+import generateBundle from './transformer/generator'
 import scanModule from './transformer/scanner'
 import { normalizeConfig } from './helpers'
 import type { Pundle$State, Pundle$Config, Pundle$Module } from './types'
@@ -24,8 +25,8 @@ class Pundle {
   async compile(): Promise {
     await Promise.all(this.state.config.entry.map(entry => this.read(entry)))
   }
-  async generate(): Promise<string> {
-    return 'Hey!'
+  generate(): string {
+    return generateBundle(this.state, this.modules)
   }
   async read(moduleName: string, requestDirectory: ?string = null): Promise {
     if (!requestDirectory) {
@@ -62,8 +63,7 @@ class Pundle {
     // NOTE: Workaround a babel bug, where async arrow functions and `this` is messed up
     const _this = this
     await Promise.all(module.imports.map(async function(dependency) {
-      if (!_this.modules.has(_this.state.puth.in(dependency))) {
-        console.log(dependency, Path.dirname(filePath))
+      if (!_this.modules.has(dependency)) {
         return await _this.read(dependency, Path.dirname(filePath))
       }
       return null
