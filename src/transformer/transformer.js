@@ -2,16 +2,16 @@
 
 /* @flow */
 
-import { transform } from 'babel-core'
+import { transform as babelTransform } from 'babel-core'
 import { getModulePath } from '../helpers'
 import type { Pundle$State } from '../types'
 
-export default function scan(filePath: string, content: string, state: Pundle$State): {
+export default function transform(filePath: string, content: string, state: Pundle$State): {
   content: string,
   imports: Array<string>
 } {
   const imports = []
-  const parsed = transform(content, {
+  const parsed = babelTransform(content, {
     plugins: [{
       visitor: {
         CallExpression(path) {

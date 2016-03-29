@@ -5,7 +5,7 @@
 import Path from 'path'
 import Puth from './puth'
 import generateBundle from './transformer/generator'
-import scanModule from './transformer/scanner'
+import transform from './transformer/transformer'
 import { normalizeConfig } from './helpers'
 import type { Pundle$State, Pundle$Config, Pundle$Module } from './types'
 
@@ -43,7 +43,7 @@ class Pundle {
   async push(filePath: string, content: string): Promise<Pundle$Module> {
     const id = this.state.puth.in(filePath)
     let module = this.modules.get(id)
-    const scanned = scanModule(filePath, content, this.state)
+    const scanned = transform(filePath, content, this.state)
     if (module) {
       if (content === scanned.content) {
         return module
