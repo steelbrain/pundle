@@ -11,6 +11,9 @@ export function getModulePath(moduleName: string, filePath: string, state: Pundl
   if (resolve.isCore(moduleName)) {
     return moduleName
   }
+  if (state.config.resolve.aliases[moduleName]) {
+    moduleName = state.config.resolve.aliases[moduleName]
+  }
   return state.puth.in(state.config.fileSystem.resolveSync(moduleName, Path.dirname(filePath)))
 }
 
@@ -26,5 +29,11 @@ export function normalizeConfig(config: Pundle$Config) {
   }
   if (!config.fileSystem) {
     config.fileSystem = new FileSystem(config)
+  }
+  if (!config.resolve) {
+    config.resolve = {}
+  }
+  if (!config.resolve.aliases) {
+    config.resolve.aliases = {}
   }
 }

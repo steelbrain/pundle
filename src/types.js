@@ -8,7 +8,10 @@ import type FileSystem from './fs'
 export type Pundle$Config = {
   entry: Array<string>,
   fileSystem: FileSystem,
-  rootDirectory: string
+  rootDirectory: string,
+  resolve: {
+    aliases: Object // <string, string>
+  }
 }
 
 export type Pundle$State = {
