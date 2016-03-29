@@ -32,13 +32,10 @@
     "babel-eslint": "^6.0.0-beta.6",
     "babel-preset-steelbrain": "^2.0.1",
     "eslint-config-airbnb": "^6.0.2",
-    "eslint-plugin-react": "^4.2.1",
-    "ucompiler": "^3.1.8",
-    "ucompiler-plugin-babel": "^3.1.1"
+    "eslint-plugin-react": "^4.2.1"
   },
   "dependencies": {
     "babel-core": "^6.7.4",
-    "babylon": "^6.7.0",
     "resolve": "^1.1.7",
     "sb-event-kit": "^1.1.2",
     "sb-memoize": "^1.0.1",

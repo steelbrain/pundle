@@ -6,10 +6,16 @@
     "babel": {
       "presets": ["steelbrain"]
     },
-    "include": [{
-      "directory": "src",
-      "extensions": ["js"]
-    }],
+    "include": [
+      {
+        "directory": "packages/pundle/src",
+        "extensions": ["js"]
+      },
+      {
+        "directory": "packages/fs/src",
+        "extensions": ["js"]
+      }
+    ],
     "outputPath": "lib/{relativePath:4}"
   }]
 }

@@ -1,8 +1,12 @@
 {
+  "dependencies": {
+    "ucompiler": "^3.1.8",
+    "ucompiler-plugin-babel": "^3.1.1"
+  },
   "scripts": {
     "test": "./scripts/test.sh",
     "bootstrap": "./scripts/bootstrap.sh",
-    "compile": "./scripts/build.sh",
-    "watch": "./scripts/build.sh --watch"
+    "compile": "ucompiler go",
+    "watch": "ucompiler watch"
   }
 }
