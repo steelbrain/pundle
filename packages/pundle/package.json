@@ -27,13 +27,6 @@
     "url": "https://github.com/steelbrain/pundle/issues"
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
-  "devDependencies": {
-    "eslint": "^2.4.0",
-    "babel-eslint": "^6.0.0-beta.6",
-    "babel-preset-steelbrain": "^2.0.1",
-    "eslint-config-airbnb": "^6.0.2",
-    "eslint-plugin-react": "^4.2.1"
-  },
   "dependencies": {
     "babel-core": "^6.7.4",
     "pundle-fs": "0.0.1",

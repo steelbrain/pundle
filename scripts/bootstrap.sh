@@ -6,6 +6,9 @@ PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 PACKAGES_TO_LINK=(  "fs" "pundle" )
 NPM_ROOT=$( npm root -g )
 
+cd ${ROOT_DIRECTORY}
+npm install
+
 for name in "${PACKAGES_TO_LINK[@]}"
 do :
   cd ${PACKAGES_PATH}/${name}
