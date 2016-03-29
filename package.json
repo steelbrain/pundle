@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "devDependencies": {
-    "eslint": "^2.4.0",
+    "eslint": "^2.5.2",
     "babel-eslint": "^6.0.0-beta.6",
     "eslint-config-airbnb": "^6.0.2",
     "eslint-plugin-react": "^4.2.1"
