@@ -3,6 +3,7 @@
 /* @flow */
 
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
+import generateBundle from './processor/generator'
 import transform from './processor/transformer'
 import type { Disposable } from 'sb-event-kit'
 import type { Pundle$Module } from './types'
@@ -26,7 +27,9 @@ export default class Compilation {
     await Promise.all(this.pundle.config.entry.map(entry => this.read(entry)))
   }
   async read(filePath: string): Promise {
-    await this.push(filePath, await this.pundle.fileSystem.readFile(filePath))
+    await this.push(filePath, await this.pundle.fileSystem.readFile(
+      this.pundle.path.out(filePath)
+    ))
   }
   async push(filePath: string, contents: string): Promise {
     const moduleId = this.pundle.path.in(filePath)
@@ -47,9 +50,15 @@ export default class Compilation {
       filePath
     }
     this.modules.set(moduleId, newModule)
+    await Promise.all(event.imports.map(importId => {
+      if (!this.modules.has(importId)) {
+        return this.read(importId)
+      }
+      return null
+    }))
   }
   generate(): string {
-    return 'Hey'
+    return generateBundle(this.pundle, this.modules)
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)

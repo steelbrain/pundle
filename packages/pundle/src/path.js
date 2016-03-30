@@ -44,7 +44,7 @@ export default class Path {
     const event = { moduleName, basedir, path: '' }
     await this.emitter.emit('module-resolve', event)
     if (!event.path) {
-      event.path = await this.fileSystem.resolve(moduleName, basedir)
+      event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
     }
     return this.in(event.path)
   }
