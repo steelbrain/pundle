@@ -34,18 +34,22 @@ export default class Compilation {
     if (oldModule && oldModule.sources === contents) {
       return
     }
-    const event = { filePath, contents }
+    const event = { filePath, contents, imports: [] }
     await this.emitter.emit('before-compile', event)
     const processed = await transform(filePath, contents, this.pundle)
     event.contents = processed.contents
+    event.imports = processed.imports
     await this.emitter.emit('after-compile', event)
     const newModule = {
-      imports: [],
+      imports: event.imports,
       sources: contents,
       contents: event.contents,
       filePath
     }
     this.modules.set(moduleId, newModule)
+  }
+  generate(): string {
+    return 'Hey'
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)

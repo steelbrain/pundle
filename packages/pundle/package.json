@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
+    "babel-generator": "^6.7.2",
     "babel-traverse": "^6.7.4",
     "babylon": "^6.7.0",
     "pundle-fs": "0.0.1",

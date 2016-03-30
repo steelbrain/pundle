@@ -3,7 +3,7 @@
 /* @flow */
 
 import resolve from 'resolve'
-import { CompositeDisposable, Emitter, Disposable } from 'atom'
+import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { posix as PosixPath } from 'path'
 import type FileSystem from './file-system'
 import type { Pundle$Config } from './types'
