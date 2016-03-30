@@ -11,8 +11,8 @@
   "scripts": {
     "test": "./scripts/test.sh",
     "bootstrap": "./scripts/bootstrap.sh",
-    "compile": "ucompiler go",
-    "watch": "ucompiler watch",
+    "compile": "./scripts/build.sh",
+    "watch": "./scripts/build.sh --watch",
     "lint": "eslint ."
   }
 }
