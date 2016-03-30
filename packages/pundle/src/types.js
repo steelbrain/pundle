@@ -16,12 +16,25 @@ export type Pundle$FileSystem = {
 export type Pundle$Config = {
   entry: Array<string>,
   rootDirectory: string,
-  FileSystem: Function
+  FileSystem: Function,
+  resolve: {
+    alias: Object // <string, string>
+  }
 }
 
 // Not used anywhere
 export type Pundle$Config$User = {
   entry: string | Array<string>,
   rootDirectory: string,
-  FileSystem?: Function
+  FileSystem?: Function,
+  resolve?: {
+    alias?: Object
+  }
+}
+
+export type Pundle$Module = {
+  imports: Array<string>,
+  sources: string,
+  contents: string,
+  filePath: string
 }

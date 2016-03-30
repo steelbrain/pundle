@@ -19,15 +19,19 @@ class Pundle {
   constructor(config: Pundle$Config) {
     this.config = normalizeConfig(config)
 
-    this.path = new Path(this.config)
-    this.emitter = new Emitter()
     this.fileSystem = new FileSystem(new config.FileSystem(this.config))
+    this.path = new Path(this.config, this.fileSystem)
+    this.emitter = new Emitter()
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
+    this.subscriptions.add(this.path)
   }
   onCaughtError(callback: Function): Disposable {
     return this.emitter.on('caught-error', callback)
+  }
+  observeCompilations(callback: Function): Disposable {
+    return this.emitter.on('observe-compilations', callback)
   }
   dispose() {
     this.subscriptions.dispose()

@@ -46,7 +46,7 @@ export default class FileSystem {
     this.cachedResolve.__sb_cache[cacheKey] = value
     return value
   }
-  async readFile(filePath: string, useCached: boolean): Promise<string> {
+  async readFile(filePath: string, useCached: boolean = true): Promise<string> {
     const cached = this.readFileCache.get(filePath)
     const newStats = await this.stat(filePath)
     if (cached && useCached) {
@@ -58,7 +58,7 @@ export default class FileSystem {
     this.readFileCache.set(filePath, { stats: newStats, contents })
     return contents
   }
-  readFileSync(filePath: string, useCached: boolean): string {
+  readFileSync(filePath: string, useCached: boolean = true): string {
     const cached = this.readFileCache.get(filePath)
     const newStats = this.statSync(filePath)
     if (cached && useCached) {

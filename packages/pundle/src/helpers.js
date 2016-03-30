@@ -27,5 +27,11 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
     }
     config.FileSystem = FileSystem
   }
+  if (!config.resolve) {
+    config.resolve = {}
+  }
+  if (!config.resolve.alias) {
+    config.resolve.alias = {}
+  }
   return config
 }
