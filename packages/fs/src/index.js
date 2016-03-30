@@ -4,7 +4,7 @@
 
 import FS from 'fs'
 import resolve from 'resolve'
-import promisify from 'promisify'
+import promisify from 'sb-promisify'
 import type { Pundle$Config } from '../../pundle/src/types'
 
 const promisedFS = promisify.promisifyAll(require('fs'))
