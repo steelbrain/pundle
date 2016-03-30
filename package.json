@@ -1,30 +1,18 @@
 {
-  "name": "pundle",
-  "version": "0.0.1",
-  "description": "Creating peaceful bundles for everyone",
-  "main": "lib/index.js",
-  "scripts": {
-    "test": "apm test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/steelbrain/pundle.git"
-  },
-  "keywords": [
-    "bundle",
-    "bundler",
-    "assets"
-  ],
-  "author": "steelbrain",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/steelbrain/pundle/issues"
-  },
-  "homepage": "https://github.com/steelbrain/pundle#readme",
-  "devDependencies": {
+  "dependencies": {
     "eslint": "^2.4.0",
     "babel-eslint": "^6.0.0-beta.6",
+    "babel-preset-steelbrain": "^2.0.1",
     "eslint-config-airbnb": "^6.0.2",
-    "eslint-plugin-react": "^4.2.1"
+    "eslint-plugin-react": "^4.2.1",
+    "ucompiler": "^3.1.8",
+    "ucompiler-plugin-babel": "^3.1.1"
+  },
+  "scripts": {
+    "test": "./scripts/test.sh",
+    "bootstrap": "./scripts/bootstrap.sh",
+    "compile": "./scripts/build.sh",
+    "watch": "./scripts/build.sh --watch",
+    "lint": "eslint ."
   }
 }

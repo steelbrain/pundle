@@ -1,0 +1,40 @@
+{
+  "name": "pundle",
+  "version": "0.0.1",
+  "description": "Creating peaceful bundles for everyone",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "compile": "ucompiler go",
+    "lint": "eslint .",
+    "watch": "ucompiler watch"
+  },
+  "bin": {
+    "pundle": "./bin/pundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/steelbrain/pundle.git"
+  },
+  "keywords": [
+    "bundle",
+    "bundler",
+    "assets"
+  ],
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steelbrain/pundle/issues"
+  },
+  "homepage": "https://github.com/steelbrain/pundle#readme",
+  "dependencies": {
+    "babel-generator": "^6.7.2",
+    "babel-traverse": "^6.7.4",
+    "babylon": "^6.7.0",
+    "pundle-fs": "0.0.1",
+    "resolve": "^1.1.7",
+    "sb-event-kit": "^1.1.2",
+    "sb-memoize": "^1.0.1",
+    "sb-promisify": "^1.2.0"
+  }
+}
