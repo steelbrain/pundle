@@ -5,7 +5,7 @@
 import type { Stats } from 'fs'
 
 export type Pundle$FileSystem = {
-  stat: ((path: string) => Promise<?Stats>),
+  stat: ((path: string) => Promise<Stats>),
   statSync: ((path: string) => Stats),
   resolve: ((moduleName: string, basedir: string) => Promise<string>),
   resolveSync: ((moduleName: string, basedir: string) => string),
