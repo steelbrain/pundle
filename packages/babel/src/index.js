@@ -22,7 +22,7 @@ function getBabelTransformer(parameters: Object = {}): Function {
           return
         }
         event.contents = transform(event.contents, Object.assign({}, parameters.config, {
-          filename: event.filePath
+          filename: pundle.path.out(event.filePath)
         })).code
       })
     })
