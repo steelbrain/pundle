@@ -3,6 +3,10 @@
 
 const Pundle = require('../')
 const pundle = new Pundle({ rootDirectory: process.cwd(), entry: 'index.js' })
-pundle.compile()
-  .then(result => console.log(result))
-  .catch(e => console.log(e && e.stack || e))
+Promise.resolve().then(function() {
+  return pundle.compile()
+}).then(function(result) {
+  console.log(result)
+}).catch(function(e) {
+  console.log(e)
+})

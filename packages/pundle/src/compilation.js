@@ -39,7 +39,7 @@ export default class Compilation {
     }
     const event = { filePath, contents, imports: [] }
     await this.emitter.emit('before-compile', event)
-    const processed = await transform(filePath, contents, this.pundle)
+    const processed = await transform(filePath, event.contents, this.pundle)
     event.contents = processed.contents
     event.imports = processed.imports
     await this.emitter.emit('after-compile', event)
