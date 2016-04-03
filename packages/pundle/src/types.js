@@ -11,17 +11,17 @@ export type Pundle$FileSystem = {
 
 export type Pundle$Config = {
   entry: Array<string>,
-  rootDirectory: string,
+  resolve: Object,
   FileSystem: Function,
-  resolve: Object
+  rootDirectory: string,
 }
 
 // Not used anywhere
 export type Pundle$Config$User = {
   entry: string | Array<string>,
-  rootDirectory: string,
+  resolve?: Object,
   FileSystem?: Function,
-  resolve?: Object
+  rootDirectory: string,
 }
 
 export type Pundle$Module = {

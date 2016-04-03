@@ -3,7 +3,7 @@
 /* @flow */
 
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import { normalizeConfig } from './helpers'
+import { getPlugins, normalizeConfig } from './helpers'
 import Path from './path'
 import FileSystem from './file-system'
 import Compilation from './compilation'
@@ -27,6 +27,12 @@ class Pundle {
 
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.path)
+  }
+  async loadPlugins(givenPlugins: Array<string | Function>): Promise {
+    const plugins = await getPlugins(givenPlugins, this.path, this.config.rootDirectory)
+    for (const plugin of plugins) {
+      plugin(this)
+    }
   }
   get(): Compilation {
     const compilation = new Compilation(this)

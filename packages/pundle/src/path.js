@@ -35,13 +35,13 @@ export default class Path {
     return filePath
   }
   async resolveModule(moduleName: string, basedir: string): Promise<string> {
-    if (isCore(moduleName)) {
-      throw new Error('Module is core')
-    }
     const event = { moduleName, basedir, path: '' }
     await this.emitter.emit('module-resolve', event)
     if (!event.path) {
       event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
+    }
+    if (isCore(moduleName)) {
+      throw new Error('Module is core')
     }
     return this.in(event.path)
   }
