@@ -9,7 +9,7 @@ PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 if [ "$PACKAGE_NAME" != "" ]; then
   PACKAGES=$PACKAGE_NAME
 else
-  PACKAGES=( "pundle" "fs" )
+  PACKAGES=( "pundle" "fs" "babel" )
 fi
 
 if [ "$1" = "--watch" ]; then
