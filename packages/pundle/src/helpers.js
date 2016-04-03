@@ -3,6 +3,7 @@
 /* @flow */
 
 import Path from 'path'
+import type Pundle$Path from './path'
 import type { Pundle$Config, Pundle$FileSystem } from './types'
 
 let FileSystem
@@ -61,4 +62,25 @@ export async function find(
   }
 
   return matched
+}
+
+export async function getPlugins(
+  plugins: Array<string | Function>,
+  path: Pundle$Path,
+  rootDirectory: string
+): Promise<Array<Function>> {
+  const processed = []
+  for (const plugin of plugins) {
+    if (typeof plugin === 'function') {
+      processed.push(plugin)
+    } else {
+      // $FlowIgnore: Sorry flow, but plugins are dynamic
+      const mainModule = require(await path.resolveModule(plugin, rootDirectory))
+      if (typeof module !== 'function') {
+        throw new Error(`Plugin '${plugin}' did not export properly`)
+      }
+      processed.push(mainModule)
+    }
+  }
+  return processed
 }

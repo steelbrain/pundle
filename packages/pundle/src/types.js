@@ -12,7 +12,6 @@ export type Pundle$FileSystem = {
 export type Pundle$Config = {
   entry: Array<string>,
   resolve: Object,
-  plugins: Array<String | Function>,
   FileSystem: Function,
   rootDirectory: string,
 }
@@ -21,7 +20,6 @@ export type Pundle$Config = {
 export type Pundle$Config$User = {
   entry: string | Array<string>,
   resolve?: Object,
-  plugins?: Array<String | Function>,
   FileSystem?: Function,
   rootDirectory: string,
 }
