@@ -3,7 +3,7 @@
 /* @flow */
 
 import Path from 'path'
-import type { Pundle$Config } from './types'
+import type { Pundle$Config, Pundle$FileSystem } from './types'
 
 let FileSystem
 
@@ -30,8 +30,35 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   if (!config.resolve) {
     config.resolve = {}
   }
-  if (!config.resolve.alias) {
-    config.resolve.alias = {}
-  }
   return config
+}
+
+export async function find(
+  directory: string,
+  name: string | Array<string>,
+  fs: Pundle$FileSystem
+): Promise<Array<string>> {
+  const names = [].concat(name)
+  const chunks = directory.split(Path.sep)
+  const matched = []
+
+  while (chunks.length) {
+    let currentDir = chunks.join(Path.sep)
+    if (currentDir === '') {
+      currentDir = Path.resolve(directory, '/')
+    }
+    for (const fileName of names) {
+      const filePath = Path.join(currentDir, fileName)
+      try {
+        await fs.stat(filePath)
+        matched.push(filePath)
+        break
+      } catch (_) {
+        // Do nothing
+      }
+    }
+    chunks.pop()
+  }
+
+  return matched
 }

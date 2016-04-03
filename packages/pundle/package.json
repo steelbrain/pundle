@@ -32,9 +32,9 @@
     "babel-traverse": "^6.7.4",
     "babylon": "^6.7.0",
     "pundle-fs": "0.0.1",
-    "resolve": "^1.1.7",
     "sb-event-kit": "^1.1.2",
     "sb-memoize": "^1.0.1",
-    "sb-promisify": "^1.2.0"
+    "sb-promisify": "^1.2.0",
+    "sb-resolve": "^1.0.0"
   }
 }
