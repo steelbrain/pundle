@@ -27,19 +27,31 @@ export default class Compilation {
     await Promise.all(this.pundle.config.entry.map(entry => this.read(entry)))
   }
   async read(filePath: string): Promise {
-    await this.push(filePath, await this.pundle.fileSystem.readFile(
-      this.pundle.path.out(filePath)
-    ))
+    try {
+      await this.push(filePath, await this.pundle.fileSystem.readFile(
+        this.pundle.path.out(filePath)
+      ))
+    } catch (_) {
+      await this.pundle.emitter.emit('caught-error', _)
+    }
   }
-  async push(filePath: string, contents: string): Promise {
-    const moduleId = this.pundle.path.in(filePath)
-    const oldModule = this.modules.get(moduleId)
+  async push(givenFilePath: string, contents: string): Promise {
+    try {
+      await this._push(givenFilePath, contents)
+    } catch (_) {
+      this.pundle.emitter.emit('caught-error', _)
+    }
+  }
+  // Private method
+  async _push(givenFilePath: string, contents: string): Promise {
+    const filePath = this.pundle.path.in(givenFilePath)
+    const oldModule = this.modules.get(filePath)
     if (oldModule && oldModule.sources === contents) {
       return
     }
     const event = { filePath, contents, imports: [] }
     await this.emitter.emit('before-compile', event)
-    const processed = await transform(filePath, contents, this.pundle)
+    const processed = await transform(filePath, event.contents, this.pundle)
     event.contents = processed.contents
     event.imports = processed.imports
     await this.emitter.emit('after-compile', event)
@@ -49,7 +61,7 @@ export default class Compilation {
       contents: event.contents,
       filePath
     }
-    this.modules.set(moduleId, newModule)
+    this.modules.set(filePath, newModule)
     await Promise.all(event.imports.map(importId => {
       if (!this.modules.has(importId)) {
         return this.read(importId)
@@ -57,8 +69,13 @@ export default class Compilation {
       return null
     }))
   }
-  generate(): string {
-    return generateBundle(this.pundle, this.modules)
+  generate(): ?string {
+    try {
+      return generateBundle(this.pundle, this.modules)
+    } catch (_) {
+      this.pundle.emitter.emit('caught-error', _)
+      return null
+    }
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)
