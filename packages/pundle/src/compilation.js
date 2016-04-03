@@ -27,11 +27,23 @@ export default class Compilation {
     await Promise.all(this.pundle.config.entry.map(entry => this.read(entry)))
   }
   async read(filePath: string): Promise {
-    await this.push(filePath, await this.pundle.fileSystem.readFile(
-      this.pundle.path.out(filePath)
-    ))
+    try {
+      await this.push(filePath, await this.pundle.fileSystem.readFile(
+        this.pundle.path.out(filePath)
+      ))
+    } catch (_) {
+      await this.pundle.emitter.emit('caught-error', _)
+    }
   }
   async push(givenFilePath: string, contents: string): Promise {
+    try {
+      await this._push(givenFilePath, contents)
+    } catch (_) {
+      this.pundle.emitter.emit('caught-error', _)
+    }
+  }
+  // Private method
+  async _push(givenFilePath: string, contents: string): Promise {
     const filePath = this.pundle.path.in(givenFilePath)
     const oldModule = this.modules.get(filePath)
     if (oldModule && oldModule.sources === contents) {
@@ -57,8 +69,13 @@ export default class Compilation {
       return null
     }))
   }
-  generate(): string {
-    return generateBundle(this.pundle, this.modules)
+  generate(): ?string {
+    try {
+      return generateBundle(this.pundle, this.modules)
+    } catch (_) {
+      this.pundle.emitter.emit('caught-error', _)
+      return null
+    }
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)
