@@ -31,9 +31,9 @@ export default class Compilation {
       this.pundle.path.out(filePath)
     ))
   }
-  async push(filePath: string, contents: string): Promise {
-    const moduleId = this.pundle.path.in(filePath)
-    const oldModule = this.modules.get(moduleId)
+  async push(givenFilePath: string, contents: string): Promise {
+    const filePath = this.pundle.path.in(givenFilePath)
+    const oldModule = this.modules.get(filePath)
     if (oldModule && oldModule.sources === contents) {
       return
     }
@@ -49,7 +49,7 @@ export default class Compilation {
       contents: event.contents,
       filePath
     }
-    this.modules.set(moduleId, newModule)
+    this.modules.set(filePath, newModule)
     await Promise.all(event.imports.map(importId => {
       if (!this.modules.has(importId)) {
         return this.read(importId)
