@@ -20,7 +20,7 @@ class Pundle {
   constructor(config: Pundle$Config) {
     this.config = normalizeConfig(config)
 
-    this.fileSystem = new FileSystem(new this.config.FileSystem(this.config))
+    this.fileSystem = new FileSystem(this.config, new this.config.FileSystem(this.config))
     this.path = new Path(this.config, this.fileSystem)
     this.emitter = new Emitter()
     this.subscriptions = new CompositeDisposable()

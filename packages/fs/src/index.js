@@ -19,20 +19,11 @@ class FileSystem {
   stat(path: string): Promise<FS.Stats> {
     return promisedFS.stat(path)
   }
-  statSync(path: string): FS.Stats {
-    return FS.statSync(path)
-  }
   resolve(moduleName: string, basedir: string): Promise<string> {
     return promisedResolve(moduleName, { basedir })
   }
-  resolveSync(moduleName: string, basedir: string): string {
-    return resolve.sync(moduleName, { basedir })
-  }
   async readFile(filePath: string): Promise<string> {
     return (await promisedFS.readFile(filePath)).toString('utf8')
-  }
-  readFileSync(filePath: string): string {
-    return FS.readFileSync(filePath).toString('utf8')
   }
 }
 
