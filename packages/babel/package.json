@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
+    "babel-core": "^6.7.4",
     "sb-promisify": "^1.3.0"
   }
 }
