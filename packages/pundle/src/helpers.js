@@ -5,7 +5,7 @@
 import Path from 'path'
 import sourceMap from 'source-map'
 import type Pundle$Path from './path'
-import type { Pundle$Config, Pundle$FileSystem } from './types'
+import type { Pundle$Config, Pundle$Plugin, Pundle$FileSystem } from './types'
 
 let FileSystem
 const REGEX_EOL = /\n|\r\n/
@@ -68,22 +68,33 @@ export async function find(
 }
 
 export async function getPlugins(
-  plugins: Array<string | Function>,
+  plugins: Array<Pundle$Plugin>,
   path: Pundle$Path,
   rootDirectory: string
-): Promise<Array<Function>> {
+): Promise<Array<{ plugin: Function, parameters: Object }>> {
   const processed = []
-  for (const plugin of plugins) {
-    if (typeof plugin === 'function') {
-      processed.push(plugin)
-    } else {
-      // $FlowIgnore: Sorry flow, but plugins are dynamic
-      const mainModule = require(await path.resolveModule(plugin, rootDirectory))
-      if (typeof module !== 'function') {
-        throw new Error(`Plugin '${plugin}' did not export properly`)
-      }
-      processed.push(mainModule)
+  for (const entry of plugins) {
+    let plugin
+    let parameters = {}
+    if (typeof entry === 'function') {
+      plugin = entry
+      parameters = {}
+    } else if (typeof entry === 'string') {
+      plugin = path.out(await path.resolveModule(entry, rootDirectory))
+    } else if (Array.isArray(entry)) {
+      [plugin, parameters] = entry
     }
+    if (typeof plugin === 'string') {
+      // $FlowIgnore: I wanna use a variable in require
+      const mainModule = require(plugin)
+      if (typeof mainModule !== 'function') {
+        throw new Error(`Plugin '${plugin}' exported incorrectly`)
+      }
+      plugin = mainModule
+    } else if (typeof plugin !== 'function') {
+      throw new Error(`Invalid plugin detected in '${entry}'`)
+    }
+    processed.push({ plugin, parameters })
   }
   return processed
 }
