@@ -12,10 +12,7 @@ Promise.resolve().then(function() {
   return pundle.compile()
 }).then(function(result) {
   if (result) {
-    console.log(result.contents)
-    if (pundle.config.sourceMaps) {
-      console.error(JSON.stringify(result.sourceMap))
-    }
+    console.log(result)
   }
   process.exit(exitCode)
 })
