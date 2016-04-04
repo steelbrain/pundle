@@ -44,8 +44,7 @@ export default class FileSystem {
         readFile: this.readFile.bind(this)
       }
     })
-    const parents = (await find(basedir, config.moduleDirectories || ['node_modules'], this.source))
-      .map(Path.dirname)
+    const parents = (await find(basedir, config.moduleDirectories || ['node_modules'], this.source)).map(Path.dirname)
     if (Array.isArray(config.root)) {
       config.root = config.root.concat(parents)
     } else if (typeof config.root === 'string') {
@@ -58,10 +57,8 @@ export default class FileSystem {
   async readFile(filePath: string, useCached: boolean = true): Promise<string> {
     const cached = this.readFileCache.get(filePath)
     const newStats = await this.stat(filePath)
-    if (cached && useCached) {
-      if (cached.stats.mtime.getTime() === newStats.mtime.getTime()) {
-        return cached.contents
-      }
+    if (cached && useCached && cached.stats.mtime.getTime() === newStats.mtime.getTime()) {
+      return cached.contents
     }
     const contents = await this.source.readFile(filePath)
     this.readFileCache.set(filePath, { stats: newStats, contents })
