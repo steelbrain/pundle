@@ -55,7 +55,9 @@ export default async function transform(
   await Promise.all(promises)
   const generated = generate(ast, {
     quotes: 'single',
-    filename: filePath
+    filename: filePath,
+    sourceMaps: true,
+    sourceFileName: filePath
   }, {
     [filePath]: contents
   })

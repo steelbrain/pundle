@@ -74,7 +74,10 @@ export default class Compilation {
       return null
     }))
   }
-  generate(): ?string {
+  generate(): ?{
+    contents: string,
+    sourceMap: Object
+  } {
     try {
       return generateBundle(this.pundle, this.modules)
     } catch (_) {

@@ -1,4 +1,3 @@
-;(function() {
 'use strict';
 var __sb_pundle = { modules: {}, module_sources: {} }
 var global = window || self
@@ -15,4 +14,3 @@ function require(request) {
   __sb_pundle.modules[request] = module.exports || {}
   return __sb_pundle.modules[request]
 }
-})();

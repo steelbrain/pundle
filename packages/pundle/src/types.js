@@ -14,6 +14,7 @@ export type Pundle$Config = {
   resolve: Object,
   FileSystem: Function,
   rootDirectory: string,
+  sourceMaps: boolean
 }
 
 // Not used anywhere
@@ -22,6 +23,7 @@ export type Pundle$Config$User = {
   resolve?: Object,
   FileSystem?: Function,
   rootDirectory: string,
+  sourceMaps?: boolean
 }
 
 export type Pundle$Module = {

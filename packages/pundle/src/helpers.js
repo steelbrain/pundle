@@ -8,6 +8,7 @@ import type Pundle$Path from './path'
 import type { Pundle$Config, Pundle$FileSystem } from './types'
 
 let FileSystem
+const REGEX_EOL = /\n|\r\n/
 
 export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   const config = Object.assign({}, givenConfig)
@@ -32,6 +33,7 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   if (!config.resolve) {
     config.resolve = {}
   }
+  config.sourceMaps = Boolean(config.sourceMaps)
   return config
 }
 
@@ -123,4 +125,8 @@ export function mergeSourceMaps(inputMap: Object, map: Object): Object {
   const mergedMap = mergedGenerator.toJSON()
   inputMap.mappings = mergedMap.mappings
   return inputMap
+}
+
+export function getLinesCount(text: string): number {
+  return text.split(REGEX_EOL).length
 }
