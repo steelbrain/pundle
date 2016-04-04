@@ -3,7 +3,7 @@
 /* @flow */
 
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import generateBundle from './processor/generator'
+import { generateBundle, generateSourceMap } from './processor/generator'
 import transform from './processor/transformer'
 import type { Disposable } from 'sb-event-kit'
 import type { Pundle$Module } from './types'
@@ -74,12 +74,17 @@ export default class Compilation {
       return null
     }))
   }
-  generate(): ?{
-    contents: string,
-    sourceMap: Object
-  } {
+  generate(): ?string {
     try {
       return generateBundle(this.pundle, this.modules)
+    } catch (_) {
+      this.pundle.emitter.emit('caught-error', _)
+      return null
+    }
+  }
+  generateSourceMap(): ?Object {
+    try {
+      return generateSourceMap(this.pundle, this.modules)
     } catch (_) {
       this.pundle.emitter.emit('caught-error', _)
       return null
