@@ -49,11 +49,13 @@ export default class Compilation {
     if (oldModule && oldModule.sources === contents) {
       return
     }
-    const event = { filePath, contents, imports: [] }
+    const event = { filePath, contents, sourceMap: null, imports: [] }
     await this.emitter.emit('before-compile', event)
-    const processed = await transform(filePath, event.contents, this.pundle)
+    const processed = await transform(filePath, event.contents, event.sourceMap, this.pundle)
     event.contents = processed.contents
     event.imports = processed.imports
+    // $FlowIgnore: Stupid flow, doesn't let me replace a null with an object
+    event.sourceMap = processed.sourceMap
     await this.emitter.emit('after-compile', event)
     const newModule = {
       imports: event.imports,
