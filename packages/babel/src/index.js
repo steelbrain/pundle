@@ -21,9 +21,15 @@ function getBabelTransformer(parameters: Object = {}): Function {
         if (typeof parameters.include !== 'undefined' && !event.filePath.match(parameters.include)) {
           return
         }
-        event.contents = transform(event.contents, Object.assign({}, parameters.config, {
-          filename: pundle.path.out(event.filePath)
-        })).code
+        const processed = transform(event.contents, Object.assign({}, parameters.config, {
+          filename: pundle.path.out(event.filePath),
+          sourceFileName: event.filePath,
+          inputSourceMap: event.sourceMap,
+          sourceMap: true
+        }))
+
+        event.contents = processed.code
+        event.sourceMap = processed.sourceMap
       })
     })
   }

@@ -6,11 +6,18 @@ import Path from 'path'
 import generate from 'babel-generator'
 import traverse from 'babel-traverse'
 import { parse } from 'babylon'
+import { mergeSourceMaps } from '../helpers'
 import type Pundle from '../index.js'
 
-export default async function transform(filePath: string, contents: string, pundle: Pundle): Promise<{
+export default async function transform(
+  filePath: string,
   contents: string,
-  imports: Array<string>
+  sourceMap: ?Object,
+  pundle: Pundle
+): Promise<{
+  imports: Array<string>,
+  contents: string,
+  sourceMap: Object
 }> {
   const imports = []
   const promises = []
@@ -48,13 +55,19 @@ export default async function transform(filePath: string, contents: string, pund
   await Promise.all(promises)
   const generated = generate(ast, {
     quotes: 'single',
-    filename: filePath
+    filename: filePath,
+    sourceMaps: true,
+    sourceFileName: filePath
   }, {
     [filePath]: contents
   })
+  if (sourceMap) {
+    generated.map = mergeSourceMaps(sourceMap, generated.map)
+  }
 
   return {
+    imports,
     contents: generated.code,
-    imports
+    sourceMap: generated.map
   }
 }

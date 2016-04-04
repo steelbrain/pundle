@@ -49,27 +49,35 @@ export default class Compilation {
     if (oldModule && oldModule.sources === contents) {
       return
     }
-    const event = { filePath, contents, imports: [] }
-    await this.emitter.emit('before-compile', event)
-    const processed = await transform(filePath, event.contents, this.pundle)
-    event.contents = processed.contents
-    event.imports = processed.imports
-    await this.emitter.emit('after-compile', event)
+    const beforeEvent = { filePath, contents, sourceMap: null, imports: [] }
+    await this.emitter.emit('before-compile', beforeEvent)
+    const processed = await transform(filePath, beforeEvent.contents, beforeEvent.sourceMap, this.pundle)
+    const eventAfter = {
+      filePath,
+      contents: processed.contents,
+      sourceMap: processed.sourceMap,
+      imports: processed.imports
+    }
+    await this.emitter.emit('after-compile', eventAfter)
     const newModule = {
-      imports: event.imports,
+      imports: eventAfter.imports,
       sources: contents,
-      contents: event.contents,
-      filePath
+      contents: eventAfter.contents,
+      filePath,
+      sourceMap: eventAfter.sourceMap
     }
     this.modules.set(filePath, newModule)
-    await Promise.all(event.imports.map(importId => {
+    await Promise.all(eventAfter.imports.map(importId => {
       if (!this.modules.has(importId)) {
         return this.read(importId)
       }
       return null
     }))
   }
-  generate(): ?string {
+  generate(): ?{
+    contents: string,
+    sourceMap: Object
+  } {
     try {
       return generateBundle(this.pundle, this.modules)
     } catch (_) {
