@@ -33,3 +33,5 @@ export type Pundle$Module = {
   filePath: string,
   sourceMap: Object
 }
+
+export type Pundle$Plugin = string | Function | [string, Object] | [Function, Object]

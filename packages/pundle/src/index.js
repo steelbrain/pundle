@@ -7,7 +7,7 @@ import { getPlugins, normalizeConfig } from './helpers'
 import Path from './path'
 import FileSystem from './file-system'
 import Compilation from './compilation'
-import type { Pundle$Config } from './types'
+import type { Pundle$Config, Pundle$Plugin } from './types'
 import type { Disposable } from 'sb-event-kit'
 
 class Pundle {
@@ -28,10 +28,10 @@ class Pundle {
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.path)
   }
-  async loadPlugins(givenPlugins: Array<string | Function>): Promise {
+  async loadPlugins(givenPlugins: Array<Pundle$Plugin>): Promise {
     const plugins = await getPlugins(givenPlugins, this.path, this.config.rootDirectory)
-    for (const plugin of plugins) {
-      plugin(this)
+    for (const { plugin, parameters } of plugins) {
+      plugin(this, parameters)
     }
   }
   get(): Compilation {
