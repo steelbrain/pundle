@@ -28,5 +28,6 @@ export type Pundle$Module = {
   imports: Array<string>,
   sources: string,
   contents: string,
-  filePath: string
+  filePath: string,
+  sourceMap: Object
 }
