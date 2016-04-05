@@ -44,9 +44,6 @@ class Pundle {
     await compilation.compile()
     return compilation.generate()
   }
-  onCaughtError(callback: Function): Disposable {
-    return this.emitter.on('caught-error', callback)
-  }
   observeCompilations(callback: Function): Disposable {
     return this.emitter.on('observe-compilations', callback)
   }
