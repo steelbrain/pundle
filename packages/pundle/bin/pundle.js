@@ -8,13 +8,11 @@ const pundle = new Pundle({ rootDirectory: process.cwd(), entry: 'index.js' })
 Promise.resolve().then(function() {
   return pundle.compile(showSourceMap)
 }).then(function(result) {
-  process.stdout.write(result.contents)
-  process.stdout.write('\n')
+  console.log(result.contents)
   if (showSourceMap) {
-    process.stdout.write(sourceMapToComment(result.sourceMap))
-    process.stdout.write('\n')
+    console.log(sourceMapToComment(result.sourceMap))
   }
 }).catch(function(error) {
   console.error(error)
-  process.exit(1)
+  process.exitCode = 1
 })
