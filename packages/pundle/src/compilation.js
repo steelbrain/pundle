@@ -52,10 +52,36 @@ export default class Compilation {
     }))
   }
   generate(): string {
-    return generateBundle(this.pundle, this.modules)
+    return generateBundle(this.pundle, this.getAllModuleImports())
   }
   generateSourceMap(): Object {
-    return generateSourceMap(this.pundle, this.modules)
+    return generateSourceMap(this.pundle, this.getAllModuleImports())
+  }
+  getAllModuleImports(): Array<Pundle$Module> {
+    const countedIn = new Set()
+    const moduleImports = []
+    for (const entry of this.pundle.config.entry) {
+      this.getModuleImports(entry, moduleImports, countedIn)
+    }
+    return moduleImports
+  }
+  getModuleImports(
+    moduleId: string,
+    moduleImports: Array<Pundle$Module> = [],
+    countedIn: Set<string> = new Set()
+  ): Array<Pundle$Module> {
+    const module = this.modules.get(moduleId)
+    if (!module) {
+      throw new Error(`Module '${moduleId}' not found`)
+    }
+    countedIn.add(moduleId)
+    moduleImports.push(module)
+    for (const entry of module.imports) {
+      if (!countedIn.has(entry)) {
+        this.getModuleImports(entry, moduleImports, countedIn)
+      }
+    }
+    return moduleImports
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)

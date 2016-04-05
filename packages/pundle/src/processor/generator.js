@@ -9,43 +9,10 @@ import { getLinesCount } from '../helpers'
 import type Pundle from '../index'
 import type { Pundle$Module } from '../types'
 
-let rootContent = ''
+const rootContent = FS.readFileSync(Path.join(__dirname, '..', '..', 'client', 'root.js'), 'utf8')
 
-function getContent(
-  filePath: string,
-  modules: Map<string, Pundle$Module>,
-  imported: Set<string>,
-  content: Array<Pundle$Module>
-) {
-  const module = modules.get(filePath)
-  if (!module) {
-    throw new Error(`Module '${filePath}' not found`)
-  }
-  content.push(module)
-  imported.add(filePath)
-
-  for (const entry of module.imports) {
-    if (!imported.has(entry)) {
-      getContent(entry, modules, imported, content)
-    }
-  }
-}
-
-export function generateBundle(pundle: Pundle, modules: Map<string, Pundle$Module>): string {
-  if (!rootContent) {
-    rootContent = FS.readFileSync(Path.join(__dirname, '..', '..', 'client', 'root.js')).toString()
-  }
-  const content = []
-  const imported = new Set()
-  for (const entry of pundle.config.entry) {
-    getContent(pundle.path.in(entry), modules, imported, content)
-  }
-
-  // One line up for IIFE
-  const output = []
-
-  // Default
-  output.push(rootContent)
+export function generateBundle(pundle: Pundle, content: Array<Pundle$Module>): string {
+  const output = [rootContent]
 
   for (const entry of content) {
     const internalPath = pundle.path.in(entry.filePath)
@@ -61,16 +28,9 @@ export function generateBundle(pundle: Pundle, modules: Map<string, Pundle$Modul
   return `;(function(){\n${output.join('\n')}\n})();\n`
 }
 
-export function generateSourceMap(pundle: Pundle, modules: Map<string, Pundle$Module>): Object {
-  if (!rootContent) {
-    rootContent = FS.readFileSync(Path.join(__dirname, '..', '..', 'client', 'root.js')).toString()
-  }
-  const content = []
-  const imported = new Set()
-  for (const entry of pundle.config.entry) {
-    getContent(pundle.path.in(entry), modules, imported, content)
-  }
+export function generateSourceMap(pundle: Pundle, content: Array<Pundle$Module>): Object {
   const sourceMap = new SourceMapGenerator()
+  // One line for IIFE
   let lines = 1 + getLinesCount(rootContent)
 
   for (const entry of content) {
