@@ -39,10 +39,15 @@ class Pundle {
     this.emitter.emit('observe-compilations', compilation)
     return compilation
   }
-  async compile(): Promise {
+  async compile(generateSourceMap: boolean = false): Promise<{ contents: string, sourceMap: ?Object }> {
     const compilation = this.get()
     await compilation.compile()
-    return compilation.generate()
+    const contents = compilation.generate()
+    const sourceMap = generateSourceMap ? compilation.generateSourceMap() : null
+    return {
+      contents,
+      sourceMap
+    }
   }
   observeCompilations(callback: Function): Disposable {
     return this.emitter.on('observe-compilations', callback)
