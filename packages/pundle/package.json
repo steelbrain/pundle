@@ -31,6 +31,8 @@
     "babel-generator": "^6.7.2",
     "babel-traverse": "^6.7.4",
     "babylon": "^6.7.0",
+    "chokidar": "^1.4.3",
+    "lodash.isregexp": "^3.0.5",
     "pundle-fs": "0.0.1",
     "sb-event-kit": "^1.1.2",
     "sb-memoize": "^1.0.1",

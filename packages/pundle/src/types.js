@@ -34,4 +34,18 @@ export type Pundle$Module = {
   sourceMap: Object
 }
 
+export type Pundle$Watcher$Options = {
+  ignored: string | RegExp,
+  onBeforeCompile?: ((filePath: string) => void),
+  onAfterCompile?: ((filePath: string, error: ?Error) => void),
+  onReady?: (() => void)
+}
+
+export type Pundle$Watcher$Options$User = {
+  ignored?: string | RegExp,
+  onBeforeCompile?: ((filePath: string) => void),
+  onAfterCompile?: ((filePath: string, error: ?Error) => void),
+  onReady?: (() => void)
+}
+
 export type Pundle$Plugin = string | Function | [string, Object] | [Function, Object]

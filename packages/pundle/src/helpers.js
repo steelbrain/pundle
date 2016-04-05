@@ -4,8 +4,9 @@
 
 import Path from 'path'
 import sourceMap from 'source-map'
+import isRegexp from 'lodash.isregexp'
 import type Pundle$Path from './path'
-import type { Pundle$Config, Pundle$Plugin, Pundle$FileSystem } from './types'
+import type { Pundle$Config, Pundle$Plugin, Pundle$FileSystem, Pundle$Watcher$Options } from './types'
 
 let FileSystem
 const REGEX_EOL = /\n|\r\n/
@@ -35,6 +36,15 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   }
   config.sourceMaps = Boolean(config.sourceMaps)
   return config
+}
+
+export function normalizeWatcherOptions(givenOptions: Object): Pundle$Watcher$Options {
+  const options = Object.assign({}, givenOptions)
+  if (typeof options.ignored !== 'string' && !isRegexp(options.ignored) && !Array.isArray(options.ignored)) {
+    options.ignored = /(node_modules|bower_components)/
+  }
+  options.ignored = [/[\/\\]\./].concat(options.ignored)
+  return options
 }
 
 export async function find(

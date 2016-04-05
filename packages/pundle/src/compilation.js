@@ -3,9 +3,11 @@
 /* @flow */
 
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
+import { watch } from 'chokidar'
 import { generateBundle, generateSourceMap } from './processor/generator'
 import transform from './processor/transformer'
-import type { Pundle$Module } from './types'
+import { normalizeWatcherOptions } from './helpers'
+import type { Pundle$Module, Pundle$Watcher$Options$User } from './types'
 import type Pundle from './index.js'
 
 export default class Compilation {
@@ -53,6 +55,9 @@ export default class Compilation {
       }
       return null
     }))
+    if (oldModule && oldModule.imports.length !== event.imports.length) {
+      this.garbageCollect()
+    }
   }
   generate(): string {
     return generateBundle(this.pundle, this.pundle.config.entry, this.getAllModuleImports())
@@ -86,8 +91,54 @@ export default class Compilation {
     }
     return moduleImports
   }
-  watch(): Disposable {
+  garbageCollect() {
+    const toRemove = []
+    const modules = new Set(this.getAllModuleImports())
+    for (const [key, value] of this.modules) {
+      if (!modules.has(value)) {
+        toRemove.push(key)
+      }
+    }
+    for (const entry of toRemove) {
+      this.modules.delete(entry)
+    }
+  }
+  watch(givenOptions: Pundle$Watcher$Options$User): Disposable {
+    let queue = Promise.resolve()
+    const options = normalizeWatcherOptions(givenOptions)
+    const watcher = watch(this.pundle.config.rootDirectory, {
+      depth: 10,
+      ignored: options.ignored,
+      followSymlinks: false,
+      ignorePermissionErrors: true
+    })
+    watcher.on('ready', () => {
+      queue.then(() => {
+        if (options.onReady) {
+          options.onReady.call(this)
+        }
+      })
+    })
+    watcher.on('add', filePath => {
+      queue = queue.then(() => {
+        if (options.onBeforeCompile) {
+          options.onBeforeCompile.call(this, filePath)
+        }
+        return this.read(filePath).then(function() {
+          if (options.onAfterCompile) {
+            options.onAfterCompile.call(this, filePath)
+          }
+        }, function(error) {
+          if (options.onAfterCompile) {
+            options.onAfterCompile.call(this, filePath, error)
+          }
+        })
+      })
+    })
 
+    return new Disposable(function() {
+      watcher.close()
+    })
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)
