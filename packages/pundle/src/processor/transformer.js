@@ -33,7 +33,11 @@ export default async function transform(
   })
   traverse.cheap(ast, function(node) {
     if (node.type === 'CallExpression') {
-      if (node.callee.name === 'require') {
+      if (node.callee.name === 'require' || (
+        node.callee.object && node.callee.object.name === 'require' && (
+          node.callee.property.name === 'resolve' || node.callee.property.value === 'resolve'
+        )
+      )) {
         const argument = node.arguments[0]
         if (argument && argument.value) {
           promises.push(pundle.path.resolveModule(argument.value, Path.dirname(filePath)).then(function(resolved) {

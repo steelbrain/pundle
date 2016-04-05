@@ -14,3 +14,6 @@ function require(request) {
   __sb_pundle.modules[request] = module.exports || {}
   return __sb_pundle.modules[request]
 }
+require.resolve = function(dependency) {
+  return dependency
+}
