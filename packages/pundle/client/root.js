@@ -3,6 +3,8 @@ var __sb_pundle = { module_sources: {} }
 var global = typeof window !== 'undefined' ? window : (
   typeof self !== 'undefined' ? self : {}
 )
+var root = global
+var GLOBAL = root
 function __sb_pundle_register(filePath, callback) {
   __sb_pundle.module_sources[filePath] = callback
 }
@@ -20,3 +22,4 @@ require.resolve = function(dependency) {
   return dependency
 }
 require.cache = []
+require.extensions = []
