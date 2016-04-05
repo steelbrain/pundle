@@ -11,9 +11,8 @@ import type Pundle from '../index.js'
 
 export default async function transform(
   filePath: string,
-  contents: string,
-  sourceMap: ?Object,
-  pundle: Pundle
+  pundle: Pundle,
+  { contents, sourceMap }: { contents: string, sourceMap: ?Object }
 ): Promise<{
   imports: Array<string>,
   contents: string,
@@ -58,8 +57,6 @@ export default async function transform(
     filename: filePath,
     sourceMaps: true,
     sourceFileName: filePath
-  }, {
-    [filePath]: contents
   })
   if (sourceMap) {
     generated.map = mergeSourceMaps(sourceMap, generated.map)

@@ -30,26 +30,21 @@ export default class Compilation {
     await this.push(filePath, await this.pundle.fileSystem.readFile(this.pundle.path.out(filePath)))
   }
   async push(givenFilePath: string, contents: string): Promise {
+    let event
     const filePath = this.pundle.path.in(givenFilePath)
-    const beforeEvent = { filePath, contents, sourceMap: null, imports: [] }
-    await this.emitter.emit('before-compile', beforeEvent)
-    const processed = await transform(filePath, beforeEvent.contents, beforeEvent.sourceMap, this.pundle)
-    const eventAfter = {
-      filePath,
-      contents: processed.contents,
-      sourceMap: processed.sourceMap,
-      imports: processed.imports
-    }
-    await this.emitter.emit('after-compile', eventAfter)
-    const newModule = {
-      imports: eventAfter.imports,
+    event = { filePath, contents, sourceMap: null, imports: [] }
+    await this.emitter.emit('before-compile', event)
+    const processed = await transform(filePath, this.pundle, event)
+    event = { filePath, contents: processed.contents, sourceMap: processed.sourceMap, imports: processed.imports }
+    await this.emitter.emit('after-compile', event)
+    this.modules.set(filePath, {
+      imports: event.imports,
       sources: contents,
-      contents: eventAfter.contents,
+      contents: event.contents,
       filePath,
-      sourceMap: eventAfter.sourceMap
-    }
-    this.modules.set(filePath, newModule)
-    await Promise.all(eventAfter.imports.map(importId => {
+      sourceMap: event.sourceMap
+    })
+    await Promise.all(event.imports.map(importId => {
       if (!this.modules.has(importId)) {
         return this.read(importId)
       }
