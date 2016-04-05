@@ -9,7 +9,7 @@ function require(request) {
   if (request in __sb_pundle.modules) {
     return __sb_pundle.modules[request]
   }
-  module = { exports: {} }
+  module = { exports: {}, id: request }
   __sb_pundle.module_sources[request].call(module.exports, module, module.exports)
   __sb_pundle.modules[request] = module.exports || {}
   return __sb_pundle.modules[request]
