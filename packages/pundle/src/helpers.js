@@ -5,6 +5,7 @@
 import Path from 'path'
 import sourceMap from 'source-map'
 import isRegexp from 'lodash.isregexp'
+import { parse } from 'babylon'
 import type Pundle$Path from './path'
 import type { Pundle$Config, Pundle$Plugin, Pundle$FileSystem, Pundle$Watcher$Options } from './types'
 
@@ -33,6 +34,17 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   }
   if (!config.resolve) {
     config.resolve = {}
+  }
+  if (!config.replaceVariables) {
+    config.replaceVariables = {}
+  }
+  config.replaceVariables = Object.assign({
+    'process.env.NODE_ENV': '"development"'
+  }, config.replaceVariables)
+  for (const key in config.replaceVariables) {
+    if (config.replaceVariables.hasOwnProperty(key)) {
+      config.replaceVariables[key] = parse(`a(${config.replaceVariables[key]})`).program.body[0].expression.arguments[0]
+    }
   }
   config.sourceMaps = Boolean(config.sourceMaps)
   return config

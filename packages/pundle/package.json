@@ -29,7 +29,7 @@
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
     "babel-generator": "^6.7.2",
-    "babel-traverse": "^6.7.4",
+    "babel-types": "^6.7.2",
     "babylon": "^6.7.0",
     "chokidar": "^1.4.3",
     "lodash.isregexp": "^3.0.5",

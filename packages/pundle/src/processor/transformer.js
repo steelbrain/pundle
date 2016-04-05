@@ -4,9 +4,8 @@
 
 import Path from 'path'
 import generate from 'babel-generator'
-import traverse from 'babel-traverse'
 import { parse } from 'babylon'
-import { getName } from './helpers'
+import { traverse, getName } from './helpers'
 import { mergeSourceMaps } from '../helpers'
 import type Pundle from '../index.js'
 
@@ -32,7 +31,7 @@ export default async function transform(
     ],
     filename: filePath
   })
-  traverse.cheap(ast, function(node) {
+  traverse(ast, function(node) {
     if (node.type === 'CallExpression') {
       const name = getName(node.callee)
       if (name === 'require' || name === 'require.resolve') {
@@ -49,7 +48,13 @@ export default async function transform(
         node.source.value = resolved
         imports.add(resolved)
       }))
+    } else if (node.type === 'MemberExpression') {
+      const name = getName(node)
+      if (pundle.config.replaceVariables[name]) {
+        return pundle.config.replaceVariables[name]
+      }
     }
+    return false
   })
 
   await Promise.all(promises)
