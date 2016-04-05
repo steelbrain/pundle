@@ -31,11 +31,7 @@ export default async function transform(
     ],
     filename: filePath
   })
-  const typesToHandle = new Set(['CallExpression', 'ImportDeclaration'])
   traverse.cheap(ast, function(node) {
-    if (!typesToHandle.has(node.type)) {
-      return
-    }
     if (node.type === 'CallExpression') {
       if (node.callee.name === 'require') {
         const argument = node.arguments[0]
