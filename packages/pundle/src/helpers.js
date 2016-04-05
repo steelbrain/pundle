@@ -5,11 +5,11 @@
 import Path from 'path'
 import sourceMap from 'source-map'
 import isRegexp from 'lodash.isregexp'
+import FileSystem from 'pundle-fs'
 import { parse } from 'babylon'
 import type Pundle$Path from './path'
 import type { Pundle$Config, Pundle$Plugin, Pundle$FileSystem, Pundle$Watcher$Options } from './types'
 
-let FileSystem
 const REGEX_EOL = /\n|\r\n/
 
 export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
@@ -27,9 +27,6 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   }
   // Make sure we have a FileSystem on board
   if (!config.FileSystem) {
-    if (!FileSystem) {
-      FileSystem = require('pundle-fs')
-    }
     config.FileSystem = FileSystem
   }
   if (!config.resolve) {
@@ -46,7 +43,7 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   }, config.replaceVariables)
   for (const key in config.replaceVariables) {
     if (config.replaceVariables.hasOwnProperty(key)) {
-      config.replaceVariables[key] = parse(`a(${config.replaceVariables[key]})`).program.body[0].expression.arguments[0]
+      config.replaceVariables[key] = parse(`_(${config.replaceVariables[key]})`).program.body[0].expression.arguments[0]
     }
   }
   config.sourceMaps = Boolean(config.sourceMaps)
