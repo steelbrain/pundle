@@ -1,6 +1,8 @@
 'use strict';
 var __sb_pundle = { module_sources: {} }
-var global = window || self
+var global = typeof window !== 'undefined' ? window : (
+  typeof self !== 'undefined' ? self : {}
+)
 function __sb_pundle_register(filePath, callback) {
   __sb_pundle.module_sources[filePath] = callback
 }
