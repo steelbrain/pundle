@@ -35,6 +35,9 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
   if (!config.resolve) {
     config.resolve = {}
   }
+  if (!Array.isArray(config.resolve.packageMains)) {
+    config.resolve.packageMains = ['browser', 'main']
+  }
   if (!config.replaceVariables) {
     config.replaceVariables = {}
   }
