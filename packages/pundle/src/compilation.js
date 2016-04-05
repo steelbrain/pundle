@@ -2,10 +2,9 @@
 
 /* @flow */
 
-import { CompositeDisposable, Emitter } from 'sb-event-kit'
+import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { generateBundle, generateSourceMap } from './processor/generator'
 import transform from './processor/transformer'
-import type { Disposable } from 'sb-event-kit'
 import type { Pundle$Module } from './types'
 import type Pundle from './index.js'
 
@@ -52,7 +51,7 @@ export default class Compilation {
     }))
   }
   generate(): string {
-    return generateBundle(this.pundle, this.getAllModuleImports())
+    return generateBundle(this.pundle, this.pundle.config.entry, this.getAllModuleImports())
   }
   generateSourceMap(): Object {
     return generateSourceMap(this.pundle, this.getAllModuleImports())
@@ -61,7 +60,7 @@ export default class Compilation {
     const countedIn = new Set()
     const moduleImports = []
     for (const entry of this.pundle.config.entry) {
-      this.getModuleImports(entry, moduleImports, countedIn)
+      this.getModuleImports(this.pundle.path.in(entry), moduleImports, countedIn)
     }
     return moduleImports
   }
@@ -82,6 +81,9 @@ export default class Compilation {
       }
     }
     return moduleImports
+  }
+  watch(): Disposable {
+
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)

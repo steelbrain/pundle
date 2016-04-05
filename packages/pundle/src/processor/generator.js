@@ -11,7 +11,7 @@ import type { Pundle$Module } from '../types'
 
 const rootContent = FS.readFileSync(Path.join(__dirname, '..', '..', 'client', 'root.js'), 'utf8')
 
-export function generateBundle(pundle: Pundle, content: Array<Pundle$Module>): string {
+export function generateBundle(pundle: Pundle, entryPoints: Array<string>, content: Array<Pundle$Module>): string {
   const output = [rootContent]
 
   for (const entry of content) {
@@ -20,7 +20,7 @@ export function generateBundle(pundle: Pundle, content: Array<Pundle$Module>): s
       `__sb_pundle_register('${internalPath}', function(module, exports){\n${entry.contents}\n})`
     )
   }
-  for (const entry of pundle.config.entry) {
+  for (const entry of entryPoints) {
     output.push(
       `require('${pundle.path.in(entry)}')`
     )
