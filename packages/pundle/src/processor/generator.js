@@ -16,8 +16,10 @@ export function generateBundle(pundle: Pundle, entryPoints: Array<string>, conte
 
   for (const entry of content) {
     const internalPath = pundle.path.in(entry.filePath)
+    const internalContent = `var __filename = '${internalPath}'` +
+      `, __dirname = '${Path.posix.dirname(internalPath)}';\n${entry.contents}`
     output.push(
-      `__sb_pundle_register('${internalPath}', function(module, exports){\n${entry.contents}\n})`
+      `__sb_pundle_register('${internalPath}', function(module, exports){\n${internalContent}\n})`
     )
   }
   for (const entry of entryPoints) {
@@ -34,8 +36,8 @@ export function generateSourceMap(pundle: Pundle, content: Array<Pundle$Module>)
   let lines = 1 + getLinesCount(rootContent)
 
   for (const entry of content) {
-    const internalPath = pundle.path.in(entry.filePath)
-    lines += 1
+    const internalPath = 'motion:///' + pundle.path.in(entry.filePath)
+    lines += 2
     const consumer = new SourceMapConsumer(entry.sourceMap)
     for (const mapping of consumer._generatedMappings) {
       sourceMap.addMapping({

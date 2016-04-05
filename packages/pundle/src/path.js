@@ -26,7 +26,7 @@ export default class Path {
     if (filePath.indexOf(this.config.rootDirectory) === 0) {
       filePath = PosixPath.join('$root', PosixPath.relative(this.config.rootDirectory, filePath))
     }
-    return filePath
+    return PosixPath.normalize(filePath)
   }
   out(filePath: string): string {
     if (filePath.indexOf('$root') === 0) {
