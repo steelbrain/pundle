@@ -31,10 +31,14 @@ export default async function transform(
     ],
     filename: filePath
   })
-  traverse(ast, {
-    CallExpression(path) {
-      if (path.node.callee.name === 'require') {
-        const argument = path.node.arguments[0]
+  const typesToHandle = new Set(['CallExpression', 'ImportDeclaration'])
+  traverse.cheap(ast, function(node) {
+    if (!typesToHandle.has(node.type)) {
+      return
+    }
+    if (node.type === 'CallExpression') {
+      if (node.callee.name === 'require') {
+        const argument = node.arguments[0]
         if (argument && argument.value) {
           promises.push(pundle.path.resolveModule(argument.value, Path.dirname(filePath)).then(function(resolved) {
             argument.value = resolved
@@ -42,10 +46,9 @@ export default async function transform(
           }))
         }
       }
-    },
-    ImportDeclaration(path) {
-      promises.push(pundle.path.resolveModule(path.node.source.value, Path.dirname(filePath)).then(function(resolved) {
-        path.node.source.value = resolved
+    } else if (node.type === 'ImportDeclaration') {
+      promises.push(pundle.path.resolveModule(node.source.value, Path.dirname(filePath)).then(function(resolved) {
+        node.source.value = resolved
         imports.push(resolved)
       }))
     }
