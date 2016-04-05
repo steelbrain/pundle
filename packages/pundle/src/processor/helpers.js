@@ -5,10 +5,10 @@
 import { VISITOR_KEYS } from 'babel-types'
 
 export function getName(obj: Object): string {
-  const chunks = []
   if (typeof obj.name === 'string') {
-    chunks.push(obj.name)
+    return obj.name
   }
+  const chunks = []
   if (typeof obj.object === 'object') {
     chunks.push(getName(obj.object))
   }
