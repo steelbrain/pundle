@@ -18,7 +18,7 @@ export default async function transform(
   contents: string,
   sourceMap: Object
 }> {
-  const imports = []
+  const imports = new Set()
   const promises = []
   const ast = parse(contents, {
     sourceType: 'module',
@@ -42,14 +42,14 @@ export default async function transform(
         if (argument && argument.value) {
           promises.push(pundle.path.resolveModule(argument.value, Path.dirname(filePath)).then(function(resolved) {
             argument.value = resolved
-            imports.push(resolved)
+            imports.add(resolved)
           }))
         }
       }
     } else if (node.type === 'ImportDeclaration') {
       promises.push(pundle.path.resolveModule(node.source.value, Path.dirname(filePath)).then(function(resolved) {
         node.source.value = resolved
-        imports.push(resolved)
+        imports.add(resolved)
       }))
     }
   })
@@ -66,7 +66,7 @@ export default async function transform(
   }
 
   return {
-    imports,
+    imports: Array.from(imports),
     contents: generated.code,
     sourceMap: generated.map
   }

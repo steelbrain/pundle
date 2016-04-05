@@ -31,6 +31,10 @@ export default class Compilation {
   async push(givenFilePath: string, contents: string): Promise {
     let event
     const filePath = this.pundle.path.in(givenFilePath)
+    const oldModule = this.modules.get(filePath)
+    if (oldModule && oldModule.sources === contents) {
+      return
+    }
     event = { filePath, contents, sourceMap: null, imports: [] }
     await this.emitter.emit('before-compile', event)
     const processed = await transform(filePath, this.pundle, event)
