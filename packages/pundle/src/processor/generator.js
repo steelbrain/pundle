@@ -15,13 +15,13 @@ function getContent(
   filePath: string,
   modules: Map<string, Pundle$Module>,
   imported: Set<string>,
-  content: Array<{ filePath: string, contents: string, sourceMap: Object }>
+  content: Array<Pundle$Module>
 ) {
   const module = modules.get(filePath)
   if (!module) {
     throw new Error(`Module '${filePath}' not found`)
   }
-  content.push({ filePath: module.filePath, contents: module.contents, sourceMap: module.sourceMap })
+  content.push(module)
   imported.add(filePath)
 
   for (const entry of module.imports) {
@@ -85,7 +85,7 @@ export function generateSourceMap(pundle: Pundle, modules: Map<string, Pundle$Mo
       })
     }
     lines += getLinesCount(entry.contents) + 1
-    sourceMap.setSourceContent(internalPath, entry.contents)
+    sourceMap.setSourceContent(internalPath, entry.sources)
   }
   return sourceMap.toJSON()
 }
