@@ -6,6 +6,7 @@ import Path from 'path'
 import generate from 'babel-generator'
 import traverse from 'babel-traverse'
 import { parse } from 'babylon'
+import { getName } from './helpers'
 import { mergeSourceMaps } from '../helpers'
 import type Pundle from '../index.js'
 
@@ -33,11 +34,8 @@ export default async function transform(
   })
   traverse.cheap(ast, function(node) {
     if (node.type === 'CallExpression') {
-      if (node.callee.name === 'require' || (
-        node.callee.object && node.callee.object.name === 'require' && (
-          node.callee.property.name === 'resolve' || node.callee.property.value === 'resolve'
-        )
-      )) {
+      const name = getName(node.callee)
+      if (name === 'require' || name === 'require.resolve') {
         const argument = node.arguments[0]
         if (argument && argument.value) {
           promises.push(pundle.path.resolveModule(argument.value, Path.dirname(filePath)).then(function(resolved) {
