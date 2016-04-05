@@ -49,7 +49,7 @@ class Pundle {
       sourceMap
     }
   }
-  watch(options): Disposable {
+  watch(options: Pundle$Watcher$Options$User): Disposable {
     return this.get().watch(options)
   }
   observeCompilations(callback: Function): Disposable {
