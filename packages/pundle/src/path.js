@@ -5,6 +5,7 @@
 import { isCore } from 'sb-resolve'
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { posix as PosixPath } from 'path'
+import builtins from './builtins'
 import type FileSystem from './file-system'
 import type { Pundle$Config } from './types'
 
@@ -26,7 +27,7 @@ export default class Path {
     if (filePath.indexOf(this.config.rootDirectory) === 0) {
       filePath = PosixPath.join('$root', PosixPath.relative(this.config.rootDirectory, filePath))
     }
-    return filePath
+    return PosixPath.normalize(filePath)
   }
   out(filePath: string): string {
     if (filePath.indexOf('$root') === 0) {
@@ -41,7 +42,7 @@ export default class Path {
       event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
     }
     if (isCore(moduleName)) {
-      throw new Error('Module is core')
+      return builtins[moduleName]
     }
     return this.in(event.path)
   }

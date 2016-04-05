@@ -14,7 +14,8 @@ export type Pundle$Config = {
   resolve: Object,
   FileSystem: Function,
   rootDirectory: string,
-  sourceMaps: boolean
+  sourceMaps: boolean,
+  replaceVariables: Object // <string, Object>
 }
 
 // Not used anywhere
@@ -23,7 +24,8 @@ export type Pundle$Config$User = {
   resolve?: Object,
   FileSystem?: Function,
   rootDirectory: string,
-  sourceMaps?: boolean
+  sourceMaps?: boolean,
+  replaceVariables?: Object // <string, string>
 }
 
 export type Pundle$Module = {
@@ -32,6 +34,20 @@ export type Pundle$Module = {
   contents: string,
   filePath: string,
   sourceMap: Object
+}
+
+export type Pundle$Watcher$Options = {
+  ignored: string | RegExp,
+  onBeforeCompile?: ((filePath: string) => void),
+  onAfterCompile?: ((filePath: string, error: ?Error) => void),
+  onReady?: (() => void)
+}
+
+export type Pundle$Watcher$Options$User = {
+  ignored?: string | RegExp,
+  onBeforeCompile?: ((filePath: string) => void),
+  onAfterCompile?: ((filePath: string, error: ?Error) => void),
+  onReady?: (() => void)
 }
 
 export type Pundle$Plugin = string | Function | [string, Object] | [Function, Object]

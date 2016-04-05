@@ -1,16 +1,25 @@
 'use strict';
-var __sb_pundle = { modules: {}, module_sources: {} }
-var global = window || self
+var __sb_pundle = { module_sources: {} }
+var global = typeof window !== 'undefined' ? window : (
+  typeof self !== 'undefined' ? self : {}
+)
+var root = global
+var GLOBAL = root
 function __sb_pundle_register(filePath, callback) {
   __sb_pundle.module_sources[filePath] = callback
 }
 function require(request) {
   var module
-  if (request in __sb_pundle.modules) {
-    return __sb_pundle.modules[request]
+  if (request in require.cache) {
+    return require.cache[request].exports
   }
-  module = { exports: {} }
+  module = { exports: {}, id: request }
+  require.cache[request] = module
   __sb_pundle.module_sources[request].call(module.exports, module, module.exports)
-  __sb_pundle.modules[request] = module.exports || {}
-  return __sb_pundle.modules[request]
+  return module.exports
 }
+require.resolve = function(dependency) {
+  return dependency
+}
+require.cache = []
+require.extensions = []

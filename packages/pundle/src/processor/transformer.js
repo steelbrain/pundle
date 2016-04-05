@@ -4,22 +4,21 @@
 
 import Path from 'path'
 import generate from 'babel-generator'
-import traverse from 'babel-traverse'
 import { parse } from 'babylon'
+import { traverse, getName } from './helpers'
 import { mergeSourceMaps } from '../helpers'
 import type Pundle from '../index.js'
 
 export default async function transform(
   filePath: string,
-  contents: string,
-  sourceMap: ?Object,
-  pundle: Pundle
+  pundle: Pundle,
+  { contents, sourceMap }: { contents: string, sourceMap: ?Object }
 ): Promise<{
   imports: Array<string>,
   contents: string,
   sourceMap: Object
 }> {
-  const imports = []
+  const imports = new Set()
   const promises = []
   const ast = parse(contents, {
     sourceType: 'module',
@@ -32,24 +31,30 @@ export default async function transform(
     ],
     filename: filePath
   })
-  traverse(ast, {
-    CallExpression(path) {
-      if (path.node.callee.name === 'require') {
-        const argument = path.node.arguments[0]
+  traverse(ast, function(node) {
+    if (node.type === 'CallExpression') {
+      const name = getName(node.callee)
+      if (name === 'require' || name === 'require.resolve') {
+        const argument = node.arguments[0]
         if (argument && argument.value) {
           promises.push(pundle.path.resolveModule(argument.value, Path.dirname(filePath)).then(function(resolved) {
             argument.value = resolved
-            imports.push(resolved)
+            imports.add(resolved)
           }))
         }
       }
-    },
-    ImportDeclaration(path) {
-      promises.push(pundle.path.resolveModule(path.node.source.value, Path.dirname(filePath)).then(function(resolved) {
-        path.node.source.value = resolved
-        imports.push(resolved)
+    } else if (node.type === 'ImportDeclaration') {
+      promises.push(pundle.path.resolveModule(node.source.value, Path.dirname(filePath)).then(function(resolved) {
+        node.source.value = resolved
+        imports.add(resolved)
       }))
+    } else if (node.type === 'MemberExpression') {
+      const name = getName(node)
+      if (pundle.config.replaceVariables[name]) {
+        return pundle.config.replaceVariables[name]
+      }
     }
+    return false
   })
 
   await Promise.all(promises)
@@ -58,15 +63,13 @@ export default async function transform(
     filename: filePath,
     sourceMaps: true,
     sourceFileName: filePath
-  }, {
-    [filePath]: contents
   })
   if (sourceMap) {
     generated.map = mergeSourceMaps(sourceMap, generated.map)
   }
 
   return {
-    imports,
+    imports: Array.from(imports),
     contents: generated.code,
     sourceMap: generated.map
   }

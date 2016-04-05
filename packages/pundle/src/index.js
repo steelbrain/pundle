@@ -7,7 +7,7 @@ import { getPlugins, normalizeConfig } from './helpers'
 import Path from './path'
 import FileSystem from './file-system'
 import Compilation from './compilation'
-import type { Pundle$Config, Pundle$Plugin } from './types'
+import type { Pundle$Config, Pundle$Plugin, Pundle$Watcher$Options$User } from './types'
 import type { Disposable } from 'sb-event-kit'
 
 class Pundle {
@@ -39,13 +39,18 @@ class Pundle {
     this.emitter.emit('observe-compilations', compilation)
     return compilation
   }
-  async compile(): Promise {
+  async compile(generateSourceMap: boolean = false): Promise<{ contents: string, sourceMap: ?Object }> {
     const compilation = this.get()
     await compilation.compile()
-    return compilation.generate()
+    const contents = compilation.generate()
+    const sourceMap = generateSourceMap ? compilation.generateSourceMap() : null
+    return {
+      contents,
+      sourceMap
+    }
   }
-  onCaughtError(callback: Function): Disposable {
-    return this.emitter.on('caught-error', callback)
+  watch(options: Pundle$Watcher$Options$User): Disposable {
+    return this.get().watch(options)
   }
   observeCompilations(callback: Function): Disposable {
     return this.emitter.on('observe-compilations', callback)
