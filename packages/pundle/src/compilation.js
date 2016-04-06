@@ -138,6 +138,10 @@ export default class Compilation {
             options.onAfterCompile.call(this, filePath, error)
           }
         })
+      }).catch(function(error) {
+        if (options.onError) {
+          options.onError(error)
+        } else throw error
       })
     })
 
