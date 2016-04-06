@@ -5,6 +5,7 @@
 import Path from 'path'
 import memoize from 'sb-memoize'
 import resolve from 'sb-resolve'
+import builtins from './builtins'
 import { find } from './helpers'
 import type { Stats } from 'fs'
 import type { Pundle$FileSystem, Pundle$Config } from './types'
@@ -55,6 +56,10 @@ export default class FileSystem {
     return await resolve(moduleName, basedir, config)
   }
   async readFile(filePath: string, useCached: boolean = true): Promise<string> {
+    if (filePath.substr(0, 6) === '$core/') {
+      filePath = builtins[filePath.substr(6)]
+    }
+
     const cached = this.readFileCache.get(filePath)
     const newStats = await this.stat(filePath)
     if (cached && useCached && cached.stats.mtime.getTime() === newStats.mtime.getTime()) {

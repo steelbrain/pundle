@@ -2,10 +2,9 @@
 
 /* @flow */
 
-import { isCore } from 'sb-resolve'
-import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { posix as PosixPath } from 'path'
-import builtins from './builtins'
+import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
+import { isCore } from 'sb-resolve'
 import type FileSystem from './file-system'
 import type { Pundle$Config } from './types'
 
@@ -41,8 +40,8 @@ export default class Path {
     if (!event.path) {
       event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
     }
-    if (isCore(moduleName)) {
-      return builtins[moduleName]
+    if (isCore(event.moduleName)) {
+      return PosixPath.join('$core', event.moduleName)
     }
     return this.in(event.path)
   }
