@@ -49,12 +49,17 @@ export default class Compilation {
       filePath,
       sourceMap: event.sourceMap
     })
-    await Promise.all(event.imports.map(importId => {
-      if (!this.modules.has(importId)) {
-        return this.read(importId)
-      }
-      return null
-    }))
+    try {
+      await Promise.all(event.imports.map(importId => {
+        if (!this.modules.has(importId)) {
+          return this.read(importId)
+        }
+        return null
+      }))
+    } catch (_) {
+      this.modules.delete(filePath)
+      throw _
+    }
     if (oldModule && oldModule.imports.length !== event.imports.length) {
       this.garbageCollect()
     }
