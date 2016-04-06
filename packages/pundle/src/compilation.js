@@ -60,7 +60,7 @@ export default class Compilation {
       this.modules.delete(filePath)
       throw _
     }
-    if (oldModule && oldModule.imports.length !== event.imports.length) {
+    if (oldModule && oldModule.imports.join('') !== event.imports.join('')) {
       this.garbageCollect()
     }
   }
