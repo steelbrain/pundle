@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 var __sb_pundle = { module_sources: {} }
 var global = typeof window !== 'undefined' ? window : (
   typeof self !== 'undefined' ? self : {}
