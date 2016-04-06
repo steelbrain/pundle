@@ -131,7 +131,7 @@ export default class Compilation {
         }
         return this.read(filePath).then(function() {
           if (options.onAfterCompile) {
-            options.onAfterCompile.call(this, filePath)
+            options.onAfterCompile.call(this, filePath, null)
           }
         }, function(error) {
           if (options.onAfterCompile) {
