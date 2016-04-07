@@ -114,6 +114,7 @@ export default class Compilation {
     const watcher = watch(this.pundle.config.rootDirectory, {
       depth: 10,
       ignored: options.ignored,
+      ignoreInitial: true,
       followSymlinks: false,
       ignorePermissionErrors: true
     })
@@ -145,9 +146,11 @@ export default class Compilation {
       })
     })
 
-    return new Disposable(function() {
+    const disposable = new Disposable(function() {
       watcher.close()
     })
+    this.subscriptions.add(disposable)
+    return disposable
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)
