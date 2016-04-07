@@ -146,9 +146,7 @@ export default class Compilation {
           }
         })
       }).catch(function(error) {
-        if (options.onError) {
-          options.onError(error)
-        } else throw error
+        options.onError(error)
       })
     })
 

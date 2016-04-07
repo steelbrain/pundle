@@ -41,7 +41,7 @@ export type Pundle$Watcher$Options = {
   onBeforeCompile?: ((filePath: string) => void),
   onAfterCompile?: ((filePath: string, error: ?Error) => void),
   onReady?: (() => void),
-  onError?: ((error: Error) => void)
+  onError: ((error: Error) => void)
 }
 
 export type Pundle$Watcher$Options$User = {
@@ -49,7 +49,7 @@ export type Pundle$Watcher$Options$User = {
   onBeforeCompile?: ((filePath: string) => void),
   onAfterCompile?: ((filePath: string, error: ?Error) => void),
   onReady?: (() => void),
-  onError?: ((error: Error) => void)
+  onError: ((error: Error) => void)
 }
 
 export type Pundle$Plugin = string | Function | [string, Object] | [Function, Object]
