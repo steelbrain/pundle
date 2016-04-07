@@ -108,8 +108,7 @@ export default class Compilation {
       this.modules.delete(entry)
     }
   }
-  watch(givenOptions: Pundle$Watcher$Options$User): Disposable {
-    let queue = Promise.resolve()
+  watch(givenOptions: Pundle$Watcher$Options$User): { disposable: Disposable, queue: Promise } {
     const options = normalizeWatcherOptions(givenOptions)
     const watcher = watch(this.pundle.config.rootDirectory, {
       depth: 10,
@@ -118,15 +117,22 @@ export default class Compilation {
       followSymlinks: false,
       ignorePermissionErrors: true
     })
+    const toReturn = {
+      queue: Promise.resolve(),
+      disposable: () => {
+        this.subscriptions.remove(toReturn.disposable)
+        watcher.close()
+      }
+    }
     watcher.on('ready', () => {
-      queue.then(() => {
+      toReturn.queue.then(() => {
         if (options.onReady) {
           options.onReady.call(this)
         }
       })
     })
     watcher.on('add', filePath => {
-      queue = queue.then(() => {
+      toReturn.queue = toReturn.queue.then(() => {
         if (options.onBeforeCompile) {
           options.onBeforeCompile.call(this, filePath)
         }
@@ -146,11 +152,8 @@ export default class Compilation {
       })
     })
 
-    const disposable = new Disposable(function() {
-      watcher.close()
-    })
-    this.subscriptions.add(disposable)
-    return disposable
+    this.subscriptions.add(toReturn.disposable)
+    return toReturn
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)
