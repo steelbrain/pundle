@@ -15,6 +15,7 @@ function attach(
 ): Function {
   const status = compilation.watch(watcherOptions)
   const middlewareOptions = Object.assign({
+    sourceMap: true,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
   }, givenMiddlewareOptions)
@@ -59,7 +60,11 @@ function attach(
       }
     }
     res.setHeader('Content-Type', 'application/javascript')
-    res.send(compilation.generate())
+    let generated = compilation.generate()
+    if (middlewareOptions.sourceMap) {
+      generated += compilation.generateSourceMap(true)
+    }
+    res.send(generated)
   }
 }
 
