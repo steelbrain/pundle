@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "pundle": "^0.0.1"
+    "send": "^0.13.2"
   }
 }
