@@ -150,9 +150,7 @@ export default class Compilation {
             options.onAfterCompile.call(this, filePath, error)
           }
         })
-      }).catch(function(error) {
-        options.onError(error)
-      })
+      }).catch(options.onError)
     })
 
     this.subscriptions.add(toReturn.disposable)
