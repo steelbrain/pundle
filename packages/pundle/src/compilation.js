@@ -153,6 +153,14 @@ export default class Compilation {
     this.subscriptions.add(toReturn.disposable)
     return toReturn
   }
+  needsGeneration(): boolean {
+    try {
+      this.getAllModuleImports()
+      return false
+    } catch (_) {
+      return true
+    }
+  }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)
   }
