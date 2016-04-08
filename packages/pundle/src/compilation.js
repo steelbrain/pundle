@@ -4,6 +4,7 @@
 
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { watch } from 'chokidar'
+import sourceMapToComment from 'source-map-to-comment'
 import { generateBundle, generateSourceMap } from './processor/generator'
 import transform from './processor/transformer'
 import { normalizeWatcherOptions } from './helpers'
@@ -67,8 +68,12 @@ export default class Compilation {
   generate(): string {
     return generateBundle(this.pundle, this.pundle.config.entry, this.getAllModuleImports())
   }
-  generateSourceMap(): Object {
-    return generateSourceMap(this.pundle, this.getAllModuleImports())
+  generateSourceMap(asComment: boolean = false): string {
+    const sourceMap = generateSourceMap(this.pundle, this.getAllModuleImports())
+    if (asComment) {
+      return sourceMapToComment(sourceMap)
+    }
+    return JSON.stringify(sourceMap)
   }
   getAllModuleImports(): Array<Pundle$Module> {
     const countedIn = new Set()
