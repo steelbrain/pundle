@@ -136,7 +136,7 @@ export default class Compilation {
         }
       })
     })
-    watcher.on('add', filePath => {
+    watcher.on('change', filePath => {
       toReturn.queue = toReturn.queue.then(() => {
         if (options.onBeforeCompile) {
           options.onBeforeCompile.call(this, filePath)
