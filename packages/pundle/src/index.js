@@ -39,15 +39,14 @@ class Pundle {
     this.emitter.emit('observe-compilations', compilation)
     return compilation
   }
-  async compile(generateSourceMap: boolean = false): Promise<{ contents: string, sourceMap: ?Object }> {
+  async compile(generateSourceMap: boolean = false): Promise<string> {
     const compilation = this.get()
     await compilation.compile()
-    const contents = compilation.generate()
-    const sourceMap = generateSourceMap ? compilation.generateSourceMap() : null
-    return {
-      contents,
-      sourceMap
+    let contents = compilation.generate()
+    if (generateSourceMap) {
+      contents += compilation.generateSourceMap(true)
     }
+    return contents
   }
   watch(options: Pundle$Watcher$Options$User): Disposable {
     return this.get().watch(options)

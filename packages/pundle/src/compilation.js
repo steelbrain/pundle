@@ -4,6 +4,7 @@
 
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { watch } from 'chokidar'
+import sourceMapToComment from 'source-map-to-comment'
 import { generateBundle, generateSourceMap } from './processor/generator'
 import transform from './processor/transformer'
 import { normalizeWatcherOptions } from './helpers'
@@ -67,8 +68,12 @@ export default class Compilation {
   generate(): string {
     return generateBundle(this.pundle, this.pundle.config.entry, this.getAllModuleImports())
   }
-  generateSourceMap(): Object {
-    return generateSourceMap(this.pundle, this.getAllModuleImports())
+  generateSourceMap(asComment: boolean = false): string {
+    const sourceMap = generateSourceMap(this.pundle, this.getAllModuleImports())
+    if (asComment) {
+      return sourceMapToComment(sourceMap)
+    }
+    return JSON.stringify(sourceMap)
   }
   getAllModuleImports(): Array<Pundle$Module> {
     const countedIn = new Set()
@@ -108,24 +113,31 @@ export default class Compilation {
       this.modules.delete(entry)
     }
   }
-  watch(givenOptions: Pundle$Watcher$Options$User): Disposable {
-    let queue = Promise.resolve()
+  watch(givenOptions: Pundle$Watcher$Options$User): { disposable: Disposable, queue: Promise } {
     const options = normalizeWatcherOptions(givenOptions)
     const watcher = watch(this.pundle.config.rootDirectory, {
       depth: 10,
       ignored: options.ignored,
+      ignoreInitial: true,
       followSymlinks: false,
       ignorePermissionErrors: true
     })
+    const toReturn = {
+      queue: Promise.resolve(),
+      disposable: () => {
+        this.subscriptions.remove(toReturn.disposable)
+        watcher.close()
+      }
+    }
     watcher.on('ready', () => {
-      queue.then(() => {
+      toReturn.queue.then(() => {
         if (options.onReady) {
           options.onReady.call(this)
         }
       })
     })
-    watcher.on('add', filePath => {
-      queue = queue.then(() => {
+    watcher.on('change', filePath => {
+      toReturn.queue = toReturn.queue.then(() => {
         if (options.onBeforeCompile) {
           options.onBeforeCompile.call(this, filePath)
         }
@@ -138,12 +150,19 @@ export default class Compilation {
             options.onAfterCompile.call(this, filePath, error)
           }
         })
-      })
+      }).catch(options.onError)
     })
 
-    return new Disposable(function() {
-      watcher.close()
-    })
+    this.subscriptions.add(toReturn.disposable)
+    return toReturn
+  }
+  needsGeneration(): boolean {
+    try {
+      this.getAllModuleImports()
+      return false
+    } catch (_) {
+      return true
+    }
   }
   onBeforeCompile(callback: Function): Disposable {
     return this.emitter.on('before-compile', callback)

@@ -55,6 +55,9 @@ export function normalizeWatcherOptions(givenOptions: Object): Pundle$Watcher$Op
   if (typeof options.ignored !== 'string' && !isRegexp(options.ignored) && !Array.isArray(options.ignored)) {
     options.ignored = /(node_modules|bower_components)/
   }
+  if (typeof options.onError !== 'function') {
+    throw new Error('options.onError must be a function')
+  }
   options.ignored = [/[\/\\]\./].concat(options.ignored)
   return options
 }

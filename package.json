@@ -13,6 +13,7 @@
     "bootstrap": "./scripts/bootstrap.sh",
     "compile": "./scripts/build.sh",
     "watch": "./scripts/build.sh --watch",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "clean": "rm -rf packages/*/lib"
   }
 }
