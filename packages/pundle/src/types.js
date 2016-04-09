@@ -52,4 +52,11 @@ export type Pundle$Watcher$Options$User = {
   onError: ((error: Error) => void)
 }
 
+export type Pundle$Processor$Config = {
+  append?: string,
+  prepend?: string,
+  module_register: string,
+  module_require: string
+}
+
 export type Pundle$Plugin = string | Function | [string, Object] | [Function, Object]

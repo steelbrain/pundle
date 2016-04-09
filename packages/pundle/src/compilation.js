@@ -2,14 +2,18 @@
 
 /* @flow */
 
+import FS from 'fs'
+import Path from 'path'
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { watch } from 'chokidar'
 import sourceMapToComment from 'source-map-to-comment'
 import { generateBundle, generateSourceMap } from './processor/generator'
 import transform from './processor/transformer'
 import { normalizeWatcherOptions } from './helpers'
-import type { Pundle$Module, Pundle$Watcher$Options$User } from './types'
+import type { Pundle$Module, Pundle$Watcher$Options$User, Pundle$Processor$Config } from './types'
 import type Pundle from './index.js'
+
+const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
 
 export default class Compilation {
   pundle: Pundle;
@@ -68,10 +72,15 @@ export default class Compilation {
     }
   }
   generate(): string {
-    return generateBundle(this.pundle, this.pundle.config.entry, this.getAllModuleImports())
+    return generateBundle(
+      this.pundle,
+      this._getProcessorOptions(),
+      this.getAllModuleImports(),
+      this.pundle.config.entry
+    )
   }
   generateSourceMap(asComment: boolean = false): string {
-    const sourceMap = generateSourceMap(this.pundle, this.getAllModuleImports())
+    const sourceMap = generateSourceMap(this.pundle, this._getProcessorOptions(), this.getAllModuleImports())
     if (asComment) {
       return sourceMapToComment(sourceMap)
     }
@@ -164,6 +173,14 @@ export default class Compilation {
       return false
     } catch (_) {
       return true
+    }
+  }
+  _getProcessorOptions(): Pundle$Processor$Config {
+    return {
+      prepend: ';(function(){\n' + wrapperContent,
+      append: '})();\n',
+      module_register: '__sb_pundle_register',
+      module_require: 'require'
     }
   }
   onBeforeCompile(callback: Function): Disposable {
