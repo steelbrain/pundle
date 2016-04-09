@@ -9,7 +9,7 @@ const server = new Server({
   },
   watcher: {
     onError(error) {
-      console.log(error)
+      console.error(error)
     }
   },
   middleware: {
