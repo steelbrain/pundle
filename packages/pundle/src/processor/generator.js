@@ -18,8 +18,7 @@ export function generateBundle(
 
   for (const entry of content) {
     const internalPath = pundle.path.in(entry.filePath)
-    const internalContent = `var __filename = '${internalPath}'` +
-      `, __dirname = '${Path.posix.dirname(internalPath)}';\n${entry.contents}`
+    const internalContent = `var __filename = '${internalPath}', __dirname = '${Path.posix.dirname(internalPath)}';\n${entry.contents}`
     output.push(
       `${config.module_register}('${internalPath}', function(module, exports){\n${internalContent}\n}); // ${internalPath} ends\n`
     )
@@ -47,7 +46,7 @@ export function generateSourceMap(
   for (const entry of content) {
     const entryPath = 'motion:///' + pundle.path.in(entry.filePath)
     const entryMap = new SourceMapConsumer(entry.sourceMap)
-    lines++ // For the opening of register function
+    lines += 2 // For the opening of register function and declration of basic variables
     for (const mapping of entryMap._generatedMappings) {
       sourceMap.addMapping({
         source: entryPath,
