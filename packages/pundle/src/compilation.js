@@ -58,7 +58,9 @@ export default class Compilation {
         return null
       }))
     } catch (_) {
-      this.modules.delete(filePath)
+      if (oldModule) {
+        this.modules.set(filePath, oldModule)
+      } else this.modules.delete(filePath)
       throw _
     }
     if (oldModule && oldModule.imports.join('') !== event.imports.join('')) {
