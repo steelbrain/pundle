@@ -124,10 +124,10 @@ export default class Compilation {
     })
     const toReturn = {
       queue: Promise.resolve(),
-      disposable: () => {
+      disposable: new Disposable(() => {
         this.subscriptions.remove(toReturn.disposable)
         watcher.close()
-      }
+      })
     }
     watcher.on('ready', () => {
       toReturn.queue.then(() => {
