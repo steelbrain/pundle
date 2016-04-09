@@ -37,6 +37,10 @@ class Pundle {
   get(): Compilation {
     const compilation = new Compilation(this)
     this.emitter.emit('observe-compilations', compilation)
+    this.subscriptions.add(compilation)
+    compilation.onDidDestroy(() => {
+      this.subscriptions.remove(compilation)
+    })
     return compilation
   }
   async compile(generateSourceMap: boolean = false): Promise<string> {

@@ -170,7 +170,11 @@ export default class Compilation {
   onAfterCompile(callback: Function): Disposable {
     return this.emitter.on('after-compile', callback)
   }
+  onDidDestroy(callback: Function): Disposable {
+    return this.emitter.on('did-destroy', callback)
+  }
   dispose() {
+    this.emitter.emit('did-destroy')
     this.subscriptions.dispose()
   }
 }
