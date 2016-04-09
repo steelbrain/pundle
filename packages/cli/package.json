@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "CLI for Pundle",
   "main": "lib/index.js",
+  "bin": {
+    "pundle": "./lib/bin/pundle.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,5 +19,10 @@
     "url": "https://github.com/steelbrain/pundle/issues"
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
-  "dependencies": { }
+  "dependencies": {
+    "express": "^4.13.4",
+    "pundle": "^0.0.1",
+    "pundle-middleware": "^0.0.1",
+    "sb-event-kit": "^1.1.2"
+  }
 }

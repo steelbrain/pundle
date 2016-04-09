@@ -3,7 +3,7 @@
 ROOT_DIRECTORY=$( cd $(dirname $0) ; pwd -P )/..
 PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 # NOTE: Order is important
-PACKAGES_TO_LINK=( "babel" "fs" "pundle" "middleware" )
+PACKAGES_TO_LINK=( "babel" "fs" "pundle" "middleware" "cli" )
 NPM_ROOT=$( npm root -g )
 
 cd ${ROOT_DIRECTORY}
