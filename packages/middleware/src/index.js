@@ -4,35 +4,39 @@
 
 import Path from 'path'
 import send from 'send'
+import ws from 'ws'
 import type { WatcherConfig } from '../../pundle/src/types'
 import type Compilation from '../../pundle/src/compilation'
 import type { Middleware$Options } from './types'
 
-function attach(
+type Options = {
+  app: Object,
+  server: Object,
   compilation: Compilation,
-  watcherOptions: WatcherConfig,
-  givenMiddlewareOptions: Middleware$Options
-): Function {
-  const status = compilation.watch(watcherOptions)
-  const middlewareOptions = Object.assign({
+  config: { middleware: Middleware$Options, watcher: WatcherConfig }
+}
+
+function attach({ app, server, compilation, config }: Options) {
+  const status = compilation.watch(config.watcher)
+  const middlewareConfig = Object.assign({
     hmr: true,
     sourceMap: true,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
-  }, givenMiddlewareOptions)
+  }, config.middleware)
 
   // Convert it to abs path
-  middlewareOptions.publicBundlePath = Path.join(compilation.pundle.config.rootDirectory,
-    middlewareOptions.publicBundlePath)
+  middlewareConfig.publicBundlePath = Path.join(compilation.config.rootDirectory,
+    middlewareConfig.publicBundlePath)
 
-  return async function(req, res, next) {
-    if (req.method !== 'GET' || req.url.indexOf(middlewareOptions.publicPath) !== 0) {
+  async function handleRequest(req, res, next) {
+    if (req.method !== 'GET' || req.url.indexOf(middlewareConfig.publicPath) !== 0) {
       next()
       return
     }
-    const absolutePath = Path.join(compilation.pundle.config.rootDirectory, req.url)
-    if (absolutePath !== middlewareOptions.publicBundlePath) {
-      send(req, req.url, { root: compilation.pundle.config.rootDirectory, index: 'index.html' })
+    const absolutePath = Path.join(compilation.config.rootDirectory, req.url)
+    if (absolutePath !== middlewareConfig.publicBundlePath) {
+      send(req, req.url, { root: compilation.config.rootDirectory, index: 'index.html' })
         .on('error', function() {
           next()
         })
@@ -51,7 +55,7 @@ function attach(
         return compilation.compile()
       }).catch(function(error) {
         caughtError = true
-        watcherOptions.onError(error)
+        config.watcher.onError(error)
       })
       await status.queue
       if (caughtError) {
@@ -62,10 +66,46 @@ function attach(
     }
     res.setHeader('Content-Type', 'application/javascript')
     let generated = compilation.generate()
-    if (middlewareOptions.sourceMap) {
+    if (middlewareConfig.sourceMap) {
       generated += compilation.generateSourceMap(null, true)
     }
     res.send(generated)
+  }
+
+  app.use(function(req, res, next) {
+    handleRequest(req, res, next).catch(function(error) {
+      config.watcher.onError(error)
+      next()
+    })
+  })
+
+  if (middlewareConfig.hmr) {
+    const wsServer = new ws.Server({ server })
+    const clients = new Set()
+    compilation.config.entry.unshift(require.resolve('./client.js'))
+
+    compilation.subscriptions.add({
+      dispose() {
+        wsServer.close()
+      }
+    })
+    wsServer.on('connection', function(socket) {
+      const request = socket.upgradeReq
+      if (request.url !== '/__pundle__/hmr') {
+        socket.close()
+        return
+      }
+      clients.add(socket)
+      socket.on('close', function() {
+        clients.delete(socket)
+      })
+    })
+    compilation.onDidCompile(function({ contents, filePath }) {
+      const update = JSON.stringify({ type: 'update', filePath, contents })
+      for (const client of clients) {
+        client.send(update)
+      }
+    })
   }
 }
 

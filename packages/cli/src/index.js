@@ -30,7 +30,12 @@ class Server {
     })
     this.subscriptions.add(disposable)
 
-    app.use(middleware(compilation, this.config.watcher, this.config.middleware))
+    middleware({
+      app,
+      server,
+      compilation,
+      config: this.config
+    })
 
     return disposable
   }
