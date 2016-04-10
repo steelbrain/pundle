@@ -6,7 +6,7 @@ import Path from 'path'
 import generate from 'babel-generator'
 import { parse } from 'babylon'
 import { traverse, getName } from './helpers'
-import { mergeSourceMaps } from '../helpers'
+import { mergeSourceMaps } from './helpers'
 import type Pundle from '../index.js'
 
 export default async function transform(
