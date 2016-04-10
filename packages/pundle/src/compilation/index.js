@@ -8,6 +8,7 @@ import Watcher from './watcher'
 import Generator from './generator'
 import type { Disposable } from 'sb-event-kit'
 import type Pundle from '../index.js'
+import type { ProcessorConfig, WatcherOptions } from '../types'
 
 
 export default class Compilation {
@@ -31,8 +32,38 @@ export default class Compilation {
     this.subscriptions.add(this.watcher)
     this.subscriptions.add(this.generator)
   }
+  compile(): Promise {
+    return Promise.all(this.pundle.config.entry.map(entry => this.modules.read(entry)))
+  }
+  read(filePath: string): Promise {
+    return this.modules.read(filePath)
+  }
+  push(filePath: string, contents: string): Promise {
+    return this.modules.push(filePath, contents)
+  }
+  generate(options: ?ProcessorConfig): string {
+    return this.generator.generate(options)
+  }
+  generateSourceMap(options: ?ProcessorConfig, asComment: boolean = false): string {
+    return this.generator.generateSourceMap(options, asComment)
+  }
+  watch(options: WatcherOptions): { disposable: Disposable, queue: Promise } {
+    return this.watcher.watch(options)
+  }
+  shouldGenerate(): boolean {
+    return this.generator.shouldGenerate()
+  }
   onDidDestroy(callback: Function): Disposable {
     return this.emitter.on('did-destroy', callback)
+  }
+  onBeforeCompile(callback: Function): Disposable {
+    return this.modules.onBeforeCompile(callback)
+  }
+  onAfterCompile(callback: Function): Disposable {
+    return this.modules.onAfterCompile(callback)
+  }
+  onDidCompile(callback: Function): Disposable {
+    return this.modules.onDidCompile(callback)
   }
   dispose() {
     this.emitter.emit('did-destroy')

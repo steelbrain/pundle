@@ -10,7 +10,7 @@ import { generateBundle, generateSourceMap } from '../processor/generator'
 import type { ProcessorConfig, Module } from '../types'
 import type Compilation from './index.js'
 
-const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
+const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', '..', 'browser', 'wrapper.js'), 'utf8')
 
 export default class Generator {
   emitter: Emitter;
