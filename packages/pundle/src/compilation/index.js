@@ -7,11 +7,11 @@ import Path from 'path'
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { watch } from 'chokidar'
 import sourceMapToComment from 'source-map-to-comment'
-import { generateBundle, generateSourceMap } from './processor/generator'
-import transform from './processor/transformer'
-import { normalizeWatcherOptions } from './helpers'
-import type { Pundle$Module, Pundle$Watcher$Options$User, Pundle$Processor$Config } from './types'
-import type Pundle from './index.js'
+import { generateBundle, generateSourceMap } from '../processor/generator'
+import transform from '../processor/transformer'
+import { normalizeWatcherOptions } from '../helpers'
+import type { Pundle$Module, Pundle$Watcher$Options$User, Pundle$Processor$Config } from '../types'
+import type Pundle from '../index.js'
 
 const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
 
@@ -45,7 +45,7 @@ export default class Compilation {
     event = { filePath, contents, sourceMap: null, imports: [], oldModule }
     await this.emitter.emit('before-compile', event)
     const processed = await transform(filePath, this.pundle, event)
-    event = { filePath, contents: processed.contents, sourceMap: processed.sourceMap, imports: processed.imports }
+    event = { filePath, contents: processed.contents, sourceMap: processed.sourceMap, imports: processed.imports, oldModule }
     this.emitter.emit('after-compile', event)
     await this.emitter.emit('did-compile', event)
     this.modules.set(filePath, {
@@ -98,7 +98,9 @@ export default class Compilation {
     imports: Array<Pundle$Module> = [],
     modulesAdded: Set<string> = new Set()
   ): Array<Pundle$Module> {
-    for (const id of modules) {
+    for (const absId of modules) {
+      const id = this.pundle.path.in(absId)
+
       if (modulesAdded.has(id)) {
         continue
       }
