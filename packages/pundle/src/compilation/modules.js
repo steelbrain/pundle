@@ -5,12 +5,12 @@
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import transform from '../processor/transform'
 import type { Disposable } from 'sb-event-kit'
-import type { Pundle$Module } from '../types'
+import type { Module } from '../types'
 import type Compilation from './index.js'
 
 export default class Modules {
   emitter: Emitter;
-  registry: Map<string, Pundle$Module>;
+  registry: Map<string, Module>;
   compilation: Compilation;
   subscriptions: CompositeDisposable;
 

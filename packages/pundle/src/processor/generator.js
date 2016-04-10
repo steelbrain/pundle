@@ -6,12 +6,12 @@ import Path from 'path'
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map'
 import { getLinesCount } from '../helpers'
 import type Pundle from '../index'
-import type { Pundle$Module, Pundle$Processor$Config } from '../types'
+import type { Module, ProcessorConfig } from '../types'
 
 export function generateBundle(
   pundle: Pundle,
-  config: Pundle$Processor$Config,
-  content: Array<Pundle$Module>,
+  config: ProcessorConfig,
+  content: Array<Module>,
   requires: Array<string>
 ): string {
   const output = [config.prepend || '']
@@ -34,8 +34,8 @@ export function generateBundle(
 
 export function generateSourceMap(
   pundle: Pundle,
-  config: Pundle$Processor$Config,
-  content: Array<Pundle$Module>
+  config: ProcessorConfig,
+  content: Array<Module>
 ): Object {
   let lines = 0
   const sourceMap = new SourceMapGenerator()

@@ -5,7 +5,7 @@
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { watch } from 'chokidar'
 import { normalizeWatcherOptions } from './helpers'
-import type { Pundle$Watcher$Options$User } from '../types'
+import type { WatcherOptions } from '../types'
 import type Compilation from './index.js'
 
 export default class Watcher {
@@ -20,7 +20,7 @@ export default class Watcher {
 
     this.subscriptions.add(this.emitter)
   }
-  watch(givenOptions: Pundle$Watcher$Options$User): { disposable: Disposable, queue: Promise } {
+  watch(givenOptions: WatcherOptions): { disposable: Disposable, queue: Promise } {
     const options = normalizeWatcherOptions(givenOptions)
     const watcher = watch(this.compilation.pundle.config.rootDirectory, {
       depth: 10,

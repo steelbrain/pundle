@@ -6,11 +6,11 @@ import Path from 'path'
 import FileSystem from 'pundle-fs'
 import { parse } from 'babylon'
 import type Pundle$Path from './path'
-import type { Pundle$Config, Pundle$Plugin, Pundle$FileSystem } from './types'
+import type { Config, Plugin, FileSystemInterface } from './types'
 
 const REGEX_EOL = /\n|\r\n/
 
-export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
+export function normalizeConfig(givenConfig: Config): Config {
   const config = Object.assign({}, givenConfig)
   // Make sure config.entry is an array
   if (!Array.isArray(config.entry)) {
@@ -51,7 +51,7 @@ export function normalizeConfig(givenConfig: Pundle$Config): Pundle$Config {
 export async function find(
   directory: string,
   name: string | Array<string>,
-  fs: Pundle$FileSystem
+  fs: FileSystemInterface
 ): Promise<Array<string>> {
   const names = [].concat(name)
   const chunks = directory.split(Path.sep)
@@ -79,7 +79,7 @@ export async function find(
 }
 
 export async function getPlugins(
-  plugins: Array<Pundle$Plugin>,
+  plugins: Array<Plugin>,
   path: Pundle$Path,
   rootDirectory: string
 ): Promise<Array<{ plugin: Function, parameters: Object }>> {

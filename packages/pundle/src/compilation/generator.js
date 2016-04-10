@@ -7,7 +7,7 @@ import FS from 'fs'
 import sourceMapToComment from 'source-map-to-comment'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import { generateBundle, generateSourceMap } from '../processor/generator'
-import type { Pundle$Processor$Config, Pundle$Module } from '../types'
+import type { ProcessorConfig, Module } from '../types'
 import type Compilation from './index.js'
 
 const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
@@ -26,9 +26,9 @@ export default class Generator {
   }
   gatherImports(
     modules: Array<string>,
-    imports: Array<Pundle$Module> = [],
+    imports: Array<Module> = [],
     modulesAdded: Set<string> = new Set()
-  ): Array<Pundle$Module> {
+  ): Array<Module> {
     for (const absId of modules) {
       const id = this.compilation.pundle.path.in(absId)
 
@@ -46,10 +46,10 @@ export default class Generator {
     }
     return imports
   }
-  gatherAllImports(): Array<Pundle$Module> {
+  gatherAllImports(): Array<Module> {
     return this.gatherImports(this.compilation.pundle.config.entry)
   }
-  generate(options: ?Pundle$Processor$Config): string {
+  generate(options: ?ProcessorConfig): string {
     if (!options) {
       options = this.getProcessorOptions()
     }
@@ -60,7 +60,7 @@ export default class Generator {
       this.compilation.pundle.config.entry
     )
   }
-  generateSourceMap(options: ?Pundle$Processor$Config, asComment: boolean = false): string {
+  generateSourceMap(options: ?ProcessorConfig, asComment: boolean = false): string {
     if (!options) {
       options = this.getProcessorOptions()
     }
@@ -70,7 +70,7 @@ export default class Generator {
     }
     return JSON.stringify(sourceMap)
   }
-  getProcessorOptions(): Pundle$Processor$Config {
+  getProcessorOptions(): ProcessorConfig {
     return {
       prepend: ';(function(){\n' + wrapperContent,
       append: '})();\n',

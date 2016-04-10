@@ -7,17 +7,17 @@ import { getPlugins, normalizeConfig } from './helpers'
 import Path from './path'
 import FileSystem from './file-system'
 import Compilation from './compilation'
-import type { Pundle$Config, Pundle$Plugin, Pundle$Watcher$Options$User } from './types'
+import type { Config, Plugin, WatcherOptions } from './types'
 import type { Disposable } from 'sb-event-kit'
 
 class Pundle {
   path: Path;
-  config: Pundle$Config;
+  config: Config;
   emitter: Emitter;
   fileSystem: FileSystem;
   subscriptions: CompositeDisposable;
 
-  constructor(config: Pundle$Config) {
+  constructor(config: Config) {
     this.config = normalizeConfig(config)
 
     this.fileSystem = new FileSystem(this.config, new this.config.FileSystem(this.config))
@@ -28,7 +28,7 @@ class Pundle {
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.path)
   }
-  async loadPlugins(givenPlugins: Array<Pundle$Plugin>): Promise {
+  async loadPlugins(givenPlugins: Array<Plugin>): Promise {
     const plugins = await getPlugins(givenPlugins, this.path, this.config.rootDirectory)
     for (const { plugin, parameters } of plugins) {
       plugin(this, parameters)
@@ -52,7 +52,7 @@ class Pundle {
     }
     return contents
   }
-  watch(options: Pundle$Watcher$Options$User): Disposable {
+  watch(options: WatcherOptions): Disposable {
     return this.get().watch(options)
   }
   observeCompilations(callback: Function): Disposable {

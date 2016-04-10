@@ -8,15 +8,15 @@ import resolve from 'sb-resolve'
 import builtins from './builtins'
 import { find } from './helpers'
 import type { Stats } from 'fs'
-import type { Pundle$FileSystem, Pundle$Config } from './types'
+import type { FileSystemInterface, Config } from './types'
 
 export default class FileSystem {
-  config: Pundle$Config;
-  source: Pundle$FileSystem;
+  config: Config;
+  source: FileSystemInterface;
   readFileCache: Map<string, { stats: Stats, contents: string }>;
   cachedResolve: ((moduleName: string, basedir: string) => Promise<string>);
 
-  constructor(config: Pundle$Config, source: Pundle$FileSystem) {
+  constructor(config: Config, source: FileSystemInterface) {
     this.config = config
     this.source = source
     this.readFileCache = new Map()

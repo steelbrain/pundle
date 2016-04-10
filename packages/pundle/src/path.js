@@ -6,15 +6,15 @@ import { posix as PosixPath } from 'path'
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import { isCore } from 'sb-resolve'
 import type FileSystem from './file-system'
-import type { Pundle$Config } from './types'
+import type { Config } from './types'
 
 export default class Path {
-  config: Pundle$Config;
+  config: Config;
   emitter: Emitter;
   fileSystem: FileSystem;
   subscriptions: CompositeDisposable;
 
-  constructor(config: Pundle$Config, fileSystem: FileSystem) {
+  constructor(config: Config, fileSystem: FileSystem) {
     this.config = config
     this.emitter = new Emitter()
     this.fileSystem = fileSystem
