@@ -72,16 +72,22 @@ export default class Compilation {
       this.garbageCollect()
     }
   }
-  generate(): string {
+  generate(options: ?Pundle$Processor$Config): string {
+    if (!options) {
+      options = this._getProcessorOptions()
+    }
     return generateBundle(
       this.pundle,
-      this._getProcessorOptions(),
+      options,
       this.gatherAllImports(),
       this.pundle.config.entry
     )
   }
-  generateSourceMap(asComment: boolean = false): string {
-    const sourceMap = generateSourceMap(this.pundle, this._getProcessorOptions(), this.gatherAllImports())
+  generateSourceMap(options: ?Pundle$Processor$Config, asComment: boolean = false): string {
+    if (!options) {
+      options = this._getProcessorOptions()
+    }
+    const sourceMap = generateSourceMap(this.pundle, options, this.gatherAllImports())
     if (asComment) {
       return sourceMapToComment(sourceMap)
     }

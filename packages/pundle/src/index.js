@@ -48,7 +48,7 @@ class Pundle {
     await compilation.compile()
     let contents = compilation.generate()
     if (generateSourceMap) {
-      contents += compilation.generateSourceMap(true)
+      contents += compilation.generateSourceMap(null, true)
     }
     return contents
   }
