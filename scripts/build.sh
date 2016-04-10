@@ -18,6 +18,9 @@ else
   OPERATION="go"
 fi
 
+cd "${ROOT_DIRECTORY}"
+npm run clean
+
 for name in "${PACKAGES[@]}"
 do :
   cd ${PACKAGES_PATH}/${name}
