@@ -75,46 +75,43 @@ export default class Compilation {
     return generateBundle(
       this.pundle,
       this._getProcessorOptions(),
-      this.getAllModuleImports(),
+      this.gatherAllImports(),
       this.pundle.config.entry
     )
   }
   generateSourceMap(asComment: boolean = false): string {
-    const sourceMap = generateSourceMap(this.pundle, this._getProcessorOptions(), this.getAllModuleImports())
+    const sourceMap = generateSourceMap(this.pundle, this._getProcessorOptions(), this.gatherAllImports())
     if (asComment) {
       return sourceMapToComment(sourceMap)
     }
     return JSON.stringify(sourceMap)
   }
-  getAllModuleImports(): Array<Pundle$Module> {
-    const countedIn = new Set()
-    const moduleImports = []
-    for (const entry of this.pundle.config.entry) {
-      this.getModuleImports(this.pundle.path.in(entry), moduleImports, countedIn)
-    }
-    return moduleImports
-  }
-  getModuleImports(
-    moduleId: string,
-    moduleImports: Array<Pundle$Module> = [],
-    countedIn: Set<string> = new Set()
+  gatherImports(
+    modules: Array<string>,
+    imports: Array<Pundle$Module> = [],
+    modulesAdded: Set<string> = new Set()
   ): Array<Pundle$Module> {
-    const module = this.modules.get(moduleId)
-    if (!module) {
-      throw new Error(`Module '${moduleId}' not found`)
-    }
-    countedIn.add(moduleId)
-    moduleImports.push(module)
-    for (const entry of module.imports) {
-      if (!countedIn.has(entry)) {
-        this.getModuleImports(entry, moduleImports, countedIn)
+    for (const id of modules) {
+      if (modulesAdded.has(id)) {
+        continue
+      }
+      modulesAdded.add(id)
+      const module = this.modules.get(id)
+      if (module) {
+        imports.push(module)
+      } else throw new Error(`Module '${id}' not found`)
+      if (module.imports.length) {
+        this.gatherImports(module.imports, imports, modulesAdded)
       }
     }
-    return moduleImports
+    return imports
+  }
+  gatherAllImports(): Array<Pundle$Module> {
+    return this.gatherImports(this.pundle.config.entry)
   }
   garbageCollect() {
     const toRemove = []
-    const modules = new Set(this.getAllModuleImports())
+    const modules = new Set(this.gatherAllImports())
     for (const [key, value] of this.modules) {
       if (!modules.has(value)) {
         toRemove.push(key)
@@ -169,7 +166,7 @@ export default class Compilation {
   }
   needsGeneration(): boolean {
     try {
-      this.getAllModuleImports()
+      this.gatherAllImports()
       return false
     } catch (_) {
       return true
