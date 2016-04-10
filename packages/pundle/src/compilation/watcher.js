@@ -22,7 +22,7 @@ export default class Watcher {
   }
   watch(givenOptions: WatcherConfig): { disposable: Disposable, queue: Promise } {
     const options = normalizeWatcherConfig(givenOptions)
-    const watcher = watch(this.compilation.pundle.config.rootDirectory, {
+    const watcher = watch(this.compilation.config.rootDirectory, {
       depth: 10,
       ignored: options.ignored,
       ignoreInitial: true,

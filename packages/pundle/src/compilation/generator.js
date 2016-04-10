@@ -47,7 +47,7 @@ export default class Generator {
     return imports
   }
   gatherAllImports(): Array<Module> {
-    return this.gatherImports(this.compilation.pundle.config.entry)
+    return this.gatherImports(this.compilation.config.entry)
   }
   generate(options: ?ProcessorConfig): string {
     if (!options) {
@@ -57,7 +57,7 @@ export default class Generator {
       this.compilation.pundle,
       options,
       this.gatherAllImports(),
-      this.compilation.pundle.config.entry
+      this.compilation.config.entry
     )
   }
   generateSourceMap(options: ?ProcessorConfig, asComment: boolean = false): string {

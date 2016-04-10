@@ -8,11 +8,12 @@ import Watcher from './watcher'
 import Generator from './generator'
 import type { Disposable } from 'sb-event-kit'
 import type Pundle from '../index.js'
-import type { ProcessorConfig, WatcherConfig } from '../types'
+import type { ProcessorConfig, WatcherConfig, Config } from '../types'
 
 
 export default class Compilation {
   pundle: Pundle;
+  config: Config;
   emitter: Emitter;
   modules: Modules;
   watcher: Watcher;
@@ -21,6 +22,7 @@ export default class Compilation {
 
   constructor(pundle: Pundle) {
     this.pundle = pundle
+    this.config = Object.assign({}, pundle.config)
     this.emitter = new Emitter()
     this.modules = new Modules(this)
     this.watcher = new Watcher(this)
@@ -33,7 +35,7 @@ export default class Compilation {
     this.subscriptions.add(this.generator)
   }
   compile(): Promise {
-    return Promise.all(this.pundle.config.entry.map(entry => this.modules.read(entry)))
+    return Promise.all(this.config.entry.map(entry => this.modules.read(entry)))
   }
   read(filePath: string): Promise {
     return this.modules.read(filePath)
