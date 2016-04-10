@@ -38,7 +38,7 @@ export type Module = {
   sourceMap: Object
 }
 
-export type WatcherOptions = {
+export type WatcherConfig = {
   ignored: string | RegExp,
   onBeforeCompile?: ((filePath: string) => void),
   onAfterCompile?: ((filePath: string, error: ?Error) => void),
@@ -48,7 +48,7 @@ export type WatcherOptions = {
 
 /*
   Here's what we can work with
-  type WatcherOptions = {
+  type WatcherConfig = {
     ignored?: string | RegExp,
     onBeforeCompile?: ((filePath: string) => void),
     onAfterCompile?: ((filePath: string, error: ?Error) => void),

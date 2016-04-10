@@ -4,17 +4,18 @@
 
 import Path from 'path'
 import send from 'send'
-import type { Pundle$Watcher$Options$User } from '../../pundle/src/types'
+import type { WatcherConfig } from '../../pundle/src/types'
 import type Compilation from '../../pundle/src/compilation'
 import type { Middleware$Options } from './types'
 
 function attach(
   compilation: Compilation,
-  watcherOptions: Pundle$Watcher$Options$User,
+  watcherOptions: WatcherConfig,
   givenMiddlewareOptions: Middleware$Options
 ): Function {
   const status = compilation.watch(watcherOptions)
   const middlewareOptions = Object.assign({
+    hmr: true,
     sourceMap: true,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
@@ -43,8 +44,8 @@ function attach(
         .pipe(res)
       return
     }
-    const needsGeneration = compilation.needsGeneration()
-    if (needsGeneration) {
+    const shouldGenerate = compilation.shouldGenerate()
+    if (shouldGenerate) {
       let caughtError = false
       status.queue = status.queue.then(function() {
         return compilation.compile()
@@ -62,7 +63,7 @@ function attach(
     res.setHeader('Content-Type', 'application/javascript')
     let generated = compilation.generate()
     if (middlewareOptions.sourceMap) {
-      generated += compilation.generateSourceMap(true)
+      generated += compilation.generateSourceMap(null, true)
     }
     res.send(generated)
   }

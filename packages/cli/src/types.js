@@ -2,9 +2,9 @@
 
 /* @flow */
 
-import type { Pundle$Watcher$Options$User } from '../../pundle/src/types'
+import type { WatcherConfig } from '../../pundle/src/types'
 import type { Middleware$Options } from '../../middleware/src/types'
-import type { Pundle$Config } from '../../pundle/src/types'
+import type { Config } from '../../pundle/src/types'
 
 export type Express$Server = {
   close: (() => any)
@@ -14,7 +14,7 @@ export type Server$Config = {
   server: {
     port: number
   },
-  pundle: Pundle$Config,
-  watcher: Pundle$Watcher$Options$User,
+  pundle: Config,
+  watcher: WatcherConfig,
   middleware: Middleware$Options
 }

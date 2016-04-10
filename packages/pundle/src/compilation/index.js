@@ -8,7 +8,7 @@ import Watcher from './watcher'
 import Generator from './generator'
 import type { Disposable } from 'sb-event-kit'
 import type Pundle from '../index.js'
-import type { ProcessorConfig, WatcherOptions } from '../types'
+import type { ProcessorConfig, WatcherConfig } from '../types'
 
 
 export default class Compilation {
@@ -47,7 +47,7 @@ export default class Compilation {
   generateSourceMap(options: ?ProcessorConfig, asComment: boolean = false): string {
     return this.generator.generateSourceMap(options, asComment)
   }
-  watch(options: WatcherOptions): { disposable: Disposable, queue: Promise } {
+  watch(options: WatcherConfig): { disposable: Disposable, queue: Promise } {
     return this.watcher.watch(options)
   }
   shouldGenerate(): boolean {

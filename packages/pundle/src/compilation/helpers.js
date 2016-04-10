@@ -3,9 +3,9 @@
 /* @flow */
 
 import isRegexp from 'lodash.isregexp'
-import type { WatcherOptions } from '../types'
+import type { WatcherConfig } from '../types'
 
-export function normalizeWatcherOptions(givenOptions: Object): WatcherOptions {
+export function normalizeWatcherConfig(givenOptions: Object): WatcherConfig {
   const options = Object.assign({}, givenOptions)
   if (typeof options.ignored !== 'string' && !isRegexp(options.ignored) && !Array.isArray(options.ignored)) {
     options.ignored = /(node_modules|bower_components)/

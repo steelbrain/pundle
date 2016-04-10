@@ -7,7 +7,7 @@ import { getPlugins, normalizeConfig } from './helpers'
 import Path from './path'
 import FileSystem from './file-system'
 import Compilation from './compilation'
-import type { Config, Plugin, WatcherOptions } from './types'
+import type { Config, Plugin, WatcherConfig } from './types'
 import type { Disposable } from 'sb-event-kit'
 
 class Pundle {
@@ -52,7 +52,7 @@ class Pundle {
     }
     return contents
   }
-  watch(options: WatcherOptions): Disposable {
+  watch(options: WatcherConfig): Disposable {
     return this.get().watch(options)
   }
   observeCompilations(callback: Function): Disposable {
