@@ -42,11 +42,12 @@ export default class Compilation {
     if (oldModule && oldModule.sources === contents) {
       return
     }
-    event = { filePath, contents, sourceMap: null, imports: [] }
+    event = { filePath, contents, sourceMap: null, imports: [], oldModule }
     await this.emitter.emit('before-compile', event)
     const processed = await transform(filePath, this.pundle, event)
     event = { filePath, contents: processed.contents, sourceMap: processed.sourceMap, imports: processed.imports }
-    await this.emitter.emit('after-compile', event)
+    this.emitter.emit('after-compile', event)
+    await this.emitter.emit('did-compile', event)
     this.modules.set(filePath, {
       imports: event.imports,
       sources: contents,
@@ -184,7 +185,12 @@ export default class Compilation {
     return this.emitter.on('before-compile', callback)
   }
   onAfterCompile(callback: Function): Disposable {
+    // Callbacks should be synchronus, for minifiers
     return this.emitter.on('after-compile', callback)
+  }
+  onDidCompile(callback: Function): Disposable {
+    // For data collectors, minifers have already done their work
+    return this.emitter.on('did-compile', callback)
   }
   onDidDestroy(callback: Function): Disposable {
     return this.emitter.on('did-destroy', callback)
