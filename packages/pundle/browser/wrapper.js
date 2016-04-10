@@ -5,21 +5,32 @@ var global = typeof window !== 'undefined' ? window : (
 )
 var root = global
 var GLOBAL = root
+var require
 function __sb_pundle_register(filePath, callback) {
   __sb_pundle.module_sources[filePath] = callback
 }
-function require(request) {
-  var module
-  if (request in require.cache) {
-    return require.cache[request].exports
+function __sb_pundle_require(moduleName) {
+  function _require(request) {
+    var module
+    if (request in require.cache) {
+      require.cache[request].parents.add(moduleName)
+      return require.cache[request].exports
+    }
+    module = {
+       exports: {},
+       id: request,
+       parents: new Set([moduleName])
+    }
+    require.cache[request] = module
+    __sb_pundle.module_sources[request].call(module.exports, module, module.exports, __sb_pundle_require(request))
+    return module.exports
   }
-  module = { exports: {}, id: request }
-  require.cache[request] = module
-  __sb_pundle.module_sources[request].call(module.exports, module, module.exports)
-  return module.exports
+  Object.assign(_require, __sb_pundle_require)
+  return _require
 }
-require.resolve = function(dependency) {
+__sb_pundle_require.resolve = function(dependency) {
   return dependency
 }
-require.cache = []
-require.extensions = []
+__sb_pundle_require.cache = []
+__sb_pundle_require.extensions = []
+require = __sb_pundle_require('$root')

@@ -1,9 +1,7 @@
 {
   "rules": {
-    "semi": 0,
     "no-var": 0,
     "indent": 0,
-    "wrap-iife": 0,
     "camelcase": 0,
     "no-extra-semi": 0,
     "no-unused-vars": 0

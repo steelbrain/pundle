@@ -20,7 +20,7 @@ export function generateBundle(
     const internalPath = pundle.path.in(entry.filePath)
     const internalContent = `var __filename = '${internalPath}', __dirname = '${Path.posix.dirname(internalPath)}';\n${entry.contents}`
     output.push(
-      `${config.module_register}('${internalPath}', function(module, exports){\n${internalContent}\n}); // ${internalPath} ends\n`
+      `${config.module_register}('${internalPath}', function(module, exports, require){\n${internalContent}\n}); // ${internalPath} ends\n`
     )
   }
   for (const entry of requires) {
