@@ -61,7 +61,19 @@ export default class Modules {
       throw error
     }
     if (oldModule && oldModule.imports.join('') !== event.imports.join('')) {
-      // TODO: Implement garbage collection
+      this.garbageCollect()
+    }
+  }
+  garbageCollect() {
+    const toRemove = []
+    const modules = new Set(this.compilation.generator.gatherAllImports())
+    for (const [key, value] of this.registry) {
+      if (!modules.has(value)) {
+        toRemove.push(key)
+      }
+    }
+    for (const entry of toRemove) {
+      this.registry.delete(entry)
     }
   }
   onBeforeCompile(callback: Function): Disposable {
