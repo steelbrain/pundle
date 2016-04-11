@@ -4,7 +4,7 @@
   "description": "CLI for Pundle",
   "main": "lib/index.js",
   "bin": {
-    "pundle": "./lib/bin/pundle.js"
+    "pundle-dev": "./lib/bin/pundle.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
