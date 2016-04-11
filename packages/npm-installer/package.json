@@ -1,0 +1,25 @@
+{
+  "name": "pundle-npm-installer",
+  "version": "0.0.1",
+  "description": "NPM Installer for Pundle",
+  "main": "lib/index.js",
+  "bin": {
+    "pundle-dev": "./lib/bin/pundle.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/steelbrain/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steelbrain/pundle/issues"
+  },
+  "homepage": "https://github.com/steelbrain/pundle#readme",
+  "dependencies": {
+    "sb-exec": "^1.0.2"
+  }
+}
