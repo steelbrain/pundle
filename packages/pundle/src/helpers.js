@@ -5,6 +5,7 @@
 import Path from 'path'
 import FileSystem from 'pundle-fs'
 import { parse } from 'babylon'
+import uniq from 'lodash.uniq'
 import type Pundle$Path from './path'
 import type { Config, Plugin, FileSystemInterface } from './types'
 
@@ -21,6 +22,7 @@ export function normalizeConfig(givenConfig: Config): Config {
       config.entry[i] = Path.join(config.rootDirectory, entry)
     }
   }
+  config.entry = uniq(['$root'].concat(config.entry))
   // Make sure we have a FileSystem on board
   if (!config.FileSystem) {
     config.FileSystem = FileSystem

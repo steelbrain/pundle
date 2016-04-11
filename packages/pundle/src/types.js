@@ -10,6 +10,7 @@ export type FileSystemInterface = {
 }
 
 export type Config = {
+  hmr: boolean,
   entry: Array<string>,
   resolve: Object,
   FileSystem: Function,
@@ -21,6 +22,7 @@ export type Config = {
 /*
   Here's what we can work with
   type Config = {
+    hmr: boolean,
     entry: string | Array<string>,
     resolve?: Object,
     FileSystem?: Function,

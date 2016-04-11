@@ -2,6 +2,7 @@
 
 /* @flow */
 
+import FS from 'fs'
 import Path from 'path'
 import memoize from 'sb-memoize'
 import resolve from 'sb-resolve'
@@ -9,6 +10,8 @@ import builtins from './builtins'
 import { find } from './helpers'
 import type { Stats } from 'fs'
 import type { FileSystemInterface, Config } from './types'
+
+const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
 
 export default class FileSystem {
   config: Config;
@@ -28,6 +31,10 @@ export default class FileSystem {
     return this.source.stat(path)
   }
   async resolve(moduleName: string, basedir: string, cached: boolean = true): Promise<string> {
+    if (moduleName === '$root') {
+      return moduleName
+    }
+
     const cacheKey = JSON.stringify([moduleName, basedir])
     let value
     if (cached) {
@@ -56,6 +63,10 @@ export default class FileSystem {
     return await resolve(moduleName, basedir, config)
   }
   async readFile(filePath: string, useCached: boolean = true): Promise<string> {
+    if (filePath === '$root') {
+      return wrapperContent
+    }
+
     if (filePath.substr(0, 6) === '$core/') {
       filePath = builtins[filePath.substr(6)]
     }
