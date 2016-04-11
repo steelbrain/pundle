@@ -39,17 +39,30 @@ export default class Path {
   }
   async resolveModule(moduleName: string, basedir: string): Promise<string> {
     const event = { moduleName, basedir, path: '' }
-    await this.emitter.emit('module-resolve', event)
+    await this.emitter.emit('before-module-resolve', event)
     if (!event.path) {
-      event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
+      try {
+        event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
+      } catch (_) {
+        if (_.code !== 'MODULE_NOT_FOUND') {
+          throw _
+        }
+      }
     }
+    await this.emitter.emit('after-module-resolve', event)
     if (isCore(event.moduleName)) {
       return PosixPath.join('$core', event.moduleName)
     }
+    if (!event.path) {
+      throw new Error(`Unable to resolve '${moduleName}' from '${basedir}'`)
+    }
     return this.in(event.path)
   }
-  onModuleResolve(callback: Function): Disposable {
-    return this.emitter.on('module-resolve', callback)
+  onBeforeModuleResolve(callback: Function): Disposable {
+    return this.emitter.on('before-module-resolve', callback)
+  }
+  onAfterModuleResolve(callback: Function): Disposable {
+    return this.emitter.on('after-module-resolve', callback)
   }
   dispose() {
     this.subscriptions.dispose()
