@@ -28,8 +28,8 @@ export default class Path {
     }
     return PosixPath.normalize(filePath)
   }
-  out(filePath: string): string {
-    if (filePath === '$root') {
+  out(filePath: string, file: boolean = true): string {
+    if (file && filePath === '$root') {
       return filePath
     }
     if (filePath.indexOf('$root') === 0) {
@@ -38,18 +38,34 @@ export default class Path {
     return filePath
   }
   async resolveModule(moduleName: string, basedir: string): Promise<string> {
-    const event = { moduleName, basedir, path: '' }
-    await this.emitter.emit('module-resolve', event)
+    const event = { moduleName, basedir: this.out(basedir, false), path: '' }
+    await this.emitter.emit('before-module-resolve', event)
     if (!event.path) {
-      event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
+      try {
+        event.path = await this.fileSystem.resolve(moduleName, event.basedir)
+      } catch (_) {
+        if (_.code !== 'MODULE_NOT_FOUND') {
+          throw _
+        }
+      }
     }
-    if (isCore(event.moduleName)) {
+    await this.emitter.emit('after-module-resolve', event)
+    if (!event.path) {
+      throw new Error(`Unable to resolve '${moduleName}' from '${basedir}'`)
+    } else if (isCore(event.moduleName)) {
       return PosixPath.join('$core', event.moduleName)
+    } else if (event.path.substr(0, 1) === '/' && PosixPath.extname(event.path) === '') {
+      // Paths to module directories and stuff like that, absolute
+      // We are doing this so the event listeners don't have to reinvent the resolution wheel
+      event.path = await this.fileSystem.resolve(event.path, event.basedir)
     }
     return this.in(event.path)
   }
-  onModuleResolve(callback: Function): Disposable {
-    return this.emitter.on('module-resolve', callback)
+  onBeforeModuleResolve(callback: Function): Disposable {
+    return this.emitter.on('before-module-resolve', callback)
+  }
+  onAfterModuleResolve(callback: Function): Disposable {
+    return this.emitter.on('after-module-resolve', callback)
   }
   dispose() {
     this.subscriptions.dispose()

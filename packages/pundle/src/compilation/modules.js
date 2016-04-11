@@ -48,12 +48,14 @@ export default class Modules {
       sourceMap: event.sourceMap
     })
     try {
-      await Promise.all(event.imports.map(importId => {
-        if (!this.registry.has(importId)) {
-          return this.read(importId)
-        }
-        return null
-      }))
+      await event.imports.reduce((promise, importId) =>
+        promise.then(() => {
+          if (!this.registry.has(importId)) {
+            return this.read(importId)
+          }
+          return null
+        })
+      , Promise.resolve())
     } catch (error) {
       if (oldModule) {
         this.registry.set(filePath, oldModule)
@@ -61,10 +63,12 @@ export default class Modules {
       throw error
     }
     const importsDifference = arrayDifference(oldModule && oldModule.imports || [], event.imports)
-    if (importsDifference.added.length || importsDifference.removed.length) {
-      this.garbageCollect()
+    if (importsDifference.removed.length) {
+      try {
+        this.garbageCollect()
+      } catch (_) { /* No Op */ }
     }
-    await this.emitter.emit('did-compile', { ...event, importsDifference })
+    await this.emitter.emit('did-compile', Object.assign({}, { importsDifference }, event))
   }
   garbageCollect() {
     const toRemove = []

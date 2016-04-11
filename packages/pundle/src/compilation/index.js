@@ -35,7 +35,7 @@ export default class Compilation {
     this.subscriptions.add(this.generator)
   }
   compile(): Promise {
-    return Promise.all(this.config.entry.map(entry => this.modules.read(entry)))
+    return Promise.all(this.config.entry.map(entry => this.read(entry)))
   }
   read(filePath: string): Promise {
     return this.modules.read(filePath)
