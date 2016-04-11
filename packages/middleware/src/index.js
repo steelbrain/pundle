@@ -21,22 +21,19 @@ function attach({ app, server, compilation, config }: Options) {
   const status = compilation.watch(config.watcher)
   const middlewareConfig = Object.assign({
     sourceMap: true,
+    sourceRoot: compilation.config.rootDirectory,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
   }, config.middleware)
 
-  // Convert it to abs path
-  middlewareConfig.publicBundlePath = Path.join(compilation.config.rootDirectory,
-    middlewareConfig.publicBundlePath)
 
   async function handleRequest(req, res, next) {
     if (req.method !== 'GET' || req.url.indexOf(middlewareConfig.publicPath) !== 0) {
       next()
       return
     }
-    const absolutePath = Path.join(compilation.config.rootDirectory, req.url)
-    if (absolutePath !== middlewareConfig.publicBundlePath) {
-      send(req, req.url, { root: compilation.config.rootDirectory, index: 'index.html' })
+    if (req.url !== middlewareConfig.publicBundlePath) {
+      send(req, req.url, { root: middlewareConfig.sourceRoot, index: 'index.html' })
         .on('error', function() {
           next()
         })
