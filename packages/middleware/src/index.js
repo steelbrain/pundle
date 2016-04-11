@@ -2,6 +2,7 @@
 
 /* @flow */
 
+import invariant from 'assert'
 import Path from 'path'
 import send from 'send'
 import ws from 'ws'
@@ -100,7 +101,10 @@ function attach({ app, server, compilation, config }: Options) {
       })
     })
     compilation.onDidCompile(function({ filePath, importsDifference }) {
-      const modules = compilation.generator.gatherImports([filePath].concat(importsDifference.added))
+      const module = compilation.modules.registry.get(filePath)
+      invariant(module)
+      const modules = compilation.generator.gatherImports(importsDifference.added)
+      modules.push(module)
       const contents = compilation.generator.generateAdvanced({
         prepend: '',
         append: ''
