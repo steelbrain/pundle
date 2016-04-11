@@ -18,9 +18,6 @@ function getNPMInstaller(pundle: Pundle, parameters: Object) {
   if (!(parameters.ignored instanceof RegExp)) {
     parameters.ignored = /(node_modules|bower_components)/
   }
-  if (!parameters.config || typeof parameters.config !== 'object') {
-    parameters.config = {}
-  }
 
   pundle.path.onAfterModuleResolve(function(event) {
     if (event.path || event.basedir.indexOf(pundle.config.rootDirectory) !== 0 || event.basedir.match(IGNORED)) {
