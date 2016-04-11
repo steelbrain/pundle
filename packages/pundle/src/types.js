@@ -65,3 +65,4 @@ export type ProcessorConfig = {
 }
 
 export type Plugin = string | Function | [string, Object] | [Function, Object]
+export type ArrayDifference<T> = { added: Array<T>, removed: Array<T> }

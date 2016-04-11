@@ -4,6 +4,7 @@
 
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import transform from '../processor/transform'
+import { arrayDifference } from './helpers'
 import type { Disposable } from 'sb-event-kit'
 import type { Module } from '../types'
 import type Compilation from './index.js'
@@ -39,7 +40,6 @@ export default class Modules {
     const processed = await transform(filePath, this.compilation.pundle, event)
     event = { filePath, contents: processed.contents, sourceMap: processed.sourceMap, imports: processed.imports, oldModule }
     this.emitter.emit('after-compile', event)
-    await this.emitter.emit('did-compile', event)
     this.registry.set(filePath, {
       imports: event.imports,
       sources: contents,
@@ -60,9 +60,11 @@ export default class Modules {
       } else this.registry.delete(filePath)
       throw error
     }
-    if (oldModule && oldModule.imports.join('') !== event.imports.join('')) {
+    const importsDifference = arrayDifference(oldModule && oldModule.imports || [], event.imports)
+    if (importsDifference.added.length || importsDifference.removed.length) {
       this.garbageCollect()
     }
+    await this.emitter.emit('did-compile', event)
   }
   garbageCollect() {
     const toRemove = []

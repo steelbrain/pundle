@@ -4,7 +4,7 @@
 
 import Path from 'path'
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map'
-import { getLinesCount } from '../helpers'
+import { getLinesCount } from './helpers'
 import type Pundle from '../index'
 import type { Module, ProcessorConfig } from '../types'
 

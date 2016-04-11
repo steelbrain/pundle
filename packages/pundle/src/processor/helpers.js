@@ -5,6 +5,8 @@
 import sourceMap from 'source-map'
 import { VISITOR_KEYS } from 'babel-types'
 
+const REGEX_EOL = /\n|\r\n/
+
 // Source: https://goo.gl/821D9T
 export function mergeSourceMaps(inputMap: Object, map: Object): Object {
   const inputMapConsumer   = new sourceMap.SourceMapConsumer(inputMap)
@@ -83,4 +85,8 @@ export function traverse(node: Object, enter: Function) {
       traverse(subNode, enter)
     }
   }
+}
+
+export function getLinesCount(text: string): number {
+  return text.split(REGEX_EOL).length
 }

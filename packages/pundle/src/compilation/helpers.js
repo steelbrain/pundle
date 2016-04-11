@@ -3,7 +3,7 @@
 /* @flow */
 
 import isRegexp from 'lodash.isregexp'
-import type { WatcherConfig } from '../types'
+import type { WatcherConfig, ArrayDifference } from '../types'
 
 export function normalizeWatcherConfig(givenOptions: Object): WatcherConfig {
   const options = Object.assign({}, givenOptions)
@@ -15,4 +15,22 @@ export function normalizeWatcherConfig(givenOptions: Object): WatcherConfig {
   }
   options.ignored = [/[\/\\]\./].concat(options.ignored)
   return options
+}
+
+export function arrayDifference<T>(oldArray: Array<T>, newArray: Array<T>): ArrayDifference<T> {
+  const added = []
+  const removed = []
+
+  for (const entry of oldArray) {
+    if (newArray.indexOf(entry) === -1) {
+      removed.push(entry)
+    }
+  }
+  for (const entry of newArray) {
+    if (oldArray.indexOf(entry) === -1) {
+      added.push(entry)
+    }
+  }
+
+  return { added, removed }
 }

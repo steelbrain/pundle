@@ -8,8 +8,6 @@ import { parse } from 'babylon'
 import type Pundle$Path from './path'
 import type { Config, Plugin, FileSystemInterface } from './types'
 
-const REGEX_EOL = /\n|\r\n/
-
 export function normalizeConfig(givenConfig: Config): Config {
   const config = Object.assign({}, givenConfig)
   // Make sure config.entry is an array
@@ -108,8 +106,4 @@ export async function getPlugins(
     processed.push({ plugin, parameters })
   }
   return processed
-}
-
-export function getLinesCount(text: string): number {
-  return text.split(REGEX_EOL).length
 }
