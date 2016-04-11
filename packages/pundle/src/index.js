@@ -15,6 +15,7 @@ class Pundle {
   config: Config;
   emitter: Emitter;
   fileSystem: FileSystem;
+  compilations: Set<Compilation>;
   subscriptions: CompositeDisposable;
 
   constructor(config: Config) {
@@ -23,6 +24,7 @@ class Pundle {
     this.fileSystem = new FileSystem(this.config, new this.config.FileSystem(this.config))
     this.path = new Path(this.config, this.fileSystem)
     this.emitter = new Emitter()
+    this.compilations = new Set()
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
@@ -37,9 +39,9 @@ class Pundle {
   get(): Compilation {
     const compilation = new Compilation(this)
     this.emitter.emit('observe-compilations', compilation)
-    this.subscriptions.add(compilation)
+    this.compilations.add(compilation)
     compilation.onDidDestroy(() => {
-      this.subscriptions.remove(compilation)
+      this.compilations.delete(compilation)
     })
     return compilation
   }
@@ -56,9 +58,14 @@ class Pundle {
     return this.get().watch(options)
   }
   observeCompilations(callback: Function): Disposable {
+    this.compilations.forEach(callback)
     return this.emitter.on('observe-compilations', callback)
   }
   dispose() {
+    for (const entry of this.compilations) {
+      entry.dispose()
+    }
+    this.compilations.clear()
     this.subscriptions.dispose()
   }
 }
