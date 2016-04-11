@@ -55,14 +55,17 @@ export default class Modules {
         return null
       }))
     } catch (error) {
+      console.log(error)
       if (oldModule) {
         this.registry.set(filePath, oldModule)
       } else this.registry.delete(filePath)
       throw error
     }
     const importsDifference = arrayDifference(oldModule && oldModule.imports || [], event.imports)
-    if (importsDifference.added.length || importsDifference.removed.length) {
-      this.garbageCollect()
+    if (importsDifference.removed.length) {
+      try {
+        this.garbageCollect()
+      } catch (_) { /* No Op */ }
     }
     await this.emitter.emit('did-compile', Object.assign({}, { importsDifference }, event))
   }
