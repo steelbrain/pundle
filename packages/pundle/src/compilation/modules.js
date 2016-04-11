@@ -64,7 +64,7 @@ export default class Modules {
     if (importsDifference.added.length || importsDifference.removed.length) {
       this.garbageCollect()
     }
-    await this.emitter.emit('did-compile', { ...event, importsDifference })
+    await this.emitter.emit('did-compile', Object.assign({}, { importsDifference }, event))
   }
   garbageCollect() {
     const toRemove = []
