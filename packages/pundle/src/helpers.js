@@ -37,7 +37,7 @@ export function normalizeConfig(givenConfig: Config): Config {
     config.replaceVariables = {}
   }
   config.replaceVariables = Object.assign({
-    'process.env.NODE_ENV': '"development"'
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
   }, config.replaceVariables)
   for (const key in config.replaceVariables) {
     if (config.replaceVariables.hasOwnProperty(key)) {
