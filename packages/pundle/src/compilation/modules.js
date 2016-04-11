@@ -48,14 +48,15 @@ export default class Modules {
       sourceMap: event.sourceMap
     })
     try {
-      await Promise.all(event.imports.map(importId => {
-        if (!this.registry.has(importId)) {
-          return this.read(importId)
-        }
-        return null
-      }))
+      await event.imports.reduce((promise, importId) =>
+        promise.then(() => {
+          if (!this.registry.has(importId)) {
+            return this.read(importId)
+          }
+          return null
+        })
+      , Promise.resolve())
     } catch (error) {
-      console.log(error)
       if (oldModule) {
         this.registry.set(filePath, oldModule)
       } else this.registry.delete(filePath)
