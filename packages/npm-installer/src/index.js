@@ -12,6 +12,7 @@ const IGNORED = /(node_modules|bower_components)/
 function getNPMInstaller(pundle: Pundle, parameters: Object) {
   parameters = Object.assign({
     save: true,
+    restrictToRoot: false,
     rootDirectory: pundle.config.rootDirectory
   }, parameters)
   const installer = new Installer(parameters)
@@ -20,7 +21,7 @@ function getNPMInstaller(pundle: Pundle, parameters: Object) {
   }
 
   pundle.path.onAfterModuleResolve(function(event) {
-    if (event.path || event.basedir.indexOf(pundle.config.rootDirectory) !== 0 || event.basedir.match(IGNORED)) {
+    if (event.path || (parameters.restrictToRoot && event.basedir.indexOf(pundle.config.rootDirectory) !== 0) || event.basedir.match(IGNORED)) {
       return null
     }
     const id = ++nextID
