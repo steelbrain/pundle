@@ -18,7 +18,7 @@ else
   OPERATION="go"
 fi
 export PATH=$PATH:${ROOT_DIRECTORY}/node_modules/.bin
-export NODE_PATH=$NODE_PATH:${ROOT_DIRECTORY}/node_modules
+export NODE_PATH=${ROOT_DIRECTORY}/node_modules
 
 cd "${ROOT_DIRECTORY}"
 npm run clean

@@ -36,11 +36,6 @@ do :
   # to install devDependencies in packages
   npm install --development
 
-  if [ -f "lib/bin" ]; then
-    chmod +x lib/bin/*
-  fi
-
-
   printf "Linking self\n"
   npm link --loglevel=error
 
