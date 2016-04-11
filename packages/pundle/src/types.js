@@ -4,12 +4,13 @@
 
 import type { Stats } from 'fs'
 
-export type Pundle$FileSystem = {
+export type FileSystemInterface = {
   stat: ((path: string) => Promise<Stats>),
   readFile: ((filePath: string) => Promise<string>),
 }
 
-export type Pundle$Config = {
+export type Config = {
+  hmr: boolean,
   entry: Array<string>,
   resolve: Object,
   FileSystem: Function,
@@ -18,17 +19,20 @@ export type Pundle$Config = {
   replaceVariables: Object // <string, Object>
 }
 
-// Not used anywhere
-export type Pundle$Config$User = {
-  entry: string | Array<string>,
-  resolve?: Object,
-  FileSystem?: Function,
-  rootDirectory: string,
-  sourceMaps?: boolean,
-  replaceVariables?: Object // <string, string>
-}
+/*
+  Here's what we can work with
+  type Config = {
+    hmr: boolean,
+    entry: string | Array<string>,
+    resolve?: Object,
+    FileSystem?: Function,
+    rootDirectory: string,
+    sourceMaps?: boolean,
+    replaceVariables?: Object // <string, string>
+  }
+*/
 
-export type Pundle$Module = {
+export type Module = {
   imports: Array<string>,
   sources: string,
   contents: string,
@@ -36,7 +40,7 @@ export type Pundle$Module = {
   sourceMap: Object
 }
 
-export type Pundle$Watcher$Options = {
+export type WatcherConfig = {
   ignored: string | RegExp,
   onBeforeCompile?: ((filePath: string) => void),
   onAfterCompile?: ((filePath: string, error: ?Error) => void),
@@ -44,12 +48,23 @@ export type Pundle$Watcher$Options = {
   onError: ((error: Error) => void)
 }
 
-export type Pundle$Watcher$Options$User = {
-  ignored?: string | RegExp,
-  onBeforeCompile?: ((filePath: string) => void),
-  onAfterCompile?: ((filePath: string, error: ?Error) => void),
-  onReady?: (() => void),
-  onError: ((error: Error) => void)
+/*
+  Here's what we can work with
+  type WatcherConfig = {
+    ignored?: string | RegExp,
+    onBeforeCompile?: ((filePath: string) => void),
+    onAfterCompile?: ((filePath: string, error: ?Error) => void),
+    onReady?: (() => void),
+    onError: ((error: Error) => void)
+  }
+*/
+
+export type ProcessorConfig = {
+  append?: string,
+  prepend?: string,
+  module_register: string,
+  module_require: string
 }
 
-export type Pundle$Plugin = string | Function | [string, Object] | [Function, Object]
+export type Plugin = string | Function | [string, Object] | [Function, Object]
+export type ArrayDifference<T> = { added: Array<T>, removed: Array<T> }

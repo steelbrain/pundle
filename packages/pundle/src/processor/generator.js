@@ -2,52 +2,65 @@
 
 /* @flow */
 
-import FS from 'fs'
 import Path from 'path'
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map'
-import { getLinesCount } from '../helpers'
+import { getLinesCount } from './helpers'
 import type Pundle from '../index'
-import type { Pundle$Module } from '../types'
+import type { Module, ProcessorConfig } from '../types'
 
-const rootContent = FS.readFileSync(Path.join(__dirname, '..', '..', 'client', 'root.js'), 'utf8')
-
-export function generateBundle(pundle: Pundle, entryPoints: Array<string>, content: Array<Pundle$Module>): string {
-  const output = [rootContent]
+export function generateBundle(
+  pundle: Pundle,
+  config: ProcessorConfig,
+  content: Array<Module>,
+  requires: Array<string>
+): string {
+  const output = [config.prepend || '']
 
   for (const entry of content) {
     const internalPath = pundle.path.in(entry.filePath)
-    const internalContent = `var __filename = '${internalPath}'` +
-      `, __dirname = '${Path.posix.dirname(internalPath)}';\n${entry.contents}`
+    const internalContent = `var __filename = '${internalPath}', __dirname = '${Path.posix.dirname(internalPath)}';\n${entry.contents}`
     output.push(
-      `__sb_pundle_register('${internalPath}', function(module, exports){\n${internalContent}\n})`
+      `${config.module_register}('${internalPath}', function(module, exports, require){\n${internalContent}\n}); // ${internalPath} ends\n`
     )
   }
-  for (const entry of entryPoints) {
+  for (const entry of requires) {
+    if (entry === '$root') {
+      continue
+    }
     output.push(
-      `require('${pundle.path.in(entry)}')`
+      `${config.module_require}('${pundle.path.in(entry)}');\n`
     )
   }
-  return `;(function(){\n${output.join('\n')}\n})();\n`
+  output.push(config.append || '')
+  return output.join('')
 }
 
-export function generateSourceMap(pundle: Pundle, content: Array<Pundle$Module>): Object {
+export function generateSourceMap(
+  pundle: Pundle,
+  config: ProcessorConfig,
+  content: Array<Module>
+): Object {
+  let lines = 0
   const sourceMap = new SourceMapGenerator()
-  // One line for IIFE
-  let lines = 1 + getLinesCount(rootContent)
 
+  if (config.prepend) {
+    lines += getLinesCount(config.prepend)
+  }
   for (const entry of content) {
-    const internalPath = 'motion:///' + pundle.path.in(entry.filePath)
-    lines += 2
-    const consumer = new SourceMapConsumer(entry.sourceMap)
-    for (const mapping of consumer._generatedMappings) {
+    const entryPath = 'motion:///' + pundle.path.in(entry.filePath)
+    const entryMap = new SourceMapConsumer(entry.sourceMap)
+    lines += 2 // For the opening of register function and declration of basic variables
+    for (const mapping of entryMap._generatedMappings) {
       sourceMap.addMapping({
-        source: internalPath,
+        source: entryPath,
         original: { line: mapping.originalLine, column: mapping.originalColumn },
         generated: { line: lines + mapping.generatedLine, column: mapping.generatedColumn }
       })
     }
-    lines += getLinesCount(entry.contents) + 1
-    sourceMap.setSourceContent(internalPath, entry.sources)
+    lines += getLinesCount(entry.contents)
+    lines++ // For the closing of reegister function
+    sourceMap.setSourceContent(entryPath, entry.sources)
   }
+
   return sourceMap.toJSON()
 }

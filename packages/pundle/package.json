@@ -10,7 +10,7 @@
     "watch": "ucompiler watch"
   },
   "bin": {
-    "pundle": "./bin/pundle.js"
+    "pundle-compile": "./bin/pundle.js"
   },
   "repository": {
     "type": "git",
@@ -42,6 +42,7 @@
     "events": "^1.1.0",
     "https-browserify": "0.0.1",
     "lodash.isregexp": "^3.0.5",
+    "lodash.uniq": "^4.2.1",
     "os-browserify": "^0.2.1",
     "path-browserify": "0.0.0",
     "process": "^0.11.2",

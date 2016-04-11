@@ -2,21 +2,25 @@
 
 /* @flow */
 
+import FS from 'fs'
 import Path from 'path'
 import memoize from 'sb-memoize'
 import resolve from 'sb-resolve'
 import builtins from './builtins'
 import { find } from './helpers'
 import type { Stats } from 'fs'
-import type { Pundle$FileSystem, Pundle$Config } from './types'
+import type { FileSystemInterface, Config } from './types'
+
+const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
+const hmrContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'hmr.js'), 'utf8')
 
 export default class FileSystem {
-  config: Pundle$Config;
-  source: Pundle$FileSystem;
+  config: Config;
+  source: FileSystemInterface;
   readFileCache: Map<string, { stats: Stats, contents: string }>;
   cachedResolve: ((moduleName: string, basedir: string) => Promise<string>);
 
-  constructor(config: Pundle$Config, source: Pundle$FileSystem) {
+  constructor(config: Config, source: FileSystemInterface) {
     this.config = config
     this.source = source
     this.readFileCache = new Map()
@@ -28,6 +32,10 @@ export default class FileSystem {
     return this.source.stat(path)
   }
   async resolve(moduleName: string, basedir: string, cached: boolean = true): Promise<string> {
+    if (moduleName === '$root') {
+      return moduleName
+    }
+
     const cacheKey = JSON.stringify([moduleName, basedir])
     let value
     if (cached) {
@@ -56,6 +64,10 @@ export default class FileSystem {
     return await resolve(moduleName, basedir, config)
   }
   async readFile(filePath: string, useCached: boolean = true): Promise<string> {
+    if (filePath === '$root') {
+      return this.config.hmr ? hmrContent : wrapperContent
+    }
+
     if (filePath.substr(0, 6) === '$core/') {
       filePath = builtins[filePath.substr(6)]
     }

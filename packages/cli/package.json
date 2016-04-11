@@ -1,8 +1,11 @@
 {
-  "name": "pundle-middleware",
+  "name": "pundle-cli",
   "version": "0.0.1",
-  "description": "Express Middleware for Pundle",
+  "description": "CLI for Pundle",
   "main": "lib/index.js",
+  "bin": {
+    "pundle": "./lib/bin/pundle.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,7 +20,9 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "send": "^0.13.2",
-    "ws": "^1.0.1"
+    "express": "^4.13.4",
+    "pundle": "^0.0.1",
+    "pundle-middleware": "^0.0.1",
+    "sb-event-kit": "^1.1.2"
   }
 }

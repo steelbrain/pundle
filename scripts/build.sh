@@ -9,7 +9,7 @@ PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 if [ "$PACKAGE_NAME" != "" ]; then
   PACKAGES=$PACKAGE_NAME
 else
-  PACKAGES=( "pundle" "fs" "babel" "middleware" )
+  PACKAGES=( "pundle" "fs" "babel" "middleware" "cli" )
 fi
 
 if [ "$1" = "--watch" ]; then
@@ -17,6 +17,9 @@ if [ "$1" = "--watch" ]; then
 else
   OPERATION="go"
 fi
+
+cd "${ROOT_DIRECTORY}"
+npm run clean
 
 for name in "${PACKAGES[@]}"
 do :
