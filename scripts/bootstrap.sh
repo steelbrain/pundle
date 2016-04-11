@@ -23,6 +23,7 @@ do :
   npm install --development
 
   ucompiler go
+  chmod +x lib/bin/*
 
   printf "Linking in other packages\n"
   manifest_contents=$(cat package.json)
