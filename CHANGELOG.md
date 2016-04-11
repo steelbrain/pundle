@@ -1,3 +1,7 @@
+#### 0.0.6
+
+- Fix a deployment issue and also make sure it doesn't happen again
+
 #### 0.0.5
 
 - Expose express app on dev server, it allows custom middleware integrations
