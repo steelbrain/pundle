@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "description": "NPM Installer for Pundle",
   "main": "lib/index.js",
-  "bin": {
-    "pundle-dev": "./lib/bin/pundle.js"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
