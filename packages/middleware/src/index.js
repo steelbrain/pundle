@@ -47,16 +47,16 @@ function attach({ app, server, compilation, config }: Options) {
         .pipe(res)
       return
     }
+    await status.queue
     const shouldGenerate = compilation.shouldGenerate()
     if (shouldGenerate) {
       let caughtError = false
-      status.queue = status.queue.then(function() {
+      await Promise.resolve().then(function() {
         return compilation.compile()
       }).catch(function(error) {
         caughtError = true
         config.watcher.onError(error)
       })
-      await status.queue
       if (caughtError) {
         res.statusCode = 500
         res.send('Error during compilation, check your console for more info')
