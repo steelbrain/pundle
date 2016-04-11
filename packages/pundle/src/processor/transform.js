@@ -35,6 +35,11 @@ export default async function transform(
     if (node.type === 'CallExpression') {
       const name = getName(node.callee)
       if (name === 'require' || name === 'require.resolve') {
+        if (name === 'require') {
+          node.name = '__require'
+        } else {
+          node.object.name = '__require'
+        }
         const argument = node.arguments[0]
         if (argument && argument.value) {
           promises.push(pundle.path.resolveModule(argument.value, Path.dirname(filePath)).then(function(resolved) {
