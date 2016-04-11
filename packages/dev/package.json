@@ -1,7 +1,7 @@
 {
-  "name": "pundle-cli",
+  "name": "pundle-dev",
   "version": "0.0.1",
-  "description": "CLI for Pundle",
+  "description": "Dev Server for Pundle",
   "main": "lib/index.js",
   "bin": {
     "pundle-dev": "./lib/bin/pundle.js"
