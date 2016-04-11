@@ -3,7 +3,6 @@
 /* @flow */
 
 import invariant from 'assert'
-import Path from 'path'
 import send from 'send'
 import ws from 'ws'
 import type { WatcherConfig } from '../../pundle/src/types'
