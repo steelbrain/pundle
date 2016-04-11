@@ -50,11 +50,14 @@ export default class Path {
       }
     }
     await this.emitter.emit('after-module-resolve', event)
-    if (isCore(event.moduleName)) {
-      return PosixPath.join('$core', event.moduleName)
-    }
     if (!event.path) {
       throw new Error(`Unable to resolve '${moduleName}' from '${basedir}'`)
+    } else if (isCore(event.moduleName)) {
+      return PosixPath.join('$core', event.moduleName)
+    } else if (event.path.substr(0, 1) === '/' && PosixPath.extname(event.path) === '') {
+      // Paths to module directories and stuff like that, absolute
+      // We are doing this so the event listeners don't have to reinvent the resolution wheel
+      event.path = await this.fileSystem.resolve(event.path, event.basedir)
     }
     return this.in(event.path)
   }
