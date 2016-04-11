@@ -70,7 +70,7 @@ export default class Modules {
     const toRemove = []
     const modules = new Set(this.compilation.generator.gatherAllImports())
     for (const [key, value] of this.registry) {
-      if (!modules.has(value)) {
+      if (key !== '$root' && !modules.has(value)) {
         toRemove.push(key)
       }
     }

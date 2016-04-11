@@ -24,6 +24,9 @@ export function generateBundle(
     )
   }
   for (const entry of requires) {
+    if (entry === '$root') {
+      continue
+    }
     output.push(
       `${config.module_require}('${pundle.path.in(entry)}');\n`
     )

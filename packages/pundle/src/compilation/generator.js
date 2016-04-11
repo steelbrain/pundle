@@ -2,15 +2,12 @@
 
 /* @flow */
 
-import Path from 'path'
-import FS from 'fs'
+import invariant from 'assert'
 import sourceMapToComment from 'source-map-to-comment'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import { generateBundle, generateSourceMap } from '../processor/generator'
 import type { ProcessorConfig, Module } from '../types'
 import type Compilation from './index.js'
-
-const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', '..', 'browser', 'wrapper.js'), 'utf8')
 
 export default class Generator {
   emitter: Emitter;
@@ -30,6 +27,10 @@ export default class Generator {
     modulesAdded: Set<string> = new Set()
   ): Array<Module> {
     for (const absId of modules) {
+      if (absId === '$root') {
+        continue
+      }
+
       const id = this.compilation.pundle.path.in(absId)
 
       if (modulesAdded.has(id)) {
@@ -71,8 +72,11 @@ export default class Generator {
     return JSON.stringify(sourceMap)
   }
   getProcessorOptions(): ProcessorConfig {
+    const root = this.compilation.modules.registry.get('$root')
+    invariant(root)
+
     return {
-      prepend: ';(function(){\n' + wrapperContent,
+      prepend: ';(function(){' + root.contents + '\n',
       append: '})();\n',
       module_register: '__sb_pundle_register',
       module_require: 'require'
