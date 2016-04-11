@@ -4,7 +4,7 @@
 # To run specs in all packages do `./test.sh`
 # To run specs in a specific package named 'fs' do `PACKAGE_NAME=fs ./test.sh`
 
-ROOT_DIRECTORY=$( cd $(dirname $0) ; pwd -P )/..
+ROOT_DIRECTORY=$( cd $(dirname $0)/.. ; pwd -P )
 PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 if [ "$PACKAGE_NAME" != "" ]; then
   PACKAGES=$PACKAGE_NAME
@@ -17,6 +17,8 @@ if [ "$1" = "--watch" ]; then
 else
   OPERATION="go"
 fi
+export PATH=$PATH:${ROOT_DIRECTORY}/node_modules/.bin
+export NODE_PATH=$NODE_PATH:${ROOT_DIRECTORY}/node_modules
 
 cd "${ROOT_DIRECTORY}"
 npm run clean

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-ROOT_DIRECTORY=$( cd $(dirname $0) ; pwd -P )/..
+export NODE_ENV=developemnt
+ROOT_DIRECTORY=$( cd $(dirname $0)/.. ; pwd -P )
 PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 # NOTE: Order is important
 PACKAGES_TO_LINK=( "babel" "npm-installer" "fs" "pundle" "middleware" "dev" )
@@ -9,6 +10,8 @@ NPM_ROOT=$( npm root -g )
 cd ${ROOT_DIRECTORY}
 npm install
 
+${ROOT_DIRECTORY}/scripts/build.sh
+
 for name in "${PACKAGES_TO_LINK[@]}"
 do :
   cd ${PACKAGES_PATH}/${name}
@@ -16,14 +19,7 @@ do :
   printf "Pruning in "${name}"\n"
   npm prune 1>/dev/null 2>/dev/null
   mkdir -p node_modules
-  rm -rf node_modules/pundle-*
-
-  printf "Installing dependencies\n"
-  # to install devDependencies in packages
-  npm install --development
-
-  ucompiler go
-  chmod +x lib/bin/*
+  rm -rf node_modules/*pundle*
 
   printf "Linking in other packages\n"
   manifest_contents=$(cat package.json)
@@ -35,6 +31,15 @@ do :
       npm link ${dependency} --loglevel=error
     done
   fi
+
+  printf "Installing dependencies\n"
+  # to install devDependencies in packages
+  npm install --development
+
+  if [ -f "lib/bin" ]; then
+    chmod +x lib/bin/*
+  fi
+
 
   printf "Linking self\n"
   npm link --loglevel=error
