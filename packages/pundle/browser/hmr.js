@@ -21,7 +21,13 @@ function __sb_pundle_apply_hmr(filePath) {
       hot.dispose_callbacks.forEach(function(dispose_callback) {
         dispose_callback(module.hot.data)
       })
-      module.exports = __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports, __sb_pundle_require(filePath))
+      if (hot.accept_callbacks.size) {
+        hot.accept_callbacks.forEach(function(accept_callback) {
+          accept_callback(filePath)
+        })
+      } else {
+        module.exports = __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports, __sb_pundle_require(filePath))
+      }
     } catch (_) {
       module.hot = hot
       throw _
