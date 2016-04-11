@@ -28,8 +28,8 @@ export default class Path {
     }
     return PosixPath.normalize(filePath)
   }
-  out(filePath: string): string {
-    if (filePath === '$root') {
+  out(filePath: string, file: boolean = true): string {
+    if (file && filePath === '$root') {
       return filePath
     }
     if (filePath.indexOf('$root') === 0) {
@@ -38,11 +38,11 @@ export default class Path {
     return filePath
   }
   async resolveModule(moduleName: string, basedir: string): Promise<string> {
-    const event = { moduleName, basedir, path: '' }
+    const event = { moduleName, basedir: this.out(basedir, false), path: '' }
     await this.emitter.emit('before-module-resolve', event)
     if (!event.path) {
       try {
-        event.path = await this.fileSystem.resolve(moduleName, this.out(event.basedir))
+        event.path = await this.fileSystem.resolve(moduleName, event.basedir)
       } catch (_) {
         if (_.code !== 'MODULE_NOT_FOUND') {
           throw _
