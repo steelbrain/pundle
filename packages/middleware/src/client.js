@@ -12,6 +12,7 @@ socket.addEventListener('close', function() {
 socket.addEventListener('message', function(event) {
   const message = JSON.parse(event.data)
   if (message.type === 'update') {
+    console.log('[HMR] Applying', message.filePath)
     eval(message.contents)
     __sb_pundle_apply_hmr(message.filePath)
   }
