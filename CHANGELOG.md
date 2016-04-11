@@ -1,3 +1,7 @@
+#### 0.0.5
+
+- Expose express app on dev server, it allows custom middleware integrations
+
 #### 0.0.4
 
 - Add `sourceRoot` support to `pundle-middleware`
