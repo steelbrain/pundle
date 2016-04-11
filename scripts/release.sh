@@ -15,6 +15,7 @@ do :
   if [ $? -eq 1 ]; then
     exit 1
   fi
+  ucompiler go
   npm publish
   if [ $? -eq 1 ]; then
     exit 1
