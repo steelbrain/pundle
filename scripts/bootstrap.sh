@@ -23,7 +23,7 @@ do :
 
   printf "Linking in other packages\n"
   manifest_contents=$(cat package.json)
-  dependencies=$(printf "${manifest_contents#*dependencies}" | grep -E "pundle-.*?\": " | perl -pe 's|"(\S+)":.*|\1|')
+  dependencies=$(printf "${manifest_contents#*dependencies}" | grep -E "pundle.*?\": " | perl -pe 's|"(\S+)":.*|\1|')
   if [ -n "${dependencies}" ]; then
     for dependency in ${dependencies}
     do :
