@@ -61,6 +61,9 @@ export default class Generator {
       this.compilation.config.entry
     )
   }
+  generateAdvanced(options: Object, imports: Array<Module>): string {
+    return generateBundle(this.compilation.pundle, Object.assign(this.getProcessorOptions(), options), imports, [])
+  }
   generateSourceMap(options: ?ProcessorConfig, asComment: boolean = false): string {
     if (!options) {
       options = this.getProcessorOptions()

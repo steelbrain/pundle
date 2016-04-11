@@ -12,6 +12,7 @@ import type { Stats } from 'fs'
 import type { FileSystemInterface, Config } from './types'
 
 const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
+const hmrContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'hmr.js'), 'utf8')
 
 export default class FileSystem {
   config: Config;
@@ -64,7 +65,7 @@ export default class FileSystem {
   }
   async readFile(filePath: string, useCached: boolean = true): Promise<string> {
     if (filePath === '$root') {
-      return wrapperContent
+      return this.config.hmr ? hmrContent : wrapperContent
     }
 
     if (filePath.substr(0, 6) === '$core/') {

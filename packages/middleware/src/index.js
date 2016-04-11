@@ -100,7 +100,12 @@ function attach({ app, server, compilation, config }: Options) {
         clients.delete(socket)
       })
     })
-    compilation.onDidCompile(function({ contents, filePath }) {
+    compilation.onDidCompile(function({ filePath, importsDifference }) {
+      const modules = compilation.generator.gatherImports([filePath].concat(importsDifference.added))
+      const contents = compilation.generator.generateAdvanced({
+        prepend: '',
+        append: ''
+      }, modules)
       const update = JSON.stringify({ type: 'update', filePath, contents })
       for (const client of clients) {
         client.send(update)

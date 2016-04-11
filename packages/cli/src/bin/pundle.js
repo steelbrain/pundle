@@ -4,6 +4,7 @@
 const Server = require('../')
 const server = new Server({
   pundle: {
+    hmr: true,
     entry: 'index.js',
     rootDirectory: process.cwd()
   },
