@@ -3,7 +3,7 @@
 ROOT_DIRECTORY=$( cd $(dirname $0) ; pwd -P )/..
 PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 # NOTE: Order is important
-PACKAGES_TO_LINK=( "babel" "fs" "pundle" "middleware" "cli" )
+PACKAGES_TO_LINK=( "babel" "fs" "pundle" "middleware" "dev" )
 NPM_ROOT=$( npm root -g )
 
 cd ${ROOT_DIRECTORY}
@@ -18,6 +18,12 @@ do :
   mkdir -p node_modules
   rm -rf node_modules/pundle-*
 
+  printf "Installing dependencies\n"
+  # to install devDependencies in packages
+  npm install --development
+
+  ucompiler go
+
   printf "Linking in other packages\n"
   manifest_contents=$(cat package.json)
   dependencies=$(printf "${manifest_contents#*dependencies}" | grep -E "pundle-.*?\": " | perl -pe 's|"(\S+)":.*|\1|')
@@ -28,10 +34,6 @@ do :
       npm link ${dependency} --loglevel=error
     done
   fi
-
-  printf "Installing dependencies\n"
-  # to install devDependencies in packages
-  npm install --development
 
   printf "Linking self\n"
   npm link --loglevel=error

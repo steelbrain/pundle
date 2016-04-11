@@ -10,7 +10,7 @@
     "watch": "ucompiler watch"
   },
   "bin": {
-    "pundle-compile": "./bin/pundle.js"
+    "pundle": "./lib/bin/pundle.js"
   },
   "repository": {
     "type": "git",

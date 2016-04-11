@@ -1,10 +1,10 @@
 {
-  "name": "pundle-cli",
+  "name": "pundle-dev",
   "version": "0.0.1",
-  "description": "CLI for Pundle",
+  "description": "Dev Server for Pundle",
   "main": "lib/index.js",
   "bin": {
-    "pundle": "./lib/bin/pundle.js"
+    "pundle-dev": "./lib/bin/pundle.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -19,7 +19,6 @@ type Options = {
 function attach({ app, server, compilation, config }: Options) {
   const status = compilation.watch(config.watcher)
   const middlewareConfig = Object.assign({
-    hmr: true,
     sourceMap: true,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
@@ -79,7 +78,7 @@ function attach({ app, server, compilation, config }: Options) {
     })
   })
 
-  if (middlewareConfig.hmr) {
+  if (compilation.config.hmr) {
     const wsServer = new ws.Server({ server })
     const clients = new Set()
     compilation.config.entry.unshift(require.resolve('./client.js'))
