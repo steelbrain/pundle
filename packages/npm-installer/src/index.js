@@ -4,7 +4,7 @@
 
 import Path from 'path'
 import Installer from './installer'
-import { shouldInstall, getModuleName } from './helpers'
+import { getModuleName } from './helpers'
 import type Pundle from '../../pundle/src'
 
 let nextID = 0
@@ -23,10 +23,14 @@ function getNPMInstaller(pundle: Pundle, parameters: Object) {
   const locks: Map<string, Promise> = new Map()
 
   pundle.path.onAfterModuleResolve(function(event) {
-    if (event.path || (parameters.restrictToRoot && event.basedir.indexOf(pundle.config.rootDirectory) !== 0) || event.basedir.match(IGNORED) || shouldInstall(event.moduleName)) {
+    if (event.path || (parameters.restrictToRoot && event.basedir.indexOf(pundle.config.rootDirectory) !== 0) || event.basedir.match(IGNORED)) {
       return null
     }
     const moduleName = getModuleName(event.moduleName)
+    if (moduleName === '.') {
+      // For local requires
+      return null
+    }
     let lock = locks.get(moduleName)
     if (lock) {
       return lock.then(function(status) {
