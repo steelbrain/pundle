@@ -72,7 +72,6 @@ export default class Watcher {
         }
       }
       for (const entry of toDelete) {
-        console.log('deleting', entry)
         this.compilation.modules.registry.delete(entry)
       }
     })
