@@ -63,6 +63,19 @@ export default class Watcher {
         })
       }).catch(options.onError)
     })
+    watcher.on('unlink', filePath => {
+      const moduleId = this.compilation.pundle.path.in(filePath)
+      const toDelete = []
+      for (const entry of this.compilation.modules.registry.keys()) {
+        if (entry.indexOf(moduleId) === 0) {
+          toDelete.push(entry)
+        }
+      }
+      for (const entry of toDelete) {
+        console.log('deleting', entry)
+        this.compilation.modules.registry.delete(entry)
+      }
+    })
 
     this.subscriptions.add(toReturn.disposable)
     return toReturn
