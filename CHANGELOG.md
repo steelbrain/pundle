@@ -1,3 +1,8 @@
+#### 0.0.11
+
+- Local modules are no longer tried to be installed
+- Modules with deep names like a/b are now handled properly
+
 #### 0.0.10
 
 - Fix a bug where exports of deep modules won't be updated despite being executed in HMR
