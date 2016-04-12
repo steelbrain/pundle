@@ -26,7 +26,8 @@ function getNPMInstaller(pundle: Pundle, parameters: Object) {
     if (event.path || (parameters.restrictToRoot && event.basedir.indexOf(pundle.config.rootDirectory) !== 0) || event.basedir.match(IGNORED) || shouldInstall(event.moduleName)) {
       return null
     }
-    let lock = locks.get(event.moduleName)
+    const moduleName = getModuleName(event.moduleName)
+    let lock = locks.get(moduleName)
     if (lock) {
       return lock.then(function(status) {
         if (status) {
@@ -38,7 +39,7 @@ function getNPMInstaller(pundle: Pundle, parameters: Object) {
     if (parameters.onBeforeInstall) {
       parameters.onBeforeInstall(id, event.moduleName)
     }
-    lock = installer.install(getModuleName(event.moduleName)).then(function() {
+    lock = installer.install(moduleName).then(function() {
       event.path = Path.join(parameters.rootDirectory, 'node_modules', event.moduleName)
       if (parameters.onBeforeInstall) {
         parameters.onAfterInstall(id, event.moduleName, null)
@@ -51,7 +52,7 @@ function getNPMInstaller(pundle: Pundle, parameters: Object) {
       }
       locks.delete(event.moduleName)
     })
-    locks.set(event.moduleName, lock)
+    locks.set(moduleName, lock)
     return lock
   })
 }
