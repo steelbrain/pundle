@@ -44,6 +44,10 @@ export default class Watcher {
       })
     })
     watcher.on('change', filePath => {
+      const moduleId = this.compilation.pundle.path.in(filePath)
+      if (!this.compilation.modules.registry.has(moduleId)) {
+        return
+      }
       toReturn.queue = toReturn.queue.then(() => {
         if (options.onBeforeCompile) {
           options.onBeforeCompile.call(this, filePath)
