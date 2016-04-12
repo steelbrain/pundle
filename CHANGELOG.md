@@ -1,3 +1,7 @@
+#### 0.0.9
+
+- Fix the same deployment issue in 0.0.6, release script coming soon to make sure it doesn't happen again
+
 #### 0.0.8
 
 - Disable strict mode on the whole bundle to make certain modules work
