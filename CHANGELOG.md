@@ -1,3 +1,7 @@
+#### 0.0.7
+
+- Fix another deployment issue, we don't have automated checks for this one yet but will have pretty soon
+
 #### 0.0.6
 
 - Fix a deployment issue and also make sure it doesn't happen again

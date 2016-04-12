@@ -21,8 +21,8 @@
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
     "express": "^4.13.4",
-    "pundle": "^0.0.3",
-    "pundle-middleware": "^0.0.3",
+    "pundle": "^0.0.7",
+    "pundle-middleware": "^0.0.7",
     "sb-event-kit": "^1.1.2"
   }
 }
