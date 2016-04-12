@@ -1,3 +1,7 @@
+#### 0.0.10
+
+- Fix a bug where exports of deep modules won't be updated despite being executed in HMR
+
 #### 0.0.9
 
 - Fix the same deployment issue in 0.0.6, release script coming soon to make sure it doesn't happen again
