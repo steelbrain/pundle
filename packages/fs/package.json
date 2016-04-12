@@ -1,6 +1,6 @@
 {
   "name": "pundle-fs",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Default FileSystem for Pundle",
   "main": "lib/index.js",
   "scripts": {
