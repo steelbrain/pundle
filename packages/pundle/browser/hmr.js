@@ -5,7 +5,7 @@ var global = typeof window !== 'undefined' ? window : (
 var root = global
 var GLOBAL = root
 var __require
-function __sb_pundle_apply_hmr(filePath, doNotReplace) {
+function __sb_pundle_apply_hmr(filePath) {
   var module = __require.cache[filePath]
   var hot = module.hot
   if (hot.declines.has('*') || hot.declines.has(filePath)) {
@@ -26,20 +26,17 @@ function __sb_pundle_apply_hmr(filePath, doNotReplace) {
         })
         return
       }
-      doNotReplace = false
     } catch (_) {
       module.hot = hot
       throw _
     }
   }
-  if (!doNotReplace) {
-    __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports, __sb_pundle_require(filePath))
-  }
+  __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports, __sb_pundle_require(filePath))
   module.parents.forEach(function(parent) {
     if (parent === '$root') {
       return
     }
-    __sb_pundle_apply_hmr(parent, true)
+    __sb_pundle_apply_hmr(parent)
   })
 }
 function __sb_pundle_register(filePath, callback) {
