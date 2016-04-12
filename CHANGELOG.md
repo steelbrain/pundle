@@ -1,6 +1,7 @@
 #### 0.0.10
 
 - Fix a bug where exports of deep modules won't be updated despite being executed in HMR
+- Fix a bug where modules installer would be invoked twice for modules of the same name who are triggered at the same time
 
 #### 0.0.9
 
