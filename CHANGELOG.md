@@ -1,3 +1,7 @@
+#### 0.0.8
+
+- Disable strict mode on the whole bundle to make certain modules work
+
 #### 0.0.7
 
 - Fix another deployment issue, we don't have automated checks for this one yet but will have pretty soon
