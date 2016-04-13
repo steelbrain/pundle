@@ -51,7 +51,7 @@
     "querystring-es3": "^0.2.1",
     "readable-stream": "^2.0.6",
     "sb-event-kit": "^1.1.2",
-    "sb-memoize": "^1.0.1",
+    "sb-memoize": "^1.0.2",
     "sb-promisify": "^1.2.0",
     "sb-resolve": "^1.0.2",
     "source-map": "^0.5.3",

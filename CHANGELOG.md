@@ -1,3 +1,11 @@
+#### 0.1.0
+
+- Upgrade sb-memoize to include fixes for several bugs including when it wouldn't detect new files and fail with not found errors
+- Fix a bug in installer where it will try to install things it shouldn't
+- Fix a bug where watcher would try to compile a file that's not required anywhere
+- Properly delete modules from registry in watcher as they are removed
+- Fix a bug where source maps would be a little off than usual
+
 #### 0.0.11
 
 - Local modules are no longer tried to be installed

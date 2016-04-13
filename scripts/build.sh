@@ -34,5 +34,5 @@ done
 
 cd "${ROOT_DIRECTORY}"
 sleep 5
-wait
 chmod +x packages/*/lib/bin/*
+wait

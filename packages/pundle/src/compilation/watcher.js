@@ -44,6 +44,10 @@ export default class Watcher {
       })
     })
     watcher.on('change', filePath => {
+      const moduleId = this.compilation.pundle.path.in(filePath)
+      if (!this.compilation.modules.registry.has(moduleId)) {
+        return
+      }
       toReturn.queue = toReturn.queue.then(() => {
         if (options.onBeforeCompile) {
           options.onBeforeCompile.call(this, filePath)
@@ -58,6 +62,18 @@ export default class Watcher {
           }
         })
       }).catch(options.onError)
+    })
+    watcher.on('unlink', filePath => {
+      const moduleId = this.compilation.pundle.path.in(filePath)
+      const toDelete = []
+      for (const entry of this.compilation.modules.registry.keys()) {
+        if (entry.indexOf(moduleId) === 0) {
+          toDelete.push(entry)
+        }
+      }
+      for (const entry of toDelete) {
+        this.compilation.modules.registry.delete(entry)
+      }
     })
 
     this.subscriptions.add(toReturn.disposable)
