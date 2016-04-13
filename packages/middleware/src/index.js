@@ -17,13 +17,23 @@ type Options = {
 }
 
 function attach({ app, server, compilation, config }: Options) {
-  const status = compilation.watch(config.watcher)
+  let ready
+  const watcherConfig = Object.assign({}, config.watcher)
+  const status = compilation.watch(watcherConfig)
   const middlewareConfig = Object.assign({
     sourceMap: true,
     sourceRoot: compilation.config.rootDirectory,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
   }, config.middleware)
+  watcherConfig.onReady = function() {
+    status.queue.then(function() {
+      ready = true
+    })
+    if (config.watcher.onReady) {
+      config.watcher.onReady()
+    }
+  }
 
   async function prepareRequest(res): Promise<boolean> {
     await status.queue
@@ -112,6 +122,10 @@ function attach({ app, server, compilation, config }: Options) {
       })
     })
     compilation.onDidCompile(function({ filePath, importsDifference }) {
+      if (!ready) {
+        return
+      }
+
       const module = compilation.modules.registry.get(filePath)
       invariant(module)
       const modules = compilation.generator.gatherImports(importsDifference.added)
