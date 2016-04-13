@@ -58,7 +58,7 @@ export function generateSourceMap(
       })
     }
     lines += getLinesCount(entry.contents)
-    lines += 2  // For the closing of reegister function
+    lines += 2  // I don't know why we need two but it only works if we have two so I don't care
     sourceMap.setSourceContent(entryPath, entry.sources)
   }
 
