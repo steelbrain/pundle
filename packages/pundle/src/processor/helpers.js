@@ -7,7 +7,7 @@ import { VISITOR_KEYS } from 'babel-types'
 
 const REGEX_EOL = /\n|\r\n/
 
-// Source: https://goo.gl/821D9T
+// Source: https://goo.gl/821D9T :: 368
 export function mergeSourceMaps(inputMap: Object, map: Object): Object {
   const inputMapConsumer   = new sourceMap.SourceMapConsumer(inputMap)
   const outputMapConsumer  = new sourceMap.SourceMapConsumer(map)

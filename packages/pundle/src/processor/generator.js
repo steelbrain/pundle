@@ -17,8 +17,14 @@ export function generateBundle(
   const output = [config.prepend || '']
 
   for (const entry of content) {
+    let strictMode = false
+    let processedContents = entry.contents
+    if (processedContents.slice(1, 11) === 'use strict') {
+      processedContents = processedContents.substr(processedContents.indexOf('\n', 1) + 1)
+      strictMode = true
+    }
     const internalPath = pundle.path.in(entry.filePath)
-    const internalContent = `var __filename = '${internalPath}', __dirname = '${Path.posix.dirname(internalPath)}';\n${entry.contents}`
+    const internalContent = `${strictMode ? "'use strict';\n" : ''}var __filename = '${internalPath}', __dirname = '${Path.posix.dirname(internalPath)}';\n${processedContents}`
     output.push(
       `${config.module_register}('${internalPath}', function(module, exports, require){\n${internalContent}\n}); // ${internalPath} ends\n`
     )

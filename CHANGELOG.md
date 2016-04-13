@@ -5,6 +5,7 @@
 - Fix a bug where watcher would try to compile a file that's not required anywhere
 - Properly delete modules from registry in watcher as they are removed
 - Fix a bug where source maps would be a little off than usual
+- Do not inline the source map when in middleware mode
 
 #### 0.0.11
 

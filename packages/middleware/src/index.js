@@ -17,33 +17,25 @@ type Options = {
 }
 
 function attach({ app, server, compilation, config }: Options) {
-  const status = compilation.watch(config.watcher)
+  let ready
+  const watcherConfig = Object.assign({}, config.watcher)
+  const status = compilation.watch(watcherConfig)
   const middlewareConfig = Object.assign({
     sourceMap: true,
     sourceRoot: compilation.config.rootDirectory,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
   }, config.middleware)
-
-
-  async function handleRequest(req, res, next) {
-    if (req.method !== 'GET' || req.url.indexOf(middlewareConfig.publicPath) !== 0) {
-      next()
-      return
+  watcherConfig.onReady = function() {
+    status.queue.then(function() {
+      ready = true
+    })
+    if (config.watcher.onReady) {
+      config.watcher.onReady()
     }
-    if (req.url !== middlewareConfig.publicBundlePath) {
-      send(req, req.url, { root: middlewareConfig.sourceRoot, index: 'index.html' })
-        .on('error', function() {
-          next()
-        })
-        .on('directory', function() {
-          res.statusCode = 301
-          res.setHeader('Location', `${req.url}/`)
-          res.send(`Redirecting to ${req.url}/`)
-        })
-        .pipe(res)
-      return
-    }
+  }
+
+  async function prepareRequest(res): Promise<boolean> {
     await status.queue
     const shouldGenerate = compilation.shouldGenerate()
     if (shouldGenerate) {
@@ -57,15 +49,48 @@ function attach({ app, server, compilation, config }: Options) {
       if (caughtError) {
         res.statusCode = 500
         res.send('Error during compilation, check your console for more info')
-        return
+        return false
       }
     }
-    res.setHeader('Content-Type', 'application/javascript')
-    let generated = compilation.generate()
-    if (middlewareConfig.sourceMap) {
-      generated += compilation.generateSourceMap(null, true)
+    return true
+  }
+
+  async function handleRequest(req, res, next) {
+    if (req.method !== 'GET' || req.url.indexOf(middlewareConfig.publicPath) !== 0) {
+      next()
+      return
     }
-    res.send(generated)
+
+    if (req.url === middlewareConfig.publicBundlePath) {
+      if (!await prepareRequest(res)) {
+        return
+      }
+      res.setHeader('Content-Type', 'application/javascript')
+      let generated = compilation.generate()
+      if (middlewareConfig.sourceMap) {
+        generated += `//# sourceMappingURL=${middlewareConfig.publicBundlePath + '.map'}`
+      }
+      res.send(generated)
+      return
+    }
+    if (req.url === middlewareConfig.publicBundlePath + '.map') {
+      if (!await prepareRequest(res)) {
+        return
+      }
+      res.setHeader('Content-Type', 'application/json')
+      res.send(compilation.generateSourceMap())
+      return
+    }
+    send(req, req.url, { root: middlewareConfig.sourceRoot, index: 'index.html' })
+      .on('error', function() {
+        next()
+      })
+      .on('directory', function() {
+        res.statusCode = 301
+        res.setHeader('Location', `${req.url}/`)
+        res.send(`Redirecting to ${req.url}/`)
+      })
+      .pipe(res)
   }
 
   app.use(function(req, res, next) {
@@ -97,6 +122,10 @@ function attach({ app, server, compilation, config }: Options) {
       })
     })
     compilation.onDidCompile(function({ filePath, importsDifference }) {
+      if (!ready) {
+        return
+      }
+
       const module = compilation.modules.registry.get(filePath)
       invariant(module)
       const modules = compilation.generator.gatherImports(importsDifference.added)
