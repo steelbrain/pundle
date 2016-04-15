@@ -4,6 +4,7 @@
 
 import Path from 'path'
 import generate from 'babel-generator'
+import * as t from 'babel-types'
 import { parse } from 'babylon'
 import { traverse, getName } from './helpers'
 import { mergeSourceMaps } from './helpers'
@@ -36,9 +37,9 @@ export default async function transform(
       const name = getName(node.callee)
       if (name === 'require' || name === 'require.resolve') {
         if (name === 'require') {
-          node.name = '__require'
+          node.callee.name = '__require'
         } else {
-          node.object.name = '__require'
+          node.callee.object.name = '__require'
         }
         const argument = node.arguments[0]
         if (argument && argument.value) {
@@ -63,6 +64,17 @@ export default async function transform(
   })
 
   await Promise.all(promises)
+  if (filePath !== '$root') {
+    ast.program.body.unshift(
+      t.variableDeclaration('var', [
+        t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral(Path.dirname(filePath))),
+        t.variableDeclarator(t.identifier('__filename'), t.stringLiteral(filePath)),
+        t.variableDeclarator(t.identifier('__require'), t.callExpression(t.identifier('__sb_pundle_require'), [
+          t.stringLiteral(filePath)
+        ]))
+      ])
+    )
+  }
   const generated = generate(ast, {
     quotes: 'single',
     filename: filePath,

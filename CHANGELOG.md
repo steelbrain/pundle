@@ -1,3 +1,8 @@
+#### 0.1.2
+
+- Fix a typo which won't let `require`s to be rewritten to `__require`
+- Fix source maps for compiled babel files
+
 #### 0.1.1
 
 - Bump sb-resolve's version to include full support for `browser` field

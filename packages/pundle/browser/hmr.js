@@ -31,7 +31,7 @@ function __sb_pundle_apply_hmr(filePath) {
       throw _
     }
   }
-  __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports, __sb_pundle_require(filePath))
+  __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports)
   module.parents.forEach(function(parent) {
     if (parent === '$root') {
       return

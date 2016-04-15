@@ -21,7 +21,7 @@ function __sb_pundle_require(moduleName) {
        parents: new Set([moduleName])
     }
     __require.cache[request] = module
-    __sb_pundle.module_sources[request].call(module.exports, module, module.exports, __sb_pundle_require(request))
+    __sb_pundle.module_sources[request].call(module.exports, module, module.exports)
     return module.exports
   }
   Object.assign(_require, __sb_pundle_require)
