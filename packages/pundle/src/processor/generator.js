@@ -47,7 +47,6 @@ export function generateSourceMap(
   for (const entry of content) {
     const entryPath = 'motion:///' + pundle.path.in(entry.filePath)
     const entryMap = new SourceMapConsumer(entry.sourceMap)
-    lines += 1 // For the opening of register function and declration of basic variables
     for (const mapping of entryMap._generatedMappings) {
       sourceMap.addMapping({
         source: entryPath,
@@ -56,7 +55,7 @@ export function generateSourceMap(
       })
     }
     lines += getLinesCount(entry.contents)
-    lines += 2  // I don't know why we need two but it only works if we have two so I don't care
+    lines += 2
     sourceMap.setSourceContent(entryPath, entry.sources)
   }
 
