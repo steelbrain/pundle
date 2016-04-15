@@ -1,3 +1,7 @@
+#### 0.1.3
+
+- Fix a bug where HMR won't work
+
 #### 0.1.2
 
 - Fix a typo which won't let `require`s to be rewritten to `__require`

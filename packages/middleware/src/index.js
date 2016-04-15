@@ -17,25 +17,17 @@ type Options = {
 }
 
 function attach({ app, server, compilation, config }: Options) {
-  let ready
-  const watcherConfig = Object.assign({}, config.watcher)
-  const status = compilation.watch(watcherConfig)
+  let ready = true
+  const status = compilation.watch(config.watcher)
   const middlewareConfig = Object.assign({
     sourceMap: true,
     sourceRoot: compilation.config.rootDirectory,
     publicPath: '/',
     publicBundlePath: '/bundle.js'
   }, config.middleware)
-  watcherConfig.onReady = function() {
-    status.queue.then(function() {
-      ready = true
-    })
-    if (config.watcher.onReady) {
-      config.watcher.onReady()
-    }
-  }
 
   async function prepareRequest(res): Promise<boolean> {
+    ready = false
     await status.queue
     const shouldGenerate = compilation.shouldGenerate()
     if (shouldGenerate) {
@@ -49,9 +41,11 @@ function attach({ app, server, compilation, config }: Options) {
       if (caughtError) {
         res.statusCode = 500
         res.send('Error during compilation, check your console for more info')
+        ready = true
         return false
       }
     }
+    ready = true
     return true
   }
 
