@@ -1,6 +1,7 @@
 #### 0.1.2
 
 - Fix a typo which won't let `require`s to be rewritten to `__require`
+- Fix source maps for compiled babel files
 
 #### 0.1.1
 

@@ -27,7 +27,7 @@ function getBabelTransformer(pundle: Object, parameters: Object = {}) {
       }))
 
       event.contents = processed.code
-      event.sourceMap = processed.sourceMap
+      event.sourceMap = processed.map
     })
   })
 }
