@@ -1,6 +1,6 @@
 {
   "name": "pundle-middleware",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Express Middleware for Pundle",
   "main": "lib/index.js",
   "scripts": {
