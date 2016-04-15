@@ -1,3 +1,7 @@
+#### 0.1.1
+
+- Bump sb-resolve's version to include full support for `browser` field
+
 #### 0.1.0
 
 - Upgrade sb-memoize to include fixes for several bugs including when it wouldn't detect new files and fail with not found errors
