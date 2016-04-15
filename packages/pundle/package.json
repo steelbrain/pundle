@@ -53,7 +53,7 @@
     "sb-event-kit": "^1.1.2",
     "sb-memoize": "^1.0.2",
     "sb-promisify": "^1.2.0",
-    "sb-resolve": "^1.0.2",
+    "sb-resolve": "^1.1.0",
     "source-map": "^0.5.3",
     "source-map-to-comment": "^1.0.0",
     "stream-browserify": "^2.0.1",
