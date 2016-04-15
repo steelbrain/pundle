@@ -2,7 +2,6 @@
 
 /* @flow */
 
-import Path from 'path'
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map'
 import { getLinesCount } from './helpers'
 import type Pundle from '../index'
@@ -17,16 +16,9 @@ export function generateBundle(
   const output = [config.prepend || '']
 
   for (const entry of content) {
-    let strictMode = false
-    let processedContents = entry.contents
-    if (processedContents.slice(1, 11) === 'use strict') {
-      processedContents = processedContents.substr(processedContents.indexOf('\n', 1) + 1)
-      strictMode = true
-    }
     const internalPath = pundle.path.in(entry.filePath)
-    const internalContent = `${strictMode ? "'use strict';\n" : ''}var __filename = '${internalPath}', __dirname = '${Path.posix.dirname(internalPath)}';\n${processedContents}`
     output.push(
-      `${config.module_register}('${internalPath}', function(module, exports, require){\n${internalContent}\n}); // ${internalPath} ends\n`
+      `${config.module_register}('${internalPath}', function(module, exports){\n${entry.contents}\n}); // ${internalPath} ends\n`
     )
   }
   for (const entry of requires) {
@@ -34,7 +26,7 @@ export function generateBundle(
       continue
     }
     output.push(
-      `${config.module_require}('${pundle.path.in(entry)}');\n`
+      `__require('${pundle.path.in(entry)}');\n`
     )
   }
   output.push(config.append || '')

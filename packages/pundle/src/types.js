@@ -62,8 +62,7 @@ export type WatcherConfig = {
 export type ProcessorConfig = {
   append?: string,
   prepend?: string,
-  module_register: string,
-  module_require: string
+  module_register: string
 }
 
 export type Plugin = string | Function | [string, Object] | [Function, Object]

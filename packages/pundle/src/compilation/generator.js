@@ -81,8 +81,7 @@ export default class Generator {
     return {
       prepend: ';(function(){' + root.contents + '\n',
       append: '})();\n',
-      module_register: '__sb_pundle_register',
-      module_require: '__require'
+      module_register: '__sb_pundle_register'
     }
   }
   shouldGenerate(): boolean {

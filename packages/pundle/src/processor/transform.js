@@ -64,6 +64,17 @@ export default async function transform(
   })
 
   await Promise.all(promises)
+  if (filePath !== '$root') {
+    ast.program.body.unshift(
+      t.variableDeclaration('var', [
+        t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral(Path.dirname(filePath))),
+        t.variableDeclarator(t.identifier('__filename'), t.stringLiteral(filePath)),
+        t.variableDeclarator(t.identifier('__require'), t.callExpression(t.identifier('__sb_pundle_require'), [
+          t.stringLiteral(filePath)
+        ]))
+      ])
+    )
+  }
   const generated = generate(ast, {
     quotes: 'single',
     filename: filePath,
