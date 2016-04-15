@@ -4,6 +4,7 @@
 
 import Path from 'path'
 import generate from 'babel-generator'
+import * as t from 'babel-types'
 import { parse } from 'babylon'
 import { traverse, getName } from './helpers'
 import { mergeSourceMaps } from './helpers'
@@ -36,9 +37,9 @@ export default async function transform(
       const name = getName(node.callee)
       if (name === 'require' || name === 'require.resolve') {
         if (name === 'require') {
-          node.name = '__require'
+          node.callee.name = '__require'
         } else {
-          node.object.name = '__require'
+          node.callee.object.name = '__require'
         }
         const argument = node.arguments[0]
         if (argument && argument.value) {
