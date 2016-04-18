@@ -21,9 +21,10 @@ function getBabelTransformer(pundle: Object, parameters: Object = {}) {
       }
       const processed = transform(event.contents, Object.assign({}, parameters.config, {
         filename: pundle.path.out(event.filePath),
+        sourceMap: true,
+        highlightCode: false,
         sourceFileName: event.filePath,
-        inputSourceMap: event.sourceMap,
-        sourceMap: true
+        inputSourceMap: event.sourceMap
       }))
 
       event.contents = processed.code

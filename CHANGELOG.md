@@ -1,3 +1,7 @@
+#### Upcoming
+
+- Disable source code highlighting in Babel errors
+
 #### 0.1.3
 
 - Fix a bug where HMR won't work
