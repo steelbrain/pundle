@@ -61,6 +61,12 @@ class Pundle {
     this.compilations.forEach(callback)
     return this.emitter.on('observe-compilations', callback)
   }
+  clearCache() {
+    this.fileSystem.cachedResolve.__sb_cache = {}
+    for (const entry of this.compilations) {
+      entry.clearCache()
+    }
+  }
   dispose() {
     for (const entry of this.compilations) {
       entry.dispose()

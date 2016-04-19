@@ -55,6 +55,9 @@ export default class Compilation {
   shouldGenerate(): boolean {
     return this.generator.shouldGenerate()
   }
+  clearCache() {
+    this.modules.registry.clear()
+  }
   onDidDestroy(callback: Function): Disposable {
     return this.emitter.on('did-destroy', callback)
   }

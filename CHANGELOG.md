@@ -1,6 +1,7 @@
-#### Upcoming
+#### 0.2.0
 
 - Disable source code highlighting in Babel errors
+- Expose `clearCache` on both pundle and sub compilations
 
 #### 0.1.3
 
