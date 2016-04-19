@@ -1,3 +1,7 @@
+#### 0.2.1
+
+- Do not push HMR for full bundle compiles as it crashes the browser window and hangs node for a lot of time
+
 #### 0.2.0
 
 - Disable source code highlighting in Babel errors

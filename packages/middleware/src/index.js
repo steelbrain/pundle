@@ -116,7 +116,7 @@ function attach({ app, server, compilation, config }: Options) {
       })
     })
     compilation.onDidCompile(function({ filePath, importsDifference }) {
-      if (!ready) {
+      if (!ready || compilation.locks.size) {
         return
       }
 

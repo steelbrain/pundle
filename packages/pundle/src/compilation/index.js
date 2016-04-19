@@ -10,8 +10,10 @@ import type { Disposable } from 'sb-event-kit'
 import type Pundle from '../index.js'
 import type { ProcessorConfig, WatcherConfig, Config } from '../types'
 
+let lock = 0
 
 export default class Compilation {
+  locks: Set<number>;
   pundle: Pundle;
   config: Config;
   emitter: Emitter;
@@ -21,6 +23,7 @@ export default class Compilation {
   subscriptions: CompositeDisposable;
 
   constructor(pundle: Pundle) {
+    this.locks = new Set()
     this.pundle = pundle
     this.config = Object.assign({}, pundle.config)
     this.emitter = new Emitter()
@@ -35,7 +38,14 @@ export default class Compilation {
     this.subscriptions.add(this.generator)
   }
   compile(): Promise {
-    return Promise.all(this.config.entry.map(entry => this.read(entry)))
+    const id = ++lock
+    this.locks.add(id)
+    return Promise.all(this.config.entry.map(entry => this.read(entry))).then(() => {
+      this.locks.delete(id)
+    }, function(error) {
+      this.locks.delete(id)
+      throw error
+    })
   }
   read(filePath: string): Promise {
     return this.modules.read(filePath)
