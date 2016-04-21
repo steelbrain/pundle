@@ -42,7 +42,7 @@ export default class Compilation {
     this.locks.add(id)
     return Promise.all(this.config.entry.map(entry => this.read(entry))).then(() => {
       this.locks.delete(id)
-    }, function(error) {
+    }, error => {
       this.locks.delete(id)
       throw error
     })

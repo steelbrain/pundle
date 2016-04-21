@@ -1,3 +1,7 @@
+#### 0.2.2
+
+- Fix a bug where an error would be thrown randomly during initialization
+
 #### 0.2.1
 
 - Do not push HMR for full bundle compiles as it crashes the browser window and hangs node for a lot of time
