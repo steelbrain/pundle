@@ -1,3 +1,7 @@
+#### 0.2.3
+
+- Fix a bug where the error event won't be triggered sometimes
+
 #### 0.2.2
 
 - Fix a bug where an error would be thrown randomly during initialization

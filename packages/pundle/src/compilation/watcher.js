@@ -60,8 +60,9 @@ export default class Watcher {
           if (options.onAfterCompile) {
             options.onAfterCompile.call(this, filePath, error)
           }
+          options.onError(error)
         })
-      }).catch(options.onError)
+      })
     })
     watcher.on('unlink', filePath => {
       const moduleId = this.compilation.pundle.path.in(filePath)
