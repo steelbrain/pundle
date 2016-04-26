@@ -1,3 +1,7 @@
+#### 0.2.4
+
+- Pin `babel-generator` version to avoid source-map bug
+
 #### 0.2.3
 
 - Fix a bug where the error event won't be triggered sometimes
