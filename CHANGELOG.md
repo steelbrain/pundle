@@ -1,3 +1,7 @@
+#### 0.2.5
+
+- Take two at fixing `babel-generator` bug
+
 #### 0.2.4
 
 - Pin `babel-generator` version to avoid source-map bug
