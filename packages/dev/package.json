@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Dev Server for Pundle",
   "main": "lib/index.js",
   "bin": {
@@ -21,8 +21,8 @@
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
     "express": "^4.13.4",
-    "pundle": "^0.2.3",
-    "pundle-middleware": "^0.2.3",
+    "pundle": "^0.2.4",
+    "pundle-middleware": "^0.2.4",
     "sb-event-kit": "^1.1.2"
   }
 }
