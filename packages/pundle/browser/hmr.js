@@ -19,22 +19,22 @@ function __sb_pundle_apply_hmr(filePath, updates_applied) {
   }
   updates_applied.add(filePath)
 
+  module.hot = new __sb_pundle_hot()
+  try {
+    hot.dispose_callbacks.forEach(function(dispose_callback) {
+      dispose_callback(module.hot.data)
+    })
+    hot.accept_callbacks.forEach(function(accept_callback) {
+      accept_callback(filePath)
+    })
+  } catch (_) {
+    module.hot = hot
+    throw _
+  }
   if (hot.accepts.has('*') || hot.accepts.has(filePath)) {
-    try {
-      module.hot = new __sb_pundle_hot()
-      hot.dispose_callbacks.forEach(function(dispose_callback) {
-        dispose_callback(module.hot.data)
-      })
-      if (hot.accept_callbacks.size) {
-        hot.accept_callbacks.forEach(function(accept_callback) {
-          accept_callback(filePath)
-        })
-        return
-      }
-    } catch (_) {
-      module.hot = hot
-      throw _
-    }
+    if (hot.accept_callbacks.size) {
+      return
+     }
   }
   __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports)
   module.parents.forEach(function(parent) {

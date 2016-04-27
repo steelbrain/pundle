@@ -1,3 +1,7 @@
+#### 0.2.7
+
+- Fix a bug in HMR where dispose callbacks of modules won't be called unless they are accepting
+
 #### 0.2.6
 
 - Fix HMR doubly-apply bug for complex scenarios
