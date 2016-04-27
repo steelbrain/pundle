@@ -1,6 +1,6 @@
 {
   "name": "pundle-npm-installer",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "NPM Installer for Pundle",
   "main": "lib/index.js",
   "scripts": {
