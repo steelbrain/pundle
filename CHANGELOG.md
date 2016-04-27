@@ -1,3 +1,7 @@
+#### 0.2.6
+
+- Fix HMR doubly-apply bug for complex scenarios
+
 #### 0.2.5
 
 - Take two at fixing `babel-generator` bug

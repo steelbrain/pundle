@@ -5,7 +5,11 @@ var global = typeof window !== 'undefined' ? window : (
 var root = global
 var GLOBAL = root
 var __require
-function __sb_pundle_apply_hmr(filePath) {
+function __sb_pundle_apply_hmr(filePath, updates_applied) {
+  if (updates_applied.has(filePath)) {
+    return
+  }
+
   var module = __require.cache[filePath]
   var hot = module.hot
   if (hot.declines.has('*') || hot.declines.has(filePath)) {
@@ -13,6 +17,7 @@ function __sb_pundle_apply_hmr(filePath) {
     location.reload()
     return
   }
+  updates_applied.add(filePath)
 
   if (hot.accepts.has('*') || hot.accepts.has(filePath)) {
     try {
@@ -36,7 +41,7 @@ function __sb_pundle_apply_hmr(filePath) {
     if (parent === '$root') {
       return
     }
-    __sb_pundle_apply_hmr(parent)
+    __sb_pundle_apply_hmr(parent, updates_applied)
   })
 }
 function __sb_pundle_register(filePath, callback) {

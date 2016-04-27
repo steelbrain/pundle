@@ -14,6 +14,6 @@ socket.addEventListener('message', function(event) {
   if (message.type === 'update') {
     console.log('[HMR] Applying', message.filePath)
     eval(message.contents)
-    __sb_pundle_apply_hmr(message.filePath)
+    __sb_pundle_apply_hmr(message.filePath, new Set())
   }
 })
