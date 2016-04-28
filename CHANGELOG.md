@@ -1,6 +1,7 @@
 #### 0.2.7
 
 - Fix a bug in HMR where dispose callbacks of modules won't be called unless they are accepting
+- Make requests wait properly (Fixes #34)
 
 #### 0.2.6
 
