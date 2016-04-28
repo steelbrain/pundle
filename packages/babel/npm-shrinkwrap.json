@@ -24,7 +24,7 @@
     },
     "babel-core": {
       "version": "6.7.2",
-      "from": "babel-core@latest",
+      "from": "babel-core@>=6.7.2 < 7.0.0",
       "resolved": "https://registry.npmjs.org/babel-core/-/babel-core-6.7.2.tgz"
     },
     "babel-generator": {
