@@ -1,3 +1,7 @@
+#### 0.2.8
+
+- Fix an internal bug in node traverser
+
 #### 0.2.7
 
 - Fix a bug in HMR where dispose callbacks of modules won't be called unless they are accepting

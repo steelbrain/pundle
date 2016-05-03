@@ -33,6 +33,10 @@ export default async function transform(
     filename: filePath
   })
   traverse(ast, function(node) {
+    if (!node) {
+      return false
+    }
+
     if (node.type === 'CallExpression') {
       const name = getName(node.callee)
       if (name === 'require' || name === 'require.resolve') {
