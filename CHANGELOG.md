@@ -1,4 +1,4 @@
-#### Upcoming
+#### 0.2.9
 
 - Fix support for local paths in npm installer
 
