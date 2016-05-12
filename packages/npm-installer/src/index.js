@@ -18,16 +18,16 @@ function getNPMInstaller(pundle: Pundle, parameters: Object) {
   }, parameters)
   const installer = new Installer(parameters)
   if (!(parameters.ignored instanceof RegExp)) {
-    parameters.ignored = /(node_modules|bower_components)/
+    parameters.ignored = IGNORED
   }
   const locks: Map<string, Promise> = new Map()
 
   pundle.path.onAfterModuleResolve(function(event) {
-    if (event.path || (parameters.restrictToRoot && event.basedir.indexOf(pundle.config.rootDirectory) !== 0) || event.basedir.match(IGNORED)) {
+    if (event.path || (parameters.restrictToRoot && event.basedir.indexOf(pundle.config.rootDirectory) !== 0) || parameters.ignored.test(event.basedir)) {
       return null
     }
     const moduleName = getModuleName(event.moduleName)
-    if (moduleName === '.') {
+    if (moduleName.substr(0, 1) === '.') {
       // For local requires
       return null
     }

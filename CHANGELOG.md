@@ -1,3 +1,7 @@
+#### Upcoming
+
+- Fix support for local paths in npm installer
+
 #### 0.2.8
 
 - Fix an internal bug in node traverser
