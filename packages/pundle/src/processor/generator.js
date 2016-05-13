@@ -39,7 +39,9 @@ export function generateSourceMap(
   content: Array<Module>
 ): Object {
   let lines = 0
-  const sourceMap = new SourceMapGenerator()
+  const sourceMap = new SourceMapGenerator({
+    skipValidation: true
+  })
 
   if (config.prepend) {
     lines += getLinesCount(config.prepend)

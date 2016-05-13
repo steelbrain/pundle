@@ -14,7 +14,8 @@ export function mergeSourceMaps(inputMap: Object, map: Object): Object {
 
   const mergedGenerator = new sourceMap.SourceMapGenerator({
     file: inputMapConsumer.file,
-    sourceRoot: inputMapConsumer.sourceRoot
+    sourceRoot: inputMapConsumer.sourceRoot,
+    skipValidation: true
   })
 
   // This assumes the output map always has a single source, since Babel always compiles a single source file to a
