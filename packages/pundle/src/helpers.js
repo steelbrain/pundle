@@ -45,6 +45,9 @@ export function normalizeConfig(givenConfig: Config): Config {
     }
   }
   config.sourceMaps = Boolean(config.sourceMaps)
+  if (!Array.isArray(config.moduleDirectories)) {
+    config.moduleDirectories = ['node_modules']
+  }
   return config
 }
 

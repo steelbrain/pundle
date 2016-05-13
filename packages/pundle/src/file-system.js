@@ -53,7 +53,7 @@ export default class FileSystem {
         readFile: this.readFile.bind(this)
       }
     })
-    const parents = (await find(basedir, config.moduleDirectories || ['node_modules'], this.source)).map(Path.dirname)
+    const parents = (await find(basedir, config.moduleDirectories, this.source)).map(Path.dirname)
     if (Array.isArray(config.root)) {
       config.root = config.root.concat(parents)
     } else if (typeof config.root === 'string') {
