@@ -22,7 +22,7 @@ export function normalizeConfig(givenConfig: Config): Config {
       config.entry[i] = Path.join(config.rootDirectory, entry)
     }
   }
-  config.entry = uniq(['$root'].concat(config.entry))
+  config.entry = uniq(['$internal'].concat(config.entry))
   // Make sure we have a FileSystem on board
   if (!config.FileSystem) {
     config.FileSystem = FileSystem

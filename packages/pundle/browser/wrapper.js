@@ -32,4 +32,4 @@ __sb_pundle_require.resolve = function(dependency) {
 }
 __sb_pundle_require.cache = []
 __sb_pundle_require.extensions = []
-__require = __sb_pundle_require('$root')
+__require = __sb_pundle_require('$internal')

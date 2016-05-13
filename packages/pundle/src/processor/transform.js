@@ -68,7 +68,7 @@ export default async function transform(
   })
 
   await Promise.all(promises)
-  if (filePath !== '$root') {
+  if (filePath !== '$internal') {
     ast.program.body.unshift(
       t.variableDeclaration('var', [
         t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral(Path.dirname(filePath))),

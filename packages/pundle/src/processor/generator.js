@@ -22,7 +22,7 @@ export function generateBundle(
     )
   }
   for (const entry of requires) {
-    if (entry === '$root') {
+    if (entry === '$internal') {
       continue
     }
     output.push(

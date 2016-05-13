@@ -32,7 +32,7 @@ export default class FileSystem {
     return this.source.stat(path)
   }
   async resolve(moduleName: string, basedir: string, cached: boolean = true): Promise<string> {
-    if (moduleName === '$root') {
+    if (moduleName === '$internal') {
       return moduleName
     }
 
@@ -64,7 +64,7 @@ export default class FileSystem {
     return await resolve(moduleName, basedir, config)
   }
   async readFile(filePath: string, useCached: boolean = true): Promise<string> {
-    if (filePath === '$root') {
+    if (filePath === '$internal') {
       return this.config.hmr ? hmrContent : wrapperContent
     }
 

@@ -38,7 +38,7 @@ function __sb_pundle_apply_hmr(filePath, updates_applied) {
   }
   __sb_pundle.module_sources[filePath].call(module.exports, module, module.exports)
   module.parents.forEach(function(parent) {
-    if (parent === '$root') {
+    if (parent === '$internal') {
       return
     }
     __sb_pundle_apply_hmr(parent, updates_applied)
@@ -139,4 +139,4 @@ __sb_pundle_require.resolve = function(dependency) {
 }
 __sb_pundle_require.cache = []
 __sb_pundle_require.extensions = []
-__require = __sb_pundle_require('$root')
+__require = __sb_pundle_require('$internal')

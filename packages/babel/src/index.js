@@ -13,7 +13,7 @@ function getBabelTransformer(pundle: Object, parameters: Object = {}) {
   }
   pundle.observeCompilations(function(compilation) {
     compilation.onBeforeCompile(function(event) {
-      if (event.filePath.indexOf('$root/') !== 0 || event.filePath.match(parameters.ignored)) {
+      if (event.filePath.indexOf('$root') !== 0 || event.filePath.match(parameters.ignored)) {
         return
       }
       if (typeof parameters.include !== 'undefined' && !event.filePath.match(parameters.include)) {

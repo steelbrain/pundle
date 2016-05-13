@@ -27,7 +27,7 @@ export default class Generator {
     modulesAdded: Set<string> = new Set()
   ): Array<Module> {
     for (const absId of modules) {
-      if (absId === '$root') {
+      if (absId === '$internal') {
         continue
       }
 
@@ -75,7 +75,7 @@ export default class Generator {
     return JSON.stringify(sourceMap)
   }
   getProcessorOptions(): ProcessorConfig {
-    const root = this.compilation.modules.registry.get('$root')
+    const root = this.compilation.modules.registry.get('$internal')
     invariant(root)
 
     return {
