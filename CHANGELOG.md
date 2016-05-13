@@ -1,3 +1,7 @@
+#### 0.2.10
+
+- Fix a bug where having a module located at `$root` would crash the app
+
 #### 0.2.9
 
 - Fix support for local paths in npm installer
