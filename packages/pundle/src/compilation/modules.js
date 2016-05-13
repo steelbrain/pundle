@@ -2,6 +2,7 @@
 
 /* @flow */
 
+import Path from 'path'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import transform from '../processor/transform'
 import { arrayDifference } from './helpers'
@@ -25,7 +26,10 @@ export default class Modules {
   }
   async read(filePath: string): Promise {
     const pundle = this.compilation.pundle
-    await this.push(filePath, await pundle.fileSystem.readFile(pundle.path.out(filePath)))
+    const realPath = pundle.path.out(filePath)
+    await this.push(filePath, await pundle.fileSystem.readFile(
+      await pundle.fileSystem.resolve(realPath, Path.dirname(realPath))
+    ))
   }
   async push(givenFilePath: string, contents: string): Promise {
     const filePath = this.compilation.pundle.path.in(givenFilePath)

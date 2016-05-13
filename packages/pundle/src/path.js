@@ -29,7 +29,7 @@ export default class Path {
     return PosixPath.normalize(filePath)
   }
   out(filePath: string, file: boolean = true): string {
-    if (file && filePath === '$root') {
+    if (file && (filePath === '$root' || filePath === '$internal')) {
       return filePath
     }
     if (filePath.indexOf('$root') === 0) {
