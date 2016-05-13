@@ -1,3 +1,7 @@
+#### 0.2.11
+
+- Skip source-map validation to workaround babel bugs
+
 #### 0.2.10
 
 - Fix a bug where having a module located at `$root` would crash the app
