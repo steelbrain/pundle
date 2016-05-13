@@ -1,3 +1,7 @@
+#### 0.2.12
+
+- Fix a bug where HMR would fail for `$root`
+
 #### 0.2.11
 
 - Skip source-map validation to workaround babel bugs

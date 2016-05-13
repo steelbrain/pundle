@@ -44,7 +44,14 @@ export default class Watcher {
       })
     })
     watcher.on('change', filePath => {
-      const moduleId = this.compilation.pundle.path.in(filePath)
+      let moduleId
+      const referenceId = this.compilation.pundle.fileSystem.getValueByResolved(filePath)
+      if (referenceId === '$root') {
+        moduleId = referenceId
+        filePath = this.compilation.pundle.path.out(moduleId)
+      } else {
+        moduleId = this.compilation.pundle.path.in(filePath)
+      }
       if (!this.compilation.modules.registry.has(moduleId)) {
         return
       }
