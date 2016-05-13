@@ -11,8 +11,8 @@ class FileSystem {
   stat(path: string): Promise<FS.Stats> {
     return promisedFS.stat(path)
   }
-  async readFile(filePath: string): Promise<string> {
-    return (await promisedFS.readFile(filePath)).toString('utf8')
+  readFile(filePath: string): Promise<string> {
+    return promisedFS.readFile(filePath, 'utf8')
   }
 }
 
