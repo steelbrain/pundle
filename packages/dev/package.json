@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/steelbrain/pundle.git"
+    "url": "git+ssh://git@github.com/motion/pundle.git"
   },
   "author": "steelbrain",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/steelbrain/pundle/issues"
+    "url": "https://github.com/motion/pundle/issues"
   },
-  "homepage": "https://github.com/steelbrain/pundle#readme",
+  "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
     "express": "^4.13.4",
     "pundle": "0.2.12",
