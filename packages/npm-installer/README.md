@@ -5,7 +5,7 @@ Automatically install npm dependencies for Pundle
 ## Installation
 
 ```
-npm install --save-dev pundle-npm-installer
+npm install --save pundle-npm-installer
 ```
 
 ## Usage
