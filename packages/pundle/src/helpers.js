@@ -44,7 +44,6 @@ export function normalizeConfig(givenConfig: Config): Config {
       config.replaceVariables[key] = parse(`_(${config.replaceVariables[key]})`).program.body[0].expression.arguments[0]
     }
   }
-  config.sourceMaps = Boolean(config.sourceMaps)
   return config
 }
 

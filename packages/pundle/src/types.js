@@ -15,7 +15,6 @@ export type Config = {
   resolve: Object,
   FileSystem: Function,
   rootDirectory: string,
-  sourceMaps: boolean,
   replaceVariables: Object // <string, Object>
 }
 
