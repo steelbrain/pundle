@@ -3,7 +3,7 @@
 /* @flow */
 
 export type Config = {
-  save: true,
+  save: boolean,
   rootDirectory: string,
   restrictToRoot: boolean,
   onAfterInstall: ((id: number, name: string, error: ?Error) => any),
