@@ -51,12 +51,13 @@ function attach({ app, server, compilation, config }: Options) {
   }
 
   async function handleRequest(req, res, next) {
-    if (req.method !== 'GET' || req.url.indexOf(middlewareConfig.publicPath) !== 0) {
+    const url = req.url.split('?')[0]
+    if (req.method !== 'GET' || url.indexOf(middlewareConfig.publicPath) !== 0) {
       next()
       return
     }
 
-    if (req.url === middlewareConfig.publicBundlePath) {
+    if (url === middlewareConfig.publicBundlePath) {
       if (!await prepareRequest(res)) {
         return
       }
@@ -68,7 +69,7 @@ function attach({ app, server, compilation, config }: Options) {
       res.send(generated)
       return
     }
-    if (req.url === middlewareConfig.publicBundlePath + '.map') {
+    if (url === middlewareConfig.publicBundlePath + '.map') {
       if (!await prepareRequest(res)) {
         return
       }
@@ -76,7 +77,7 @@ function attach({ app, server, compilation, config }: Options) {
       res.send(compilation.generateSourceMap())
       return
     }
-    send(req, req.url, { root: middlewareConfig.sourceRoot, index: 'index.html' })
+    send(req, url, { root: middlewareConfig.sourceRoot, index: 'index.html' })
       .on('error', function() {
         next()
       })

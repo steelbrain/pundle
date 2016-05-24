@@ -1,3 +1,7 @@
+#### 0.2.13
+
+- Fix support for GET parameters in dev server
+
 #### 0.2.12
 
 - Fix a bug where HMR would fail for `$root`
