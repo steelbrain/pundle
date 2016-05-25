@@ -1,3 +1,7 @@
+#### Upcoming
+
+- Add `wss` support to HMR
+
 #### 0.2.13
 
 - Fix support for GET parameters in dev server

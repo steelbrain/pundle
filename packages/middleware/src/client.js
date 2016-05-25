@@ -2,7 +2,7 @@
 
 /* eslint-disable no-undef */
 
-const socket = new WebSocket(`ws://${location.host}/__pundle__/hmr`)
+const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/__pundle__/hmr`)
 socket.addEventListener('open', function() {
   console.log('[HMR] Connected')
 })
