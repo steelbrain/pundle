@@ -1,4 +1,4 @@
-#### Upcoming
+#### 0.2.14
 
 - Add `wss` support to HMR
 
