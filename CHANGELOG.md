@@ -1,6 +1,7 @@
 #### Upcoming
 
 - Fix npm installer in non-shell envs like docker containers
+- Fix compatibility issues with the execution helper
 
 #### 0.2.14
 

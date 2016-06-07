@@ -19,7 +19,9 @@ export default class Installer {
     }
     parameters.push(name, '--loglevel=error', '--no-color')
     const result = await exec('npm', parameters, {
-      cwd: this.config.rootDirectory, stream: 'stderr'
+      cwd: this.config.rootDirectory,
+      stream: 'stderr',
+      allowEmptyStderr: true,
     })
     if (result && isNPMError(result)) {
       throw new Error(`NPM Error: ${result}`)
@@ -32,7 +34,9 @@ export default class Installer {
     }
     parameters.push(name, '--loglevel=error', '--no-color')
     const result = await exec('npm', parameters, {
-      cwd: this.config.rootDirectory, stream: 'stderr'
+      cwd: this.config.rootDirectory,
+      stream: 'stderr',
+      allowEmptyStderr: true,
     })
     if (result && isNPMError(result)) {
       throw new Error(`NPM Error: ${result}`)
