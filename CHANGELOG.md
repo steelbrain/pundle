@@ -1,3 +1,7 @@
+#### Upcoming
+
+- Fix npm installer in non-shell envs like docker containers
+
 #### 0.2.14
 
 - Add `wss` support to HMR
