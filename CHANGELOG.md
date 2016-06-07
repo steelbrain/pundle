@@ -1,4 +1,4 @@
-#### Upcoming
+#### 0.2.15
 
 - Fix npm installer in non-shell envs like docker containers
 - Fix compatibility issues with the execution helper
