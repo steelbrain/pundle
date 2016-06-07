@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "description": "Dev Server for Pundle",
   "main": "lib/index.js",
   "bin": {
@@ -21,8 +21,8 @@
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
     "express": "^4.13.4",
-    "pundle": "0.2.14",
-    "pundle-middleware": "0.2.14",
+    "pundle": "0.2.15",
+    "pundle-middleware": "0.2.15",
     "sb-event-kit": "^1.1.2"
   }
 }
