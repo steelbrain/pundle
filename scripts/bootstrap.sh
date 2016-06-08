@@ -4,7 +4,7 @@ export NODE_ENV=developemnt
 ROOT_DIRECTORY=$( cd $(dirname $0)/.. ; pwd -P )
 PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 # NOTE: Order is important
-PACKAGES_TO_LINK=( "babel" "npm-installer" "fs" "pundle" "middleware" "dev" )
+PACKAGES_TO_LINK=( "browser" "babel" "npm-installer" "fs" "pundle" "middleware" "dev" )
 NPM_ROOT=$( npm root -g )
 
 cd ${ROOT_DIRECTORY}
