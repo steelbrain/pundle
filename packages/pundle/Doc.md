@@ -1,6 +1,6 @@
 # Pundle API
 
-Pundle's API is pretty straight forward and easy to get used to. Read the source for full API docs, this document is going to be a domonstration of some simple tasks using Pundle's API.
+Pundle's API is pretty straight forward and easy to get used to. Read the source for full API docs, this document is going to be a demonstration of some simple tasks using Pundle's API.
 
 ## Definitions
 
