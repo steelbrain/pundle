@@ -16,9 +16,15 @@ export type Config = {
   moduleDirectories: Array<string>,
 }
 
+export type LoaderResult = {
+  contents: string,
+  sourceMap: Object,
+}
+
+export type Loader = ((config: Config, filePath: string, contents: string) => LoaderResult | Promise<LoaderResult>)
+
 export type State = {
-  // TODO: One loader for each extension
-  extensions: Array<string>,
+  loaders: Map<string, Loader>,
 }
 
 export type Module = {

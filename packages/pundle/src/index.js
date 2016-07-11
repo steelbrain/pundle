@@ -3,6 +3,7 @@
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import type { Disposable } from 'sb-event-kit'
 import * as Helpers from './helpers'
+import applyLoaders from './loaders'
 import type { Config, State } from './types'
 
 class Pundle {
@@ -13,14 +14,14 @@ class Pundle {
 
   constructor(config: Object) {
     this.state = {
-      extensions: ['.js']
+      loaders: new Map(),
     }
     this.config = Helpers.fillConfig(config)
-
     this.emitter = new Emitter()
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
+    applyLoaders(this)
   }
   onError(callback: Function): Disposable {
     return this.emitter.on('error', callback)
