@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 import { transform } from 'babel-core'

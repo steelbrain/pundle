@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 import type { Stats } from 'fs'

@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 export function isNPMError(stdoutContents: string): boolean {

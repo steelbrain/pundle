@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 import invariant from 'assert'

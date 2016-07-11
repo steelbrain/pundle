@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 import promisify from 'sb-promisify'

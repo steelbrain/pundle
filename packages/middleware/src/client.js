@@ -1,5 +1,3 @@
-'use strict'
-
 /* eslint-disable no-undef */
 
 const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/__pundle__/hmr`)
