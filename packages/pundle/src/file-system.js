@@ -11,8 +11,8 @@ import { find } from './helpers'
 import type { Stats } from 'fs'
 import type { FileSystemInterface, Config } from './types'
 
-const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'wrapper.js'), 'utf8')
-const hmrContent = FS.readFileSync(Path.join(__dirname, '..', 'browser', 'hmr.js'), 'utf8')
+const wrapperContent = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'normal.js'), 'utf8')
+const hmrContent = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'hmr.js'), 'utf8')
 
 export default class FileSystem {
   config: Config;
