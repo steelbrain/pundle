@@ -28,10 +28,10 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "babel-generator": "6.7.5",
-    "babel-types": "^6.7.2",
-    "babylon": "^6.7.0",
-    "chokidar": "^1.4.3",
+    "babel-generator": "^6.11.0",
+    "babel-types": "^6.11.1",
+    "babylon": "^6.8.4",
+    "chokidar": "^1.6.0",
     "lodash.isregexp": "^3.0.5",
     "lodash.uniq": "^4.2.1",
     "pundle-browser": "0.0.0",
@@ -40,7 +40,7 @@
     "sb-memoize": "^1.0.2",
     "sb-promisify": "^1.2.0",
     "sb-resolve": "^1.1.0",
-    "source-map": "^0.5.3",
+    "source-map": "^0.5.6",
     "source-map-to-comment": "^1.0.0"
   }
 }

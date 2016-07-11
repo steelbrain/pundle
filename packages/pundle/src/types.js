@@ -12,7 +12,13 @@ export type Config = {
   fileSystem: FileSystem,
   development: boolean,
   rootDirectory: string,
-  replaceVariables: Object // <string, Object>
+  replaceVariables: Object, // <string, Object>
+  moduleDirectories: Array<string>,
+}
+
+export type State = {
+  // TODO: One loader for each extension
+  extensions: Array<string>,
 }
 
 export type Module = {
