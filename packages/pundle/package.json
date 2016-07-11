@@ -36,7 +36,7 @@
     "lodash.uniq": "^4.2.1",
     "pundle-browser": "0.0.0",
     "pundle-fs": "0.2.15",
-    "sb-event-kit": "^1.1.2",
+    "sb-event-kit": "^2.0.0",
     "sb-memoize": "^1.0.2",
     "sb-promisify": "^1.2.0",
     "sb-resolve": "^1.1.0",
