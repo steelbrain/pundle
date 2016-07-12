@@ -1,12 +1,13 @@
 /* @flow */
 
 import Path from 'path'
-import invariant from 'assert'
 import { isLocal as isLocalModule, resolve } from 'sb-resolve'
+import { attachable } from './helpers'
 import type { Config, State } from './types'
 
-const NAME_EXTRACTION_REGEX = /([\-\_\w]+)/
+const NAME_EXTRACTION_REGEX = /^([\-\_\w]+)/
 
+@attachable('resolver')
 export default class Resolver {
   cache: Map<string, string | Promise<string>>;
   state: State;
@@ -18,12 +19,11 @@ export default class Resolver {
     this.config = config
   }
   resolve(request: string, from: string): Promise<string> {
-    if (isLocalModule(request)) {
+    let name = NAME_EXTRACTION_REGEX.exec(request)
+    if (isLocalModule(request) || !name) {
       return this.resolveCached(request, from, request)
     }
-    const name = NAME_EXTRACTION_REGEX.exec(request)[1]
-    invariant(name)
-    // TODO: Store this manifest's contents in the registry
+    name = name[0]
     return this.resolveCached(`${name}/package.json`, from, request).then(result =>
       this.resolveCached(Path.join(Path.dirname(result), request.substr(name.length)), from, request)
     )

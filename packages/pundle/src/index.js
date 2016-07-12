@@ -8,6 +8,8 @@ import Resolver from './resolver'
 import PundlePath from './path'
 import type { Config, State } from './types'
 
+@Resolver.attach
+@PundlePath.attach
 class Pundle {
   path: PundlePath;
   state: State;
@@ -21,13 +23,10 @@ class Pundle {
       loaders: new Map(),
     }
     this.config = Helpers.fillConfig(config)
-    this.path = new PundlePath(config)
     this.emitter = new Emitter()
-    this.resolver = new Resolver(this.state, this.config)
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
-    this.subscriptions.add(this.resolver)
     applyLoaders(this)
   }
   async read(givenFilePath: string, from: string): Promise<void> {

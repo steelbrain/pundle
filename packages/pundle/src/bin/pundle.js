@@ -2,7 +2,9 @@
 
 /* @flow */
 
-import Pundle from '../'
+require('process-bootstrap')('pundle', 'PUNDLE')
+
+const Pundle = require('../')
 
 const pundle = new Pundle({
   entry: './index.js',

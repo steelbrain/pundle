@@ -37,3 +37,31 @@ export function fillConfig(config: Object): Config {
   }
   return toReturn
 }
+
+export function attachable(key: string) {
+  return function(SourceClass: Function) {
+    Object.defineProperty(SourceClass, 'attach', {
+      enumerable: false,
+      value(TargetClass: Object) {
+        const values = new WeakMap()
+        Object.defineProperty(TargetClass.prototype, key, {
+          enumerable: true,
+          get() {
+            let value = values.get(this)
+            if (value) {
+              return value
+            }
+            values.set(this, value = new SourceClass(this.state, this.config))
+            if (typeof value.dispose === 'function') {
+              this.subscriptions.add(value)
+            }
+            return value
+          },
+          set(newValue) {
+            values.set(this, newValue)
+          }
+        })
+      }
+    })
+  }
+}

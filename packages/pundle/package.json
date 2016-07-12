@@ -34,6 +34,7 @@
     "chokidar": "^1.6.0",
     "lodash.isregexp": "^3.0.5",
     "lodash.uniq": "^4.2.1",
+    "process-bootstrap": "^1.0.0",
     "pundle-browser": "0.0.0",
     "pundle-fs": "0.2.15",
     "sb-event-kit": "^2.0.0",

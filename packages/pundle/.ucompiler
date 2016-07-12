@@ -4,7 +4,8 @@
     "name": "compile-src",
     "plugins": ["babel"],
     "babel": {
-      "presets": ["steelbrain"]
+      "presets": ["steelbrain"],
+      "plugins": ["transform-decorators-legacy"]
     },
     "include": [{
       "directory": "src",

@@ -1,12 +1,16 @@
 /* @flow */
 
 import Path from 'path'
-import type { Config } from './types'
+import { attachable } from './helpers'
+import type { State, Config } from './types'
 
+@attachable('path')
 export default class PundlePath {
+  state: State;
   config: Config;
 
-  constructor(config: Config) {
+  constructor(state: State, config: Config) {
+    this.state = state
     this.config = config
   }
   in(path: string): string {
