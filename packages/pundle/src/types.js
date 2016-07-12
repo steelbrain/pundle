@@ -17,36 +17,29 @@ export type Config = {
 }
 
 export type LoaderResult = {
+  imports: Set<string>,
   contents: string,
   sourceMap: Object,
 }
 
-export type Loader = ((config: Config, filePath: string, contents: string) => LoaderResult | Promise<LoaderResult>)
-
+export type Loader = ((config: Config, filePath: string, source: string) => LoaderResult | Promise<LoaderResult>)
 export type State = {
   loaders: Map<string, Loader>,
 }
 
-export type Module = {
-  imports: Array<string>,
-  sources: string,
+export type File = {
+  source: string,
+  imports: Set<string>,
   contents: string,
-  filePath: string,
   sourceMap: Object
 }
 
-export type WatcherConfig = {
-  ignored: string | RegExp,
-  onBeforeCompile?: ((filePath: string) => void),
-  onAfterCompile?: ((filePath: string, error: ?Error) => void),
-  onReady?: (() => void),
-  onError: ((error: Error) => void)
-}
-
-export type ProcessorConfig = {
-  append?: string,
-  prepend?: string,
-  module_register: string
+export type Package = {
+  name: string,
+  files: Map<string, File>,
+  version: string,
+  manifest: Object,
+  rootDirectory: string,
 }
 
 export type Plugin = string | Function | [string, Object] | [Function, Object]
