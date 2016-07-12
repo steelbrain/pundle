@@ -5,9 +5,11 @@ import type { Disposable } from 'sb-event-kit'
 import * as Helpers from './helpers'
 import applyLoaders from './loaders'
 import Resolver from './resolver'
+import PundlePath from './path'
 import type { Config, State } from './types'
 
 class Pundle {
+  path: PundlePath;
   state: State;
   config: Config;
   emitter: Emitter;
@@ -19,6 +21,7 @@ class Pundle {
       loaders: new Map(),
     }
     this.config = Helpers.fillConfig(config)
+    this.path = new PundlePath(config)
     this.emitter = new Emitter()
     this.resolver = new Resolver(this.state, this.config)
     this.subscriptions = new CompositeDisposable()
@@ -26,6 +29,13 @@ class Pundle {
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.resolver)
     applyLoaders(this)
+  }
+  async read(givenFilePath: string, from: string): Promise<void> {
+    const filePath = this.path.in(givenFilePath)
+    console.log(from, filePath)
+  }
+  async compile(): Promise<void> {
+    await Promise.all(this.config.entry.map(entry => this.read(entry, '$root')))
   }
   onError(callback: Function): Disposable {
     return this.emitter.on('error', callback)
