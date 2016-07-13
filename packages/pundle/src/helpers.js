@@ -39,26 +39,26 @@ export function fillConfig(config: Object): Config {
 }
 
 export function attachable(key: string) {
+  const values = new WeakMap()
   return function(SourceClass: Function) {
     Object.defineProperty(SourceClass, 'attach', {
       enumerable: false,
       value(TargetClass: Object) {
-        const values = new WeakMap()
         Object.defineProperty(TargetClass.prototype, key, {
           enumerable: true,
           get() {
-            let value = values.get(this)
+            let value = values.get(this.state)
             if (value) {
               return value
             }
-            values.set(this, value = new SourceClass(this.state, this.config))
+            values.set(this.state, value = new SourceClass(this.state, this.config))
             if (typeof value.dispose === 'function') {
               this.subscriptions.add(value)
             }
             return value
           },
           set(newValue) {
-            values.set(this, newValue)
+            values.set(this.state, newValue)
           }
         })
       }
