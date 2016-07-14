@@ -6,13 +6,17 @@ import * as Helpers from './helpers'
 import applyLoaders from './loaders'
 import Resolver from './resolver'
 import PundlePath from './path'
-import type { Config, State } from './types'
+import FileSystem from './filesystem'
+import type { Config, State, File } from './types'
 
 @Resolver.attach
 @PundlePath.attach
+@FileSystem.attach
 class Pundle {
+  fs: FileSystem;
   path: PundlePath;
   state: State;
+  files: Map<string, File>;
   config: Config;
   emitter: Emitter;
   resolver: Resolver;
@@ -22,6 +26,7 @@ class Pundle {
     this.state = {
       loaders: new Map(),
     }
+    this.files = new Map()
     this.config = Helpers.fillConfig(config)
     this.emitter = new Emitter()
     this.subscriptions = new CompositeDisposable()
@@ -31,7 +36,8 @@ class Pundle {
   }
   async read(givenFilePath: string, from: string): Promise<void> {
     const filePath = this.path.in(givenFilePath)
-    console.log(from, filePath)
+    const contents = await this.fs.read(filePath)
+    console.log(filePath, from, contents)
   }
   async compile(): Promise<void> {
     await Promise.all(this.config.entry.map(entry => this.read(entry, '$root')))
@@ -40,6 +46,7 @@ class Pundle {
     return this.emitter.on('error', callback)
   }
   dispose() {
+    this.files.clear()
     this.subscriptions.dispose()
   }
 }

@@ -40,7 +40,7 @@
     "sb-event-kit": "^2.0.0",
     "sb-memoize": "^1.0.2",
     "sb-promisify": "^1.2.0",
-    "sb-resolve": "^2.0.1",
+    "sb-resolve": "^3.0.0",
     "source-map": "^0.5.6",
     "source-map-to-comment": "^1.0.0"
   }

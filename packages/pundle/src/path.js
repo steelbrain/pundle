@@ -14,6 +14,9 @@ export default class PundlePath {
     this.config = config
   }
   in(path: string): string {
+    if (path.substr(0, 5) === '$root') {
+      return path
+    }
     const resolvedPath = Path.isAbsolute(path) ? path : Path.resolve(this.config.rootDirectory, path)
     const relativePath = Path.relative(this.config.rootDirectory, resolvedPath)
     return relativePath ? `$root/${relativePath}` : '$root'

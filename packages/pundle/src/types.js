@@ -30,16 +30,15 @@ export type State = {
 export type File = {
   source: string,
   imports: Set<string>,
+  filePath: string,
   contents: string,
   sourceMap: Object
 }
 
-export type Package = {
-  name: string,
-  files: Map<string, File>,
-  version: string,
-  manifest: Object,
-  rootDirectory: string,
+export type Manifest = {
+  name?: string,
+  version?: string,
+  browser?: string | Object,
 }
 
 export type Plugin = string | Function | [string, Object] | [Function, Object]
