@@ -23,7 +23,7 @@ export type LoaderResult = {
   sourceMap: Object,
 }
 
-export type Loader = ((pundle: Pundle, filePath: string, source: string) => LoaderResult | Promise<LoaderResult>)
+export type Loader = ((pundle: Pundle, filePath: string, source: string, sourceMap: ?Object) => LoaderResult | Promise<LoaderResult>)
 export type State = {
   loaders: Map<string, Loader>,
 }

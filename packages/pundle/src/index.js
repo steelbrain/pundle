@@ -47,14 +47,24 @@ class Pundle {
     const contents = await this.fs.read(filePath)
     const loader = this.state.loaders.get(extension)
     invariant(loader, `Unrecognized extension '${extension}' for '${givenFilePath}'`)
-    let result = loader(this, filePath, contents)
-    if (result && typeof result.then === 'function') {
+    const event: { filePath: string, contents: string, sourceMap: ?Object } = { filePath, contents, sourceMap: null }
+    this.emitter.emit('before-process', event)
+    let result = loader(this, filePath, contents, event.sourceMap)
+    if (result instanceof Promise) {
       result = await result
     }
-    console.log(result)
+    event.contents = result.contents
+    event.sourceMap = result.sourceMap
+    this.emitter.emit('after-process', event)
   }
   async compile(): Promise<void> {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))
+  }
+  onBeforeProcess(callback: Function): Disposable {
+    return this.emitter.on('before-process', callback)
+  }
+  onAfterProcess(callback: Function): Disposable {
+    return this.emitter.on('after-process', callback)
   }
   onError(callback: Function): Disposable {
     return this.emitter.on('error', callback)

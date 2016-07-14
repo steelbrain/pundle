@@ -4,11 +4,12 @@ import Path from 'path'
 import generate from 'babel-generator'
 import * as t from 'babel-types'
 import { parse } from 'babylon'
+import { mergeSourceMaps } from '../helpers'
 import { getName, traverse } from './helpers'
 import type Pundle from '../../'
 import type { LoaderResult } from '../../types'
 
-export default async function processJavascript(pundle: Pundle, filePath: string, source: string): Promise<LoaderResult> {
+export default async function processJavascript(pundle: Pundle, filePath: string, source: string, sourceMap: ?Object): Promise<LoaderResult> {
   // TODO: Check for `process` or `Buffer` variable access here and then import the modules if necessary
   const imports = new Set()
   const promises = []
@@ -81,6 +82,9 @@ export default async function processJavascript(pundle: Pundle, filePath: string
     sourceMaps: true,
     sourceFileName: filePath
   })
+  if (sourceMap) {
+    compiled.map = mergeSourceMaps(sourceMap, compiled.map)
+  }
 
   return {
     imports,
