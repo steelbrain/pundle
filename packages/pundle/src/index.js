@@ -47,7 +47,7 @@ class Pundle {
     const contents = await this.fs.read(filePath)
     const loader = this.state.loaders.get(extension)
     invariant(loader, `Unrecognized extension '${extension}' for '${givenFilePath}'`)
-    let result = loader(this.config, this.path.out(filePath), contents)
+    let result = loader(this, filePath, contents)
     if (result && typeof result.then === 'function') {
       result = await result
     }

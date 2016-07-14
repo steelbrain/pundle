@@ -17,7 +17,7 @@ export default class Files {
   emitter: Emitter;
   subscriptions: CompositeDisposable;
 
-  constructor(config: Config, state: State) {
+  constructor(state: State, config: Config) {
     this.config = config
     this.state = state
     this.files = new Map()

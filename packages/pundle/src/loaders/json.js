@@ -1,8 +1,9 @@
 /* @flow */
 
-import type { Config, LoaderResult } from '../types'
+import type Pundle from '../'
+import type { LoaderResult } from '../types'
 
-export default function processJSON(config: Config, filePath: string, contents: string): LoaderResult {
+export default function processJSON(pundle: Pundle, filePath: string, contents: string): LoaderResult {
   const toReturn = {}
   toReturn.imports = new Set()
   toReturn.sourceMap = {}
