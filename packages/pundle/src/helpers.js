@@ -1,5 +1,6 @@
 /* @flow */
 
+import Path from 'path'
 const PundleFS = require('pundle-fs')
 import type { Config } from './types'
 
@@ -33,7 +34,7 @@ export function fillConfig(config: Object): Config {
     }
     toReturn.moduleDirectories = config.moduleDirectories
   } else {
-    toReturn.moduleDirectories = []
+    toReturn.moduleDirectories = ['node_modules']
   }
   return toReturn
 }
@@ -64,4 +65,36 @@ export function attachable(key: string) {
       }
     })
   }
+}
+
+export async function find(
+  directory: string,
+  name: string | Array<string>,
+  config: Config
+): Promise<Array<string>> {
+  const names = [].concat(name)
+  const chunks = directory.split(Path.sep)
+  const matched = []
+
+  while (chunks.length) {
+    let currentDir = chunks.join(Path.sep)
+    if (currentDir === '') {
+      currentDir = Path.resolve(directory, '/')
+    }
+    for (let i = 0, length = names.length; i < length; ++i) {
+      const fileName = names[i]
+      const filePath = Path.join(currentDir, fileName)
+      try {
+        await config.fileSystem.stat(filePath)
+        matched.push(filePath)
+        break
+      } catch (_) { /* Ignore */ }
+    }
+    if (currentDir === config.rootDirectory) {
+      break
+    }
+    chunks.pop()
+  }
+
+  return matched
 }

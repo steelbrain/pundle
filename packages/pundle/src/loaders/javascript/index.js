@@ -14,17 +14,34 @@ export default async function processJavascript(pundle: Pundle, filePath: string
   const imports = new Set()
   const promises = []
 
-  const ast = parse(source, {
-    sourceType: 'module',
-    plugins: [
-      'jsx',
-      'flow',
-      'asyncFunctions',
-      'decorators',
-      'classProperties'
-    ],
-    filename: filePath
-  })
+  let ast
+  try {
+    ast = parse(source, {
+      sourceType: 'module',
+      plugins: [
+        'jsx',
+        'flow',
+        'asyncFunctions',
+        'classConstructorCall',
+        'doExpressions',
+        'trailingFunctionCommas',
+        'objectRestSpread',
+        'decorators',
+        'classProperties',
+        'exportExtensions',
+        'exponentiationOperator',
+        'asyncGenerators',
+        'functionBind',
+        'functionSent'
+      ],
+      filename: filePath
+    })
+  } catch (error) {
+    if (error && error.constructor.name === 'SyntaxError') {
+      error.message = `${error.message} at ${filePath}`
+    }
+    throw error
+  }
 
   traverse(ast, function(node) {
     if (!node) {

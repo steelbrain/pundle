@@ -2,7 +2,7 @@
 
 import Path from 'path'
 import { isLocal as isLocalModule, resolve } from 'sb-resolve'
-import { attachable } from './helpers'
+import { attachable, find } from './helpers'
 import PundlePath from './path'
 import type { Config, State } from './types'
 
@@ -50,12 +50,14 @@ export default class Resolver {
   }
   async resolveUncached(request: string, fromFile: string, givenRequest: string): Promise<string> {
     try {
-      return await resolve(request, this.path.out(fromFile), {
+      const pathOut = this.path.out(fromFile)
+      const moduleDirectories = this.config.moduleDirectories.filter(i => !Path.isAbsolute(i))
+      return await resolve(request, pathOut, {
         fs: this.config.fileSystem,
         root: this.config.rootDirectory,
         process: manifest => manifest.main || './index', // TODO: Use the modules state registry here and respect browser field
         extensions: Array.from(this.state.loaders.keys()),
-        moduleDirectories: this.config.moduleDirectories,
+        moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(pathOut), moduleDirectories, this.config)),
       })
     } catch (error) {
       error.message = `Cannot find module '${givenRequest}'`

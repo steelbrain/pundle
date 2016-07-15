@@ -11,4 +11,7 @@ const pundle = new Pundle({
   rootDirectory: process.cwd()
 })
 
-pundle.compile()
+console.profile('compile')
+pundle.compile().then(function() {
+  console.profileEnd('compile')
+})

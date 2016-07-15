@@ -40,14 +40,16 @@ class Pundle {
   }
   async read(givenFilePath: string): Promise<void> {
     const filePath = this.path.in(givenFilePath)
-    if (this.files.has(filePath) && !await this.fs.isChanged(givenFilePath)) {
+    const oldFile = this.files.get(filePath)
+    const contents = await this.fs.read(filePath)
+    if (oldFile && oldFile.contents === contents) {
       return
     }
     const extension = Path.extname(filePath)
-    const contents = await this.fs.read(filePath)
     const loader = this.state.loaders.get(extension)
     invariant(loader, `Unrecognized extension '${extension}' for '${givenFilePath}'`)
-    const event: { filePath: string, contents: string, sourceMap: ?Object } = { filePath, contents, sourceMap: null }
+
+    const event: { filePath: string, contents: string, sourceMap: any } = { filePath, contents, sourceMap: null }
     this.emitter.emit('before-process', event)
     let result = loader(this, filePath, contents, event.sourceMap)
     if (result instanceof Promise) {
@@ -56,6 +58,27 @@ class Pundle {
     event.contents = result.contents
     event.sourceMap = result.sourceMap
     this.emitter.emit('after-process', event)
+    this.files.set(filePath, {
+      source: contents,
+      imports: result.imports,
+      filePath,
+      contents: event.contents,
+      sourceMap: event.sourceMap,
+    })
+
+    try {
+      await Array.from(result.imports).reduce((promise, entry) =>
+        promise.then(() => !this.files.has(entry) && this.read(entry))
+      , Promise.resolve())
+    } catch (error) {
+      if (oldFile) {
+        this.files.set(filePath, oldFile)
+      } else {
+        this.files.delete(filePath)
+      }
+      throw error
+    }
+    // TODO: Implement garbage collection by comparing old imports to new ones
   }
   async compile(): Promise<void> {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))
