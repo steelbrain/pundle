@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import browserMap from 'pundle-browser'
 import { attachable } from './helpers'
 import type { State, Config } from './types'
 
@@ -17,11 +18,17 @@ export default class PundlePath {
     if (path.substr(0, 5) === '$root') {
       return path
     }
+    if (path.substr(0, 5) === '$core') {
+      return path
+    }
     const resolvedPath = Path.isAbsolute(path) ? path : Path.resolve(this.config.rootDirectory, path)
     const relativePath = Path.relative(this.config.rootDirectory, resolvedPath)
     return relativePath ? `$root/${relativePath}` : '$root'
   }
   out(path: string): string {
+    if (path.substr(0, 5) === '$core') {
+      return browserMap[path.substr(6)] || browserMap.empty
+    }
     if (path.substr(0, 5) === '$root') {
       if (path.length === 5) {
         return this.config.rootDirectory

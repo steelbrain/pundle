@@ -1,12 +1,12 @@
 /* @flow */
 
 import Path from 'path'
-import { isLocal as isLocalModule, resolve } from 'sb-resolve'
+import { isLocal as isLocalModule, isCore as isCoreModule, resolve } from 'sb-resolve'
 import { attachable, find } from './helpers'
 import PundlePath from './path'
 import type { Config, State } from './types'
 
-const NAME_EXTRACTION_REGEX = /^([\-\_\w]+)/
+const NAME_EXTRACTION_REGEX = /^([^\\\/]+)/
 
 @attachable('resolver')
 @PundlePath.attach
@@ -22,6 +22,9 @@ export default class Resolver {
     this.config = config
   }
   resolve(request: string, fromFile: string): Promise<string> {
+    if (isCoreModule(request)) {
+      return Promise.resolve(`$core/${request}`)
+    }
     let name = NAME_EXTRACTION_REGEX.exec(request)
     if (isLocalModule(request) || !name) {
       return this.resolveCached(request, fromFile, request)
