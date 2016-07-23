@@ -1,7 +1,9 @@
 /* @flow */
 
 import Path from 'path'
+import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import { isCore as isCoreModule, resolve } from 'sb-resolve'
+import type { Disposable } from 'sb-event-kit'
 import browserMap from 'pundle-browser'
 import { attachable, find } from './helpers'
 import Filesystem from './filesystem'
@@ -20,12 +22,18 @@ export default class Resolver {
   manifestCache: Map<string, ?string | Promise<?string>>;
   state: State;
   config: Config;
+  emitter: Emitter;
+  subscriptions: CompositeDisposable;
 
   constructor(state: State, config: Config) {
     this.cache = new Map()
     this.manifestCache = new Map()
     this.state = state
     this.config = config
+    this.emitter = new Emitter()
+    this.subscriptions = new CompositeDisposable()
+
+    this.subscriptions.add(this.emitter)
   }
   resolve(request: string, fromFile: string): Promise<string> {
     if (isCoreModule(request)) {
@@ -99,21 +107,31 @@ export default class Resolver {
         request = Path.resolve(manifest.rootDirectory, request)
       }
     }
-
+    const event = { filePath: request, fromFile: this.path.out(fromFile), givenRequest, manifest, resolved: false }
+    await this.emitter.emit('before-resolve', event)
     try {
-      const pathOut = this.path.out(fromFile)
       const moduleDirectories = this.config.moduleDirectories.filter(i => !Path.isAbsolute(i))
-      return await resolve(request, pathOut, {
+      event.filePath = await resolve(event.filePath, event.fromFile, {
         fs: this.config.fileSystem,
         root: this.config.rootDirectory,
         extensions: Array.from(this.state.loaders.keys()),
-        moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(pathOut), moduleDirectories, this.config)),
+        moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(event.fromFile), moduleDirectories, this.config)),
       })
-    } catch (error) {
-      error.message = `Cannot find module '${givenRequest}'`
+      event.resolved = true
+    } catch (error) { /* No Op */ }
+    await this.emitter.emit('after-resolve', event)
+    if (!event.resolved) {
+      const error = new Error(`Cannot find module '${givenRequest}'`)
       error.stack = `${error.message}\n    at ${fromFile}:0:0`
       throw error
     }
+    return event.filePath
+  }
+  onBeforeResolve(callback: Function): Disposable {
+    return this.emitter.on('before-resolve', callback)
+  }
+  onAfterResolve(callback: Function): Disposable {
+    return this.emitter.on('after-resolve', callback)
   }
   dispose() {
     this.cache.clear()

@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "sb-exec": "^1.0.5"
+    "sb-exec": "^2.0.5"
   }
 }

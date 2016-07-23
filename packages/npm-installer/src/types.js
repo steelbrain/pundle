@@ -3,7 +3,7 @@
 export type Config = {
   save: boolean,
   rootDirectory: string,
-  restrictToRoot: boolean,
-  onAfterInstall: ((id: number, name: string, error: ?Error) => any),
-  onBeforeInstall: ((id: number, name: string) => any)
+  error(error: Error): void,
+  beforeInstall(name: string): void,
+  afterInstall(name: string): void,
 }
