@@ -1,5 +1,4 @@
 [ignore]
-packages/*/lib
 
 [include]
 
