@@ -122,7 +122,7 @@ class Pundle {
     watcher.on('unlink', filePath => {
       toReturn.queue = toReturn.queue.then(() => {
         this.files.delete(filePath)
-        return config.generate()
+        return ready && config.generate()
       }).catch(config.error)
     })
     this.config.entry.forEach(filePath => {

@@ -8,6 +8,7 @@ const Pundle = require('../')
 
 const pundle = new Pundle({
   entry: './index.js',
+  pathType: 'filePath',
   rootDirectory: process.cwd()
 })
 
@@ -21,5 +22,11 @@ pundle.compile().then(function() {
 // pundle.watch({
 //   error(error) {
 //     console.log('error received', error)
-//   }
+//   },
+//   ready() {
+//     console.log('ready')
+//   },
+//   generate() {
+//     console.log('should generate')
+//   },
 // })
