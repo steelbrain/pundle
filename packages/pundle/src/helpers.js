@@ -1,7 +1,7 @@
 /* @flow */
 
 import Path from 'path'
-const PundleFS = require('pundle-fs')
+import PundleFS from 'pundle-fs'
 import type { Config } from './types'
 
 export function fillConfig(config: Object): Config {

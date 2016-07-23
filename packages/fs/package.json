@@ -16,7 +16,5 @@
     "url": "https://github.com/motion/pundle/issues"
   },
   "homepage": "https://github.com/motion/pundle#readme",
-  "dependencies": {
-    "sb-promisify": "^1.3.0"
-  }
+  "dependencies": {}
 }
