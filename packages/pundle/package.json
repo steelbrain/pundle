@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "babel-generator": "^6.11.0",
+    "babel-generator": "^6.11.4",
     "babel-types": "^6.11.1",
     "babylon": "^6.8.4",
     "chokidar": "^1.6.0",
