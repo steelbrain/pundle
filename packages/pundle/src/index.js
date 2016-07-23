@@ -136,6 +136,17 @@ class Pundle {
     toReturn.queue = toReturn.queue.then(config.ready).catch(config.error)
     return toReturn
   }
+  /**
+    A helper function get a unique ID of any given file Path
+    Useful when config.pathType is number. Should be used across all plugins to generate the same unique IDs for files
+  */
+  getUniquePathID(path: string): string {
+    const internalPath = this.path.in(path)
+    if (this.config.pathType === 'number') {
+      return Helpers.getPathID(this.path.in(path)).toString()
+    }
+    return internalPath
+  }
   onBeforeProcess(callback: Function): Disposable {
     return this.emitter.on('before-process', callback)
   }

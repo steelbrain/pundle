@@ -59,7 +59,7 @@ export default async function processJavascript(pundle: Pundle, filePath: string
         if (argument && argument.value) {
           promises.push(pundle.resolver.resolve(argument.value, filePath).then(function(resolved) {
             const resolvedFilePath = pundle.path.in(resolved)
-            argument.value = resolvedFilePath
+            argument.value = pundle.getUniquePathID(resolvedFilePath)
             imports.add(resolvedFilePath)
           }))
         }
@@ -67,7 +67,7 @@ export default async function processJavascript(pundle: Pundle, filePath: string
     } else if (node.type === 'ImportDeclaration') {
       promises.push(pundle.resolver.resolve(node.source.value, filePath).then(function(resolved) {
         const resolvedFilePath = pundle.path.in(resolved)
-        node.source.value = resolvedFilePath
+        node.source.value = pundle.getUniquePathID(resolvedFilePath)
         imports.add(resolvedFilePath)
       }))
     } else if (node.type === 'MemberExpression') {
@@ -80,12 +80,14 @@ export default async function processJavascript(pundle: Pundle, filePath: string
   })
 
   await Promise.all(promises)
+  const visualDirName = pundle.getUniquePathID(Path.dirname(filePath))
+  const visualFilePath = visualDirName + '/' + pundle.getUniquePathID(filePath) + Path.extname(filePath)
   ast.program.body.unshift(
     t.variableDeclaration('var', [
-      t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral(Path.dirname(filePath))),
-      t.variableDeclarator(t.identifier('__filename'), t.stringLiteral(filePath)),
+      t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral(visualDirName)),
+      t.variableDeclarator(t.identifier('__filename'), t.stringLiteral(visualFilePath)),
       t.variableDeclarator(t.identifier('__require'), t.callExpression(t.identifier('__sb_generate_require'), [
-        t.stringLiteral(filePath)
+        t.identifier('__filename')
       ]))
     ])
   )

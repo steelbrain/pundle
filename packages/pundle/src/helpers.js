@@ -4,6 +4,9 @@ import Path from 'path'
 import PundleFS from 'pundle-fs'
 import type { Config, WatcherConfig } from './types'
 
+let pathIDNumber = 0
+export const pathIDMap = new Map()
+
 export function fillConfig(config: Object): Config {
   const toReturn = {}
   if (config.entry && typeof config.entry === 'string') {
@@ -133,4 +136,13 @@ export async function find(
   }
 
   return matched
+}
+
+export function getPathID(filePath: string): number {
+  let value = pathIDMap.get(filePath)
+  if (typeof value === 'number') {
+    return value
+  }
+  pathIDMap.set(filePath, value = ++pathIDNumber)
+  return value
 }
