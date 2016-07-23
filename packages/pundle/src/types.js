@@ -19,9 +19,10 @@ export type Config = {
 }
 
 export type WatcherConfig = {
-  ready: (() => any),
   usePolling: boolean,
+  ready: (() => any),
   error: ((error: Error) => any),
+  generate: (() => any),
 }
 
 export type LoaderResult = {

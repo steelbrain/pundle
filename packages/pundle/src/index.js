@@ -37,7 +37,6 @@ class Pundle {
 
     this.subscriptions.add(this.emitter)
     applyLoaders(this)
-    // TODO: Use this.files's events to add or remove files from watcher, it'll be super-efficient that way as we'll only be watching what we required
   }
   async read(givenFilePath: string): Promise<void> {
     const filePath = this.path.in(givenFilePath)
@@ -92,6 +91,7 @@ class Pundle {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))
   }
   watch(givenConfig: Object): Object {
+    let ready = false
     const config = Helpers.fillWatcherConfig(givenConfig)
     const watcher = Watcher.watch([], {
       usePolling: config.usePolling,
@@ -106,19 +106,24 @@ class Pundle {
     }
 
     watcher.on('add', filePath => {
+      toReturn.queue = toReturn.queue.then(() =>
+        !this.files.has(filePath) && this.read(filePath)
+      ).catch(config.error)
+    })
+    watcher.on('change', filePath => {
       toReturn.queue = toReturn.queue.then(() => {
-        if (!this.files.has(filePath)) {
-          this.read(filePath)
+        const retValue = this.read(filePath)
+        if (ready) {
+          return retValue.then(config.generate)
         }
+        return retValue
       }).catch(config.error)
     })
-    watcher.on('change', function(filePath) {
+    watcher.on('unlink', filePath => {
       toReturn.queue = toReturn.queue.then(() => {
-        this.read(filePath)
+        this.files.delete(filePath)
+        return config.generate()
       }).catch(config.error)
-    })
-    watcher.on('unlink', function(filePath) {
-      console.log('watcher unlink', filePath)
     })
     this.config.entry.forEach(filePath => {
       watcher.add(this.path.out(filePath))
@@ -133,7 +138,13 @@ class Pundle {
       watcher.unwatch(this.path.out(filePath))
     })
     this.subscriptions.add(toReturn.subscription)
-    toReturn.queue = toReturn.queue.then(config.ready).catch(config.error)
+    watcher.on('ready', () => {
+      toReturn.queue = toReturn.queue.then(config.ready).catch(config.error)
+      toReturn.queue = toReturn.queue.then(() => {
+        ready = true
+        return Helpers.isEverythingIn(this) && config.generate()
+      }).catch(config.error)
+    })
     return toReturn
   }
   /**
@@ -152,9 +163,6 @@ class Pundle {
   }
   onAfterProcess(callback: Function): Disposable {
     return this.emitter.on('after-process', callback)
-  }
-  onError(callback: Function): Disposable {
-    return this.emitter.on('error', callback)
   }
   dispose() {
     this.subscriptions.dispose()

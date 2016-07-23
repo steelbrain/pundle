@@ -2,6 +2,7 @@
 
 import Path from 'path'
 import PundleFS from 'pundle-fs'
+import type Pundle from './'
 import type { Config, WatcherConfig } from './types'
 
 let pathIDNumber = 0
@@ -67,6 +68,11 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
   if (typeof config.error !== 'function') {
     throw new Error('config.error must be a function')
   }
+  toReturn.error = config.error
+  if (typeof config.generate !== 'function') {
+    throw new Error('config.generate must be a function')
+  }
+  toReturn.generate = config.generate
   if (typeof config.usePolling !== 'undefined') {
     toReturn.usePolling = Boolean(config.usePolling)
   } else if ({}.hasOwnProperty.call(process.env, 'PUNDLE_FS_USE_POLLING')) {
@@ -74,7 +80,6 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
   } else {
     toReturn.usePolling = false
   }
-  toReturn.error = config.error
   return toReturn
 }
 
@@ -145,4 +150,25 @@ export function getPathID(filePath: string): number {
   }
   pathIDMap.set(filePath, value = ++pathIDNumber)
   return value
+}
+
+export function isEverythingIn(pundle: Pundle, items: Array<string> | Set<string> = pundle.config.entry, itemsAdded: Set<string> = new Set()): boolean {
+  for (const item of items) {
+    if (itemsAdded.has(item)) {
+      continue
+    }
+
+    const module = pundle.files.get(item)
+    if (!module) {
+      return false
+    }
+    itemsAdded.add(item)
+    if (!module.imports.size) {
+      continue
+    }
+    if (!isEverythingIn(pundle, module.imports, itemsAdded)) {
+      return false
+    }
+  }
+  return true
 }
