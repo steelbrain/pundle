@@ -32,6 +32,7 @@
     "babel-types": "^6.11.1",
     "babylon": "^6.8.4",
     "chokidar": "^1.6.0",
+    "lodash.difference": "^4.3.0",
     "lodash.isregexp": "^3.0.5",
     "lodash.uniq": "^4.2.1",
     "process-bootstrap": "^1.0.0",

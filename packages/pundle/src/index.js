@@ -5,6 +5,7 @@ import invariant from 'assert'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import type { Disposable } from 'sb-event-kit'
 import * as Helpers from './helpers'
+import arrayDifference from 'lodash.difference'
 import applyLoaders from './loaders'
 import Files from './files'
 import Resolver from './resolver'
@@ -78,7 +79,14 @@ class Pundle {
       }
       throw error
     }
-    // TODO: Implement garbage collection by comparing old imports to new ones
+    if (oldFile) {
+      const removedImports = arrayDifference(Array.from(oldFile.imports), Array.from(result.imports))
+      for (const entry of (removedImports: Array<string>)) {
+        if (this.files.getOccurancesOf(entry) === 1) {
+          this.files.delete(entry)
+        }
+      }
+    }
   }
   async compile(): Promise<void> {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))

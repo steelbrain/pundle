@@ -37,6 +37,17 @@ export default class Files {
   delete(path: string): void {
     this.files.delete(path)
   }
+  getOccurancesOf(path: string): number {
+    let occurances = 0
+    for (const file of this.files.values()) {
+      for (const entry of file.imports) {
+        if (entry === path) {
+          occurances++
+        }
+      }
+    }
+    return occurances
+  }
   onDidAdd(callback: ((filePath: string) => any)): Disposable {
     return this.emitter.on('did-add', callback)
   }
