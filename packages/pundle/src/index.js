@@ -2,8 +2,8 @@
 
 import Path from 'path'
 import invariant from 'assert'
-import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import type { Disposable } from 'sb-event-kit'
+import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
+import Watcher from 'chokidar'
 import * as Helpers from './helpers'
 import arrayDifference from 'lodash.difference'
 import applyLoaders from './loaders'
@@ -43,7 +43,7 @@ class Pundle {
     const filePath = this.path.in(givenFilePath)
     const oldFile = this.files.get(filePath)
     const contents = await this.fs.read(filePath)
-    if (oldFile && oldFile.contents === contents) {
+    if (oldFile && oldFile.source === contents) {
       return
     }
     const extension = Path.extname(filePath)
@@ -90,6 +90,51 @@ class Pundle {
   }
   async compile(): Promise<void> {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))
+  }
+  watch(givenConfig: Object): Object {
+    const config = Helpers.fillWatcherConfig(givenConfig)
+    const watcher = Watcher.watch([], {
+      usePolling: config.usePolling,
+      followSymlinks: true,
+    })
+    const toReturn = {
+      queue: Promise.resolve(),
+      subscription: new Disposable(() => {
+        this.subscriptions.remove(toReturn.subscription)
+        watcher.close()
+      })
+    }
+
+    watcher.on('add', filePath => {
+      toReturn.queue = toReturn.queue.then(() => {
+        if (!this.files.has(filePath)) {
+          this.read(filePath)
+        }
+      }).catch(config.error)
+    })
+    watcher.on('change', function(filePath) {
+      toReturn.queue = toReturn.queue.then(() => {
+        this.read(filePath)
+      }).catch(config.error)
+    })
+    watcher.on('unlink', function(filePath) {
+      console.log('watcher unlink', filePath)
+    })
+    this.config.entry.forEach(filePath => {
+      watcher.add(this.path.out(filePath))
+    })
+    this.files.forEach((_, filePath) => {
+      watcher.add(this.path.out(filePath))
+    })
+    this.files.onDidAdd(filePath => {
+      watcher.add(this.path.out(filePath))
+    })
+    this.files.onDidDelete(filePath => {
+      watcher.unwatch(this.path.out(filePath))
+    })
+    this.subscriptions.add(toReturn.subscription)
+    toReturn.queue = toReturn.queue.then(config.ready).catch(config.error)
+    return toReturn
   }
   onBeforeProcess(callback: Function): Disposable {
     return this.emitter.on('before-process', callback)

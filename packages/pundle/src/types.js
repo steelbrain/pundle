@@ -17,6 +17,12 @@ export type Config = {
   moduleDirectories: Array<string>,
 }
 
+export type WatcherConfig = {
+  ready: (() => any),
+  usePolling: boolean,
+  error: ((error: Error) => any),
+}
+
 export type LoaderResult = {
   imports: Set<string>,
   contents: string,

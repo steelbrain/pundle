@@ -2,7 +2,7 @@
 
 import Path from 'path'
 import PundleFS from 'pundle-fs'
-import type { Config } from './types'
+import type { Config, WatcherConfig } from './types'
 
 export function fillConfig(config: Object): Config {
   const toReturn = {}
@@ -25,7 +25,7 @@ export function fillConfig(config: Object): Config {
   if (config.rootDirectory && typeof config.rootDirectory === 'string') {
     toReturn.rootDirectory = config.rootDirectory
   } else {
-    throw new Error('config.rootDirectory must be a String')
+    throw new Error('config.rootDirectory must be a string')
   }
   toReturn.replaceVariables = { 'process.env.NODE_ENV': JSON.stringify(toReturn.development ? 'development' : 'production') }
   if (config.moduleDirectories) {
@@ -36,6 +36,33 @@ export function fillConfig(config: Object): Config {
   } else {
     toReturn.moduleDirectories = ['node_modules']
   }
+  return toReturn
+}
+
+export function fillWatcherConfig(config: Object): WatcherConfig {
+  const toReturn = {}
+  if (!config || typeof config !== 'object') {
+    throw new Error('config must be valid')
+  }
+  if (config.ready) {
+    if (typeof config.ready !== 'function') {
+      throw new Error('config.ready must be a function')
+    }
+    toReturn.ready = config.ready
+  } else {
+    toReturn.ready = function() { /* No Op */ }
+  }
+  if (typeof config.error !== 'function') {
+    throw new Error('config.error must be a function')
+  }
+  if (typeof config.usePolling !== 'undefined') {
+    toReturn.usePolling = Boolean(config.usePolling)
+  } else if ({}.hasOwnProperty.call(process.env, 'PUNDLE_FS_USE_POLLING')) {
+    toReturn.usePolling = true
+  } else {
+    toReturn.usePolling = false
+  }
+  toReturn.error = config.error
   return toReturn
 }
 

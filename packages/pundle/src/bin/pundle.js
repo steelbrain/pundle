@@ -11,7 +11,15 @@ const pundle = new Pundle({
   rootDirectory: process.cwd()
 })
 
+// ------ Compile ------
 console.profile('compile')
 pundle.compile().then(function() {
   console.profileEnd('compile')
 })
+
+// ------ Watch ------
+// pundle.watch({
+//   error(error) {
+//     console.log('error received', error)
+//   }
+// })
