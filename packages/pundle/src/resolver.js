@@ -1,23 +1,29 @@
 /* @flow */
 
 import Path from 'path'
-import { isLocal as isLocalModule, isCore as isCoreModule, resolve } from 'sb-resolve'
+import { isCore as isCoreModule, resolve } from 'sb-resolve'
+import browserMap from 'pundle-browser'
 import { attachable, find } from './helpers'
+import Filesystem from './filesystem'
 import PundlePath from './path'
 import type { Config, State } from './types'
 
-const NAME_EXTRACTION_REGEX = /^([^\\\/]+)/
+const WHOLE_MODULE_NAME = /^[^\\\/]+$/
 
 @attachable('resolver')
 @PundlePath.attach
+@Filesystem.attach
 export default class Resolver {
+  fs: Filesystem;
   path: PundlePath;
   cache: Map<string, string | Promise<string>>;
+  manifestCache: Map<string, ?string | Promise<?string>>;
   state: State;
   config: Config;
 
   constructor(state: State, config: Config) {
     this.cache = new Map()
+    this.manifestCache = new Map()
     this.state = state
     this.config = config
   }
@@ -25,20 +31,50 @@ export default class Resolver {
     if (isCoreModule(request)) {
       return Promise.resolve(`$core/${request}.js`)
     }
-    let name = NAME_EXTRACTION_REGEX.exec(request)
-    if (isLocalModule(request) || !name) {
-      return this.resolveCached(request, fromFile, request)
-    }
-    name = name[0]
-    return this.resolveCached(`${name}/package.json`, fromFile, request).then(result =>
-      this.resolveCached(Path.join(Path.dirname(result), request.substr(name.length)), fromFile, request)
+    return this.getManifest(Path.dirname(fromFile)).then(manifestFile => {
+      if (!manifestFile) {
+        return {}
+      }
+      let parsed = {
+        rootDirectory: Path.dirname(manifestFile),
+      }
+      return this.fs.read(manifestFile).then(function(contents) {
+        try {
+          parsed = JSON.parse(contents)
+          // $FlowIgnore: Stupid flow
+          parsed.rootDirectory = Path.dirname(manifestFile)
+        } catch (_) { /* */ }
+        return parsed
+      }, function() {
+        return parsed
+      })
+    }).then(manifest =>
+      this.resolveCached(request, fromFile, request, manifest)
     )
   }
-  resolveCached(request: string, fromFile: string, givenRequest: string): Promise<string> {
-    const cacheKey = `request:${request}:from:${fromFile}`
+  getManifest(directory: string): Promise<?string> {
+    const cacheKey = directory
+    let value = this.manifestCache.get(cacheKey)
+    if (!value) {
+      this.manifestCache.set(cacheKey, value = find(this.path.out(directory), 'package.json', this.config, 100).then(results => {
+        const result = results[0] || null
+        this.manifestCache.set(cacheKey, result)
+        return result
+      }, error => {
+        this.manifestCache.delete(cacheKey)
+        throw error
+      }))
+    }
+    if (typeof value === 'string') {
+      return Promise.resolve(value)
+    }
+    return value
+  }
+  resolveCached(request: string, fromFile: string, givenRequest: string, manifest: Object): Promise<string> {
+    const cacheKey = `request:${request}:from:${Path.dirname(fromFile)}:browser:${JSON.stringify(manifest.browser)}`
     let value = this.cache.get(cacheKey)
     if (!value) {
-      this.cache.set(cacheKey, value = this.resolveUncached(request, fromFile, givenRequest).then(result => {
+      this.cache.set(cacheKey, value = this.resolveUncached(request, fromFile, givenRequest, manifest).then(result => {
         this.cache.set(cacheKey, result)
         return result
       }, error => {
@@ -51,14 +87,25 @@ export default class Resolver {
     }
     return value
   }
-  async resolveUncached(request: string, fromFile: string, givenRequest: string): Promise<string> {
+  async resolveUncached(requestString: string, fromFile: string, givenRequest: string, manifest: Object): Promise<string> {
+    let request = requestString
+
+    if (manifest.browser && WHOLE_MODULE_NAME.test(request) && {}.hasOwnProperty.call(manifest.browser, request)) {
+      if (!manifest.browser[request]) {
+        return browserMap.empty
+      }
+      request = manifest.browser[request]
+      if (request.substr(0, 1) === '.') {
+        request = Path.resolve(manifest.rootDirectory, request)
+      }
+    }
+
     try {
       const pathOut = this.path.out(fromFile)
       const moduleDirectories = this.config.moduleDirectories.filter(i => !Path.isAbsolute(i))
       return await resolve(request, pathOut, {
         fs: this.config.fileSystem,
         root: this.config.rootDirectory,
-        process: manifest => manifest.main || './index', // TODO: Use the modules state registry here and respect browser field
         extensions: Array.from(this.state.loaders.keys()),
         moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(pathOut), moduleDirectories, this.config)),
       })
