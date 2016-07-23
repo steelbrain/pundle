@@ -78,7 +78,7 @@ This property represents a directory that is treated as `$root`, it's used in mo
 This property represents a map of variables to be replaced in the bundle. It can be useful for advanced purposes, the default value of this property is written below.
 ```js
 {
-  'process.env.NODE_ENV': '"deveopment"'
+  'process.env.NODE_ENV': '"development"'
 }
 ```
 
