@@ -2,7 +2,7 @@
 
 import sourceMap from 'source-map'
 
-// Source: https://goo.gl/821D9T :: 368
+// Source: https://goo.gl/KRq4vl :: 368
 export function mergeSourceMaps(inputMap: Object, map: Object): Object {
   const inputMapConsumer   = new sourceMap.SourceMapConsumer(inputMap)
   const outputMapConsumer  = new sourceMap.SourceMapConsumer(map)
