@@ -32,10 +32,22 @@ export default class Files {
     return this.files.get(this.path.in(path))
   }
   set(path: string, file: File): void {
-    this.files.set(this.path.in(path), file)
+    const internalPath = this.path.in(path)
+    const oldValue = this.files.get(internalPath)
+    this.files.set(internalPath, file)
+    if (!oldValue) {
+      this.emitter.emit('did-add', internalPath)
+    }
   }
   delete(path: string): void {
-    this.files.delete(path)
+    const internalPath = this.path.in(path)
+    if (this.has(internalPath)) {
+      this.files.delete(internalPath)
+      this.emitter.emit('did-delete', internalPath)
+    }
+  }
+  forEach(callback: ((file: File, filePath: string) => any)) {
+    this.files.forEach(callback)
   }
   getOccurancesOf(path: string): number {
     let occurances = 0
@@ -51,8 +63,8 @@ export default class Files {
   onDidAdd(callback: ((filePath: string) => any)): Disposable {
     return this.emitter.on('did-add', callback)
   }
-  onDidRemove(callback: ((filePath: string) => any)): Disposable {
-    return this.emitter.on('did-remove', callback)
+  onDidDelete(callback: ((filePath: string) => any)): Disposable {
+    return this.emitter.on('did-delete', callback)
   }
   dispose() {
     this.files.clear()
