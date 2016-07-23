@@ -80,12 +80,10 @@ export default async function processJavascript(pundle: Pundle, filePath: string
   })
 
   await Promise.all(promises)
-  const visualDirName = pundle.getUniquePathID(Path.dirname(filePath))
-  const visualFilePath = visualDirName + '/' + pundle.getUniquePathID(filePath) + Path.extname(filePath)
   ast.program.body.unshift(
     t.variableDeclaration('var', [
-      t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral(visualDirName)),
-      t.variableDeclarator(t.identifier('__filename'), t.stringLiteral(visualFilePath)),
+      t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral('')),
+      t.variableDeclarator(t.identifier('__filename'), t.stringLiteral(pundle.getUniquePathID(filePath))),
       t.variableDeclarator(t.identifier('__require'), t.callExpression(t.identifier('__sb_generate_require'), [
         t.identifier('__filename')
       ]))

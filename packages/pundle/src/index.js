@@ -143,7 +143,7 @@ class Pundle {
   getUniquePathID(path: string): string {
     const internalPath = this.path.in(path)
     if (this.config.pathType === 'number') {
-      return Helpers.getPathID(this.path.in(path)).toString()
+      return Helpers.getPathID(this.path.in(path)).toString() + Path.extname(path)
     }
     return internalPath
   }
