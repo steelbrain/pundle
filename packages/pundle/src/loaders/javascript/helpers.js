@@ -7,12 +7,12 @@ export function traverse(node: Object, enter: Function) {
   const keys = VISITOR_KEYS[node.type]
   if (!keys) return
 
-  for (let i = 0, _length = keys.length; i < _length; ++i) {
+  for (let i = 0, length = keys.length; i < length; ++i) {
     const key = keys[i]
     let subNode = node[key]
 
     if (Array.isArray(subNode)) {
-      for (let k = 0, length = subNode.length; k < length; ++k) {
+      for (let k = 0, klength = subNode.length; k < klength; ++k) {
         const value = enter(subNode[k])
         if (typeof value === 'object') {
           subNode[k] = value

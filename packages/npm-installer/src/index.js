@@ -9,7 +9,7 @@ const IGNORED = /(node_modules|bower_components)/
 export default function getNPMInstaller(pundle: Pundle, parameters: Object) {
   parameters = Object.assign({
     save: true,
-    rootDirectory: pundle.config.rootDirectory
+    rootDirectory: pundle.config.rootDirectory,
   }, parameters)
   const installer = new Installer(parameters)
   if (!(parameters.ignored instanceof RegExp)) {

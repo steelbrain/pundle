@@ -1,7 +1,7 @@
 /* @flow */
 
-import type Pundle from './'
 import type { Stats } from 'fs'
+import type Pundle from './'
 
 export type FileSystem = {
   stat: ((path: string) => Promise<Stats>),

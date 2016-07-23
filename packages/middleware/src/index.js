@@ -21,7 +21,7 @@ function attach({ app, server, compilation, config }: Options) {
     sourceMap: true,
     sourceRoot: compilation.config.rootDirectory,
     publicPath: '/',
-    publicBundlePath: '/bundle.js'
+    publicBundlePath: '/bundle.js',
   }, config.middleware)
 
   async function prepareRequest(res): Promise<boolean> {
@@ -102,7 +102,7 @@ function attach({ app, server, compilation, config }: Options) {
     compilation.subscriptions.add({
       dispose() {
         wsServer.close()
-      }
+      },
     })
     wsServer.on('connection', function(socket) {
       const request = socket.upgradeReq
@@ -126,7 +126,7 @@ function attach({ app, server, compilation, config }: Options) {
       modules.push(module)
       const contents = compilation.generator.generateAdvanced({
         prepend: '',
-        append: ''
+        append: '',
       }, modules)
       const update = JSON.stringify({ type: 'update', filePath, contents })
       for (const client of clients) {

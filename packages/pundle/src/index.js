@@ -4,8 +4,8 @@ import Path from 'path'
 import invariant from 'assert'
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import Watcher from 'chokidar'
-import * as Helpers from './helpers'
 import arrayDifference from 'lodash.difference'
+import * as Helpers from './helpers'
 import applyLoaders from './loaders'
 import Files from './files'
 import Resolver from './resolver'
@@ -108,7 +108,7 @@ class Pundle {
       subscription: new Disposable(() => {
         this.subscriptions.remove(toReturn.subscription)
         watcher.close()
-      })
+      }),
     }
 
     watcher.on('add', filePath => {

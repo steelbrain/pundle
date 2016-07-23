@@ -30,9 +30,9 @@ export default async function processJavascript(pundle: Pundle, filePath: string
         'exponentiationOperator',
         'asyncGenerators',
         'functionBind',
-        'functionSent'
+        'functionSent',
       ],
-      filename: filePath
+      filename: filePath,
     })
   } catch (error) {
     if (error && error.constructor.name === 'SyntaxError') {
@@ -84,8 +84,8 @@ export default async function processJavascript(pundle: Pundle, filePath: string
       t.variableDeclarator(t.identifier('__dirname'), t.stringLiteral('')),
       t.variableDeclarator(t.identifier('__filename'), t.stringLiteral(pundle.getUniquePathID(filePath))),
       t.variableDeclarator(t.identifier('__require'), t.callExpression(t.identifier('__sb_generate_require'), [
-        t.identifier('__filename')
-      ]))
+        t.identifier('__filename'),
+      ])),
     ])
   )
 
@@ -95,7 +95,7 @@ export default async function processJavascript(pundle: Pundle, filePath: string
     comments: false,
     filename: filePath,
     sourceMaps: true,
-    sourceFileName: filePath
+    sourceFileName: filePath,
   })
   if (sourceMap) {
     compiled.map = mergeSourceMaps(sourceMap, compiled.map)

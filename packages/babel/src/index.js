@@ -30,7 +30,7 @@ export default function getBabelTransformer(pundle: Object, parameters: Object =
       sourceMap: true,
       highlightCode: false,
       sourceFileName: event.filePath,
-      inputSourceMap: event.sourceMap
+      inputSourceMap: event.sourceMap,
     }))
 
     event.contents = processed.code

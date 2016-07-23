@@ -39,7 +39,7 @@ class Server {
       app: this.server,
       server,
       compilation,
-      config: this.config
+      config: this.config,
     })
 
     return disposable

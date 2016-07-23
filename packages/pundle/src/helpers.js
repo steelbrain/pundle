@@ -104,9 +104,9 @@ export function attachable(key: string) {
           },
           set(newValue) {
             values.set(this.state, newValue)
-          }
+          },
         })
-      }
+      },
     })
   }
 }
@@ -196,9 +196,11 @@ export async function getPlugins(
       [plugin, parameters] = entry
     }
     if (typeof plugin === 'string') {
+      /* eslint-disable global-require */
       // $FlowIgnore: I wanna use a variable in require
       let mainModule = require(plugin)
       // Support babel's export default
+      /* eslint-disable no-underscore-dangle */
       mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
       if (typeof mainModule !== 'function') {
         throw new Error(`Plugin '${plugin}' exported incorrectly`)

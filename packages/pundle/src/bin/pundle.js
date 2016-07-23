@@ -9,7 +9,7 @@ const Pundle = require('../')
 const pundle = new Pundle({
   entry: './index.js',
   pathType: 'filePath',
-  rootDirectory: process.cwd()
+  rootDirectory: process.cwd(),
 })
 
 // ------ Compile ------
