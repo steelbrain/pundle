@@ -2,8 +2,11 @@
 
 import Path from 'path'
 import browserMap from 'pundle-browser'
+import invertKeysAndVals from 'lodash.invert'
 import { attachable } from './helpers'
 import type { State, Config } from './types'
+
+const browserMapReverse = invertKeysAndVals(browserMap)
 
 @attachable('path')
 export default class PundlePath {
@@ -15,6 +18,9 @@ export default class PundlePath {
     this.config = config
   }
   in(path: string): string {
+    if (browserMapReverse[path]) {
+      return `$core/${browserMapReverse[path]}.js`
+    }
     if (path.substr(0, 5) === '$root') {
       return path
     }
