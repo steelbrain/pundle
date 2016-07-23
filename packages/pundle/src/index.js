@@ -45,7 +45,7 @@ class Pundle {
     if (oldFile && oldFile.contents === contents) {
       return
     }
-    const extension = filePath.substr(0, 5) === '$core' ? '.js' : Path.extname(filePath)
+    const extension = Path.extname(filePath)
     const loader = this.state.loaders.get(extension)
     invariant(loader, `Unrecognized extension '${extension}' for '${givenFilePath}'`)
 

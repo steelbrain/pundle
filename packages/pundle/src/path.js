@@ -27,7 +27,7 @@ export default class PundlePath {
   }
   out(path: string): string {
     if (path.substr(0, 5) === '$core') {
-      return browserMap[path.substr(6)] || browserMap.empty
+      return browserMap[path.slice(6, -3)] || browserMap.empty
     }
     if (path.substr(0, 5) === '$root') {
       if (path.length === 5) {

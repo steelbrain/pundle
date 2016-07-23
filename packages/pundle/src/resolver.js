@@ -23,7 +23,7 @@ export default class Resolver {
   }
   resolve(request: string, fromFile: string): Promise<string> {
     if (isCoreModule(request)) {
-      return Promise.resolve(`$core/${request}`)
+      return Promise.resolve(`$core/${request}.js`)
     }
     let name = NAME_EXTRACTION_REGEX.exec(request)
     if (isLocalModule(request) || !name) {
