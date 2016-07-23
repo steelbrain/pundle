@@ -10,6 +10,7 @@ export type FileSystem = {
 
 export type Config = {
   entry: Array<string>,
+  pathType: 'number' | 'filePath',
   fileSystem: FileSystem,
   development: boolean,
   rootDirectory: string,

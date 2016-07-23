@@ -36,6 +36,15 @@ export function fillConfig(config: Object): Config {
   } else {
     toReturn.moduleDirectories = ['node_modules']
   }
+  if (config.pathType) {
+    if (config.pathType === 'number' || config.pathType === 'filePath') {
+      toReturn.pathType = config.pathType
+    } else {
+      throw new Error("config.pathType must be either 'number' or 'filePath'")
+    }
+  } else {
+    toReturn.pathType = 'number'
+  }
   return toReturn
 }
 
