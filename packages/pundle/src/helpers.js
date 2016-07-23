@@ -114,8 +114,10 @@ export function attachable(key: string) {
 export async function find(
   directory: string,
   name: string | Array<string>,
-  config: Config
+  config: Config,
+  maxDepth: number = Infinity
 ): Promise<Array<string>> {
+  let depth = 0
   const names = [].concat(name)
   const chunks = directory.split(Path.sep)
   const matched = []
@@ -138,6 +140,10 @@ export async function find(
       break
     }
     chunks.pop()
+    depth++
+    if (depth >= maxDepth) {
+      break
+    }
   }
 
   return matched
