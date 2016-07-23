@@ -178,3 +178,36 @@ export function isEverythingIn(pundle: Pundle, items: Array<string> | Set<string
   }
   return true
 }
+
+export async function getPlugins(
+  pundle: Pundle,
+  plugins: Array<Plugin>
+): Promise<Array<{ plugin: Function, parameters: Object }>> {
+  const processed = []
+  for (const entry of plugins) {
+    let plugin
+    let parameters = {}
+    if (typeof entry === 'function') {
+      plugin = entry
+      parameters = {}
+    } else if (typeof entry === 'string') {
+      plugin = pundle.path.out(await pundle.resolver.resolve(entry, '$root/pundle-plugin-loader'))
+    } else if (Array.isArray(entry)) {
+      [plugin, parameters] = entry
+    }
+    if (typeof plugin === 'string') {
+      // $FlowIgnore: I wanna use a variable in require
+      let mainModule = require(plugin)
+      // Support babel's export default
+      mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
+      if (typeof mainModule !== 'function') {
+        throw new Error(`Plugin '${plugin}' exported incorrectly`)
+      }
+      plugin = mainModule
+    } else if (typeof plugin !== 'function') {
+      throw new Error('Invalid plugin detected')
+    }
+    processed.push({ plugin, parameters })
+  }
+  return processed
+}

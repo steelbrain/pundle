@@ -38,6 +38,12 @@ class Pundle {
     this.subscriptions.add(this.emitter)
     applyLoaders(this)
   }
+  async loadPlugins(givenPlugins: Array<Plugin>): Promise<void> {
+    const plugins = await Helpers.getPlugins(this, givenPlugins)
+    for (const { plugin, parameters } of plugins) {
+      plugin(this, parameters)
+    }
+  }
   async read(givenFilePath: string): Promise<void> {
     const filePath = this.path.in(givenFilePath)
     const oldFile = this.files.get(filePath)
