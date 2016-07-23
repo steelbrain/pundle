@@ -3,10 +3,21 @@
 import type Pundle from '../'
 import type { LoaderResult } from '../types'
 
-export default function processJSON(pundle: Pundle, filePath: string, contents: string, sourceMap: ?Object): LoaderResult {
-  const toReturn = {}
-  toReturn.imports = new Set()
-  toReturn.sourceMap = sourceMap || {}
-  toReturn.contents = contents
-  return toReturn
+export default function processJSON(pundle: Pundle, filePath: string, contents: string): LoaderResult {
+  let parsed
+  try {
+    parsed = JSON.parse(contents)
+  } catch (_) {
+    throw new Error(`Malformed JSON found at '${filePath}'`)
+  }
+  return {
+    imports: new Set(),
+    sourceMap: {
+      mappings: [],
+      names: [],
+      sources: [filePath],
+      version: 3,
+    },
+    contents: JSON.stringify(parsed, null, 2),
+  }
 }
