@@ -1,6 +1,5 @@
 /* @flow */
 
-import Path from 'path'
 import generate from 'babel-generator'
 import * as t from 'babel-types'
 import { parse } from 'babylon'
