@@ -71,8 +71,13 @@ export default async function processJavascript(pundle: Pundle, filePath: string
       }))
     } else if (node.type === 'MemberExpression') {
       const name = getName(node)
-      if (pundle.config.replaceVariables[name]) {
-        return pundle.config.replaceVariables[name]
+      const value = pundle.config.replaceVariables[name]
+      if (typeof value === 'string') {
+        return t.stringLiteral(value)
+      } else if (typeof value === 'number' && value < Infinity && !Number.isNaN(value)) {
+        return t.numericLiteral(value)
+      } else if (typeof value !== 'undefined') {
+        throw new Error(`Unknown replacement value for '${name}'`)
       }
     }
     return false
