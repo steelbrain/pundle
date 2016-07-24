@@ -18,6 +18,6 @@ export default function processJSON(pundle: Pundle, filePath: string, contents: 
       sources: [filePath],
       version: 3,
     },
-    contents: JSON.stringify(parsed, null, 2),
+    contents: `module.exports = ${JSON.stringify(parsed, null, 2)}`,
   }
 }
