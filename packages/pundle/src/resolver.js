@@ -64,7 +64,7 @@ export default class Resolver {
     const cacheKey = directory
     let value = this.manifestCache.get(cacheKey)
     if (!value) {
-      this.manifestCache.set(cacheKey, value = find(this.path.out(directory), 'package.json', this.config, 100).then(results => {
+      this.manifestCache.set(cacheKey, value = find(this.path.out(directory), 'package.json', this.config, true).then(results => {
         const result = results[0] || null
         this.manifestCache.set(cacheKey, result)
         return result

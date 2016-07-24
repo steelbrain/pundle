@@ -115,9 +115,8 @@ export async function find(
   directory: string,
   name: string | Array<string>,
   config: Config,
-  maxDepth: number = Infinity
+  earlyExit: boolean = false
 ): Promise<Array<string>> {
-  let depth = 0
   const names = [].concat(name)
   const chunks = directory.split(Path.sep)
   const matched = []
@@ -133,6 +132,9 @@ export async function find(
       try {
         await config.fileSystem.stat(filePath)
         matched.push(filePath)
+        if (earlyExit) {
+          return matched
+        }
         break
       } catch (_) { /* Ignore */ }
     }
@@ -140,10 +142,6 @@ export async function find(
       break
     }
     chunks.pop()
-    depth++
-    if (depth >= maxDepth) {
-      break
-    }
   }
 
   return matched
