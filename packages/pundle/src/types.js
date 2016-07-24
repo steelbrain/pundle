@@ -51,3 +51,8 @@ export type Manifest = {
 }
 
 export type Plugin = string | Function | [string, Object] | [Function, Object]
+
+export type GeneratorConfig = {
+  // ... Anything else that the generate function accepts ...
+  generate: ((pundle: Pundle, config: GeneratorConfig) => any)
+}

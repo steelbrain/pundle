@@ -96,6 +96,14 @@ class Pundle {
   async compile(): Promise<void> {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))
   }
+  generate(givenConfig: Object = {}): Object {
+    const config = Helpers.fillGeneratorConfig(givenConfig)
+    const result = config.generate(this, config)
+    if (!result || typeof result !== 'object') {
+      throw new Error('Pundle generator returned invalid results')
+    }
+    return result
+  }
   watch(givenConfig: Object): Object {
     let ready = false
     const config = Helpers.fillWatcherConfig(givenConfig)

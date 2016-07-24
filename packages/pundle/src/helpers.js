@@ -2,8 +2,9 @@
 
 import Path from 'path'
 import PundleFS from 'pundle-fs'
+import PundleGenerator from 'pundle-generator'
 import type Pundle from './'
-import type { Config, WatcherConfig } from './types'
+import type { Config, WatcherConfig, GeneratorConfig } from './types'
 
 let pathIDNumber = 0
 export const pathIDMap = new Map()
@@ -81,6 +82,20 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
     toReturn.usePolling = false
   }
   return toReturn
+}
+
+export function fillGeneratorConfig(config: Object): GeneratorConfig {
+  if (!config || typeof config !== 'object') {
+    throw new Error('config must be valid')
+  }
+  if (config.generate) {
+    if (typeof config.generate !== 'function') {
+      throw new Error('config.generate must be a function')
+    }
+  } else {
+    config.generate = PundleGenerator
+  }
+  return config
 }
 
 export function attachable(key: string) {
@@ -182,7 +197,7 @@ export async function getPlugins(
   plugins: Array<Plugin>
 ): Promise<Array<{ plugin: Function, parameters: Object }>> {
   const processed = []
-  for (const entry of plugins) {
+  for (const entry of (plugins: Array<Plugin>)) {
     let plugin
     let parameters = {}
     if (typeof entry === 'function') {

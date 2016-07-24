@@ -16,6 +16,10 @@ const pundle = new Pundle({
 console.profile('compile')
 pundle.compile().then(function() {
   console.profileEnd('compile')
+  process.stdout.write('\n\n\n\n\n\n')
+  process.stdout.write(JSON.stringify(pundle.generate(), null, 2))
+}).catch(function(e) {
+  console.error('[Pundle] Compilation Error', e)
 })
 
 // ------ Watch ------

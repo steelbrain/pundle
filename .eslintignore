@@ -1,5 +1,5 @@
 lib
 node_modules
-packages/pundle/wrappers
+packages/generator/wrappers
 packages/browser/src/index.js
 scripts
