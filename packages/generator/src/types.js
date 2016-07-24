@@ -1,6 +1,6 @@
 /* @flow */
 
 export type Config = {
-  hmr: boolean,
+  wrapper: 'none' | 'hmr' | 'normal',
   sourceMap: boolean,
 }

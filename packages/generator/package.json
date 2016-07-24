@@ -25,5 +25,6 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
+    "source-map": "^0.5.6"
   }
 }
