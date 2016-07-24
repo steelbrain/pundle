@@ -12,6 +12,13 @@ export function fillConfig(config: Object): Config {
   } else {
     config.wrapper = 'normal'
   }
+  if (config.projectName) {
+    if (typeof config.projectName !== 'string') {
+      throw new Error('config.projectName must be valid')
+    }
+  } else {
+    config.projectName = 'root'
+  }
   config.sourceMap = Boolean(config.sourceMap)
   return config
 }

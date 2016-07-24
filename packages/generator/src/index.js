@@ -1,8 +1,9 @@
 /* @flow */
+/* eslint-disable no-underscore-dangle */
 
 import FS from 'fs'
 import Path from 'path'
-import { SourceMapGenerator } from 'source-map'
+import { SourceMapGenerator, SourceMapConsumer } from 'source-map'
 import * as Helpers from './helpers'
 import type Pundle from '../../pundle/src'
 import type { File } from '../../pundle/src/types'
@@ -27,8 +28,19 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
     lines += Helpers.getLinesCount(WrapperHMR)
   }
   for (const file of (contents: Array<File>)) {
+    const entryPath = file.filePath.replace('$root', `$${config.projectName}`)
+    const entryMap = new SourceMapConsumer(file.sourceMap)
     const entry = `__sb_pundle_register('${pundle.getUniquePathID(file.filePath)}', function(module, exports) {\n${file.contents.trim()}\n});`
+    for (const mapping of entryMap._generatedMappings) {
+      sourceMap.addMapping({
+        source: entryPath,
+        original: { line: mapping.originalLine, column: mapping.originalColumn },
+        generated: { line: lines + mapping.generatedLine, column: mapping.generatedColumn },
+      })
+    }
     lines += Helpers.getLinesCount(entry)
+    lines += 2
+    sourceMap.setSourceContent(entryPath, file.source)
     output.push(entry)
   }
   for (const entry of (requires: Array<string>)) {
@@ -38,6 +50,5 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
   return {
     contents: output.join(''),
     sourceMap: sourceMap.toJSON(),
-    lines,
   }
 }
