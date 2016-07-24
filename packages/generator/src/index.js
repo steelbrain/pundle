@@ -8,8 +8,8 @@ import * as Helpers from './helpers'
 import type Pundle from '../../pundle/src'
 import type { File } from '../../pundle/src/types'
 
-const WrapperNormal = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'normal.js'), 'utf8')
-const WrapperHMR = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'hmr.js'), 'utf8')
+const WrapperNormal = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'normal.js'), 'utf8').trim()
+const WrapperHMR = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'hmr.js'), 'utf8').trim()
 
 export default function generate(pundle: Pundle, contents: Array<File>, requires: Array<string>, givenConfig: Object) {
   let lines = 0
@@ -26,11 +26,14 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
   } else if (config.wrapper === 'hmr') {
     output.push(WrapperHMR)
     lines += Helpers.getLinesCount(WrapperHMR)
+  } else {
+    lines = 1
   }
   for (const file of (contents: Array<File>)) {
+    const fileContents = file.contents.trim()
     const entryPath = file.filePath.replace('$root', `$${config.projectName}`)
     const entryMap = new SourceMapConsumer(file.sourceMap)
-    const entry = `__sb_pundle_register('${pundle.getUniquePathID(file.filePath)}', function(module, exports) {\n${file.contents.trim()}\n});`
+    const entry = `__sb_pundle_register('${pundle.getUniquePathID(file.filePath)}', function(module, exports) {\n${fileContents}\n});`
     for (const mapping of entryMap._generatedMappings) {
       sourceMap.addMapping({
         source: entryPath,
@@ -38,8 +41,8 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
         generated: { line: lines + mapping.generatedLine, column: mapping.generatedColumn },
       })
     }
-    lines += Helpers.getLinesCount(entry)
-    lines += 2
+    lines += Helpers.getLinesCount(fileContents)
+    lines ++
     sourceMap.setSourceContent(entryPath, file.source)
     output.push(entry)
   }
