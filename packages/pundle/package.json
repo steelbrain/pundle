@@ -38,6 +38,7 @@
     "process-bootstrap": "^1.0.0",
     "pundle-browser": "0.0.0",
     "pundle-fs": "0.2.15",
+    "pundle-generator": "0.0.0",
     "sb-event-kit": "^2.0.0",
     "sb-resolve": "^3.0.0",
     "source-map": "^0.5.6"
