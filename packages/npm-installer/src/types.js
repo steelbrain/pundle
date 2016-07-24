@@ -3,7 +3,6 @@
 export type Config = {
   save: boolean,
   rootDirectory: string,
-  error(error: Error): void,
   beforeInstall(name: string): void,
-  afterInstall(name: string): void,
+  afterInstall(name: string, error: ?Error): void,
 }
