@@ -32,7 +32,9 @@ export function fillConfig(config: Object): Config {
   } else {
     throw new Error('config.rootDirectory must be a string')
   }
-  toReturn.replaceVariables = { 'process.env.NODE_ENV': JSON.stringify(toReturn.development ? 'development' : 'production') }
+  toReturn.replaceVariables = Object.assign({
+    'process.env.NODE_ENV': JSON.stringify(toReturn.development ? 'development' : 'production'),
+  }, config.replaceVariables)
   if (config.moduleDirectories) {
     if (!Array.isArray(config.moduleDirectories)) {
       throw new Error('config.moduleDirectories must be an Array')
