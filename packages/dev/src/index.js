@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 import express from 'express'
@@ -41,7 +39,7 @@ class Server {
       app: this.server,
       server,
       compilation,
-      config: this.config
+      config: this.config,
     })
 
     return disposable

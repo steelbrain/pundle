@@ -1,19 +1,28 @@
-'use strict'
-
 /* @flow */
 
-import promisify from 'sb-promisify'
-import type FS from 'fs'
+import FS from 'fs'
 
-const promisedFS = promisify.promisifyAll(require('fs'))
-
-class FileSystem {
+export default {
   stat(path: string): Promise<FS.Stats> {
-    return promisedFS.stat(path)
-  }
+    return new Promise(function(resolve, reject) {
+      FS.stat(path, function(error, stats) {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(stats)
+        }
+      })
+    })
+  },
   readFile(filePath: string): Promise<string> {
-    return promisedFS.readFile(filePath, 'utf8')
-  }
+    return new Promise(function(resolve, reject) {
+      FS.readFile(filePath, 'utf8', function(error, stats) {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(stats)
+        }
+      })
+    })
+  },
 }
-
-module.exports = FileSystem

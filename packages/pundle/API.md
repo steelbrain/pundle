@@ -6,7 +6,7 @@ Pundle's API is pretty straight forward and easy to get used to. Read the source
 
 ### Plugin
 
-Pundle accepts plugins and parameters for those plugins, it accepts them using a generic interface mentioned below. These plugins are loaded using `Pundl#loadPlugins`.
+Pundle accepts plugins and parameters for those plugins, it accepts them using a generic interface mentioned below. These plugins are loaded using `Pundle#loadPlugins`.
 ```js
 type Plugin = string | Function | [string, Object] | [Function, Object]
 ```

@@ -1,68 +1,58 @@
-'use strict'
-
 /* @flow */
 
 import type { Stats } from 'fs'
+import type Pundle from './'
 
-export type FileSystemInterface = {
+export type FileSystem = {
   stat: ((path: string) => Promise<Stats>),
   readFile: ((filePath: string) => Promise<string>),
 }
 
 export type Config = {
-  hmr: boolean,
   entry: Array<string>,
-  resolve: Object,
-  FileSystem: Function,
+  pathType: 'number' | 'filePath',
+  fileSystem: FileSystem,
+  development: boolean,
   rootDirectory: string,
-  replaceVariables: Object // <string, Object>
-}
-
-/*
-  Here's what we can work with
-  type Config = {
-    hmr: boolean,
-    entry: string | Array<string>,
-    resolve?: Object,
-    FileSystem?: Function,
-    rootDirectory: string,
-    sourceMaps?: boolean,
-    replaceVariables?: Object // <string, string>
-  }
-*/
-
-export type Module = {
-  imports: Array<string>,
-  sources: string,
-  contents: string,
-  filePath: string,
-  sourceMap: Object
+  replaceVariables: Object, // <string, Object>
+  moduleDirectories: Array<string>,
 }
 
 export type WatcherConfig = {
-  ignored: string | RegExp,
-  onBeforeCompile?: ((filePath: string) => void),
-  onAfterCompile?: ((filePath: string, error: ?Error) => void),
-  onReady?: (() => void),
-  onError: ((error: Error) => void)
+  usePolling: boolean,
+  ready: (() => any),
+  error: ((error: Error) => any),
+  generate: (() => any),
 }
 
-/*
-  Here's what we can work with
-  type WatcherConfig = {
-    ignored?: string | RegExp,
-    onBeforeCompile?: ((filePath: string) => void),
-    onAfterCompile?: ((filePath: string, error: ?Error) => void),
-    onReady?: (() => void),
-    onError: ((error: Error) => void)
-  }
-*/
+export type LoaderResult = {
+  imports: Set<string>,
+  contents: string,
+  sourceMap: Object,
+}
 
-export type ProcessorConfig = {
-  append?: string,
-  prepend?: string,
-  module_register: string
+export type Loader = ((pundle: Pundle, filePath: string, source: string, sourceMap: ?Object) => LoaderResult | Promise<LoaderResult>)
+export type State = {
+  loaders: Map<string, Loader>,
+}
+
+export type File = {
+  source: string,
+  imports: Set<string>,
+  filePath: string,
+  contents: string,
+  sourceMap: Object
+}
+
+export type Manifest = {
+  name?: string,
+  version?: string,
+  browser?: string | Object,
 }
 
 export type Plugin = string | Function | [string, Object] | [Function, Object]
-export type ArrayDifference<T> = { added: Array<T>, removed: Array<T> }
+
+export type GeneratorConfig = {
+  // ... Anything else that the generate function accepts ...
+  generate: ((pundle: Pundle, contents: Array<File>, requires: Array<string>, config: GeneratorConfig) => any)
+}

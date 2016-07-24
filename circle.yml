@@ -4,7 +4,10 @@ dependencies:
     - sudo dpkg --install atom-amd64.deb || true
     - sudo apt-get update
     - sudo apt-get -f install
-    - nvm use 5.1.0
+    - node --version
+    - npm --version
+    - atom --version
+    - rm -rf node_modules; npm install
     - npm run bootstrap
 
 test:
@@ -14,4 +17,4 @@ test:
 
 machine:
   node:
-    version: 5.1.0
+    version: 6.3.0

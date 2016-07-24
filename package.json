@@ -1,10 +1,7 @@
 {
   "dependencies": {
-    "babel-eslint": "^6.0.0",
-    "babel-preset-steelbrain": "^2.0.1",
-    "eslint": "^2.4.0",
-    "eslint-config-airbnb": "^6.0.2",
-    "eslint-plugin-react": "^4.2.1",
+    "babel-preset-steelbrain": "^4.0.1",
+    "eslint-config-steelbrain": "^1.0.4",
     "ucompiler": "^3.1.9",
     "ucompiler-plugin-babel": "^3.1.1"
   },

@@ -1,14 +1,36 @@
 #!/usr/bin/env node
-'use strict'
 
-const showSourceMap = process.argv.indexOf('--source-map') !== -1
+/* @flow */
+
+require('process-bootstrap')('pundle', 'PUNDLE')
+
 const Pundle = require('../')
-const pundle = new Pundle({ rootDirectory: process.cwd(), entry: 'index.js' })
-Promise.resolve().then(function() {
-  return pundle.compile(showSourceMap)
-}).then(function(result) {
-  console.log(result)
-}).catch(function(error) {
-  console.error(error)
-  process.exitCode = 1
+
+const pundle = new Pundle({
+  entry: './index.js',
+  pathType: 'filePath',
+  rootDirectory: process.cwd(),
 })
+
+// ------ Compile ------
+console.profile('compile')
+pundle.compile().then(function() {
+  console.profileEnd('compile')
+  process.stdout.write('\n\n\n\n\n\n')
+  process.stdout.write(JSON.stringify(pundle.generate(), null, 2))
+}).catch(function(e) {
+  console.error('[Pundle] Compilation Error', e)
+})
+
+// ------ Watch ------
+// pundle.watch({
+//   error(error) {
+//     console.log('error received', error)
+//   },
+//   ready() {
+//     console.log('ready')
+//   },
+//   generate() {
+//     console.log('should generate')
+//   },
+// })

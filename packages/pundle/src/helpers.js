@@ -1,56 +1,138 @@
-'use babel'
-
 /* @flow */
 
 import Path from 'path'
-import FileSystem from 'pundle-fs'
-import { parse } from 'babylon'
-import uniq from 'lodash.uniq'
-import type Pundle$Path from './path'
-import type { Config, Plugin, FileSystemInterface } from './types'
+import PundleFS from 'pundle-fs'
+import PundleGenerator from 'pundle-generator'
+import type Pundle from './'
+import type { Config, WatcherConfig, GeneratorConfig } from './types'
 
-export function normalizeConfig(givenConfig: Config): Config {
-  const config = Object.assign({}, givenConfig)
-  // Make sure config.entry is an array
-  if (!Array.isArray(config.entry)) {
-    config.entry = [config.entry]
+let pathIDNumber = 0
+export const pathIDMap = new Map()
+
+export function fillConfig(config: Object): Config {
+  const toReturn = {}
+  if (config.entry && typeof config.entry === 'string') {
+    toReturn.entry = [config.entry]
+  } else if (Array.isArray(config.entry)) {
+    toReturn.entry = config.entry
+  } else {
+    throw new Error('config.entry should be a String or an Array')
   }
-  // Make sure config.entry is filled with absolute paths
-  for (let i = 0; i < config.entry.length; ++i) {
-    const entry = config.entry[i]
-    if (!Path.isAbsolute(entry)) {
-      config.entry[i] = Path.join(config.rootDirectory, entry)
+  if (config.fileSystem) {
+    if (typeof config.fileSystem !== 'object' || typeof config.fileSystem.stat !== 'function' || typeof config.fileSystem.readFile !== 'function') {
+      throw new Error('config.fileSystem must be an object implementing FS interface')
     }
+    toReturn.fileSystem = config.fileSystem
+  } else {
+    toReturn.fileSystem = PundleFS
   }
-  config.entry = uniq(['$internal'].concat(config.entry))
-  // Make sure we have a FileSystem on board
-  if (!config.FileSystem) {
-    config.FileSystem = FileSystem
+  toReturn.development = Boolean(config.development)
+  if (config.rootDirectory && typeof config.rootDirectory === 'string') {
+    toReturn.rootDirectory = config.rootDirectory
+  } else {
+    throw new Error('config.rootDirectory must be a string')
   }
-  if (!config.resolve) {
-    config.resolve = {}
-  }
-  if (!Array.isArray(config.resolve.packageMains)) {
-    config.resolve.packageMains = ['browser', 'main']
-  }
-  if (!config.replaceVariables) {
-    config.replaceVariables = {}
-  }
-  config.replaceVariables = Object.assign({
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
+  toReturn.replaceVariables = Object.assign({
+    'process.env.NODE_ENV': toReturn.development ? 'development' : 'production',
   }, config.replaceVariables)
-  for (const key in config.replaceVariables) {
-    if (config.replaceVariables.hasOwnProperty(key)) {
-      config.replaceVariables[key] = parse(`_(${config.replaceVariables[key]})`).program.body[0].expression.arguments[0]
+  if (config.moduleDirectories) {
+    if (!Array.isArray(config.moduleDirectories)) {
+      throw new Error('config.moduleDirectories must be an Array')
     }
+    toReturn.moduleDirectories = config.moduleDirectories
+  } else {
+    toReturn.moduleDirectories = ['node_modules']
+  }
+  if (config.pathType) {
+    if (config.pathType === 'number' || config.pathType === 'filePath') {
+      toReturn.pathType = config.pathType
+    } else {
+      throw new Error("config.pathType must be either 'number' or 'filePath'")
+    }
+  } else {
+    toReturn.pathType = 'number'
+  }
+  return toReturn
+}
+
+export function fillWatcherConfig(config: Object): WatcherConfig {
+  const toReturn = {}
+  if (!config || typeof config !== 'object') {
+    throw new Error('config must be valid')
+  }
+  if (config.ready) {
+    if (typeof config.ready !== 'function') {
+      throw new Error('config.ready must be a function')
+    }
+    toReturn.ready = config.ready
+  } else {
+    toReturn.ready = function() { /* No Op */ }
+  }
+  if (typeof config.error !== 'function') {
+    throw new Error('config.error must be a function')
+  }
+  toReturn.error = config.error
+  if (typeof config.generate !== 'function') {
+    throw new Error('config.generate must be a function')
+  }
+  toReturn.generate = config.generate
+  if (typeof config.usePolling !== 'undefined') {
+    toReturn.usePolling = Boolean(config.usePolling)
+  } else if ({}.hasOwnProperty.call(process.env, 'PUNDLE_FS_USE_POLLING')) {
+    toReturn.usePolling = true
+  } else {
+    toReturn.usePolling = false
+  }
+  return toReturn
+}
+
+export function fillGeneratorConfig(config: Object): GeneratorConfig {
+  if (!config || typeof config !== 'object') {
+    throw new Error('config must be valid')
+  }
+  if (config.generate) {
+    if (typeof config.generate !== 'function') {
+      throw new Error('config.generate must be a function')
+    }
+  } else {
+    config.generate = PundleGenerator
   }
   return config
+}
+
+export function attachable(key: string) {
+  const values = new WeakMap()
+  return function(SourceClass: Function) {
+    Object.defineProperty(SourceClass, 'attach', {
+      enumerable: false,
+      value(TargetClass: Object) {
+        Object.defineProperty(TargetClass.prototype, key, {
+          enumerable: true,
+          get() {
+            let value = values.get(this.state)
+            if (value) {
+              return value
+            }
+            values.set(this.state, value = new SourceClass(this.state, this.config))
+            if (typeof value.dispose === 'function') {
+              this.subscriptions.add(value)
+            }
+            return value
+          },
+          set(newValue) {
+            values.set(this.state, newValue)
+          },
+        })
+      },
+    })
+  }
 }
 
 export async function find(
   directory: string,
   name: string | Array<string>,
-  fs: FileSystemInterface
+  config: Config,
+  earlyExit: boolean = false
 ): Promise<Array<string>> {
   const names = [].concat(name)
   const chunks = directory.split(Path.sep)
@@ -61,15 +143,20 @@ export async function find(
     if (currentDir === '') {
       currentDir = Path.resolve(directory, '/')
     }
-    for (const fileName of names) {
+    for (let i = 0, length = names.length; i < length; ++i) {
+      const fileName = names[i]
       const filePath = Path.join(currentDir, fileName)
       try {
-        await fs.stat(filePath)
+        await config.fileSystem.stat(filePath)
         matched.push(filePath)
+        if (earlyExit) {
+          return matched
+        }
         break
-      } catch (_) {
-        // Do nothing
-      }
+      } catch (_) { /* Ignore */ }
+    }
+    if (currentDir === config.rootDirectory) {
+      break
     }
     chunks.pop()
   }
@@ -77,32 +164,65 @@ export async function find(
   return matched
 }
 
+export function getPathID(filePath: string): number {
+  let value = pathIDMap.get(filePath)
+  if (typeof value === 'number') {
+    return value
+  }
+  pathIDMap.set(filePath, value = ++pathIDNumber)
+  return value
+}
+
+export function isEverythingIn(pundle: Pundle, items: Array<string> | Set<string> = pundle.config.entry, itemsAdded: Set<string> = new Set()): boolean {
+  for (const item of items) {
+    if (itemsAdded.has(item)) {
+      continue
+    }
+
+    const module = pundle.files.get(item)
+    if (!module) {
+      return false
+    }
+    itemsAdded.add(item)
+    if (!module.imports.size) {
+      continue
+    }
+    if (!isEverythingIn(pundle, module.imports, itemsAdded)) {
+      return false
+    }
+  }
+  return true
+}
+
 export async function getPlugins(
-  plugins: Array<Plugin>,
-  path: Pundle$Path,
-  rootDirectory: string
+  pundle: Pundle,
+  plugins: Array<Plugin>
 ): Promise<Array<{ plugin: Function, parameters: Object }>> {
   const processed = []
-  for (const entry of plugins) {
+  for (const entry of (plugins: Array<Plugin>)) {
     let plugin
     let parameters = {}
     if (typeof entry === 'function') {
       plugin = entry
       parameters = {}
     } else if (typeof entry === 'string') {
-      plugin = path.out(await path.resolveModule(entry, rootDirectory))
+      plugin = pundle.path.out(await pundle.resolver.resolve(entry, '$root/pundle-plugin-loader'))
     } else if (Array.isArray(entry)) {
       [plugin, parameters] = entry
     }
     if (typeof plugin === 'string') {
+      /* eslint-disable global-require */
       // $FlowIgnore: I wanna use a variable in require
-      const mainModule = require(plugin)
+      let mainModule = require(plugin)
+      // Support babel's export default
+      /* eslint-disable no-underscore-dangle */
+      mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
       if (typeof mainModule !== 'function') {
         throw new Error(`Plugin '${plugin}' exported incorrectly`)
       }
       plugin = mainModule
     } else if (typeof plugin !== 'function') {
-      throw new Error(`Invalid plugin detected in '${entry}'`)
+      throw new Error('Invalid plugin detected')
     }
     processed.push({ plugin, parameters })
   }

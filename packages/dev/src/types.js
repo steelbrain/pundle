@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 import type { WatcherConfig } from '../../pundle/src/types'

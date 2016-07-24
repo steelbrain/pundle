@@ -1,73 +1,50 @@
-'use strict'
-
 /* @flow */
 
-import { posix as PosixPath } from 'path'
-import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
-import { isCore } from 'sb-resolve'
-import type FileSystem from './file-system'
-import type { Config } from './types'
+import Path from 'path'
+import browserMap from 'pundle-browser'
+import invertKeysAndVals from 'lodash.invert'
+import { attachable } from './helpers'
+import type { State, Config } from './types'
 
-export default class Path {
+const browserMapReverse = invertKeysAndVals(browserMap)
+
+@attachable('path')
+export default class PundlePath {
+  state: State;
   config: Config;
-  emitter: Emitter;
-  fileSystem: FileSystem;
-  subscriptions: CompositeDisposable;
 
-  constructor(config: Config, fileSystem: FileSystem) {
+  constructor(state: State, config: Config) {
+    this.state = state
     this.config = config
-    this.emitter = new Emitter()
-    this.fileSystem = fileSystem
-    this.subscriptions = new CompositeDisposable()
-
-    this.subscriptions.add(this.emitter)
   }
-  in(filePath: string): string {
-    if (filePath.indexOf(this.config.rootDirectory) === 0) {
-      filePath = PosixPath.join('$root', PosixPath.relative(this.config.rootDirectory, filePath))
+  in(path: string): string {
+    if (browserMapReverse[path]) {
+      return `$core/${browserMapReverse[path]}.js`
     }
-    return PosixPath.normalize(filePath)
+    if (path.substr(0, 5) === '$root') {
+      return path
+    }
+    if (path.substr(0, 5) === '$core') {
+      return path
+    }
+    const resolvedPath = Path.isAbsolute(path) ? path : Path.resolve(this.config.rootDirectory, path)
+    const relativePath = Path.relative(this.config.rootDirectory, resolvedPath)
+    return relativePath ? `$root/${relativePath}` : '$root'
   }
-  out(filePath: string, file: boolean = true): string {
-    if (file && (filePath === '$internal')) {
-      return filePath
+  out(path: string): string {
+    if (path.substr(0, 5) === '$core') {
+      return browserMap[path.slice(6, -3)] || browserMap.empty
     }
-    if (filePath.indexOf('$root') === 0) {
-      filePath = PosixPath.join(this.config.rootDirectory, PosixPath.relative('$root', filePath))
-    }
-    return filePath
-  }
-  async resolveModule(moduleName: string, basedir: string): Promise<string> {
-    const event = { moduleName, basedir: this.out(basedir, false), path: '' }
-    await this.emitter.emit('before-module-resolve', event)
-    if (!event.path) {
-      try {
-        event.path = await this.fileSystem.resolve(moduleName, event.basedir)
-      } catch (_) {
-        if (_.code !== 'MODULE_NOT_FOUND') {
-          throw _
-        }
+    if (path.substr(0, 5) === '$root') {
+      if (path.length === 5) {
+        return this.config.rootDirectory
       }
+      const relativePath = Path.relative('$root', path)
+      return Path.join(this.config.rootDirectory, relativePath)
     }
-    await this.emitter.emit('after-module-resolve', event)
-    if (!event.path) {
-      throw new Error(`Unable to resolve '${moduleName}' from '${basedir}'`)
-    } else if (isCore(event.moduleName)) {
-      return PosixPath.join('$core', event.moduleName)
-    } else if (event.path.substr(0, 1) === '/' && PosixPath.extname(event.path) === '') {
-      // Paths to module directories and stuff like that, absolute
-      // We are doing this so the event listeners don't have to reinvent the resolution wheel
-      event.path = await this.fileSystem.resolve(event.path, event.basedir)
+    if (!Path.isAbsolute(path)) {
+      return Path.resolve(this.config.rootDirectory, path)
     }
-    return this.in(event.path)
-  }
-  onBeforeModuleResolve(callback: Function): Disposable {
-    return this.emitter.on('before-module-resolve', callback)
-  }
-  onAfterModuleResolve(callback: Function): Disposable {
-    return this.emitter.on('after-module-resolve', callback)
-  }
-  dispose() {
-    this.subscriptions.dispose()
+    return path
   }
 }

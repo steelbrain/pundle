@@ -1,26 +1,25 @@
 #!/usr/bin/env node
-'use strict'
 
 const Server = require('../')
 const server = new Server({
   pundle: {
     hmr: true,
     entry: 'index.js',
-    rootDirectory: process.cwd()
+    rootDirectory: process.cwd(),
   },
   watcher: {
     onError(error) {
       console.error(error)
-    }
+    },
   },
   middleware: {
     sourceMap: true,
     publicPath: '/',
-    publicBundlePath: '/bundle.js'
+    publicBundlePath: '/bundle.js',
   },
   server: {
-    port: 3002
-  }
+    port: 3002,
+  },
 })
 
 server.listen(function() {

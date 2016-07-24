@@ -1,64 +1,49 @@
-'use strict'
-
 /* @flow */
 
-import Path from 'path'
 import Installer from './installer'
 import { getModuleName } from './helpers'
 import type Pundle from '../../pundle/src'
 
-let nextID = 0
 const IGNORED = /(node_modules|bower_components)/
 
-function getNPMInstaller(pundle: Pundle, parameters: Object) {
+export default function getNPMInstaller(pundle: Pundle, parameters: Object) {
   parameters = Object.assign({
     save: true,
-    restrictToRoot: false,
-    rootDirectory: pundle.config.rootDirectory
+    rootDirectory: pundle.config.rootDirectory,
   }, parameters)
   const installer = new Installer(parameters)
   if (!(parameters.ignored instanceof RegExp)) {
     parameters.ignored = IGNORED
   }
-  const locks: Map<string, Promise> = new Map()
 
-  pundle.path.onAfterModuleResolve(function(event) {
-    if (event.path || (parameters.restrictToRoot && event.basedir.indexOf(pundle.config.rootDirectory) !== 0) || parameters.ignored.test(event.basedir)) {
+  const queue: Map<string, Promise<void>> = new Map()
+
+  pundle.resolver.onAfterResolve(function(event) {
+    if (event.resolved || event.fromFile.indexOf(pundle.config.rootDirectory) !== 0 || parameters.ignored.test(event.fromFile)) {
       return null
     }
-    const moduleName = getModuleName(event.moduleName)
-    if (moduleName.substr(0, 1) === '.') {
-      // For local requires
+    const moduleName = getModuleName(event.filePath)
+    if (!moduleName) {
       return null
     }
-    let lock = locks.get(moduleName)
-    if (lock) {
-      return lock.then(function(status) {
-        if (status) {
-          event.path = Path.join(parameters.rootDirectory, 'node_modules', event.moduleName)
+    let queueValue = queue.get(event.filePath)
+    if (!queueValue) {
+      queue.set(event.filePath, queueValue = new Promise(function(resolve) {
+        parameters.beforeInstall(moduleName)
+        resolve(installer.install(moduleName))
+      }).then(function() {
+        queue.delete(event.filePath)
+        return pundle.resolver.resolveUncached(event.filePath, event.fromFile, event.givenRequest, event.manifest)
+      }).then(function(result) {
+        event.resolved = true
+        event.filePath = result
+      }, function(error) {
+        if (error.message.indexOf('Cannot find module') === 0) {
+          return
         }
-      })
+        parameters.error(error)
+      }))
     }
-    const id = ++nextID
-    if (parameters.onBeforeInstall) {
-      parameters.onBeforeInstall(id, event.moduleName)
-    }
-    lock = installer.install(moduleName).then(function() {
-      event.path = Path.join(parameters.rootDirectory, 'node_modules', event.moduleName)
-      if (parameters.onBeforeInstall) {
-        parameters.onAfterInstall(id, event.moduleName, null)
-      }
-      locks.delete(event.moduleName)
-      return true
-    }, function(error) {
-      if (parameters.onBeforeInstall) {
-        parameters.onAfterInstall(id, event.moduleName, error)
-      }
-      locks.delete(event.moduleName)
-    })
-    locks.set(moduleName, lock)
-    return lock
+    return queueValue
   })
 }
-
-module.exports = getNPMInstaller
