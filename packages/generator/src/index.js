@@ -38,5 +38,6 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
   return {
     contents: output.join(''),
     sourceMap: sourceMap.toJSON(),
+    lines,
   }
 }
