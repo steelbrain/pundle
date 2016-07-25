@@ -6,12 +6,12 @@ import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import Watcher from 'chokidar'
 import arrayDifference from 'lodash.difference'
 import * as Helpers from './helpers'
-import applyLoaders from './loaders'
+import * as Loaders from './loaders'
 import Files from './files'
 import Resolver from './resolver'
 import PundlePath from './path'
 import FileSystem from './filesystem'
-import type { Config, State } from './types'
+import type { Config, State, Loader } from './types'
 
 @Files.attach
 @Resolver.attach
@@ -36,7 +36,21 @@ class Pundle {
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
-    applyLoaders(this)
+    this.state.loaders.set('.json', Loaders.json)
+    this.state.loaders.set('.js', Loaders.javascript)
+  }
+  loadLoaders(entries: Array<{ extensions: Array<string>, loader: Loader }>): Array<string> {
+    const overwroteLoaders = []
+    for (const entry of entries) {
+      const loader = entry.loader
+      for (const extension of entry.extensions) {
+        if (this.state.loaders.has(extension)) {
+          overwroteLoaders.push(extension)
+        }
+        this.state.loaders.set(extension, loader)
+      }
+    }
+    return overwroteLoaders
   }
   async loadPlugins(givenPlugins: Array<Plugin>): Promise<void> {
     const plugins = await Helpers.getPlugins(this, givenPlugins)
