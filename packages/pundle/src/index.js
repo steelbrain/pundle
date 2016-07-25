@@ -118,7 +118,7 @@ class Pundle {
     }
     return result
   }
-  watch(givenConfig: Object): Object {
+  watch(givenConfig: Object): { queue: Promise<void>, subscription: Disposable } {
     let ready = false
     const config = Helpers.fillWatcherConfig(givenConfig)
     const watcher = Watcher.watch([], {
