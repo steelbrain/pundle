@@ -12,7 +12,7 @@ program
   // Pundle Options
   .option('-e, --entry [path]', 'Pundle entry points', ['./index.js'])
   .option('-p, --path-type <number|filePath>', 'Output path type', /^(number|filePath)$/i, 'number')
-  .option('-r, --root-directory <directory>', 'Root directory of which all paths would be relative of', process.cwd())
+  .option('-r, --root-directory <directory>', 'Root directory of which all imports would be relative of', process.cwd())
   .option('-m, --module-directory [directory]', 'Directories to search for during module lookup')
   // Generator options
   .option('-s, --source-map', 'Generate source map for output', false)

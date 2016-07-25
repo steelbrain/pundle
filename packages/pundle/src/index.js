@@ -154,6 +154,7 @@ class Pundle {
       }).catch(config.error)
     })
     this.config.entry.forEach(filePath => {
+      toReturn.queue = toReturn.queue.then(() => this.read(filePath)).catch(config.error)
       watcher.add(this.path.out(filePath))
     })
     this.files.forEach((_, filePath) => {
