@@ -41,7 +41,9 @@ function __sb_pundle_require_module(fromModule, request) {
 }
 function __sb_generate_require(moduleName) {
   const bound = __sb_pundle_require_module.bind(null, moduleName)
-  Object.assign(bound, __sb_pundle)
+  bound.cache = __sb_pundle.cache
+  bound.extensions = __sb_pundle.extensions
+  bound.resolve = __sb_pundle.resolve
   return bound
 }
 var __require = __sb_generate_require('$internal')
