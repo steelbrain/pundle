@@ -4,7 +4,7 @@ import Path from 'path'
 import PundleFS from 'pundle-fs'
 import PundleGenerator from 'pundle-generator'
 import type Pundle from './'
-import type { Config, WatcherConfig, GeneratorConfig, File } from './types'
+import type { Config, WatcherConfig, GeneratorConfig } from './types'
 
 let pathIDNumber = 0
 export const pathIDMap = new Map()
@@ -83,20 +83,6 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
     toReturn.usePolling = false
   }
   return toReturn
-}
-
-export function fillGeneratorConfig(config: Object): GeneratorConfig {
-  if (!config || typeof config !== 'object') {
-    throw new Error('config must be valid')
-  }
-  if (config.generate) {
-    if (typeof config.generate !== 'function') {
-      throw new Error('config.generate must be a function')
-    }
-  } else {
-    config.generate = PundleGenerator
-  }
-  return config
 }
 
 export function attachable(key: string) {
@@ -193,17 +179,18 @@ export function isEverythingIn(pundle: Pundle, items: Array<string> | Set<string
   return true
 }
 
-export function getAllImports(pundle: Pundle, items: Array<string> | Set<string> = pundle.config.entry, itemsAdded: Map<string, File> = new Map()): Map<string, File> {
+export function getAllImports(pundle: Pundle, items: Array<string> | Set<string> = pundle.config.entry, itemsAdded: Set<string> = new Set()): Set<string> {
   for (const item of items) {
-    if (itemsAdded.has(item)) {
+    const pathIn = pundle.path.in(item)
+    if (itemsAdded.has(pathIn)) {
       continue
     }
 
-    const module = pundle.files.get(item)
+    const module = pundle.files.get(pathIn)
     if (!module) {
       throw new Error(`Module not found '${item}'`)
     }
-    itemsAdded.set(item, module)
+    itemsAdded.add(pathIn)
     if (!module.imports.size) {
       continue
     }
@@ -245,4 +232,32 @@ export async function getPlugins(
     processed.push({ plugin, parameters })
   }
   return processed
+}
+
+export function fillGeneratorConfig(config: Object, pundle: Pundle): GeneratorConfig {
+  if (!config || typeof config !== 'object') {
+    throw new Error('config must be valid')
+  }
+  if (config.generate) {
+    if (typeof config.generate !== 'function') {
+      throw new Error('config.generate must be a function')
+    }
+  } else {
+    config.generate = PundleGenerator
+  }
+  if (config.contents) {
+    if (!Array.isArray(config.contents)) {
+      throw new Error('config.contents must be an Array')
+    }
+  } else {
+    config.contents = Array.from(getAllImports(pundle))
+  }
+  if (config.requires) {
+    if (!Array.isArray(config.requires)) {
+      throw new Error('config.requires must be an Array')
+    }
+  } else {
+    config.requires = pundle.config.entry
+  }
+  return config
 }

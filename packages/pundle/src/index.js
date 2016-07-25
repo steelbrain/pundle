@@ -112,8 +112,10 @@ class Pundle {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))
   }
   generate(givenConfig: Object = {}): Object {
-    const config = Helpers.fillGeneratorConfig(givenConfig)
-    const result = config.generate(this, Array.from(Helpers.getAllImports(this).values()), this.config.entry, config)
+    const config = Helpers.fillGeneratorConfig(givenConfig, this)
+    // $FlowIgnore: I know what I'm doing
+    config.contents = config.contents.map(i => this.files.get(i))
+    const result = config.generate(this, config)
     if (!result || typeof result !== 'object') {
       throw new Error('Pundle generator returned invalid results')
     }

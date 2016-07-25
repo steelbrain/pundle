@@ -33,13 +33,13 @@ class PundleCLI {
   subscriptions: CompositeDisposable;
 
   constructor(config: { pundle: Object, watcher: Object, generator: Object, cli: CLIConfig }) {
+    this.pundle = new Pundle(config.pundle)
     this.config = {
       cli: config.cli,
-      pundle: Helpers.fillConfig(config.pundle),
+      pundle: config.pundle,
       watcher: config.watcher,
-      generator: Helpers.fillGeneratorConfig(config.generator),
+      generator: config.generator,
     }
-    this.pundle = new Pundle(this.config.pundle)
     this.subscriptions = new CompositeDisposable()
   }
   async activate() {
