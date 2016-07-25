@@ -35,13 +35,14 @@ export default function getNPMInstaller(pundle: Pundle, parameters: Object) {
         queue.delete(event.filePath)
         return pundle.resolver.resolveUncached(event.filePath, event.fromFile, event.givenRequest, event.manifest)
       }).then(function(result) {
+        parameters.afterInstall(moduleName, null)
         event.resolved = true
         event.filePath = result
       }, function(error) {
         if (error.message.indexOf('Cannot find module') === 0) {
           return
         }
-        parameters.error(error)
+        parameters.afterInstall(moduleName, error)
       }))
     }
     return queueValue

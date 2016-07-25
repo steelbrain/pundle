@@ -31,9 +31,15 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
   }
   for (const file of (contents: Array<File>)) {
     const fileContents = file.contents.trim()
+    const entry = `__sb_pundle_register('${pundle.getUniquePathID(file.filePath)}', function(module, exports) {\n${fileContents}\n});`
+    output.push(entry)
+
+    if (!config.sourceMap) {
+      continue
+    }
+
     const entryPath = file.filePath.replace('$root', `$${config.projectName}`)
     const entryMap = new SourceMapConsumer(file.sourceMap)
-    const entry = `__sb_pundle_register('${pundle.getUniquePathID(file.filePath)}', function(module, exports) {\n${fileContents}\n});`
     for (const mapping of entryMap._generatedMappings) {
       sourceMap.addMapping({
         source: entryPath,
@@ -44,7 +50,6 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
     lines += Helpers.getLinesCount(fileContents)
     lines ++
     sourceMap.setSourceContent(entryPath, file.source)
-    output.push(entry)
   }
   for (const entry of (requires: Array<string>)) {
     output.push(`__require('${pundle.getUniquePathID(entry)}')`)
@@ -52,6 +57,6 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
 
   return {
     contents: output.join(''),
-    sourceMap: sourceMap.toJSON(),
+    sourceMap: config.sourceMap ? sourceMap.toJSON() : null,
   }
 }
