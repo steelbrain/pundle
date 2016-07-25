@@ -52,7 +52,7 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
     sourceMap.setSourceContent(entryPath, file.source)
   }
   for (const entry of (requires: Array<string>)) {
-    output.push(`__require('${pundle.getUniquePathID(entry)}')`)
+    output.push(`__require('${pundle.getUniquePathID(entry)}');`)
   }
 
   return {
