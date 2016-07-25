@@ -5,6 +5,7 @@ import Path from 'path'
 import debug from 'debug'
 import promisify from 'sb-promisify'
 import sourceMapToComment from 'source-map-to-comment'
+import { CompositeDisposable } from 'sb-event-kit'
 import Pundle from './'
 import * as Helpers from './helpers'
 import type { Config, WatcherConfig, GeneratorConfig } from './types'
@@ -29,6 +30,7 @@ class PundleCLI {
     generator: GeneratorConfig,
   };
   pundle: Pundle;
+  subscriptions: CompositeDisposable;
 
   constructor(config: { pundle: Object, watcher: Object, generator: Object, cli: CLIConfig }) {
     this.config = {
@@ -38,6 +40,7 @@ class PundleCLI {
       generator: Helpers.fillGeneratorConfig(config.generator),
     }
     this.pundle = new Pundle(this.config.pundle)
+    this.subscriptions = new CompositeDisposable()
   }
   async activate() {
     if (this.config.cli.watch) {
@@ -59,6 +62,7 @@ class PundleCLI {
         })
       },
     }))
+    this.subscriptions.add(watcherInfo.subscription)
   }
   async write(generated: Object) {
     let contents = generated.contents
@@ -78,6 +82,9 @@ class PundleCLI {
       await writeFile(this.config.cli.sourceMapOutputFile, JSON.stringify(generated.sourceMap, null, 2))
       debugWrite(this.config.cli.sourceMapOutputFile)
     }
+  }
+  dispose() {
+    this.subscriptions.dispose()
   }
 }
 
