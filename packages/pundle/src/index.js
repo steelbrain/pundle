@@ -112,7 +112,7 @@ class Pundle {
   }
   generate(givenConfig: Object = {}): Object {
     const config = Helpers.fillGeneratorConfig(givenConfig)
-    const result = config.generate(this, Array.from(this.files.files.values()), this.config.entry, config)
+    const result = config.generate(this, Array.from(Helpers.getAllImports(this).values()), this.config.entry, config)
     if (!result || typeof result !== 'object') {
       throw new Error('Pundle generator returned invalid results')
     }

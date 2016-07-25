@@ -4,7 +4,7 @@ import Path from 'path'
 import PundleFS from 'pundle-fs'
 import PundleGenerator from 'pundle-generator'
 import type Pundle from './'
-import type { Config, WatcherConfig, GeneratorConfig } from './types'
+import type { Config, WatcherConfig, GeneratorConfig, File } from './types'
 
 let pathIDNumber = 0
 export const pathIDMap = new Map()
@@ -191,6 +191,25 @@ export function isEverythingIn(pundle: Pundle, items: Array<string> | Set<string
     }
   }
   return true
+}
+
+export function getAllImports(pundle: Pundle, items: Array<string> | Set<string> = pundle.config.entry, itemsAdded: Map<string, File> = new Map()): Map<string, File> {
+  for (const item of items) {
+    if (itemsAdded.has(item)) {
+      continue
+    }
+
+    const module = pundle.files.get(item)
+    if (!module) {
+      throw new Error(`Module not found '${item}'`)
+    }
+    itemsAdded.set(item, module)
+    if (!module.imports.size) {
+      continue
+    }
+    getAllImports(pundle, module.imports, itemsAdded)
+  }
+  return itemsAdded
 }
 
 export async function getPlugins(
