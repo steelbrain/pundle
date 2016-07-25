@@ -1,5 +1,3 @@
-'use strict'
-
 var
   global = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : {},
   GLOBAL = global,
@@ -40,7 +38,7 @@ function __sb_pundle_require_module(fromModule, request) {
   return module.exports
 }
 function __sb_generate_require(moduleName) {
-  const bound = __sb_pundle_require_module.bind(null, moduleName)
+  var bound = __sb_pundle_require_module.bind(null, moduleName)
   bound.cache = __sb_pundle.cache
   bound.extensions = __sb_pundle.extensions
   bound.resolve = __sb_pundle.resolve
