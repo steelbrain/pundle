@@ -20,9 +20,11 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
+    "commander": "^2.9.0",
+    "debug": "^2.2.0",
     "express": "^4.13.4",
+    "process-bootstrap": "^1.0.0",
     "pundle": "0.2.15",
-    "pundle-middleware": "0.2.15",
     "sb-event-kit": "^2.0.0"
   }
 }

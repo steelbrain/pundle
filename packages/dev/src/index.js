@@ -1,48 +1,43 @@
 /* @flow */
 
-import express from 'express'
 import Pundle from 'pundle'
-import middleware from 'pundle-middleware'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import type { Server$Config } from './types'
+import type { Config, WatcherConfig, GeneratorConfig } from '../../pundle/src/types'
+import type { ServerConfig } from './types'
 
 class Server {
-  config: Server$Config;
+  config: {
+    server: ServerConfig,
+    pundle: Config,
+    watcher: WatcherConfig,
+    generator: GeneratorConfig,
+  };
   pundle: Pundle;
-  server: Object;
-  listening: boolean;
   subscriptions: CompositeDisposable;
 
-  constructor(config: Server$Config) {
+  constructor(config: { server: ServerConfig, pundle: Object, watcher: Object, generator: Object }) {
     this.config = config
-    this.server = express()
     this.pundle = new Pundle(config.pundle)
-    this.listening = false
     this.subscriptions = new CompositeDisposable()
   }
-  listen(listeningCallback: ?Function): Disposable {
-    if (this.listening) {
-      throw new Error('Already listening')
-    }
-    this.listening = true
+  async activate() {
+    const subscriptions = new CompositeDisposable()
+    const watcherInfo = this.pundle.watch(Object.assign(this.config.watcher, {
+      generate() {
+        console.log('should send hmr to connected peeps')
+      },
+      ready() {
+        console.log('ready')
+      },
+      error: this.config.server.error,
+    }))
 
-    const server = this.server.listen(this.config.server.port, listeningCallback)
-    const compilation = this.pundle.get()
-    const disposable = new Disposable(() => {
-      server.close()
-      compilation.dispose()
-      this.subscriptions.remove(disposable)
-    })
-    this.subscriptions.add(disposable)
-
-    middleware({
-      app: this.server,
-      server,
-      compilation,
-      config: this.config,
-    })
-
-    return disposable
+    subscriptions.add(watcherInfo.subscription)
+    subscriptions.add(new Disposable(() => {
+      this.subscriptions.remove(subscriptions)
+    }))
+    this.subscriptions.add(subscriptions)
+    return subscriptions
   }
   dispose() {
     this.subscriptions.dispose()

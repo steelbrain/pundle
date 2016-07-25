@@ -1,14 +1,11 @@
 /* @flow */
 
-import type { WatcherConfig } from '../../pundle/src/types'
-import type { Middleware$Options } from '../../middleware/src/types'
-import type { Config } from '../../pundle/src/types'
-
-export type Server$Config = {
-  server: {
-    port: number
-  },
-  pundle: Config,
-  watcher: WatcherConfig,
-  middleware: Middleware$Options
+export type ServerConfig = {
+  port: number,
+  hmrPath: string,
+  bundlePath: string,
+  sourceRoot: ?string,
+  sourceMapPath: string,
+  error(error: Error): any,
+  ready(): any,
 }
