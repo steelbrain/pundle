@@ -2,6 +2,7 @@
 
 import ws from 'ws'
 import Path from 'path'
+import debug from 'debug'
 import Pundle from 'pundle'
 import express from 'express'
 import sourceMapToComment from 'source-map-to-comment'
@@ -9,6 +10,7 @@ import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { Config, WatcherConfig, GeneratorConfig } from '../../pundle/src/types'
 import type { ServerConfig } from './types'
 
+const debugServer = debug('Pundle:Server')
 const browserClient = require.resolve('../browser')
 
 class Server {
@@ -42,6 +44,7 @@ class Server {
     const subscriptions = new CompositeDisposable()
     const watcherInfo = this.pundle.watch(Object.assign(this.config.watcher, {
       generate: () => {
+        debugServer(`Sending HMR of ${filesUpdated.size} file(s) to ${wsConnections.size} connection(s)`)
         if (!filesUpdated.size || !wsConnections.size) {
           filesUpdated.clear()
           return
