@@ -69,7 +69,7 @@ class Pundle {
     const loader = this.state.loaders.get(extension)
     invariant(loader, `Unrecognized extension '${extension}' for '${givenFilePath}'`)
 
-    const event: { filePath: string, contents: string, sourceMap: any } = { filePath, contents, sourceMap: null }
+    const event: { filePath: string, contents: string, sourceMap: any, oldFile: ?Object } = { filePath, contents, sourceMap: null, oldFile }
     this.emitter.emit('before-process', event)
     let result = loader(this, filePath, contents, event.sourceMap)
     if (result instanceof Promise) {
@@ -106,6 +106,7 @@ class Pundle {
         }
       }
     }
+    this.emitter.emit('did-process', event)
   }
   async compile(): Promise<void> {
     await Promise.all(this.config.entry.map(entry => this.read(entry)))
@@ -192,6 +193,9 @@ class Pundle {
   }
   onAfterProcess(callback: Function): Disposable {
     return this.emitter.on('after-process', callback)
+  }
+  onDidProcess(callback: Function): Disposable {
+    return this.emitter.on('did-process', callback)
   }
   dispose() {
     this.subscriptions.dispose()
