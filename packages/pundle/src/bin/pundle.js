@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* @flow */
 
-require('process-bootstrap')('pundle', 'PUNDLE')
+require('process-bootstrap')('pundle', 'Pundle')
 
 const PundleCLI = require('../cli')
 const program = require('commander')

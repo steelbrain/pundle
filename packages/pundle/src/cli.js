@@ -2,6 +2,7 @@
 
 import FS from 'fs'
 import Path from 'path'
+import debug from 'debug'
 import promisify from 'sb-promisify'
 import sourceMapToComment from 'source-map-to-comment'
 import Pundle from './'
@@ -9,6 +10,9 @@ import * as Helpers from './helpers'
 import type { Config, WatcherConfig, GeneratorConfig } from './types'
 
 const writeFile = promisify(FS.writeFile)
+const debugInfo = debug('Pundle:Info')
+const debugError = debug('Pundle:Error')
+const debugWrite = debug('Pundle:Write')
 
 type CLIConfig = {
   watch: boolean,
@@ -44,7 +48,17 @@ class PundleCLI {
     }
   }
   watch() {
-    console.log('watching')
+    const watcherInfo = this.pundle.watch(Object.assign(this.config.watcher, {
+      error(error) {
+        debugError(error)
+      },
+      generate: () => {
+        debugInfo('(Re)generating bundle')
+        watcherInfo.queue = watcherInfo.queue.then(() => this.write(this.pundle.generate(this.config.generator))).catch(function(error) {
+          debugError(error)
+        })
+      },
+    }))
   }
   async write(generated: Object) {
     let contents = generated.contents
@@ -59,8 +73,10 @@ class PundleCLI {
     }
 
     await writeFile(this.config.cli.outputFile, contents)
+    debugWrite(this.config.cli.outputFile)
     if (writeSourceMap) {
       await writeFile(this.config.cli.sourceMapOutputFile, JSON.stringify(generated.sourceMap, null, 2))
+      debugWrite(this.config.cli.sourceMapOutputFile)
     }
   }
 }
