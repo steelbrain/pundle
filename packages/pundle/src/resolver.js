@@ -114,6 +114,9 @@ export default class Resolver {
       event.filePath = await resolve(event.filePath, event.fromFile, {
         fs: this.config.fileSystem,
         root: this.config.rootDirectory,
+        process(item) {
+          return WHOLE_MODULE_NAME.test(request) && typeof item.browser === 'string' && item.browser ? item.browser : item.main
+        },
         extensions: Array.from(this.state.loaders.keys()),
         moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(event.fromFile), moduleDirectories, this.config)),
       })
