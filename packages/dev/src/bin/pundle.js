@@ -21,6 +21,7 @@ program
   .option('--project-name <name>', 'Project name to show in source map paths')
   // Server options
   .option('--port <number>', 'The port to listen on', 8056)
+  .option('--hmr', 'Enable Hot Module Replacement')
   .option('--hmr-path <path>', 'Path to listen for HMR on', '/_/bundle_hmr')
   .option('--bundle-path <path>', 'Path to serve bundle from', '/_/bundle.js')
   .option('--source-map-path <path>', 'Path to serve source maps from', '/_/bundle.js.map')
@@ -32,6 +33,7 @@ program
 
 new Server({
   server: {
+    hmr: program.hmr,
     port: program.port,
     hmrPath: program.hmrPath,
     bundlePath: program.bundlePath,

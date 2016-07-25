@@ -1,6 +1,7 @@
 /* @flow */
 
 export type ServerConfig = {
+  hmr: boolean,
   port: number,
   hmrPath: string,
   bundlePath: string,

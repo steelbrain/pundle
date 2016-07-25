@@ -1,11 +1,15 @@
 /* @flow */
 
+import ws from 'ws'
 import Path from 'path'
 import Pundle from 'pundle'
 import express from 'express'
+import sourceMapToComment from 'source-map-to-comment'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { Config, WatcherConfig, GeneratorConfig } from '../../pundle/src/types'
 import type { ServerConfig } from './types'
+
+const browserClient = require.resolve('../browser')
 
 class Server {
   config: {
@@ -19,15 +23,47 @@ class Server {
 
   constructor(config: { server: ServerConfig, pundle: Object, watcher: Object, generator: Object }) {
     this.config = config
+    if (this.config.server.hmr) {
+      this.config.pundle.entry.unshift(browserClient)
+    }
+    this.config.pundle.replaceVariables = Object.assign({
+      'PUNDLE.MAGIC.HMR_PATH': this.config.server.hmrPath,
+    }, this.config.pundle.replaceVariables)
+
     this.pundle = new Pundle(config.pundle)
     this.subscriptions = new CompositeDisposable()
   }
   async activate() {
+    // HMR Stuff
     let ready = false
+    const wsConnections = new Set()
+    const filesUpdated = new Set()
+
     const subscriptions = new CompositeDisposable()
     const watcherInfo = this.pundle.watch(Object.assign(this.config.watcher, {
-      generate() {
-        console.log('should send hmr to connected peeps')
+      generate: () => {
+        if (!filesUpdated.size || !wsConnections.size) {
+          filesUpdated.clear()
+          return
+        }
+        const generated = this.pundle.generate(Object.assign({}, this.config.generator, {
+          wrapper: 'none',
+          contents: Array.from(filesUpdated),
+          requires: [],
+        }))
+        let contents = generated.contents
+        if (generated.sourceMap) {
+          contents += `\n${sourceMapToComment(generated.sourceMap)}`
+        }
+        const payload = JSON.stringify({
+          type: 'update',
+          contents,
+          filesUpdated: Array.from(filesUpdated),
+        })
+        for (const entry of wsConnections) {
+          entry.send(payload)
+        }
+        filesUpdated.clear()
       },
       ready() {
         ready = true
@@ -36,6 +72,7 @@ class Server {
     }))
     const app = express()
     app.get(this.config.server.bundlePath, (req, res) => {
+      filesUpdated.clear()
       watcherInfo.queue = watcherInfo.queue.then(() => {
         const generated = this.pundle.generate(this.config.generator)
         let contents = generated.contents
@@ -51,7 +88,7 @@ class Server {
       })
     })
 
-    // $FlowIgnore: Stupid flow doesn't recognize the property
+    // $FlowIgnore: Flow doesn't recognize the property
     if (this.config.generator.sourceMap) {
       app.get(this.config.server.sourceMapPath, (req, res) => {
         watcherInfo.queue = watcherInfo.queue.then(() => {
@@ -68,8 +105,27 @@ class Server {
     if (this.config.server.sourceRoot) {
       app.use(express.static(this.config.server.sourceRoot))
     }
-    app.listen(this.config.server.port, this.config.server.ready)
-    console.log('ready', ready)
+    const server = app.listen(this.config.server.port, this.config.server.ready)
+    if (this.config.server.hmr) {
+      // $FlowIgnore: Flow doesn't want the custom prop
+      this.config.generator.wrapper = 'hmr'
+      const wsServer = new ws.Server({ server })
+      wsServer.on('connection', connection => {
+        if (connection.upgradeReq.url !== this.config.server.hmrPath) {
+          connection.close()
+          return
+        }
+        wsConnections.add(connection)
+        connection.onclose = function() {
+          wsConnections.delete(this)
+        }
+      })
+      this.pundle.onDidProcess(function({ filePath }) {
+        if (ready) {
+          filesUpdated.add(filePath)
+        }
+      })
+    }
 
     subscriptions.add(watcherInfo.subscription)
     subscriptions.add(new Disposable(() => {

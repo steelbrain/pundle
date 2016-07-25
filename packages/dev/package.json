@@ -25,6 +25,8 @@
     "express": "^4.13.4",
     "process-bootstrap": "^1.0.0",
     "pundle": "0.2.15",
-    "sb-event-kit": "^2.0.0"
+    "sb-event-kit": "^2.0.0",
+    "source-map-to-comment": "^1.1.0",
+    "ws": "^1.1.1"
   }
 }
