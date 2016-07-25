@@ -7,7 +7,6 @@ import promisify from 'sb-promisify'
 import sourceMapToComment from 'source-map-to-comment'
 import { CompositeDisposable } from 'sb-event-kit'
 import Pundle from './'
-import * as Helpers from './helpers'
 import type { Config, WatcherConfig, GeneratorConfig } from './types'
 
 const writeFile = promisify(FS.writeFile)
