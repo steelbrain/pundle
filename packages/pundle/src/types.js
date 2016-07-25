@@ -53,5 +53,7 @@ export type Plugin = string | Function | [string, Object] | [Function, Object]
 
 export type GeneratorConfig = {
   // ... Anything else that the generate function accepts ...
-  generate: ((pundle: Pundle, contents: Array<File>, requires: Array<string>, config: GeneratorConfig) => any)
+  contents: Array<File>,
+  requires: Array<string>,
+  generate: ((pundle: Pundle, config: GeneratorConfig) => any)
 }

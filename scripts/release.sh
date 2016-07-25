@@ -6,7 +6,7 @@ ACTION=$1
 
 ROOT_DIRECTORY=$( cd $(dirname $0)/.. ; pwd -P )
 PACKAGES_PATH=${ROOT_DIRECTORY}/packages
-PACKAGES=( "generator" "browser" "babel" "dev" "fs" "middleware" "npm-installer" "pundle" )
+PACKAGES=( "generator" "browser" "babel" "dev" "fs" "npm-installer" "pundle" )
 
 ${ROOT_DIRECTORY}/scripts/build.sh
 

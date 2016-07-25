@@ -9,7 +9,7 @@ PACKAGES_PATH=${ROOT_DIRECTORY}/packages
 if [ "$PACKAGE_NAME" != "" ]; then
   PACKAGES=$PACKAGE_NAME
 else
-  PACKAGES=( "generator" "browser" "babel" "npm-installer" "fs" "pundle" "middleware" "dev" )
+  PACKAGES=( "generator" "browser" "babel" "npm-installer" "fs" "pundle" "dev" )
 fi
 
 if [ "$1" = "--watch" ]; then

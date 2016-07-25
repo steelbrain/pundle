@@ -11,7 +11,7 @@ import type { File } from '../../pundle/src/types'
 const WrapperNormal = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'normal.js'), 'utf8').trim()
 const WrapperHMR = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'hmr.js'), 'utf8').trim()
 
-export default function generate(pundle: Pundle, contents: Array<File>, requires: Array<string>, givenConfig: Object) {
+export default function generate(pundle: Pundle, givenConfig: Object) {
   let lines = 0
   const config = Helpers.fillConfig(givenConfig)
 
@@ -29,7 +29,7 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
   } else {
     lines = 1
   }
-  for (const file of (contents: Array<File>)) {
+  for (const file of (config.contents: Array<File>)) {
     const fileContents = file.contents.trim()
     const entry = `__sb_pundle_register('${pundle.getUniquePathID(file.filePath)}', function(module, exports) {\n${fileContents}\n});`
     output.push(entry)
@@ -38,7 +38,7 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
       continue
     }
 
-    const entryPath = file.filePath.replace('$root', `$${config.projectName}`)
+    const entryPath = 'motion:///' + file.filePath.replace('$root', `$${config.projectName}`)
     const entryMap = new SourceMapConsumer(file.sourceMap)
     for (const mapping of entryMap._generatedMappings) {
       sourceMap.addMapping({
@@ -51,8 +51,8 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
     lines ++
     sourceMap.setSourceContent(entryPath, file.source)
   }
-  for (const entry of (requires: Array<string>)) {
-    output.push(`__require('${pundle.getUniquePathID(entry)}')`)
+  for (const entry of (config.requires: Array<string>)) {
+    output.push(`__require('${pundle.getUniquePathID(entry)}');`)
   }
 
   return {

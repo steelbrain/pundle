@@ -85,20 +85,6 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
   return toReturn
 }
 
-export function fillGeneratorConfig(config: Object): GeneratorConfig {
-  if (!config || typeof config !== 'object') {
-    throw new Error('config must be valid')
-  }
-  if (config.generate) {
-    if (typeof config.generate !== 'function') {
-      throw new Error('config.generate must be a function')
-    }
-  } else {
-    config.generate = PundleGenerator
-  }
-  return config
-}
-
 export function attachable(key: string) {
   const values = new WeakMap()
   return function(SourceClass: Function) {
@@ -193,6 +179,26 @@ export function isEverythingIn(pundle: Pundle, items: Array<string> | Set<string
   return true
 }
 
+export function getAllImports(pundle: Pundle, items: Array<string> | Set<string> = pundle.config.entry, itemsAdded: Set<string> = new Set()): Set<string> {
+  for (const item of items) {
+    const pathIn = pundle.path.in(item)
+    if (itemsAdded.has(pathIn)) {
+      continue
+    }
+
+    const module = pundle.files.get(pathIn)
+    if (!module) {
+      throw new Error(`Module not found '${item}'`)
+    }
+    itemsAdded.add(pathIn)
+    if (!module.imports.size) {
+      continue
+    }
+    getAllImports(pundle, module.imports, itemsAdded)
+  }
+  return itemsAdded
+}
+
 export async function getPlugins(
   pundle: Pundle,
   plugins: Array<Plugin>
@@ -226,4 +232,33 @@ export async function getPlugins(
     processed.push({ plugin, parameters })
   }
   return processed
+}
+
+export function fillGeneratorConfig(config: Object, pundle: Pundle): GeneratorConfig {
+  if (!config || typeof config !== 'object') {
+    throw new Error('config must be valid')
+  }
+  const toReturn = Object.assign({}, config)
+  if (toReturn.generate) {
+    if (typeof toReturn.generate !== 'function') {
+      throw new Error('config.generate must be a function')
+    }
+  } else {
+    toReturn.generate = PundleGenerator
+  }
+  if (toReturn.contents) {
+    if (!Array.isArray(toReturn.contents)) {
+      throw new Error('config.contents must be an Array')
+    }
+  } else {
+    toReturn.contents = Array.from(getAllImports(pundle))
+  }
+  if (toReturn.requires) {
+    if (!Array.isArray(toReturn.requires)) {
+      throw new Error('config.requires must be an Array')
+    }
+  } else {
+    toReturn.requires = pundle.config.entry
+  }
+  return toReturn
 }
