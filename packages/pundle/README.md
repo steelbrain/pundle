@@ -18,7 +18,7 @@ pundle
 
 ## Documentation
 
-See [`API.md`][API.md] for the documentation.
+See [`API.md`](API.md) for the documentation.
 
 ## License
 
