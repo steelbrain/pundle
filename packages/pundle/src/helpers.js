@@ -238,26 +238,27 @@ export function fillGeneratorConfig(config: Object, pundle: Pundle): GeneratorCo
   if (!config || typeof config !== 'object') {
     throw new Error('config must be valid')
   }
-  if (config.generate) {
-    if (typeof config.generate !== 'function') {
+  const toReturn = Object.assign({}, config)
+  if (toReturn.generate) {
+    if (typeof toReturn.generate !== 'function') {
       throw new Error('config.generate must be a function')
     }
   } else {
-    config.generate = PundleGenerator
+    toReturn.generate = PundleGenerator
   }
-  if (config.contents) {
-    if (!Array.isArray(config.contents)) {
+  if (toReturn.contents) {
+    if (!Array.isArray(toReturn.contents)) {
       throw new Error('config.contents must be an Array')
     }
   } else {
-    config.contents = Array.from(getAllImports(pundle))
+    toReturn.contents = Array.from(getAllImports(pundle))
   }
-  if (config.requires) {
-    if (!Array.isArray(config.requires)) {
+  if (toReturn.requires) {
+    if (!Array.isArray(toReturn.requires)) {
       throw new Error('config.requires must be an Array')
     }
   } else {
-    config.requires = pundle.config.entry
+    toReturn.requires = pundle.config.entry
   }
-  return config
+  return toReturn
 }
