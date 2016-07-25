@@ -1,5 +1,6 @@
 lib
+scripts
 node_modules
+packages/dev/browser.js
 packages/generator/wrappers
 packages/browser/src/index.js
-scripts
