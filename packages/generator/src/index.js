@@ -38,7 +38,7 @@ export default function generate(pundle: Pundle, contents: Array<File>, requires
       continue
     }
 
-    const entryPath = file.filePath.replace('$root', `$${config.projectName}`)
+    const entryPath = 'motion:///' + file.filePath.replace('$root', `$${config.projectName}`)
     const entryMap = new SourceMapConsumer(file.sourceMap)
     for (const mapping of entryMap._generatedMappings) {
       sourceMap.addMapping({
