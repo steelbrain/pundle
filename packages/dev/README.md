@@ -8,6 +8,17 @@ Dev Server for Pundle. Provides a nice CLI & API to start express server with HM
 npm install --save pundle-dev
 ```
 
+## Example
+
+```
+$ mkdir -p /tmp/pundle-example-test
+$ cd /tmp/pundle-example-test
+$ echo '{}' > package.json
+$ echo 'console.log(require("react"))' > index.js
+$ npm install react
+$ pundle-dev --source-map --hmr
+```
+
 ## CLI Usage
 
 ```
