@@ -1,10 +1,11 @@
 /* @flow */
 
 import Path from 'path'
-import invariant from 'assert'
-import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
+import debug from 'debug'
 import Watcher from 'chokidar'
+import invariant from 'assert'
 import arrayDifference from 'lodash.difference'
+import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import * as Helpers from './helpers'
 import * as Loaders from './loaders'
 import Files from './files'
@@ -12,6 +13,8 @@ import Resolver from './resolver'
 import PundlePath from './path'
 import FileSystem from './filesystem'
 import type { Config, State, Loader } from './types'
+
+const debugWatcher = debug('Pundle:Watcher')
 
 @Files.attach
 @Resolver.attach
@@ -142,6 +145,7 @@ class Pundle {
       ).catch(config.error)
     })
     watcher.on('change', filePath => {
+      debugWatcher(`File Changed :: ${filePath}`)
       toReturn.queue = toReturn.queue.then(() => {
         const retValue = this.read(filePath)
         if (ready) {
@@ -151,6 +155,7 @@ class Pundle {
       }).catch(config.error)
     })
     watcher.on('unlink', filePath => {
+      debugWatcher(`File Removed :: ${filePath}`)
       toReturn.queue = toReturn.queue.then(() => {
         this.files.delete(filePath)
         return ready && config.generate()
