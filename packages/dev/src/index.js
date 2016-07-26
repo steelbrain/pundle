@@ -61,7 +61,7 @@ class Server {
         const payload = JSON.stringify({
           type: 'update',
           contents,
-          filesUpdated: Array.from(filesUpdated),
+          filesUpdated: Array.from(filesUpdated).map(i => this.pundle.getUniquePathID(i)),
         })
         for (const entry of wsConnections) {
           entry.send(payload)
