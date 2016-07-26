@@ -10,11 +10,10 @@ function openHMRConnection() {
   })
   socket.addEventListener('message', function(event) {
     const message = JSON.parse(event.data)
-    console.log('[HMR] message', message)
     if (message.type === 'update') {
       console.log('[HMR] Applying', message.filesUpdated.join(', '))
       eval(message.contents)
-      __sb_pundle_apply_hmr(message.filesUpdated, new Set())
+      __sb_pundle_apply_hmr(message.filesUpdated)
     }
   })
   socket.addEventListener('close', function() {

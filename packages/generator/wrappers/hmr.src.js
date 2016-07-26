@@ -9,10 +9,6 @@ var
     resolve: function(path) { return path },
   }
 
-function __sb_pundle_apply_hmr() {
-  console.log('TODO: APPLY HMR')
-}
-
 function __sb_pundle_hot() {
   this.accepts = new Set()
   this.declines = new Set()
@@ -20,27 +16,23 @@ function __sb_pundle_hot() {
   this.dispose_callbacks = new Set()
 }
 __sb_pundle_hot.prototype.accept = function(a, b) {
-  if (typeof a === 'function') {
+  if (arguments.length == 0) {
+    this.accepts.add('*')
+  } else if (typeof a === 'function') {
     this.accepts.add('*')
     this.accept_callbacks.add(a)
-  } else if ((typeof a === 'string' || Array.isArray(a))) {
-    var entries = [].concat(a)
-    for (var i = 0, length = entries.length; i < length; ++i) {
-      this.accepts.add(entries[i])
-    }
+  } else if (typeof a === 'string') {
+    this.accepts.add(a)
     if (typeof b === 'function') {
       this.accept_callbacks.add(b)
     }
   }
 }
 __sb_pundle_hot.prototype.decline = function(a) {
-  if (typeof a === 'string' || Array.isArray(a)) {
-    var entries = [].concat(a)
-    for (var i = 0, length = entries.length; i < length; ++i) {
-      this.declines.add(entries[i])
-    }
-  } else {
+  if (arguments.length === 0) {
     this.declines.add('*')
+  } else if (typeof a === 'string') {
+    this.declines.add(a)
   }
 }
 __sb_pundle_hot.prototype.dispose = function(_) {
@@ -51,6 +43,49 @@ __sb_pundle_hot.prototype.addDisposeHandler = function(_) {
 }
 __sb_pundle_hot.prototype.removeDisposeHandler = function(_) {
   this.dispose_callbacks.delete(_)
+}
+
+function __sb_pundle_apply_hmr_single(filePath, appliedTo) {
+  if (appliedTo.has(filePath)) {
+    return
+  }
+
+  var module = __require.cache[filePath]
+  var hot = module.hot
+  if (hot.declines.has('*') || hot.declines.has(filePath)) {
+    console.log('[HMR] declined by', filePath)
+    location.reload()
+    return
+  }
+  appliedTo.add(filePath)
+
+  module.hot = new __sb_pundle_hot()
+  try {
+    hot.dispose_callbacks.forEach(function(dispose_callback) {
+      dispose_callback(module.hot.data)
+    })
+    hot.accept_callbacks.forEach(function(accept_callback) {
+      accept_callback(filePath)
+    })
+  } catch (_) {
+    module.hot = hot
+    throw _
+  }
+  if (hot.accepts.has('*') || hot.accepts.has(filePath)) {
+    if (hot.accept_callbacks.size) {
+      return
+     }
+  }
+  module.exports = {}
+  __sb_pundle.cache[filePath].callback.call(module.exports, module, module.exports)
+  module.parents.forEach(function(parent) {
+    __sb_pundle_apply_hmr(parent, appliedTo)
+  })
+}
+function __sb_pundle_apply_hmr(applyTo) {
+  for (var i = 0, length = applyTo.length; i < length; ++i) {
+    __sb_pundle_apply_hmr_single(applyTo[i], new Set())
+  }
 }
 
 function __sb_pundle_register(filePath, callback) {
@@ -73,7 +108,7 @@ function __sb_pundle_require_module(fromModule, request) {
     throw new Error('Module not found')
   }
   var module = __sb_pundle.cache[request]
-  if (module.parents.indexOf(fromModule) === -1) {
+  if (module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
     module.parents.push(fromModule)
   }
   if (module.exports === __SB_PUNDLE_DEFAULT_EXPORT) {
@@ -89,4 +124,4 @@ function __sb_generate_require(moduleName) {
   bound.resolve = __sb_pundle.resolve
   return bound
 }
-var __require = __sb_generate_require('$internal')
+var __require = __sb_generate_require('$root');
