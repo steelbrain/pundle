@@ -1,7 +1,21 @@
 Pundle-Generator
 ==================
 
-This is the helper module to generate output of the compiled files. Pundle supports custom generators so you can fork this package, make your changes and supply that to `pundle.generate({ generator })`.
+The default output generator for Pundle. It supports source maps and configurable wrappers. You can fork this package, make your changes and supply that to `pundle.generate({ generator })`.
+
+## Configuration
+
+This package supports the following type as it's configuration
+
+```js
+type Config = {
+  contents: Array<File>,
+  requires: Array<string>,
+  wrapper: 'none' | 'hmr' | 'normal',
+  sourceMap: boolean,
+  projectName: string,
+}
+```
 
 ## License
 

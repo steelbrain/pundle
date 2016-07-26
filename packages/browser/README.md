@@ -2,23 +2,8 @@
 
 Browser compatible core module polyfills for Pundle.
 
-## Installation
-
-```
-npm install --save pundle-browser
-```
-
 ## Usage
-
-```js
-import { fs, events, os } from 'pundle-browser'
-
-console.log(fs) // path to the entry point for `fs` module
-require(fs) // browser friendly fs module
-
-console.log(events) // path to the entry point for `events` module
-require(events) // browser friendly events module
-```
+This module is meant for internal use in Pundle or similar packages, you shouldn't use this directly unless you know what you're doing.
 
 ## License
 

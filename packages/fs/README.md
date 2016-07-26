@@ -4,7 +4,7 @@ FS module for Pundle. This is the module that is used as the FileSystem when non
 
 ## Usage
 
-You shouldn't depend on this module directly, it's for `pundle` only.
+This module is meant for internal Pundle use. You shouldn't use it directly.
 
 ## License
 

@@ -1,16 +1,18 @@
 Pundle
 ======
 
-Pundle is the next-gen module bundler, born to rule the world. #WorldDomination
+Pundle is a next generation module bundler. It's written with extensibility and performance in mind and out performs any other bundler out there.
 
 ## Documentation
 
+Pundle uses Mono-Repo architecture to manage npm packages, you can browse each module's individual documentation by visiting `packages/$NAME`.
+
+Here are some quick links for you
+
 - [Pundle](https://github.com/motion/pundle/blob/master/packages/pundle/README.md)
-- [FS](https://github.com/motion/pundle/blob/master/packages/fs/README.md)
-- [Dev](https://github.com/motion/pundle/blob/master/packages/dev/README.md)
-- [Babel](https://github.com/motion/pundle/blob/master/packages/babel/README.md)
-- [Middleware](https://github.com/motion/pundle/blob/master/packages/middleware/README.md)
-- [NPM Installer](https://github.com/motion/pundle/blob/master/packages/npm-installer/README.md)
+- [Pundle Dev Server](https://github.com/motion/pundle/blob/master/packages/dev/README.md)
+- [Babel Plugin](https://github.com/motion/pundle/blob/master/packages/babel/README.md)
+- [NPM Installer Plugin](https://github.com/motion/pundle/blob/master/packages/npm-installer/README.md)
 
 
 ## License

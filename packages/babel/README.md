@@ -11,15 +11,15 @@ npm install --save babel-pundle
 ## Usage
 
 ```
-const plugins = [
+pundle.loadPlugins([
   [require.resolve('babel-pundle'), {
     ignored?: RegExp,
-    include?: RegExp,
+    extensions?: ['.js'],
     config: {
       ... babel config ...
     }
   }]
-]
+]).then(() => console.log('Plugin loaded successfully'))
 ```
 
 ## License

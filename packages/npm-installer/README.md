@@ -11,15 +11,14 @@ npm install --save pundle-npm-installer
 ## Usage
 
 ```
-const plugins = [
+pundle.loadPlugins([
   [require.resolve('pundle-npm-installer'), {
     save: boolean,
     rootDirectory: string,
-    restrictToRoot: boolean,
-    onAfterInstall: ((id: number, name: string, error: ?Error) => any),
-    onBeforeInstall: ((id: number, name: string) => any)
+    beforeInstall(name: string): void,
+    afterInstall(name: string, error: ?Error): void,
   }]
-]
+]).then(() => console.log('Plugin loaded successfully'))
 ```
 
 ## License
