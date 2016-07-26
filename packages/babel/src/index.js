@@ -18,9 +18,6 @@ export default function getBabelTransformer(pundle: Object, parameters: Object =
   } else {
     parameters.extensions = ['.js']
   }
-  if (!parameters.config || typeof parameters.config !== 'object') {
-    parameters.config = {}
-  }
   pundle.onBeforeProcess(function(event) {
     if (event.filePath.indexOf('$root') !== 0 || event.filePath.match(parameters.ignored) || parameters.extensions.indexOf(Path.extname(event.filePath)) === -1) {
       return
