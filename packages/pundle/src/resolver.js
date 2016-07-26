@@ -109,19 +109,23 @@ export default class Resolver {
     }
     const event = { filePath: request, fromFile: this.path.out(fromFile), givenRequest, manifest, resolved: false }
     await this.emitter.emit('before-resolve', event)
-    try {
-      const moduleDirectories = this.config.moduleDirectories.filter(i => !Path.isAbsolute(i))
-      event.filePath = await resolve(event.filePath, event.fromFile, {
-        fs: this.config.fileSystem,
-        root: this.config.rootDirectory,
-        process(item) {
-          return WHOLE_MODULE_NAME.test(request) && typeof item.browser === 'string' && item.browser ? item.browser : item.main
-        },
-        extensions: Array.from(this.state.loaders.keys()),
-        moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(event.fromFile), moduleDirectories, this.config)),
-      })
-      event.resolved = true
-    } catch (error) { /* No Op */ }
+
+    if (!event.resolved) {
+      try {
+        const moduleDirectories = this.config.moduleDirectories.filter(i => !Path.isAbsolute(i))
+        event.filePath = await resolve(event.filePath, event.fromFile, {
+          fs: this.config.fileSystem,
+          root: this.config.rootDirectory,
+          process(item) {
+            return WHOLE_MODULE_NAME.test(request) && typeof item.browser === 'string' && item.browser ? item.browser : item.main
+          },
+          extensions: Array.from(this.state.loaders.keys()),
+          moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(event.fromFile), moduleDirectories, this.config)),
+        })
+        event.resolved = true
+      } catch (error) { /* No Op */ }
+    }
+
     await this.emitter.emit('after-resolve', event)
     if (!event.resolved) {
       const error = new Error(`Cannot find module '${givenRequest}'`)
