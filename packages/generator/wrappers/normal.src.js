@@ -28,7 +28,7 @@ function __sb_pundle_require_module(fromModule, request) {
     throw new Error('Module not found')
   }
   var module = __sb_pundle.cache[request]
-  if (module.parents.indexOf(fromModule) === -1) {
+  if (module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
     module.parents.push(fromModule)
   }
   if (module.exports === __SB_PUNDLE_DEFAULT_EXPORT) {
@@ -44,4 +44,4 @@ function __sb_generate_require(moduleName) {
   bound.resolve = __sb_pundle.resolve
   return bound
 }
-var __require = __sb_generate_require('$internal')
+var __require = __sb_generate_require('$root')
