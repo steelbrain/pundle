@@ -15,6 +15,7 @@ $ mkdir -p /tmp/pundle-example-test
 $ cd /tmp/pundle-example-test
 $ echo '{}' > package.json
 $ echo 'console.log(require("react"))' > index.js
+$ echo '<script src="/_/bundle.js"></script>' > index.html
 $ npm install react
 $ pundle-dev --source-map --hmr
 ```
