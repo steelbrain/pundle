@@ -9,6 +9,17 @@ Pundle is a next generation module bundler. It's written with extensibility and 
 npm install -g pundle
 ```
 
+## Example
+
+```
+$ mkdir -p /tmp/pundle-example-test
+$ cd /tmp/pundle-example-test
+$ echo '{}' > package.json
+$ echo 'console.log(require("react"))' > index.js
+$ npm install react
+$ pundle --source-map
+```
+
 ## CLI Usage
 
 ```
@@ -67,17 +78,6 @@ export default class Pundle {
   watch( config: WatcherConfig ): { queue: Promise<void>, subscription: Disposable }
   dispose(): void
 }
-```
-
-## Example
-
-```
-$ mkdir -p /tmp/pundle-example-test
-$ cd /tmp/pundle-example-test
-$ echo '{}' > package.json
-$ echo 'console.log(require("react"))' > index.js
-$ npm install react
-$ pundle --source-map
 ```
 
 ## License
