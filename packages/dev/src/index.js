@@ -53,6 +53,7 @@ class Server {
           wrapper: 'none',
           contents: Array.from(filesUpdated),
           requires: [],
+          projectName: `hmr-${Date.now()}`,
         }))
         let contents = generated.contents
         if (generated.sourceMap) {
