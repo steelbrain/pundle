@@ -1,3 +1,18 @@
+#### 1.0.0
+
+- Full rewrite
+- Upgrade `sb-exec` to include bugfixes in npm installer
+- Split browser polyfills of core modules into a separate package (`pundle-browser`)
+- Split generator into a separate package to allow customizable generator
+- Allow extension specific module loaders to process imports
+ - Add support for `require`ing `.json` files
+- Make babel generator output compact (gives us a 2x Speed boost!?!?!)
+- Improve garbage collection
+- Remove `pundle-middleware`
+- Add `config.pathType` to allow hiding fs paths in output
+- Add nice CLIs for dev server and pundle
+- Add support for polling based watching, making Pundle usable in docker mounts
+
 #### Pre 1.0
 
 - Fix npm installer in non-shell envs like docker containers
