@@ -118,6 +118,14 @@ export default class Pundle {
 }
 ```
 
+## Env Variables
+
+Pundle responds to these environment variables
+
+#### PUNDLE_FS_USE_POLLING
+
+Set this environment variable to make pundle use polling based File System watching.
+
 ## License
 
 This project is licensed under the terms of MIT License. See the LICENSE file at the root of the Github repo for more info.
