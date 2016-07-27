@@ -58,7 +58,7 @@ export default function generate(pundle: Pundle, givenConfig: Object) {
     output.push(`__require('${pundle.getUniquePathID(entry)}');`)
   }
   if (config.wrapper !== 'none') {
-    output.push('});')
+    output.push('})();')
   }
 
   return {
