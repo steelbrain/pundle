@@ -20,6 +20,9 @@ export default function generate(pundle: Pundle, givenConfig: Object) {
     skipValidation: true,
   })
 
+  if (config.wrapper !== 'none') {
+    output.push(';(function(){')
+  }
   if (config.wrapper === 'normal') {
     output.push(WrapperNormal)
     lines += Helpers.getLinesCount(WrapperNormal)
@@ -53,6 +56,9 @@ export default function generate(pundle: Pundle, givenConfig: Object) {
   }
   for (const entry of (config.requires: Array<string>)) {
     output.push(`__require('${pundle.getUniquePathID(entry)}');`)
+  }
+  if (config.wrapper !== 'none') {
+    output.push('});')
   }
 
   return {

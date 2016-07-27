@@ -3,7 +3,8 @@
 - Fix HMR for deep modules
 - Expose `clearCache` yet again
 - Fix a race condition in watcher
-- Fix a bug where server would not be closed on dispose in `pundle-dev`
+- Fix a bug where server would not close on dispose in `pundle-dev`
+- Wrap output in IIFE to avoid global pollution
 
 #### 1.0.1
 
