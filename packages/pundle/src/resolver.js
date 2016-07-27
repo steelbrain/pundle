@@ -11,6 +11,7 @@ import PundlePath from './path'
 import type { Config, State } from './types'
 
 const WHOLE_MODULE_NAME = /^[^\\\/]+$/
+const WHOLE_MODULE_NAME_SLASHY = /^[^\\\/]+[\/\\]$/
 
 @attachable('resolver')
 @PundlePath.attach
@@ -49,8 +50,7 @@ export default class Resolver {
       return this.fs.read(manifestFile).then(function(contents) {
         try {
           parsed = JSON.parse(contents)
-          // $FlowIgnore: Stupid flow
-          parsed.rootDirectory = Path.dirname(manifestFile)
+          parsed.manifestPath = manifestFile
         } catch (_) { /* */ }
         return parsed
       }, function() {
@@ -96,17 +96,8 @@ export default class Resolver {
     return value
   }
   async resolveUncached(requestString: string, fromFile: string, givenRequest: string, manifest: Object): Promise<string> {
-    let request = requestString
+    const request = requestString
 
-    if (manifest.browser && WHOLE_MODULE_NAME.test(request) && {}.hasOwnProperty.call(manifest.browser, request)) {
-      if (!manifest.browser[request]) {
-        return browserMap.empty
-      }
-      request = manifest.browser[request]
-      if (request.substr(0, 1) === '.') {
-        request = Path.resolve(manifest.rootDirectory, request)
-      }
-    }
     const event = { filePath: request, fromFile: this.path.out(fromFile), givenRequest, manifest, resolved: false }
     await this.emitter.emit('before-resolve', event)
 
@@ -117,7 +108,7 @@ export default class Resolver {
           fs: this.config.fileSystem,
           root: this.config.rootDirectory,
           process(item) {
-            return WHOLE_MODULE_NAME.test(request) && typeof item.browser === 'string' && item.browser ? item.browser : item.main
+            return item.browser && item.main ? Resolver.resolveBrowserField(item.main || './index', item) : item.main
           },
           extensions: Array.from(this.state.loaders.keys()),
           moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(event.fromFile), moduleDirectories, this.config)),
@@ -142,5 +133,21 @@ export default class Resolver {
   }
   dispose() {
     this.cache.clear()
+  }
+  static resolveBrowserField(request: string, manifest: Object) {
+    const manifestDirectory = Path.dirname(manifest.manifestPath)
+    if (typeof manifest.browser === 'string') {
+      return WHOLE_MODULE_NAME.test(request) || WHOLE_MODULE_NAME_SLASHY.test(request) ? Path.join(manifestDirectory, manifest.browser) : request
+    } else if (typeof manifest.browser !== 'object') {
+      return request
+    }
+    const relativePath = './' + Path.relative('.', request)
+    const value = manifest.browser[relativePath]
+    if (value === false) {
+      return browserMap.empty
+    } else if (value) {
+      return manifest.browser[relativePath]
+    }
+    return request
   }
 }
