@@ -27,7 +27,7 @@ export function mergeSourceMaps(inputMap: Object, map: Object): Object {
       mergedGenerator.addMapping({
         source: mapping.source,
 
-        original: mapping.source ? null : {
+        original: !mapping.source ? null : {
           line: mapping.originalLine,
           column: mapping.originalColumn,
         },

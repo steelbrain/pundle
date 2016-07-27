@@ -6,6 +6,7 @@
 - Confirm full support for `browser` field
 - Wrap output in IIFE to avoid global pollution
 - Fix a bug where server would not close on dispose in `pundle-dev`
+- Fix a bug where source maps from babel compiled files won't show line numbers
 
 #### 1.0.1
 
