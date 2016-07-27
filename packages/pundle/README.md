@@ -9,7 +9,7 @@ Pundle is a next generation module bundler. It's written with extensibility and 
 npm install -g pundle
 ```
 
-## Example
+## Example CLI Usage
 
 ```
 $ mkdir -p /tmp/pundle-example-test
@@ -47,6 +47,41 @@ $ pundle --source-map --entry index.js --output-file bundle.js --source-map-outp
 $ pundle --source-map --entry index.js --output-file bundle.js --source-map-output-file bundle.js.map --watch
 ```
 
+## Example API Usage
+
+```js
+import Pundle from 'pundle'
+
+const pundle = new Pundle({
+  entry: ['index.js'],
+  rootDirectory: process.cwd(),
+  pathType: 'filePath',
+  moduleDirectories: ['node_modules'],
+})
+
+pundle.loadPlugins([
+  [require.resolve('babel-pundle'), {
+    config: {
+      presets: ['steelbrain']
+    }
+  }],
+  require.resolve('pundle-some-magical-plugin'),
+]).then(function() {
+  return pundle.compile()
+}).then(function() {
+  pundle.loadLoaders([
+    { extensions: ['.coffee'], loader: require('pundle-coffee') },
+    { extensions: ['.less'], loader: require('pundle-less') },
+  ])
+  return pundle.generate({ sourceMap: true })
+}).then(function(generated) {
+  FS.writeFileSync('./bundle.js', `${generated.contents}\n//# sourceMappingURL=bundle.js.map`)
+  FS.writeFileSync('./bundle.js.map', generated.sourceMap)
+}).catch(function(error) {
+  console.error('error', error)
+})
+```
+
 ## API Usage
 
 ```js
@@ -76,6 +111,8 @@ export default class Pundle {
   async compile(): Promise<void>
   generate( config: GeneratorConfig ): { sourceMap: ?Object, contents: string }
   watch( config: WatcherConfig ): { queue: Promise<void>, subscription: Disposable }
+  loadLoaders(loaders): Array<string>
+  loadPlugins(plugins): Promise
   dispose(): void
 }
 ```

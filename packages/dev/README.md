@@ -71,7 +71,7 @@ const server = new Server({
   generator: GenereatorConfig,
 })
 
-server.pundle.applyPlugins(plugins).then(function() {
+server.pundle.loadPlugins(plugins).then(function() {
   return server.activate()
 }).catch(function(error) {
   console.log('activation failed', error)
