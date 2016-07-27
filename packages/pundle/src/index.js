@@ -204,6 +204,12 @@ class Pundle {
   onDidProcess(callback: Function): Disposable {
     return this.emitter.on('did-process', callback)
   }
+  clearCache() {
+    this.files.forEach((_, file) => this.files.delete(file))
+    this.fs.cache.clear()
+    this.resolver.cache.clear()
+    this.resolver.manifestCache.clear()
+  }
   dispose() {
     this.subscriptions.dispose()
   }

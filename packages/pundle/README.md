@@ -113,6 +113,7 @@ export default class Pundle {
   watch( config: WatcherConfig ): { queue: Promise<void>, subscription: Disposable }
   loadLoaders(loaders): Array<string>
   loadPlugins(plugins): Promise
+  clearCache(): void
   dispose(): void
 }
 ```
