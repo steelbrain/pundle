@@ -1,6 +1,6 @@
 {
   "name": "pundle",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Creating peaceful bundles for everyone",
   "main": "lib/index.js",
   "scripts": {
