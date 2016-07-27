@@ -1,3 +1,8 @@
+#### 1.0.2
+
+- Expose `clearCache` yet again
+- Fix HMR for deep modules
+
 #### 1.0.1
 
 - Fix a typo in `pundle` which would not let the `babel` plugin work

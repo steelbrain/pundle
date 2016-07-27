@@ -79,7 +79,7 @@ function __sb_pundle_apply_hmr_single(filePath, appliedTo) {
   module.exports = {}
   __sb_pundle.cache[filePath].callback.call(module.exports, module, module.exports)
   module.parents.forEach(function(parent) {
-    __sb_pundle_apply_hmr(parent, appliedTo)
+    __sb_pundle_apply_hmr_single(parent, appliedTo)
   })
 }
 function __sb_pundle_apply_hmr(applyTo) {
