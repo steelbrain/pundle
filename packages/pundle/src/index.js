@@ -138,12 +138,13 @@ class Pundle {
         watcher.close()
       }),
     }
-
-    watcher.on('add', filePath => {
+    const addToWatcher = (filePath: string) => {
       toReturn.queue = toReturn.queue.then(() =>
         !this.files.has(filePath) && this.read(filePath)
       ).catch(config.error)
-    })
+      watcher.add(filePath)
+    }
+
     watcher.on('change', filePath => {
       debugWatcher(`File Changed :: ${filePath}`)
       toReturn.queue = toReturn.queue.then(() => {
@@ -163,25 +164,23 @@ class Pundle {
     })
     this.config.entry.forEach(filePath => {
       toReturn.queue = toReturn.queue.then(() => this.read(filePath)).catch(config.error)
-      watcher.add(this.path.out(filePath))
+      addToWatcher(this.path.out(filePath))
     })
     this.files.forEach((_, filePath) => {
-      watcher.add(this.path.out(filePath))
+      addToWatcher(this.path.out(filePath))
     })
     this.files.onDidAdd(filePath => {
-      watcher.add(this.path.out(filePath))
+      addToWatcher(this.path.out(filePath))
     })
     this.files.onDidDelete(filePath => {
       watcher.unwatch(this.path.out(filePath))
     })
     this.subscriptions.add(toReturn.subscription)
-    watcher.on('ready', () => {
-      toReturn.queue = toReturn.queue.then(config.ready).catch(config.error)
-      toReturn.queue = toReturn.queue.then(() => {
-        ready = true
-        return Helpers.isEverythingIn(this) && config.generate()
-      }).catch(config.error)
-    })
+    toReturn.queue = toReturn.queue.then(config.ready).catch(config.error)
+    toReturn.queue = toReturn.queue.then(() => {
+      ready = true
+      return Helpers.isEverythingIn(this) && config.generate()
+    }).catch(config.error)
     return toReturn
   }
   /**

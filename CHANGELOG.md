@@ -1,7 +1,8 @@
 #### 1.0.2
 
-- Expose `clearCache` yet again
 - Fix HMR for deep modules
+- Expose `clearCache` yet again
+- Fix a race condition in watcher
 
 #### 1.0.1
 
