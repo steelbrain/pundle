@@ -21,6 +21,7 @@ class Server {
     generator: GeneratorConfig,
   };
   pundle: Pundle;
+  server: express;
   subscriptions: CompositeDisposable;
 
   constructor(config: { server: ServerConfig, pundle: Object, watcher: Object, generator: Object }) {
@@ -33,6 +34,7 @@ class Server {
     }, this.config.pundle.replaceVariables)
 
     this.pundle = new Pundle(config.pundle)
+    this.server = express()
     this.subscriptions = new CompositeDisposable()
   }
   async activate() {
@@ -74,7 +76,7 @@ class Server {
       },
       error: this.config.server.error,
     }))
-    const app = express()
+    const app = this.server
     app.get(this.config.server.bundlePath, (req, res) => {
       filesUpdated.clear()
       watcherInfo.queue = watcherInfo.queue.then(() => {
@@ -134,6 +136,7 @@ class Server {
     subscriptions.add(watcherInfo.subscription)
     subscriptions.add(new Disposable(() => {
       this.subscriptions.remove(subscriptions)
+      server.close()
     }))
     this.subscriptions.add(subscriptions)
     return subscriptions
