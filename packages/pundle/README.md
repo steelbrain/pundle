@@ -86,15 +86,15 @@ pundle.loadPlugins([
 
 ```js
 type GeneratorConfig = {
-  contents: Array<File>,
-  requires: Array<string>,
-  wrapper: 'none' | 'hmr' | 'normal',
+  contents?: Array<File>,
+  requires?: Array<string>,
+  wrapper?: 'none' | 'hmr' | 'normal',
   sourceMap: boolean,
-  projectName: string,
+  projectName?: string,
 }
 type WatcherConfig = {
-  usePolling: boolean,
-  ready: (() => any),
+  usePolling?: boolean,
+  ready?: (() => any),
   error: ((error: Error) => any),
   generate: (() => any),
 }
