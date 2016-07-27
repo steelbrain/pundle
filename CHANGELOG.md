@@ -1,3 +1,7 @@
+#### 1.0.1
+
+- Fix a typo in `pundle` which would not let the `babel` plugin work
+
 #### 1.0.0
 
 - Full rewrite

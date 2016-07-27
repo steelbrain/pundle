@@ -74,7 +74,7 @@ class Pundle {
 
     const event: { filePath: string, contents: string, sourceMap: any, oldFile: ?Object } = { filePath, contents, sourceMap: null, oldFile }
     this.emitter.emit('before-process', event)
-    let result = loader(this, filePath, contents, event.sourceMap)
+    let result = loader(this, filePath, event.contents, event.sourceMap)
     if (result instanceof Promise) {
       result = await result
     }
