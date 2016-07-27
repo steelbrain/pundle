@@ -96,7 +96,11 @@ export default class Resolver {
     return value
   }
   async resolveUncached(requestString: string, fromFile: string, givenRequest: string, manifest: Object): Promise<string> {
-    const request = requestString
+    let request = requestString
+    const extensions = Array.from(this.state.loaders.keys())
+    if (manifest.browser && typeof manifest.browser === 'object') {
+      request = Resolver.resolveLocalBrowserField(request, manifest, extensions)
+    }
 
     const event = { filePath: request, fromFile: this.path.out(fromFile), givenRequest, manifest, resolved: false }
     await this.emitter.emit('before-resolve', event)
@@ -107,10 +111,10 @@ export default class Resolver {
         event.filePath = await resolve(event.filePath, event.fromFile, {
           fs: this.config.fileSystem,
           root: this.config.rootDirectory,
-          process(item) {
-            return item.browser && item.main ? Resolver.resolveBrowserField(item.main || './index', item) : item.main
+          process(remoteManifest) {
+            return remoteManifest.browser ? Resolver.resolveRemoteBrowserField(request, remoteManifest) : remoteManifest.main
           },
-          extensions: Array.from(this.state.loaders.keys()),
+          extensions,
           moduleDirectories: this.config.moduleDirectories.concat(await find(Path.dirname(event.fromFile), moduleDirectories, this.config)),
         })
         event.resolved = true
@@ -134,19 +138,38 @@ export default class Resolver {
   dispose() {
     this.cache.clear()
   }
-  static resolveBrowserField(request: string, manifest: Object) {
+  static resolveRemoteBrowserField(request: string, manifest: Object) {
+    const main = manifest.main || './index'
     const manifestDirectory = Path.dirname(manifest.manifestPath)
     if (typeof manifest.browser === 'string') {
-      return WHOLE_MODULE_NAME.test(request) || WHOLE_MODULE_NAME_SLASHY.test(request) ? Path.join(manifestDirectory, manifest.browser) : request
+      return WHOLE_MODULE_NAME.test(request) || WHOLE_MODULE_NAME_SLASHY.test(request) ? Path.join(manifestDirectory, manifest.browser) : main
     } else if (typeof manifest.browser !== 'object') {
-      return request
+      return main
     }
-    const relativePath = './' + Path.relative('.', request)
+    const relativePath = './' + Path.relative('.', main)
     const value = manifest.browser[relativePath]
     if (value === false) {
       return browserMap.empty
     } else if (value) {
       return manifest.browser[relativePath]
+    }
+    return main
+  }
+  static resolveLocalBrowserField(request: string, manifest: Object, extensions: Array<string>) {
+    const manifestExtensions = [''].concat(extensions)
+    for (let i = 0, length = manifestExtensions.length; i < length; ++i) {
+      const key = `${request}${manifestExtensions[i]}`
+      if ({}.hasOwnProperty.call(manifest.browser, key)) {
+        const value = manifest.browser[key]
+        if (!value) {
+          return browserMap.empty
+        }
+        request = value
+        if (request.substr(0, 1) === '.') {
+          return Path.resolve(Path.dirname(manifest.manifestPath), request)
+        }
+        break
+      }
     }
     return request
   }
