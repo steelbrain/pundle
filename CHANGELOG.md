@@ -1,3 +1,7 @@
+#### 1.1.1
+
+- Fix the default value of `process.env.NODE_ENV`
+
 #### 1.1.0
 
 - Add `generated` to dev server config
