@@ -7,6 +7,7 @@ import Pundle from 'pundle'
 import express from 'express'
 import sourceMapToComment from 'source-map-to-comment'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
+import { fillConfig } from './helpers'
 import type { Config, WatcherConfig, GeneratorConfig } from '../../pundle/src/types'
 import type { ServerConfig } from './types'
 
@@ -26,6 +27,7 @@ class Server {
 
   constructor(config: { server: ServerConfig, pundle: Object, watcher: Object, generator: Object }) {
     this.config = config
+    this.config.server = fillConfig(this.config.server)
     if (this.config.server.hmr) {
       this.config.pundle.entry.unshift(browserClient)
     }
@@ -49,7 +51,7 @@ class Server {
         debugServer(`Sending HMR of ${filesUpdated.size} file(s) to ${wsConnections.size} connection(s)`)
         if (!filesUpdated.size || !wsConnections.size) {
           filesUpdated.clear()
-          this.config.generated(filesUpdated)
+          this.config.server.generated(filesUpdated)
           return
         }
         const generated = this.pundle.generate(Object.assign({}, this.config.generator, {
@@ -71,7 +73,7 @@ class Server {
           entry.send(payload)
         }
         filesUpdated.clear()
-        this.config.generated(filesUpdated)
+        this.config.server.generated(filesUpdated)
       },
       ready() {
         ready = true
