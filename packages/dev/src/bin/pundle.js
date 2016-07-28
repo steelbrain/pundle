@@ -3,6 +3,7 @@
 
 require('process-bootstrap')('pundle', 'Pundle')
 
+const Path = require('path')
 const Server = require('../')
 const program = require('commander')
 const manifest = require('../../package.json')
@@ -37,7 +38,7 @@ new Server({
     port: program.port,
     hmrPath: program.hmrPath,
     bundlePath: program.bundlePath,
-    sourceRoot: program.sourceRoot !== 'false' ? program.sourceRoot : null,
+    sourceRoot: program.sourceRoot !== 'false' ? Path.resolve(program.sourceRoot) : null,
     sourceMapPath: program.sourceMapPath,
     error(error) {
       debugError(error)
@@ -49,7 +50,7 @@ new Server({
   pundle: {
     entry: program.entry,
     pathType: program.pathType,
-    rootDirectory: program.rootDirectory,
+    rootDirectory: Path.resolve(program.rootDirectory),
     moduleDirectories: program.moduleDirectory,
   },
   watcher: {

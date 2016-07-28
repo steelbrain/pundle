@@ -1,3 +1,8 @@
+#### 1.0.3
+
+- Search node modules outside the root directory
+- Resolve root directory and source root on initialization
+
 #### 1.0.2
 
 - Fix HMR for deep modules

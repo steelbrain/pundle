@@ -27,7 +27,7 @@ export function fillConfig(config: Object): Config {
     toReturn.fileSystem = PundleFS
   }
   if (config.rootDirectory && typeof config.rootDirectory === 'string') {
-    toReturn.rootDirectory = config.rootDirectory
+    toReturn.rootDirectory = Path.resolve(config.rootDirectory)
   } else {
     throw new Error('config.rootDirectory must be a string')
   }
