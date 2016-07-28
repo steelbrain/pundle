@@ -7,6 +7,7 @@ export type ServerConfig = {
   bundlePath: string,
   sourceRoot: ?string,
   sourceMapPath: string,
-  error(error: Error): any,
   ready(): any,
+  error(error: Error): any,
+  generated(updatedFiles: Set<string>): any,
 }

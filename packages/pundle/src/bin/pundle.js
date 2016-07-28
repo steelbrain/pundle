@@ -3,6 +3,7 @@
 
 require('process-bootstrap')('pundle', 'Pundle')
 
+const Path = require('path')
 const PundleCLI = require('../cli')
 const program = require('commander')
 const manifest = require('../../package.json')
@@ -36,7 +37,7 @@ new PundleCLI({
   pundle: {
     entry: program.entry,
     pathType: program.pathType,
-    rootDirectory: program.rootDirectory,
+    rootDirectory: Path.resolve(program.rootDirectory),
     moduleDirectories: program.moduleDirectory,
   },
   watcher: {

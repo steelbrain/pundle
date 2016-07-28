@@ -27,7 +27,7 @@ export function fillConfig(config: Object): Config {
     toReturn.fileSystem = PundleFS
   }
   if (config.rootDirectory && typeof config.rootDirectory === 'string') {
-    toReturn.rootDirectory = config.rootDirectory
+    toReturn.rootDirectory = Path.resolve(config.rootDirectory)
   } else {
     throw new Error('config.rootDirectory must be a string')
   }
@@ -139,9 +139,6 @@ export async function find(
         }
         break
       } catch (_) { /* Ignore */ }
-    }
-    if (currentDir === config.rootDirectory) {
-      break
     }
     chunks.pop()
   }

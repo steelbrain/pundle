@@ -17,8 +17,12 @@ export default function getNPMInstaller(pundle: Pundle, parameters: Object) {
   }
 
   const queue: Map<string, Promise<void>> = new Map()
+  const locks: Set<string> = new Set()
 
   pundle.resolver.onAfterResolve(function(event) {
+    if (locks.has(event.givenRequest)) {
+      return null
+    }
     if (event.resolved || event.fromFile.indexOf(pundle.config.rootDirectory) !== 0 || parameters.ignored.test(event.fromFile)) {
       return null
     }
@@ -33,15 +37,15 @@ export default function getNPMInstaller(pundle: Pundle, parameters: Object) {
         resolve(installer.install(moduleName))
       }).then(function() {
         queue.delete(event.filePath)
+        locks.add(event.givenRequest)
         return pundle.resolver.resolveUncached(event.filePath, event.fromFile, event.givenRequest, event.manifest)
       }).then(function(result) {
+        locks.delete(event.givenRequest)
         parameters.afterInstall(moduleName, null)
         event.resolved = true
         event.filePath = result
       }, function(error) {
-        if (error.message.indexOf('Cannot find module') === 0) {
-          return
-        }
+        locks.delete(event.givenRequest)
         parameters.afterInstall(moduleName, error)
       }))
     }
