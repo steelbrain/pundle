@@ -9,5 +9,5 @@ export type ServerConfig = {
   sourceMapPath: string,
   ready(): any,
   error(error: Error): any,
-  generated(): any,
+  generated(updatedFiles: Set<string>): any,
 }

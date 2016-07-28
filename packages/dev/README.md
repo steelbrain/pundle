@@ -63,8 +63,9 @@ const server = new Server({
     bundlePath: string,
     sourceRoot: ?string,
     sourceMapPath: string,
-    error(error: Error): any,
     ready(): any,
+    error(error: Error): any,
+    generated(updatedFiles: Set<string>): void
   },
   pundle: PundleConfig,
   watcher: WatcherConfig,
