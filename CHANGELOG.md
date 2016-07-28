@@ -3,6 +3,7 @@
 - Add `generated` to dev server config
 - Search node modules outside the root directory
 - Resolve root directory and source root on initialization
+- Fix a bug where installer doesn't quit the loop when the module is invalid (#54)
 
 #### 1.0.2
 
