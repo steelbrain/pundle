@@ -49,6 +49,7 @@ class Server {
         debugServer(`Sending HMR of ${filesUpdated.size} file(s) to ${wsConnections.size} connection(s)`)
         if (!filesUpdated.size || !wsConnections.size) {
           filesUpdated.clear()
+          this.config.generated(filesUpdated)
           return
         }
         const generated = this.pundle.generate(Object.assign({}, this.config.generator, {
@@ -70,6 +71,7 @@ class Server {
           entry.send(payload)
         }
         filesUpdated.clear()
+        this.config.generated(filesUpdated)
       },
       ready() {
         ready = true

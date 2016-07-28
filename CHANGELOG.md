@@ -1,5 +1,6 @@
-#### 1.0.3
+#### 1.1.0
 
+- Add `generated` to dev server config
 - Search node modules outside the root directory
 - Resolve root directory and source root on initialization
 
