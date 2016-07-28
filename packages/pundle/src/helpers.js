@@ -140,9 +140,6 @@ export async function find(
         break
       } catch (_) { /* Ignore */ }
     }
-    if (currentDir === config.rootDirectory) {
-      break
-    }
     chunks.pop()
   }
 
