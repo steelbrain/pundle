@@ -31,7 +31,7 @@ export function matchesRules(sourceRoot: string, filePath: string, rules: Array<
         }
         continue
       }
-      if (entry.substr(0, 1) === '.' && fileBaseName.substr(0, 1) !== '.') {
+      if (entry.substr(0, 1) === '.' && fileBaseName.lastIndexOf('.') !== 0) {
         // Ext validation
         if (Path.extname(fileBaseName) === entry) {
           return true

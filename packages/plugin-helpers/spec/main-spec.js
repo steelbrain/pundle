@@ -94,6 +94,10 @@ describe('Helpers', function() {
           extensions: [],
           include: ['/src/app/test.js'],
         })).toBe(true)
+        expect(Helpers.shouldProcess('/src2', '/src/app/.eslintrc.json', {
+          extensions: [],
+          include: ['.json'],
+        })).toBe(true)
       })
     })
     describe('extensions prop', function() {
