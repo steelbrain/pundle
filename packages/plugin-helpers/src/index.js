@@ -5,7 +5,7 @@ import type { Rule, Config } from './types'
 
 const HAS_PATH_SEPARATOR = /[\\\/]/
 
-export function matchesRules(sourceRoot: string, filePath: string, rules: Array<Rule>, exclude: boolean = true): boolean {
+export function matchesRules(sourceRoot: string, filePath: string, rules: Array<Rule>): boolean {
   const fileBaseName = Path.basename(filePath)
 
   for (let i = 0, length = rules.length; i < length; ++i) {
@@ -20,40 +20,40 @@ export function matchesRules(sourceRoot: string, filePath: string, rules: Array<
         }
         if (Path.extname(entry)) {
           // Validation for file path
-          if ((entry !== filePath) === exclude) {
-            return false
+          if (entry === filePath) {
+            return true
           }
         } else {
           // Validation for directory path
-          if ((entry.indexOf(filePath) !== 0) === exclude) {
-            return false
+          if (filePath.indexOf(entry) === 0) {
+            return true
           }
         }
         continue
       }
       if (entry.substr(0, 1) === '.' && fileBaseName.substr(0, 1) !== '.') {
         // Ext validation
-        if ((Path.extname(fileBaseName) !== entry) === exclude) {
-          return false
+        if (Path.extname(fileBaseName) === entry) {
+          return true
         }
         continue
       }
       // Validation for file name
-      if ((entry !== fileBaseName) === exclude) {
-        return false
+      if (entry === fileBaseName) {
+        return true
       }
       continue
     }
     if (entry instanceof RegExp) {
-      if (!entry.test(filePath) === exclude) {
-        return false
+      if (entry.test(filePath)) {
+        return true
       }
       continue
     }
     console.error('Invalid rule type detected in pundle rule validator. Setup a breakpoint here to debug the cause')
   }
 
-  return true
+  return false
 }
 export function shouldProcess(sourceRoot: string, filePath: string, config: Config): boolean {
   const exclude = config.exclude
@@ -64,9 +64,12 @@ export function shouldProcess(sourceRoot: string, filePath: string, config: Conf
   }
   const include = config.include
   if (include) {
-    if (!matchesRules(sourceRoot, filePath, [].concat(include), false)) {
+    if (!matchesRules(sourceRoot, filePath, [].concat(include))) {
       return false
     }
+  }
+  if (!config.extensions.length) {
+    return !!(include || exclude)
   }
   return matchesRules(sourceRoot, filePath, config.extensions)
 }
