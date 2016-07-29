@@ -46,6 +46,7 @@ new Server({
     ready() {
       debugInfo(`Listening at http://localhost:${program.port}/`)
     },
+    generated() {},
   },
   pundle: {
     entry: program.entry,
