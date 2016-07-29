@@ -8,7 +8,7 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap; npm run compile",
-    "clean": "rm -rf packages/*/{lib,node_modules}",
+    "clean": "rm -rf packages/*/lib",
     "compile": "npm run clean; lerna exec -- ucompiler go",
     "lint": "eslint .",
     "publish": "npm run compile; lerna publish",
