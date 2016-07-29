@@ -4,6 +4,38 @@ import * as Helpers from '../src'
 
 describe('Helpers', function() {
   describe('matchesRules & shouldProcess', function() {
+    describe('exclude prop', function() {
+      it('only passes if the props are all declined by the file path', function() {
+        expect(Helpers.shouldProcess('', 'test.js', {
+          extensions: [],
+          exclude: [/\.js$/],
+        })).toBe(false)
+        expect(Helpers.shouldProcess('', 'test.js', {
+          extensions: [],
+          exclude: [/\.jss$/],
+        })).toBe(true)
+        expect(Helpers.shouldProcess('', 'test.js', {
+          extensions: [],
+          exclude: [],
+        })).toBe(true)
+        expect(Helpers.shouldProcess('', 'test.js', {
+          extensions: [],
+          exclude: ['test.js'],
+        })).toBe(false)
+        expect(Helpers.shouldProcess('', 'test.js', {
+          extensions: [],
+          exclude: ['.js'],
+        })).toBe(false)
+        expect(Helpers.shouldProcess('', 'test.js', {
+          extensions: [],
+          exclude: ['.coffee'],
+        })).toBe(true)
+        expect(Helpers.shouldProcess('', 'test.js', {
+          extensions: [],
+          exclude: ['test.coffee'],
+        })).toBe(true)
+      })
+    })
     describe('include prop', function() {
       it('only passes if the props are all passed by the file path', function() {
         expect(Helpers.shouldProcess('', 'test.js', {
