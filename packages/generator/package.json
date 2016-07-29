@@ -1,6 +1,6 @@
 {
   "name": "pundle-generator",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Output generator for Pundle",
   "main": "lib/index.js",
   "scripts": {
