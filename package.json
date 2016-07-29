@@ -2,15 +2,17 @@
   "dependencies": {
     "babel-preset-steelbrain": "^4.0.1",
     "eslint-config-steelbrain": "^1.0.4",
+    "lerna": "2.0.0-beta.24",
     "ucompiler": "^3.1.9",
     "ucompiler-plugin-babel": "^3.1.1"
   },
   "scripts": {
-    "test": "./scripts/test.sh",
-    "bootstrap": "./scripts/bootstrap.sh",
-    "compile": "./scripts/build.sh",
-    "watch": "./scripts/build.sh --watch",
+    "bootstrap": "lerna bootstrap; npm run compile",
+    "clean": "rm -rf packages/*/{lib,node_modules}",
+    "compile": "npm run clean; lerna exec -- ucompiler go",
     "lint": "eslint .",
-    "clean": "rm -rf packages/*/lib"
+    "publish": "npm run compile; lerna publish",
+    "test": "lerna exec --concurrency 1 -- apm test",
+    "watch": "npm run clean; lerna exec -- ucompiler watch"
   }
 }
