@@ -12,9 +12,16 @@ import * as Helpers from 'pundle-plugin-helpers'
 ### API
 
 ```js
-export default {
 
+type Rule = string | RegExp
+type Config = {
+  include?: Rule | Array<Rule>,
+  exclude?: Rule | Array<Rule>,
+  extensions: Array<string>,
 }
+
+export function matchesRules(sourceRoot: string, filePath: string, rules: Array<Rule>, exclude: boolean = true): boolean;
+export function shouldProcess(sourceRoot: string, filePath: string, config: Config): boolean;
 ```
 
 ### License
