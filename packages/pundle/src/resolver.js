@@ -124,6 +124,8 @@ export default class Resolver {
     await this.emitter.emit('after-resolve', event)
     if (!event.resolved) {
       const error = new Error(`Cannot find module '${givenRequest}'`)
+      // $FlowIgnore: Custom error property
+      error.code = 'MODULE_NOT_FOUND'
       error.stack = `${error.message}\n    at ${fromFile}:0:0`
       throw error
     }

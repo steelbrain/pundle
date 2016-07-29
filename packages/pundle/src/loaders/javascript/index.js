@@ -4,7 +4,7 @@ import generate from 'babel-generator'
 import * as t from 'babel-types'
 import { parse } from 'babylon'
 import { mergeSourceMaps } from '../helpers'
-import { getName, traverse } from './helpers'
+import { resolveRealPathOfError, getName, traverse } from './helpers'
 import type Pundle from '../../'
 import type { LoaderResult } from '../../types'
 
@@ -60,6 +60,8 @@ export default async function processJavascript(pundle: Pundle, filePath: string
             const resolvedFilePath = pundle.path.in(resolved)
             argument.value = pundle.getUniquePathID(resolvedFilePath)
             imports.add(resolvedFilePath)
+          }, function(error) {
+            throw resolveRealPathOfError(error, node, sourceMap)
           }))
         }
       }
@@ -68,6 +70,8 @@ export default async function processJavascript(pundle: Pundle, filePath: string
         const resolvedFilePath = pundle.path.in(resolved)
         node.source.value = pundle.getUniquePathID(resolvedFilePath)
         imports.add(resolvedFilePath)
+      }, function(error) {
+        throw resolveRealPathOfError(error, node, sourceMap)
       }))
     } else if (node.type === 'MemberExpression') {
       const name = getName(node)
