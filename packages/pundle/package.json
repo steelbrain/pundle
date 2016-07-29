@@ -40,7 +40,7 @@
     "process-bootstrap": "^1.0.0",
     "pundle-browser": "^1.1.1",
     "pundle-fs": "^1.1.1",
-    "pundle-generator": "1.0.0",
+    "pundle-generator": "^1.0.0",
     "sb-event-kit": "^2.0.0",
     "sb-promisify": "^1.3.0",
     "sb-resolve": "^3.0.4",
