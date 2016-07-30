@@ -12,7 +12,7 @@ npm install --save babel-pundle
 
 ```
 pundle.loadPlugins([
-  [require.resolve('babel-pundle'), {
+  ['babel-pundle', {
     ignored?: RegExp,
     extensions?: ['.js'],
     config: {

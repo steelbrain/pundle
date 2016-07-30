@@ -60,12 +60,12 @@ const pundle = new Pundle({
 })
 
 pundle.loadPlugins([
-  [require.resolve('babel-pundle'), {
+  ['babel-pundle', {
     config: {
       presets: ['steelbrain']
     }
   }],
-  require.resolve('pundle-some-magical-plugin'),
+  'pundle-some-magical-plugin',
 ]).then(function() {
   return pundle.compile()
 }).then(function() {
