@@ -54,8 +54,8 @@ import Pundle from 'pundle'
 
 const pundle = new Pundle({
   entry: ['index.js'],
-  rootDirectory: process.cwd(),
   pathType: 'filePath',
+  rootDirectory: process.cwd(),
   moduleDirectories: ['node_modules'],
 })
 
