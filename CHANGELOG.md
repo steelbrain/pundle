@@ -1,5 +1,6 @@
 #### 1.1.1
 
+- Fix browser field support for `../` requires
 - Fix the default value of `process.env.NODE_ENV`
 - Fix a bug where babel-generator wasn't published :facepalm:
 - Use [`lerna`](https://github.com/lerna/lerna) to manage monorepo setup to make sure that problem doesn't happen again
