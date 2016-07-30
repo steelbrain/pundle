@@ -1,6 +1,6 @@
 {
   "name": "pundle-plugin-helpers",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Helpers for Pundle Plugins",
   "main": "lib/index.js",
   "scripts": {
