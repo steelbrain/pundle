@@ -99,7 +99,7 @@ export default class Resolver {
     let request = requestString
     const extensions = Array.from(this.state.loaders.keys())
     if (manifest.browser && typeof manifest.browser === 'object') {
-      request = Resolver.resolveLocalBrowserField(request, manifest, extensions)
+      request = Resolver.resolveLocalBrowserField(request, this.path.out(fromFile), manifest, extensions)
     }
 
     const event = { filePath: request, fromFile: this.path.out(fromFile), givenRequest, manifest, resolved: false }
@@ -157,7 +157,14 @@ export default class Resolver {
     }
     return main
   }
-  static resolveLocalBrowserField(request: string, manifest: Object, extensions: Array<string>) {
+  static resolveLocalBrowserField(givenRequest: string, fromFile: string, manifest: Object, extensions: Array<string>) {
+    let request = givenRequest
+    if (request.substr(0, 1) === '.') {
+      request = Path.relative(Path.dirname(manifest.manifestPath), Path.resolve(Path.dirname(fromFile), givenRequest))
+      if (request.substr(0, 1) !== '.') {
+        request = `./${request}`
+      }
+    }
     const manifestExtensions = [''].concat(extensions)
     for (let i = 0, length = manifestExtensions.length; i < length; ++i) {
       const key = `${request}${manifestExtensions[i]}`
