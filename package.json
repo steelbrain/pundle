@@ -13,6 +13,6 @@
     "lint": "eslint .",
     "publish": "npm run compile; lerna publish",
     "test": "lerna exec --concurrency 1 -- apm test",
-    "watch": "npm run clean; lerna exec -- ucompiler watch"
+    "watch": "npm run clean; lerna exec --concurrency 99 -- ucompiler watch"
   }
 }

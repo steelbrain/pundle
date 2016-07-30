@@ -1,5 +1,6 @@
 lib
 scripts
+flow-decls
 node_modules
 packages/dev/browser.js
 packages/generator/wrappers

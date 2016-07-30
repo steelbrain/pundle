@@ -1,0 +1,28 @@
+{
+  "name": "pundle-plugin-helpers",
+  "version": "1.1.1",
+  "description": "Helpers for Pundle Plugins",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "compile": "ucompiler go",
+    "lint": "eslint .",
+    "watch": "ucompiler watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/motion/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/motion/pundle/issues"
+  },
+  "homepage": "https://github.com/motion/pundle#readme",
+  "dependencies": {
+    "sb-exec": "^2.0.5"
+  },
+  "devDependencies": {
+    "jasmine-fix": "^1.0.0"
+  }
+}

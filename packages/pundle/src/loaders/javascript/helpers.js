@@ -1,6 +1,29 @@
 /* @flow */
 
 import { VISITOR_KEYS } from 'babel-types'
+import { SourceMapConsumer } from 'source-map'
+
+const sourceMapConsumers: WeakMap<Object, SourceMapConsumer> = new WeakMap()
+
+export function resolveRealPathOfError(error: Object, node: Object, sourceMap: ?Object): Object {
+  if (error.code !== 'MODULE_NOT_FOUND' || !node.loc) {
+    return error
+  }
+  let originalPosition
+  if (sourceMap) {
+    let consumer = sourceMapConsumers.get(sourceMap)
+    if (!consumer) {
+      sourceMapConsumers.set(sourceMap, consumer = new SourceMapConsumer(sourceMap))
+    }
+    originalPosition = consumer.originalPositionFor({ line: node.loc.start.line, column: node.loc.start.column + 1 })
+  }
+  if (originalPosition) {
+    error.stack = `${error.message}\n    at ${originalPosition.source}:${originalPosition.line}:${originalPosition.column}`
+  } else {
+    error.stack = error.stack.replace(':0:0', `:${node.loc.start.line}:${node.loc.start.column + 1}`)
+  }
+  return error
+}
 
 export function traverse(node: Object, enter: Function) {
   if (!node) return

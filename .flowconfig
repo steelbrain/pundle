@@ -3,6 +3,7 @@
 [include]
 
 [libs]
+flow-decls
 
 [options]
 module.system=node
