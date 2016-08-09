@@ -1,3 +1,7 @@
+#### 1.1.3
+
+- Fix a bug where HMR would be applied without order
+
 #### 1.1.2
 
 - Fix browser field support for `../` requires
