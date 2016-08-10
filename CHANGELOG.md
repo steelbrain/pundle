@@ -1,6 +1,7 @@
 #### 1.1.3
 
-- Fix a bug where HMR would be applied without order
+- More compatibility with WebPack's HMR APIs
+- Fix a bug in how HMR is applied. This should fix any unexpected behaviors surrounding HMR.
 
 #### 1.1.2
 
