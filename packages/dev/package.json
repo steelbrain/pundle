@@ -8,9 +8,7 @@
   },
   "scripts": {
     "test": "apm test",
-    "compile": "ucompiler go",
-    "lint": "eslint .",
-    "watch": "ucompiler watch"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
