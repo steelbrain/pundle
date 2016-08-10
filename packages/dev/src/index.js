@@ -98,7 +98,6 @@ class Server {
       })
     })
 
-    // $FlowIgnore: Flow doesn't recognize the property
     if (this.config.generator.sourceMap) {
       app.get(this.config.server.sourceMapPath, (req, res) => {
         watcherInfo.queue = watcherInfo.queue.then(() => {

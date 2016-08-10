@@ -5,9 +5,10 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
-    "compile": "ucompiler go",
     "lint": "eslint .",
-    "watch": "ucompiler watch"
+    "wrappers-compile": "babel wrappers --ignore wrappers/dist --out-dir wrappers/dist",
+    "wrappers-watch": "babel wrappers --ignore wrappers/dist --out-dir wrappers/dist --watch",
+    "wrappers-uglify": "uglifyjs wrappers/dist/normal.js -o wrappers/dist/normal.js; uglifyjs wrappers/dist/hmr.js -o wrappers/dist/hmr.js;"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,10 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "source-map": "^0.5.6"
+    "source-map": "^0.5.6",
+    "uglify-js": "^2.7.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4"
   }
 }

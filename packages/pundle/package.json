@@ -5,9 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
-    "compile": "ucompiler go",
-    "lint": "eslint .",
-    "watch": "ucompiler watch"
+    "lint": "eslint ."
   },
   "bin": {
     "pundle": "./lib/bin/pundle.js"

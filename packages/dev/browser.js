@@ -13,7 +13,7 @@ function openHMRConnection() {
     if (message.type === 'update') {
       console.log('[HMR] Applying', message.filesUpdated.join(', '))
       eval(message.contents)
-      __sb_pundle_apply_hmr(message.filesUpdated)
+      __sb_pundle_hmr_apply(message.filesUpdated)
     }
   })
   socket.addEventListener('close', function() {

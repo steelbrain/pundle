@@ -8,8 +8,8 @@ import * as Helpers from './helpers'
 import type Pundle from '../../pundle/src'
 import type { File } from '../../pundle/src/types'
 
-const WrapperNormal = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'normal.js'), 'utf8').trim()
-const WrapperHMR = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'hmr.js'), 'utf8').trim()
+const WrapperNormal = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'dist', 'normal.js'), 'utf8').trim()
+const WrapperHMR = FS.readFileSync(Path.join(__dirname, '..', 'wrappers', 'dist', 'hmr.js'), 'utf8').trim()
 
 export default function generate(pundle: Pundle, givenConfig: Object) {
   let lines = 0

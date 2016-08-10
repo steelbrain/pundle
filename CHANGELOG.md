@@ -1,3 +1,8 @@
+#### 1.1.3
+
+- More compatibility with WebPack's HMR APIs
+- Fix a bug in how HMR is applied. This should fix any unexpected behaviors surrounding HMR.
+
 #### 1.1.2
 
 - Fix browser field support for `../` requires

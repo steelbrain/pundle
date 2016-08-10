@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "semi": 0,
+    "camelcase": 0,
+    "prefer-const": 0,
+    "no-unused-vars": 0,
+    "no-use-before-define": 0,
+    "no-underscore-dangle": 0
+  }
+}
