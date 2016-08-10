@@ -7,7 +7,8 @@
     "test": "apm test",
     "lint": "eslint .",
     "wrappers-compile": "babel wrappers --ignore wrappers/dist --out-dir wrappers/dist",
-    "wrappers-watch": "babel wrappers --ignore wrappers/dist --out-dir wrappers/dist --watch"
+    "wrappers-watch": "babel wrappers --ignore wrappers/dist --out-dir wrappers/dist --watch",
+    "wrappers-uglify": "uglifyjs wrappers/dist/normal.js -o wrappers/dist/normal.js; uglifyjs wrappers/dist/hmr.js -o wrappers/dist/hmr.js;"
   },
   "repository": {
     "type": "git",
