@@ -76,6 +76,7 @@ function __sb_pundle_hmr_get_update_order(applyTo) {
     let i = unresolved.length
     let passed = true
     let foundOne = false
+    const toRemove = []
     while (i--) {
       const id = unresolved[i]
       const module = __sb_pundle.cache[id]
@@ -83,22 +84,25 @@ function __sb_pundle_hmr_get_update_order(applyTo) {
       if (!module || (applyTo.indexOf(id) !== -1 && !acceptanceStatus)) {
         passed = false
       }
-      const itemResolved = !module.parents.length || module.parents.every(function(parent) {
+      const parentsResolved = !module.parents.length || module.parents.every(function(parent) {
         return resolved.indexOf(parent) !== -1
       })
-      if (itemResolved) {
+      if (acceptanceStatus === 1 || parentsResolved) {
         foundOne = true
         resolved.push(id)
-        unresolved.splice(i, 1)
+        toRemove.push(id)
       } else if (acceptanceStatus === 2) {
         for (let j = 0, length = module.parents.length; j < length; ++j) {
           const parent = module.parents[j]
-          if (unresolved.indexOf(parent) === -1) {
+          if (resolved.indexOf(parent) === -1 && unresolved.indexOf(parent) === -1) {
             foundOne = true
             unresolved.push(parent)
           }
         }
       }
+    }
+    for (let j = 0, length = toRemove.length; j < length; ++j) {
+      unresolved.splice(unresolved.indexOf(toRemove[j]), 1)
     }
     if (!passed || !foundOne) {
       const error = new Error('Unable to apply HMR. Page refresh will be required')
