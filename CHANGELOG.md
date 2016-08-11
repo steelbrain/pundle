@@ -1,3 +1,11 @@
+#### 1.1.4
+
+- Change the HMR update message a bit
+- Dependency sorting in HMR now powered by a tolopogical algo
+- Fix a bug where HMR would refuse to apply in some valid cases
+- Add a debug logging of when modules that rejects HMR to save debugging time
+- Add a debug logging of when modules that require each other in HMR to save debugging time
+
 #### 1.1.3
 
 - More compatibility with WebPack's HMR APIs
