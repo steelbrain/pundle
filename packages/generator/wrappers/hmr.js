@@ -20,6 +20,15 @@ const __sb_pundle = {
 }
 let __require
 
+/* eslint-disable */
+/**
+ * Topological sorting function
+ * @source https://github.com/marcelklehr/toposort/blob/de225fa7d55bb699dc927455ab0d1a3897d9d7b4/index.js
+ * @license MIT
+ */
+const __sb_pundle_hmr_topo_sort = function(){function n(n,r){function e(f,u,d){if(d.indexOf(f)>=0)throw new Error("Cyclic dependency: "+JSON.stringify(f));if(!~n.indexOf(f))throw new Error("Found unknown node. Make sure to provided all involved nodes. Unknown node: "+JSON.stringify(f));if(!t[u]){t[u]=!0;var a=r.filter(function(n){return n[0]===f});if(u=a.length){var c=d.concat(f);do{var l=a[--u][1];e(l,n.indexOf(l),c)}while(u)}i[--o]=f}}for(var o=n.length,i=new Array(o),t={},f=o;f--;)t[f]||e(n[f],f,[]);return i}function r(n){for(var r=[],e=0,o=n.length;o>e;e++){var i=n[e];r.indexOf(i[0])<0&&r.push(i[0]),r.indexOf(i[1])<0&&r.push(i[1])}return r}return function(e){return n(r(e),e)}}();
+/* eslint-enable */
+
 class __sb_pundle_hot {
   data: Object;
   accepts: Set<string>;
@@ -93,8 +102,15 @@ function __sb_pundle_hmr_debug_inter_requires(unresolved) {
   return toReturn
 }
 
+function __sb_pundle_hmr_module_info(id) {
+  return {
+    id,
+    parents: __sb_pundle.cache[id].parents.slice(),
+  }
+}
+
 function __sb_pundle_hmr_get_update_order(applyTo) {
-  const unresolved = [].concat(applyTo)
+  const unresolved = [].concat(applyTo).map(__sb_pundle_hmr_module_info)
   const resolved = []
   while (unresolved.length) {
     let i = unresolved.length
@@ -102,10 +118,9 @@ function __sb_pundle_hmr_get_update_order(applyTo) {
     let foundOne = false
     const toRemove = []
     while (i--) {
-      const id = unresolved[i]
-      const module = __sb_pundle.cache[id]
-      const acceptanceStatus = __sb_pundle_hmr_is_accepted(id)
-      if (!module || (applyTo.indexOf(id) !== -1 && !acceptanceStatus)) {
+      const module = unresolved[i]
+      const acceptanceStatus = __sb_pundle_hmr_is_accepted(module.id)
+      if (!module || (applyTo.indexOf(module.id) !== -1 && !acceptanceStatus)) {
         passed = false
       }
       const parentsResolved = !module.parents.length || module.parents.every(function(parent) {
@@ -113,14 +128,14 @@ function __sb_pundle_hmr_get_update_order(applyTo) {
       })
       if (acceptanceStatus === 1 || parentsResolved) {
         foundOne = true
-        resolved.push(id)
-        toRemove.push(id)
+        resolved.push(module)
+        toRemove.push(module)
       } else if (acceptanceStatus === 2) {
         for (let j = 0, length = module.parents.length; j < length; ++j) {
           const parent = module.parents[j]
           if (resolved.indexOf(parent) === -1 && unresolved.indexOf(parent) === -1) {
             foundOne = true
-            unresolved.push(parent)
+            unresolved.push(__sb_pundle_hmr_module_info(parent))
           }
         }
       }
@@ -128,7 +143,7 @@ function __sb_pundle_hmr_get_update_order(applyTo) {
     for (let j = 0, length = toRemove.length; j < length; ++j) {
       unresolved.splice(unresolved.indexOf(toRemove[j]), 1)
     }
-    if (!passed && !foundOne) {
+    if (!passed || !foundOne) {
       let message = 'Unable to apply HMR. Page refresh will be required'
       const interRequires = __sb_pundle_hmr_debug_inter_requires(unresolved)
       if (interRequires.length) {
@@ -145,6 +160,10 @@ function __sb_pundle_hmr_get_update_order(applyTo) {
 
 function __sb_pundle_hmr_apply(applyTo) {
   const modules = __sb_pundle_hmr_get_update_order(applyTo)
+  console.log('order', modules)
+  if (true) {
+    throw new Error()
+  }
   for (let i = 0, length = modules.length; i < length; ++i) {
     const id = modules[i]
     const module: Module = __sb_pundle.cache[id]
