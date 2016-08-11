@@ -69,6 +69,30 @@ function __sb_pundle_hmr_is_accepted(id, givenMatchAgainst) {
   )
 }
 
+function __sb_pundle_hmr_debug_inter_requires(unresolved) {
+  // Helper function to get a list of functions that require their parents
+  const added = new Set()
+  const toReturn = []
+  for (let i = 0, length = unresolved.length; i < length; ++i) {
+    const child = unresolved[i]
+    const childModule = __sb_pundle.cache[child]
+
+    for (let _i = 0, _length = childModule.parents.length; _i < _length; ++_i) {
+      const parent = childModule.parents[_i]
+      const parentModule = __sb_pundle.cache[parent]
+
+      for (let __i = 0, __length = parentModule.parents.length; __i < __length; ++__i) {
+        const item = parentModule.parents[__i]
+        if (item === child && !added.has(`${parent}-${child}`) && !added.has(`${child}-${parent}`)) {
+          added.add(`${parent}-${child}`)
+          toReturn.push({ a: child, b: parent })
+        }
+      }
+    }
+  }
+  return toReturn
+}
+
 function __sb_pundle_hmr_get_update_order(applyTo) {
   const unresolved = [].concat(applyTo)
   const resolved = []
@@ -104,9 +128,14 @@ function __sb_pundle_hmr_get_update_order(applyTo) {
     for (let j = 0, length = toRemove.length; j < length; ++j) {
       unresolved.splice(unresolved.indexOf(toRemove[j]), 1)
     }
-    if (!passed || !foundOne) {
-      const error = new Error('Unable to apply HMR. Page refresh will be required')
-      // $FlowIgnore: Custom error property
+    if (!passed && !foundOne) {
+      let message = 'Unable to apply HMR. Page refresh will be required'
+      const interRequires = __sb_pundle_hmr_debug_inter_requires(unresolved)
+      if (interRequires.length) {
+        message = 'Unable to apply HMR because some modules require their parents'
+        console.log('[HMR] Error: Update could not be applied because these modules require each other:\n' + interRequires.map(item => `  • ${item.a} <--> ${item.b}`).join('\n'))
+      }
+      const error: Object = new Error(message)
       error.code = 'HMR_REBOOT_REQUIRED'
       throw error
     }
