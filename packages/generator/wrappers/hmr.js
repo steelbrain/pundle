@@ -26,7 +26,7 @@ let __require
  * @source https://github.com/marcelklehr/toposort/blob/de225fa7d55bb699dc927455ab0d1a3897d9d7b4/index.js
  * @license MIT
  */
-const __sb_pundle_hmr_topo_sort = function(){function n(n,r){function e(f,u,d){if(d.indexOf(f)>=0)throw new Error("Cyclic dependency: "+JSON.stringify(f));if(!~n.indexOf(f))throw new Error("Found unknown node. Make sure to provided all involved nodes. Unknown node: "+JSON.stringify(f));if(!t[u]){t[u]=!0;var a=r.filter(function(n){return n[0]===f});if(u=a.length){var c=d.concat(f);do{var l=a[--u][1];e(l,n.indexOf(l),c)}while(u)}i[--o]=f}}for(var o=n.length,i=new Array(o),t={},f=o;f--;)t[f]||e(n[f],f,[]);return i}function r(n){for(var r=[],e=0,o=n.length;o>e;e++){var i=n[e];r.indexOf(i[0])<0&&r.push(i[0]),r.indexOf(i[1])<0&&r.push(i[1])}return r}return function(e){return n(r(e),e)}}();
+const __sb_pundle_hmr_topological_sort = function(){function n(n,r){function e(f,u,d){if(d.indexOf(f)>=0)throw new Error("Cyclic dependency: "+JSON.stringify(f));if(!~n.indexOf(f))throw new Error("Found unknown node. Make sure to provided all involved nodes. Unknown node: "+JSON.stringify(f));if(!t[u]){t[u]=!0;var a=r.filter(function(n){return n[0]===f});if(u=a.length){var c=d.concat(f);do{var l=a[--u][1];e(l,n.indexOf(l),c)}while(u)}i[--o]=f}}for(var o=n.length,i=new Array(o),t={},f=o;f--;)t[f]||e(n[f],f,[]);return i}function r(n){for(var r=[],e=0,o=n.length;o>e;e++){var i=n[e];r.indexOf(i[0])<0&&r.push(i[0]),r.indexOf(i[1])<0&&r.push(i[1])}return r}return function(e){return n(r(e),e)}}();
 /* eslint-enable */
 
 class __sb_pundle_hot {
@@ -109,61 +109,69 @@ function __sb_pundle_hmr_module_info(id) {
   }
 }
 
-function __sb_pundle_hmr_get_update_order(applyTo) {
-  const unresolved = [].concat(applyTo).map(__sb_pundle_hmr_module_info)
-  const resolved = []
-  while (unresolved.length) {
-    let i = unresolved.length
-    let passed = true
-    let foundOne = false
-    const toRemove = []
-    while (i--) {
-      const module = unresolved[i]
-      const acceptanceStatus = __sb_pundle_hmr_is_accepted(module.id)
-      if (!module || (applyTo.indexOf(module.id) !== -1 && !acceptanceStatus)) {
-        passed = false
-      }
-      const parentsResolved = !module.parents.length || module.parents.every(function(parent) {
-        return resolved.indexOf(parent) !== -1
-      })
-      if (acceptanceStatus === 1 || parentsResolved) {
-        foundOne = true
-        resolved.push(module)
-        toRemove.push(module)
-      } else if (acceptanceStatus === 2) {
-        for (let j = 0, length = module.parents.length; j < length; ++j) {
-          const parent = module.parents[j]
-          if (resolved.indexOf(parent) === -1 && unresolved.indexOf(parent) === -1) {
-            foundOne = true
-            unresolved.push(__sb_pundle_hmr_module_info(parent))
-          }
-        }
-      }
+function __sb_pundle_hmr_get_update_order(updatedModules) {
+  const input = []
+  const added = new Set()
+  const failed = []
+  const duplicates = []
+
+  function iterate(from, parents) {
+    if (added.has(from)) {
+      return
     }
-    for (let j = 0, length = toRemove.length; j < length; ++j) {
-      unresolved.splice(unresolved.indexOf(toRemove[j]), 1)
-    }
-    if (!passed || !foundOne) {
-      let message = 'Unable to apply HMR. Page refresh will be required'
-      const interRequires = __sb_pundle_hmr_debug_inter_requires(unresolved)
-      if (interRequires.length) {
-        message = 'Unable to apply HMR because some modules require their parents'
-        console.log('[HMR] Error: Update could not be applied because these modules require each other:\n' + interRequires.map(item => `  • ${item.a} <--> ${item.b}`).join('\n'))
+    added.add(from)
+    for (let i = 0, length = parents.length; i < length; ++i) {
+      const parent = parents[i]
+      if (added.has(parent)) {
+        continue
       }
-      const error: Object = new Error(message)
-      error.code = 'HMR_REBOOT_REQUIRED'
-      throw error
+      const acceptanceStatus = __sb_pundle_hmr_is_accepted(parent)
+      if (!acceptanceStatus) {
+        failed.push(parent)
+        continue
+      }
+
+      const parentModule = __sb_pundle.cache[parent]
+      if (added.has(`${from}-${parent}`) || added.has(`${parent}-${from}`)) {
+        duplicates.push([from, parent])
+        continue
+      }
+      added.add(`${from}-${parent}`)
+      input.push([parent, from])
+      if (acceptanceStatus === 2 && parentModule.parents.length) {
+        iterate(parent, parentModule.parents)
+      }
     }
   }
-  return resolved.reverse()
+
+  for (let i = 0, length = updatedModules.length; i < length; ++i) {
+    const updated = updatedModules[i]
+    const updatedModule = __sb_pundle.cache[updated]
+    if (!__sb_pundle_hmr_is_accepted(updated)) {
+      failed.push(updated)
+      continue
+    }
+    if (!added.has(updated) && updatedModule.parents.length) {
+      iterate(updated, updatedModule.parents)
+    }
+  }
+  if (duplicates.length) {
+    console.log('[HMR] Error: Update could not be applied because these modules require each other:\n' + duplicates.map(item => `  • ${item[0]} <--> ${item[0]}`).join('\n'))
+    const error: Object = new Error('Unable to apply HMR because some modules require their parents')
+    error.code = 'HMR_REBOOT_REQUIRED'
+    throw error
+  }
+  if (failed.length) {
+    console.log('[HMR] Error: Update could not be applied because these did not accept:\n' + failed.map(item => `  • ${item}`).join('\n'))
+    const error: Object = new Error('Unable to apply HMR because some modules didnt accept it')
+    error.code = 'HMR_REBOOT_REQUIRED'
+    throw error
+  }
+  return __sb_pundle_hmr_topological_sort(input).reverse()
 }
 
-function __sb_pundle_hmr_apply(applyTo) {
-  const modules = __sb_pundle_hmr_get_update_order(applyTo)
-  console.log('order', modules)
-  if (true) {
-    throw new Error()
-  }
+function __sb_pundle_hmr_apply(updatedModules) {
+  const modules = __sb_pundle_hmr_get_update_order(updatedModules)
   for (let i = 0, length = modules.length; i < length; ++i) {
     const id = modules[i]
     const module: Module = __sb_pundle.cache[id]
