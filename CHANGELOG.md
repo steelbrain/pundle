@@ -1,8 +1,10 @@
 #### 1.1.4
 
 - Change the HMR update message a bit
+- Dependency sorting in HMR now powered by a tolopogical algo
 - Fix a bug where HMR would refuse to apply in some valid cases
-- Add a debug logging of when two modules require each other (and un-updatable) to help debug those cases
+- Add a debug logging of when modules that rejects HMR to save debugging time
+- Add a debug logging of when modules that require each other in HMR to save debugging time
 
 #### 1.1.3
 
