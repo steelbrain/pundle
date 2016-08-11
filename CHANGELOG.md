@@ -1,3 +1,9 @@
+#### 1.1.4
+
+- Change the HMR update message a bit
+- Fix a bug where HMR would refuse to apply in some valid cases
+- Add a debug logging of when two modules require each other (and un-updatable) to help debug those cases
+
 #### 1.1.3
 
 - More compatibility with WebPack's HMR APIs
