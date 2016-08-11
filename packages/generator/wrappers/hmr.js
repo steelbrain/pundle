@@ -78,37 +78,6 @@ function __sb_pundle_hmr_is_accepted(id, givenMatchAgainst) {
   )
 }
 
-function __sb_pundle_hmr_debug_inter_requires(unresolved) {
-  // Helper function to get a list of functions that require their parents
-  const added = new Set()
-  const toReturn = []
-  for (let i = 0, length = unresolved.length; i < length; ++i) {
-    const child = unresolved[i]
-    const childModule = __sb_pundle.cache[child]
-
-    for (let _i = 0, _length = childModule.parents.length; _i < _length; ++_i) {
-      const parent = childModule.parents[_i]
-      const parentModule = __sb_pundle.cache[parent]
-
-      for (let __i = 0, __length = parentModule.parents.length; __i < __length; ++__i) {
-        const item = parentModule.parents[__i]
-        if (item === child && !added.has(`${parent}-${child}`) && !added.has(`${child}-${parent}`)) {
-          added.add(`${parent}-${child}`)
-          toReturn.push({ a: child, b: parent })
-        }
-      }
-    }
-  }
-  return toReturn
-}
-
-function __sb_pundle_hmr_module_info(id) {
-  return {
-    id,
-    parents: __sb_pundle.cache[id].parents.slice(),
-  }
-}
-
 function __sb_pundle_hmr_get_update_order(updatedModules) {
   const input = []
   const added = new Set()
