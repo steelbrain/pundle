@@ -8,7 +8,9 @@
     "lint": "eslint .",
     "wrappers-compile": "babel wrappers --ignore wrappers/dist --out-dir wrappers/dist",
     "wrappers-watch": "babel wrappers --ignore wrappers/dist --out-dir wrappers/dist --watch",
-    "wrappers-uglify": "uglifyjs wrappers/dist/normal.js -o wrappers/dist/normal.js; uglifyjs wrappers/dist/hmr.js -o wrappers/dist/hmr.js;"
+    "wrappers-uglify-hmr": "uglifyjs wrappers/dist/hmr.js 2> /dev/null | ( read i; echo ${i:13} ) > /tmp/sb-temp2; cat /tmp/sb-temp2 > wrappers/dist/hmr.js",
+    "wrappers-uglify-normal": "uglifyjs wrappers/dist/normal.js 2> /dev/null | ( read i; echo ${i:13} ) > /tmp/sb-temp1; cat /tmp/sb-temp1 > wrappers/dist/normal.js",
+    "wrappers-uglify": "npm run wrappers-uglify-hmr; npm run wrappers-uglify-normal"
   },
   "repository": {
     "type": "git",

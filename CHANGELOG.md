@@ -1,3 +1,7 @@
+#### 1.1.5
+
+- Disable strict mode in wrappers
+
 #### 1.1.4
 
 - Change the HMR update message a bit
