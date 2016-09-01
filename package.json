@@ -13,5 +13,8 @@
     "publish": "npm run compile; lerna publish",
     "test": "lerna exec --concurrency 1 -- apm test",
     "watch": "npm run clean; lerna exec --concurrency 99 -- babel src --out-dir lib --watch"
+  },
+  "devDependencies": {
+    "flow-bin": "^0.31.1"
   }
 }

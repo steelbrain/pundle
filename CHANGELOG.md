@@ -1,3 +1,7 @@
+#### 1.1.6
+
+- Fix a bug where any error during compilation on boot would continue until terminated
+
 #### 1.1.5
 
 - Disable strict mode in wrappers
