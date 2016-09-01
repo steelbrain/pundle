@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Dev Server for Pundle",
   "main": "lib/index.js",
   "bin": {
@@ -25,7 +25,7 @@
     "debug": "^2.2.0",
     "express": "^4.13.4",
     "process-bootstrap": "^1.0.0",
-    "pundle": "^1.1.5",
+    "pundle": "^1.1.6",
     "sb-event-kit": "^2.0.0",
     "source-map-to-comment": "^1.1.0",
     "ws": "^1.1.1"
