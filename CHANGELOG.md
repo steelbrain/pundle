@@ -1,3 +1,7 @@
+#### 1.1.7
+
+- Fix an aggressiveness bug in npm installer (#69)
+
 #### 1.1.6
 
 - Fix a bug where any error during compilation on boot would continue until terminated
