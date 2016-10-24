@@ -1,0 +1,26 @@
+{
+  "name": "pundle-loader-json",
+  "version": "1.1.6",
+  "description": "JSON loader for Pundle",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/motion/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/motion/pundle/issues"
+  },
+  "homepage": "https://github.com/motion/pundle#readme",
+  "dependencies": {
+    "pundle-api": "^1.1.6"
+  },
+  "devDependencies": {
+
+  }
+}
