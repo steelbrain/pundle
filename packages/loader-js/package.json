@@ -1,7 +1,7 @@
 {
-  "name": "pundle-api",
+  "name": "pundle-loader-js",
   "version": "1.1.6",
-  "description": "Helpers to write components for Pundle",
+  "description": "Javascript loader for Pundle",
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "ignore": "^3.2.0"
+    "pundle-api": "^1.1.6"
   },
   "devDependencies": {
 
