@@ -7,7 +7,6 @@ import invariant from 'assert'
 import arrayDifference from 'lodash.difference'
 import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
 import * as Helpers from './helpers'
-import * as Loaders from './loaders'
 import Files from './files'
 import Resolver from './resolver'
 import PundlePath from './path'
@@ -39,8 +38,6 @@ class Pundle {
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
-    this.state.loaders.set('.json', Loaders.json)
-    this.state.loaders.set('.js', Loaders.javascript)
   }
   loadLoaders(entries: Array<{ extensions: Array<string>, loader: Loader }>): Array<string> {
     const overwroteLoaders = []

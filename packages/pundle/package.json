@@ -7,9 +7,6 @@
     "test": "apm test",
     "lint": "eslint ."
   },
-  "bin": {
-    "pundle": "./lib/bin/pundle.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/motion/pundle.git"
