@@ -2,112 +2,109 @@
 
 import * as Helpers from '../src'
 
-describe('Helpers', function() {
-  describe('matchesRules & shouldProcess', function() {
-    describe('exclude prop', function() {
-      it('only passes if the props are all declined by the file path', function() {
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          exclude: [/\.js$/],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          exclude: [/\.jss$/],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          exclude: [],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          exclude: ['test.js'],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          exclude: ['.js'],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          exclude: ['.coffee'],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          exclude: ['test.coffee'],
-        })).toBe(true)
+describe('rules', function() {
+  describe('matchesRules', function() {
+    describe('works with regexes', function() {
+      it('handles regexes with file paths', function() {
+        expect(Helpers.matchesRules('a/tmp/test.js', [/\w+.js$/])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', [/\w+.js$/])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', [/\w+.js$/, /\w+.coffee$/])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.chai', [/\w+.js$/, /\w+.coffee$/])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.js', [/test.js$/, /\w+.coffee$/])).toBe(true)
+      })
+      it('handles regexes with full paths', function() {
+        expect(Helpers.matchesRules('a/tmp/test.js', [/\/tmp\/\w+.js$/])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', [/\/tmp\/\w+.js$/])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', [/\/tmp\/\w+.js$/, /\w+.coffee$/])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.chai', [/\/tmp\/\w+.js/, /\w+.coffee$/])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.js', [/\/tmp\/test.js$/, /\w+.coffee$/])).toBe(true)
       })
     })
-    describe('include prop', function() {
-      it('only passes if the props are all passed by the file path', function() {
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          include: [/\.js$/],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          include: [/\.jss$/],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.coffee', {
-          extensions: [],
-          include: [/\.js$/, /\.coffee$/],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.coffee', {
-          extensions: [],
-          include: [/\.js$/, '.coffee'],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          include: ['.js'],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          include: ['.jss'],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          include: ['test.js'],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', {
-          extensions: [],
-          include: ['test2.js'],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('/src', '/src/app/test.js', {
-          extensions: [],
-          include: ['./src'],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('/src', '/src/app/test.js', {
-          extensions: [],
-          include: ['/src'],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('/src', '/src/app/test.js', {
-          extensions: [],
-          include: ['./app2'],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('/src', '/src/app/test.js', {
-          extensions: [],
-          include: ['./app'],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('/src2', '/src/app/test.js', {
-          extensions: [],
-          include: ['./app'],
-        })).toBe(false)
-        expect(Helpers.shouldProcess('/src2', '/src/app/test.js', {
-          extensions: [],
-          include: ['/src/app/test.js'],
-        })).toBe(true)
-        expect(Helpers.shouldProcess('/src2', '/src/app/.eslintrc.json', {
-          extensions: [],
-          include: ['.json'],
-        })).toBe(true)
+    describe('works with globs', function() {
+      it('handles globs with file paths', function() {
+        expect(Helpers.matchesRules('a/tmp/test.js', ['*.js'])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', ['*.js'])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', ['*.js', '*.coffee'])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.chai', ['*.js', '*.coffee'])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.js', ['*.js', '*.coffee'])).toBe(true)
+      })
+      it('handles globs with full paths', function() {
+        expect(Helpers.matchesRules('a/tmp/test.js', ['a/tmp/*.js'])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', ['a/tmp/*.js'])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.coffee', ['a/tmp/*.js', 'a/tmp/*.coffee'])).toBe(true)
+        expect(Helpers.matchesRules('a/tmp/test.chai', ['a/tmp/*.js', 'a/tmp/*.coffee'])).toBe(false)
+        expect(Helpers.matchesRules('a/tmp/test.js', ['a/tmp/*.js', 'a/tmp/*.coffee'])).toBe(true)
       })
     })
-    describe('extensions prop', function() {
-      it('only passes if the extension is in the prop', function() {
-        expect(Helpers.shouldProcess('', 'test.js', { extensions: ['.js'] })).toBe(true)
-        expect(Helpers.shouldProcess('', 'test.js', { extensions: ['.jss'] })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.jss', { extensions: ['.js'] })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.js', { extensions: [] })).toBe(false)
-        expect(Helpers.shouldProcess('', 'test.js', { extensions: [''] })).toBe(false)
-      })
+  })
+  describe('shouldProcess', function() {
+    it('rejects everything if neither include nor exclude is present', function() {
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {})).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.coffee', {})).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.chai', {})).toBe(false)
+    })
+    it('works with single include', function() {
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        include: '*.js',
+      })).toBe(true)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        include: '*.coffee',
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        include: '*.chai',
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.coffee', {
+        include: '*.js',
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.coffee', {
+        include: '*.coffee',
+      })).toBe(true)
+
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.coffee', {
+        include: '*.chai',
+      })).toBe(false)
+    })
+    it('works with multiple includes', function() {
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        include: ['*.js', '*.coffee'],
+      })).toBe(true)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.coffee', {
+        include: ['*.js', '*.coffee'],
+      })).toBe(true)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.chai', {
+        include: ['*.js', '*.coffee'],
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        include: ['*.chai', '*.coffee'],
+      })).toBe(false)
+    })
+    it('works with single exclude', function() {
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        exclude: '*.chai',
+      })).toBe(true)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        exclude: '*.js',
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.chai', {
+        exclude: '*.chai',
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.chai', {
+        exclude: '*.js',
+      })).toBe(true)
+    })
+    it('works with multiple excludes', function() {
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.js', {
+        exclude: ['*.chai', '*.coffee'],
+      })).toBe(true)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.chai', {
+        exclude: ['*.chai', '*.coffee'],
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.coffee', {
+        exclude: ['*.chai', '*.coffee'],
+      })).toBe(false)
+      expect(Helpers.shouldProcess('/a', '/a/tmp/test.coffee', {
+        exclude: ['*.js', '*.chai'],
+      })).toBe(true)
     })
   })
 })
