@@ -20,10 +20,10 @@ export type File = {
   contents: string,
 }
 
-export type LoaderCallback = ((filePath: string, fileContents: string, sourceMap: ?Object, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
+export type LoaderCallback = ((file: File, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
 export type Loader = Component<'loader', LoaderCallback>
 
-export type PluginCallback = ((filePath: string, fileContents: string, sourceMap: ?Object, config: Object, pundle: Object) => void)
+export type PluginCallback = ((file: File, config: Object, pundle: Object) => void)
 export type Plugin = Component<'plugin', PluginCallback>
 
 export type ResolverCallback = ((request: string, fromFile: string, cached: boolean, config: Object, pundle: Object) => ?string)
@@ -35,8 +35,8 @@ export type Reporter = Component<'reporter', ReporterCallback>
 export type GeneratorCallback = ((generated: Array<File>, config: Object, pundle: Object) => { contents: string, sourceMap: string })
 export type Generator = Component<'generator', GeneratorCallback>
 
-export type TransformerCallback = ((filePath: string, fileContents: string, sourceMap: ?Object, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
+export type TransformerCallback = ((file: File, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
 export type Transformer = Component<'transformer', TransformerCallback>
 
-export type PostTransformerCallback = ((filePath: string, fileContents: string, sourceMap: ?Object, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
+export type PostTransformerCallback = ((file: File, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
