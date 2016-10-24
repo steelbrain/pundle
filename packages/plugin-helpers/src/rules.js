@@ -1,75 +1,47 @@
 /* @flow */
 
 import Path from 'path'
+import createIgnore from 'ignore'
 import type { Rule, Config } from './types'
 
-const HAS_PATH_SEPARATOR = /[\\\/]/
+export function matchesRules(relativePath: string, rules: Array<Rule>): boolean {
+  const fileName = Path.basename(relativePath)
+  const ignoreRules = []
 
-export function matchesRules(sourceRoot: string, filePath: string, rules: Array<Rule>): boolean {
-  const fileBaseName = Path.basename(filePath)
-
-  for (let i = 0, length = rules.length; i < length; ++i) {
-    let entry = rules[i]
-    if (typeof entry === 'string') {
-      // Path is string
-      if (HAS_PATH_SEPARATOR.test(entry)) {
-        // has slashes in it
-        if (!Path.isAbsolute(entry)) {
-          // Non-Absolute, make it absolute
-          entry = Path.resolve(sourceRoot, entry)
-        }
-        if (Path.extname(entry)) {
-          // Validation for file path
-          if (entry === filePath) {
-            return true
-          }
-        } else {
-          // Validation for directory path
-          if (filePath.indexOf(entry) === 0) {
-            return true
-          }
-        }
-        continue
-      }
-      if (entry.substr(0, 1) === '.' && fileBaseName.lastIndexOf('.') !== 0) {
-        // Ext validation
-        if (Path.extname(fileBaseName) === entry) {
-          return true
-        }
-        continue
-      }
-      // Validation for file name
-      if (entry === fileBaseName) {
-        return true
-      }
+  for (let i = 0, length = rules.length; i < length; i++) {
+    const rule = rules[i]
+    if (!(rule instanceof RegExp)) {
+      ignoreRules.push(rule)
       continue
     }
-    if (entry instanceof RegExp) {
-      if (entry.test(filePath)) {
-        return true
-      }
-      continue
+    if (rule.test(relativePath) || rule.test(fileName)) {
+      return true
     }
-    console.error('Invalid rule type detected in pundle rule validator. Setup a breakpoint here to debug the cause')
+  }
+
+  if (ignoreRules.length && createIgnore().add(ignoreRules).filter([relativePath, fileName]).length !== 2) {
+    return true
   }
 
   return false
 }
+
 export function shouldProcess(sourceRoot: string, filePath: string, config: Config): boolean {
+  const relativePath = Path.relative(sourceRoot, filePath)
+
   const exclude = config.exclude
   if (exclude) {
-    if (matchesRules(sourceRoot, filePath, [].concat(exclude))) {
+    if (matchesRules(relativePath, [].concat(exclude))) {
       return false
     }
   }
   const include = config.include
   if (include) {
-    if (!matchesRules(sourceRoot, filePath, [].concat(include))) {
+    if (!matchesRules(relativePath, [].concat(include))) {
       return false
     }
   }
-  if (!config.extensions.length) {
-    return !!(include || exclude)
-  }
-  return matchesRules(sourceRoot, filePath, config.extensions)
+
+  // NOTE: If neither include nor exclude is provided, instead of processing all files, process none
+  return !!(include || exclude)
 }
