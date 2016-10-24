@@ -1,13 +1,11 @@
 {
   "name": "pundle-npm-installer",
-  "version": "1.1.2",
+  "version": "1.1.7",
   "description": "NPM Installer for Pundle",
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
-    "compile": "ucompiler go",
-    "lint": "eslint .",
-    "watch": "ucompiler watch"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",

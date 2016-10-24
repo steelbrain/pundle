@@ -1,3 +1,28 @@
+#### 1.1.7
+
+- Fix an aggressiveness bug in npm installer (#69)
+
+#### 1.1.6
+
+- Fix a bug where any error during compilation on boot would continue until terminated
+
+#### 1.1.5
+
+- Disable strict mode in wrappers
+
+#### 1.1.4
+
+- Change the HMR update message a bit
+- Dependency sorting in HMR now powered by a tolopogical algo
+- Fix a bug where HMR would refuse to apply in some valid cases
+- Add a debug logging of when modules that rejects HMR to save debugging time
+- Add a debug logging of when modules that require each other in HMR to save debugging time
+
+#### 1.1.3
+
+- More compatibility with WebPack's HMR APIs
+- Fix a bug in how HMR is applied. This should fix any unexpected behaviors surrounding HMR.
+
 #### 1.1.2
 
 - Fix browser field support for `../` requires

@@ -19,36 +19,54 @@ export default function getNPMInstaller(pundle: Pundle, parameters: Object) {
   const queue: Map<string, Promise<void>> = new Map()
   const locks: Set<string> = new Set()
 
-  pundle.resolver.onAfterResolve(function(event) {
+  pundle.resolver.onAfterResolve(async function(event) {
     if (locks.has(event.givenRequest)) {
-      return null
-    }
-    if (event.resolved || event.fromFile.indexOf(pundle.config.rootDirectory) !== 0 || parameters.ignored.test(event.fromFile)) {
-      return null
+      return
     }
     const moduleName = getModuleName(event.filePath)
     if (!moduleName) {
-      return null
+      return
     }
-    let queueValue = queue.get(event.filePath)
+    if (event.resolved || event.fromFile.indexOf(pundle.config.rootDirectory) !== 0 || parameters.ignored.test(event.fromFile)) {
+      return
+    }
+
+    // NOTE: Handle when module is installed, just that particular file doesn't exist -- Ignore
+    locks.add(moduleName)
+    let rootResolveError = null
+    try {
+      await pundle.resolver.resolveUncached(moduleName, event.fromFile, event.givenRequest, event.manifest)
+    } catch (error) {
+      rootResolveError = error
+    } finally {
+      locks.delete(moduleName)
+    }
+    if (!rootResolveError) {
+      return
+    }
+
+    let queueValue = queue.get(moduleName)
     if (!queueValue) {
-      queue.set(event.filePath, queueValue = new Promise(function(resolve) {
+      queue.set(moduleName, queueValue = new Promise(function(resolve) {
         parameters.beforeInstall(moduleName)
         resolve(installer.install(moduleName))
       }).then(function() {
-        queue.delete(event.filePath)
-        locks.add(event.givenRequest)
-        return pundle.resolver.resolveUncached(event.filePath, event.fromFile, event.givenRequest, event.manifest)
-      }).then(function(result) {
-        locks.delete(event.givenRequest)
-        parameters.afterInstall(moduleName, null)
-        event.resolved = true
-        event.filePath = result
+        return parameters.afterInstall(moduleName, null)
       }, function(error) {
-        locks.delete(event.givenRequest)
-        parameters.afterInstall(moduleName, error)
+        return parameters.afterInstall(moduleName, error)
+      }).then(function() {
+        queue.delete(moduleName)
       }))
     }
-    return queueValue
+
+    await queueValue
+    locks.add(event.givenRequest)
+    try {
+      const result = pundle.resolver.resolveUncached(event.filePath, event.fromFile, event.givenRequest, event.manifest)
+      event.resolved = true
+      event.filePath = result
+    } finally {
+      locks.delete(event.givenRequest)
+    }
   })
 }

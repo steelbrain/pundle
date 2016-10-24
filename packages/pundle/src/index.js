@@ -163,14 +163,17 @@ class Pundle {
       }).catch(config.error)
     })
     this.config.entry.forEach(filePath => {
-      toReturn.queue = toReturn.queue.then(() => this.read(filePath)).catch(config.error)
       addToWatcher(this.path.out(filePath))
     })
     this.files.forEach((_, filePath) => {
       addToWatcher(this.path.out(filePath))
     })
     this.files.onDidAdd(filePath => {
-      addToWatcher(this.path.out(filePath))
+      toReturn.queue = toReturn.queue.then(() => {
+        if (this.files.has(filePath)) {
+          addToWatcher(this.path.out(filePath))
+        }
+      }).catch(config.error)
     })
     this.files.onDidDelete(filePath => {
       watcher.unwatch(this.path.out(filePath))
