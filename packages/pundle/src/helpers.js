@@ -1,8 +1,11 @@
 /* @flow */
 
 import PundleFS from 'pundle-fs'
-import type { Config } from './types'
+import promisify from 'sb-promisify'
+import type { ComponentAny } from 'pundle-api/types'
+import type { Config, ConfigComponent } from './types'
 
+const resolve = promisify(require('resolve'))
 export const pathIDMap = new Map()
 
 export function fillConfig(config: Object): Config {
@@ -94,4 +97,32 @@ export function fillConfig(config: Object): Config {
   }, config.replaceVariables)
 
   return toReturn
+}
+
+export async function getComponents(components: Array<ConfigComponent>): Promise<Array<{ component: ComponentAny, config: Object }>> {
+  const processed = []
+  for (const entry of (components: Array<ConfigComponent>)) {
+    let config = {}
+    let component
+    if (typeof entry === 'string') {
+      component = await resolve(entry)
+    } else if (Array.isArray(entry)) {
+      [component, config] = entry
+    }
+    if (typeof component !== 'string') {
+      throw new Error('Unable to load invalid component')
+    }
+    /* eslint-disable global-require */
+    // $FlowIgnore: I wanna use a variable in require
+    let mainModule = require(component)
+    /* eslint-disable no-underscore-dangle */
+    // Support babel's export default
+    mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
+    if (typeof mainModule !== 'object' || !mainModule) {
+      throw new Error(`Component '${component}' exported incorrectly`)
+    }
+    component = mainModule
+    processed.push({ component, config })
+  }
+  return processed
 }

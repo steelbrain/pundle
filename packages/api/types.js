@@ -42,3 +42,5 @@ export type Transformer = Component<'transformer', TransformerCallback>
 
 export type PostTransformerCallback = ((file: File, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
+
+export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer

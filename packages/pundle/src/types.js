@@ -29,4 +29,4 @@ export type Config = {
   replaceVariables: Object, // <string, Object>
 }
 
-export type Component = string | Function | [string, Object] | [Function, Object]
+export type ConfigComponent = string | [string, Object]
