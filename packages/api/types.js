@@ -19,6 +19,7 @@ export type File = {
   filePath: string,
   contents: string,
   sourceMap: ?Object,
+  publicPath: string,
 }
 
 export type LoaderCallback = ((file: File, config: Object, pundle: Object) => { contents: string, sourceMap: ?Object })
