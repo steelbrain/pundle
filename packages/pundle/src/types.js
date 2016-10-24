@@ -8,25 +8,25 @@ export type FileSystem = {
 }
 
 export type Config = {
+  debug: boolean,
   entry: Array<string>,
-  pathType: 'number' | 'filePath',
+  output: {
+    filename: string,
+    pathType: 'number' | 'filePath',
+    directory: string,
+    publicPath: ?string,
+    // ^ Optional until you use the loaders that require this. They'll throw if this is not set
+    sourceFileName: string,
+  },
+  resolve: {
+    alias: Object, // Object<key, value>
+    extensions: Array<string>,
+    packageMains: Array<string>,
+    modulesDirectories: Array<string>,
+  },
   fileSystem: FileSystem,
   rootDirectory: string,
   replaceVariables: Object, // <string, Object>
-  moduleDirectories: Array<string>,
-}
-
-export type WatcherConfig = {
-  usePolling: boolean,
-  ready: (() => any),
-  error: ((error: Error) => any),
-  generate: (() => any),
-}
-
-export type Manifest = {
-  name?: string,
-  version?: string,
-  browser?: string | Object,
 }
 
 export type Component = string | Function | [string, Object] | [Function, Object]
