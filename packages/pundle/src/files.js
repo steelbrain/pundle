@@ -1,6 +1,7 @@
 /* @flow */
 
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
+import type { File } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 export default class Files {
