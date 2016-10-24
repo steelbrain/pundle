@@ -1,7 +1,6 @@
 /* @flow */
 
 import type { Stats } from 'fs'
-import type Pundle from './'
 
 export type FileSystem = {
   stat: ((path: string) => Promise<Stats>),
@@ -24,36 +23,10 @@ export type WatcherConfig = {
   generate: (() => any),
 }
 
-export type LoaderResult = {
-  imports: Set<string>,
-  contents: string,
-  sourceMap: Object,
-}
-
-export type Loader = ((pundle: Pundle, filePath: string, source: string, sourceMap: ?Object) => LoaderResult | Promise<LoaderResult>)
-export type State = {
-  loaders: Map<string, Loader>,
-}
-
-export type File = {
-  source: string,
-  imports: Set<string>,
-  filePath: string,
-  contents: string,
-  sourceMap: Object
-}
-
 export type Manifest = {
   name?: string,
   version?: string,
   browser?: string | Object,
 }
 
-export type Plugin = string | Function | [string, Object] | [Function, Object]
-
-export type GeneratorConfig = {
-  // ... Anything else that the generate function accepts ...
-  contents: Array<File>,
-  requires: Array<string>,
-  generate: ((pundle: Pundle, config: GeneratorConfig) => any)
-}
+export type Component = string | Function | [string, Object] | [Function, Object]

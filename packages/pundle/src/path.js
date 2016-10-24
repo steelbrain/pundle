@@ -3,18 +3,14 @@
 import Path from 'path'
 import browserMap from 'pundle-browser'
 import invertKeysAndVals from 'lodash.invert'
-import { attachable } from './helpers'
-import type { State, Config } from './types'
+import type { Config } from './types'
 
 const browserMapReverse = invertKeysAndVals(browserMap)
 
-@attachable('path')
 export default class PundlePath {
-  state: State;
   config: Config;
 
-  constructor(state: State, config: Config) {
-    this.state = state
+  constructor(config: Config) {
     this.config = config
   }
   in(path: string): string {
