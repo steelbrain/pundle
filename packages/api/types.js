@@ -33,7 +33,7 @@ export type Plugin = Component<'plugin', PluginCallback>
 export type ResolverCallback = ((request: string, fromFile: string, cached: boolean, config: Object, pundle: Object) => ?string)
 export type Resolver = Component<'resolver', ResolverCallback>
 
-export type ReporterCallback = ((error: Error, config: Object, pundle: Object) => void)
+export type ReporterCallback = ((error: Error | Array<Error>, config: Object, pundle: Object) => void)
 export type Reporter = Component<'reporter', ReporterCallback>
 
 export type GeneratorCallback = ((generated: Array<File>, config: Object, pundle: Object) => ?{ contents: string, sourceMap: string })
