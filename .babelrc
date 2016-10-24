@@ -1,5 +1,4 @@
 {
   "presets": ["steelbrain"],
-  "plugins": ["transform-decorators-legacy"],
   "comments": false
 }
