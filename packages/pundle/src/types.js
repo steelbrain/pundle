@@ -10,6 +10,15 @@ export type FileSystem = {
 export type Config = {
   debug: boolean,
   entry: Array<string>,
+  fileSystem: FileSystem,
+  rootDirectory: string,
+  replaceVariables: Object, // <string, Object>
+}
+
+export type ConfigComponent = string | [string, Object]
+
+// TODO: Implement these in their plugins
+/*
   output: {
     filename: string,
     pathType: 'number' | 'filePath',
@@ -24,9 +33,4 @@ export type Config = {
     packageMains: Array<string>,
     modulesDirectories: Array<string>,
   },
-  fileSystem: FileSystem,
-  rootDirectory: string,
-  replaceVariables: Object, // <string, Object>
-}
-
-export type ConfigComponent = string | [string, Object]
+*/
