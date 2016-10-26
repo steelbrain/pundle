@@ -24,7 +24,7 @@ class Pundle {
     if (!Array.isArray(components)) {
       throw new Error('Parameter 1 to load() must be an Array')
     }
-    this.components = this.components.concat(await Helpers.getComponents(components))
+    this.components = this.components.concat(await Helpers.getComponents(components, this.config.rootDirectory))
     return this
   }
   dispose() {

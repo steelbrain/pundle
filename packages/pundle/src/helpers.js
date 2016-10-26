@@ -42,13 +42,13 @@ export function fillConfig(config: Object): Config {
   return toReturn
 }
 
-export async function getComponents(components: Array<ConfigComponent>): Promise<Array<{ component: ComponentAny, config: Object }>> {
+export async function getComponents(components: Array<ConfigComponent>, rootDirectory: string): Promise<Array<{ component: ComponentAny, config: Object }>> {
   const processed = []
   for (const entry of (components: Array<ConfigComponent>)) {
     let config = {}
     let component
     if (typeof entry === 'string') {
-      component = await resolve(entry)
+      component = await resolve(entry, { basedir: rootDirectory })
     } else if (Array.isArray(entry)) {
       [component, config] = entry
     }
