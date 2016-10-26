@@ -125,16 +125,12 @@ export default createResolver(async function(givenRequest: string, fromFile: str
     },
     moduleDirectory: config.moduleDirectory,
   })
-  if (isModuleRequested(request) && targetManifest) {
-    const relative = Path.relative(targetManifest.rootDirectory, resolved)
-    if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
-      resolved = resolveAlias(`./${relative}`, {}, targetManifest, config.packageMains)
-    }
-  } else if (!isModuleRequested(request)) {
-    const relative = Path.relative(manifest.rootDirectory, resolved)
-    if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
-      resolved = resolveAlias(`./${relative}`, {}, manifest, config.packageMains)
-    }
+
+  const manifestToUse = isModuleRequested(request) ? targetManifest : manifest
+  const relative = Path.relative(manifestToUse.rootDirectory, resolved)
+  if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
+    resolved = resolveAlias(`./${relative}`, {}, manifestToUse, config.packageMains)
+    resolved = Path.resolve(manifestToUse.rootDirectory, resolved)
   }
 
   return resolved
