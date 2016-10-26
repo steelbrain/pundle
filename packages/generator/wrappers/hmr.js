@@ -35,8 +35,8 @@ class __sb_pundle_hot {
   declines: Set<string>;
   callbacks_accept: Set<{ clause: string, callback: Function }>;
   callbacks_dispose: Set<Function>;
-  constructor() {
-    this.data = {}
+  constructor(data) {
+    this.data = data
     this.accepts = new Set()
     this.declines = new Set()
     this.callbacks_accept = new Set()
@@ -150,7 +150,7 @@ function __sb_pundle_hmr_apply(updatedModules) {
       callback(data)
     })
     module.exports = {}
-    module.hot = new __sb_pundle_hot()
+    module.hot = new __sb_pundle_hot(data)
     __sb_pundle.cache[id].callback.call(module.exports, module, module.exports)
     oldHot.callbacks_accept.forEach(function({ clause, callback }) {
       if (clause === '*' || modules.indexOf(clause) !== -1) {
@@ -166,7 +166,7 @@ function __sb_pundle_register(filePath, callback) {
   } else {
     const module: Module = {
       id: filePath,
-      hot: new __sb_pundle_hot(),
+      hot: new __sb_pundle_hot({}),
       filePath,
       callback,
       exports: __SB_PUNDLE_DEFAULT_EXPORT,

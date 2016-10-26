@@ -1,3 +1,7 @@
+#### 1.1.8
+
+- Fix HMR to be more spec compliant
+
 #### 1.1.7
 
 - Fix an aggressiveness bug in npm installer (#69)
