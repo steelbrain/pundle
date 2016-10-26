@@ -20,6 +20,7 @@ export default {
         if (error) {
           reject(error)
         } else {
+          // NOTE: Strip BOM
           if (contents.charCodeAt(0) === 0xFEFF) {
             contents = contents.slice(1)
           }

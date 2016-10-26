@@ -1,17 +1,146 @@
 /* @flow */
 
+import Path from 'path'
+import pundleBrowser from 'pundle-browser'
 import { promisify } from 'sb-promisify'
 import { createResolver } from 'pundle-api'
+import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly } from './helpers'
 
 const resolve = promisify(require('resolve'))
 
-/*
-  NOTE for browser field implementation
-  Use the manifest of the requester to resolve outgoing references
-  Use the manifest of the requestee to resolve incoming references
-*/
+// Spec:
+// Browser field first
+// Config aliases later
+function resolveAlias(request: string, alias: Object, manifest: Object, packageMains: Array<string>): string {
+  let chunks
+  const isDirectory = request.slice(-1) === '/'
+
+  if (isModuleRequested(request)) {
+    chunks = request.split(MODULE_SEPARATOR_REGEX)
+  } else {
+    chunks = [request]
+  }
+  let moduleName = chunks[0]
+
+  for (let i = 0, length = packageMains.length; i < length; i++) {
+    const packageMain = packageMains[i]
+    const value = typeof manifest[packageMain] === 'object' ? manifest[packageMain][moduleName] : undefined
+    if (typeof value === 'boolean' && value === false) {
+      if (isModuleOnly(request)) {
+        chunks.length = 1
+        moduleName = pundleBrowser.empty
+        break
+      }
+    } else if (typeof value === 'string') {
+      moduleName = value
+      break
+    }
+    const manifestInfo = manifest[packageMain]
+    // Ignore string type packageMains because this is outgoing resolution
+    if (manifestInfo && typeof manifestInfo === 'object') {
+      if (manifestInfo[moduleName]) {
+        moduleName = manifestInfo[moduleName]
+        break
+      }
+    }
+  }
+
+  const aliasValue = alias[moduleName]
+  if (typeof aliasValue === 'boolean' && aliasValue === false) {
+    chunks.length = 1
+    moduleName = pundleBrowser.empty
+  } else if (typeof aliasValue === 'string') {
+    moduleName = aliasValue
+  }
+  chunks[0] = moduleName
+
+  let resolved = chunks.join('/')
+  if (isDirectory) {
+    resolved += '/'
+  }
+  return resolved
+}
+
+// Spec:
+//
+// Before resolution:
+// If module is core, return it's path from pundle-browser
+// If module is whole, resolve it with source browser field
+// If module is whole, resolve it with config aliases
+//
+// During resolution:
+// Use string browser field for moduly only requests (aka not deep)
+//
+// After resolution:
+// If module was whole, resolve it with target browser field
+// If module was relative, resolve it with source browser field
 
 // eslint-disable-next-line no-unused-vars
-export default createResolver(async function(request: string, fromFile: string, config: Object, pundle: Object) {
+export default createResolver(async function(givenRequest: string, fromFile: string, cached: boolean, config: Object, pundle: Object) {
+  let request = givenRequest
+  const fromDirectory = Path.dirname(fromFile)
+  const manifest = await getManifest(fromDirectory, config, cached, pundle.config)
+  const targetManifest = {}
 
-}, {})
+  if (isModuleRequested(request)) {
+    request = resolveAlias(request, config.alias, manifest, config.packageMains)
+  }
+
+  // NOTE: Empty is our special property in pundle-browser
+  if (isModuleOnly(request) && request !== 'empty' && pundleBrowser[request]) {
+    return pundleBrowser[request]
+  }
+  let resolved = await resolve(request, {
+    basedir: fromDirectory,
+    extensions: config.extensions,
+    readFile(path, callback) {
+      pundle.config.fileSystem.readFile(path).then(function(result) {
+        callback(null, result)
+      }, function(error) {
+        callback(error, null)
+      })
+    },
+    isFile(path, callback) {
+      pundle.config.fileSystem.stat(path).then(function(stats) {
+        callback(null, stats.isFile())
+      }, function() {
+        callback(null, false)
+      })
+    },
+    packageFilter(packageManifest, manifestPath) {
+      Object.assign(packageManifest, manifest, {
+        rootDirectory: Path.dirname(manifestPath),
+      })
+      if (isModuleOnly(request)) {
+        for (let i = 0, length = config.packageMains.length; i < length; i++) {
+          const packageMain = config.packageMains[i]
+          const value = packageManifest[packageMain]
+          if (value && typeof value === 'string') {
+            packageManifest.main = value
+            break
+          }
+        }
+      }
+      return packageManifest
+    },
+    moduleDirectory: config.moduleDirectory,
+  })
+  if (isModuleRequested(request) && targetManifest) {
+    const relative = Path.relative(targetManifest.rootDirectory, resolved)
+    if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
+      resolved = resolveAlias(`./${relative}`, {}, targetManifest, config.packageMains)
+    }
+  } else if (!isModuleRequested(request)) {
+    const relative = Path.relative(manifest.rootDirectory, resolved)
+    if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
+      resolved = resolveAlias(`./${relative}`, {}, manifest, config.packageMains)
+    }
+  }
+
+  return resolved
+}, {
+  alias: {},
+  extensions: ['', '.js', '.json'],
+  packageMains: ['browser', 'browserify', 'webpack', 'main'],
+  modulesDirectories: ['node_modules'],
+})
