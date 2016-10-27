@@ -143,16 +143,15 @@ function __sb_pundle_hmr_apply(updatedModules) {
   const modules = __sb_pundle_hmr_get_update_order(updatedModules)
   for (let i = 0, length = modules.length; i < length; ++i) {
     const id = modules[i]
-    const module: Module = __sb_pundle.cache[id]
-    const data = {}
-    const oldHot = module.hot
-    oldHot.callbacks_dispose.forEach(function(callback) {
-      callback(data)
+    const oldModule: Module = __sb_pundle.cache[id]
+    const newModule = Object.assign({}, oldModule, {
+      hot: new __sb_pundle_hot({}),
     })
-    module.exports = {}
-    module.hot = new __sb_pundle_hot(data)
-    __sb_pundle.cache[id].callback.call(module.exports, module, module.exports)
-    oldHot.callbacks_accept.forEach(function({ clause, callback }) {
+    oldModule.hot.callbacks_dispose.forEach(function(callback) {
+      callback(newModule.hot.data)
+    })
+    __sb_pundle.cache[id].callback.call(newModule.exports, newModule, newModule.exports)
+    oldModule.hot.callbacks_accept.forEach(function({ clause, callback }) {
       if (clause === '*' || modules.indexOf(clause) !== -1) {
         callback()
       }

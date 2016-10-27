@@ -1,3 +1,7 @@
+#### 1.1.9
+
+- More compatibility fixes for HMR
+
 #### 1.1.8
 
 - Fix HMR to be more spec compliant
