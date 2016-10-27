@@ -13,7 +13,7 @@ import Installer from './installer'
 // Try spawning npm and await on it, pass it's stdout/stderr to afterInstall callback
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
-export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string, cached: boolean) {
+export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string) {
   if (givenRequest.slice(0, 1) === '.') {
     return null
   }
@@ -43,4 +43,4 @@ export default createResolver(async function(config: Object, givenRequest: strin
   beforeInstall() { /* No Op */ },
   afterInstall() { /* No Op */ },
   exclude: [/(node_modules|bower_components)/],
-})
+}, false)

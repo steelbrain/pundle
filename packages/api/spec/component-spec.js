@@ -1,5 +1,6 @@
 /* @flow */
 
+import { it } from 'jasmine-fix'
 import * as Components from '../src/components'
 
 describe('Components', function() {
@@ -76,8 +77,8 @@ describe('Components', function() {
     })
   })
   describe('createResolver', function() {
-    function makeRequest(a: any, b: any) {
-      return Components.createResolver(a, b)
+    function makeRequest(a: any, b: any, c: any): any {
+      return Components.createResolver(a, b, c)
     }
 
     it('throws an error if parameter 1 is not a function', function() {
@@ -109,6 +110,44 @@ describe('Components', function() {
       expect(value.$type).toBe('resolver')
       expect(value.callback).toBe(callback)
       expect(value.defaultConfig).toBe(defaultConfig)
+    })
+    it('doesnt allow two concurrent executions when you specify', async function() {
+      let timesCalled = 0
+
+      const resolver = makeRequest(async function() {
+        timesCalled++
+        await new Promise(resolve => setTimeout(resolve, 10))
+        return 'five'
+      }, {}, false)
+
+      let value1 = resolver.callback()
+      let value2 = resolver.callback()
+
+      value1 = await value1
+      value2 = await value2
+
+      expect(value1).toBe('five')
+      expect(value2).toBe(null)
+      expect(timesCalled).toBe(1)
+    })
+    it('does allow two concurrent executions when you specify (or by default)', async function() {
+      let timesCalled = 0
+
+      const resolver = makeRequest(async function() {
+        timesCalled++
+        await new Promise(resolve => setTimeout(resolve, 10))
+        return 'five'
+      }, {}, true)
+
+      let value1 = resolver.callback()
+      let value2 = resolver.callback()
+
+      value1 = await value1
+      value2 = await value2
+
+      expect(value1).toBe('five')
+      expect(value2).toBe('five')
+      expect(timesCalled).toBe(2)
     })
   })
   describe('createReporter', function() {

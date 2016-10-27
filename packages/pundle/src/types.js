@@ -1,7 +1,7 @@
 /* @flow */
 
 import type { Stats } from 'fs'
-import type { Component as BaseComponent } from 'pundle-api/types'
+import type { ComponentAny } from 'pundle-api/types'
 
 export type FileSystem = {
   stat: ((path: string) => Promise<Stats>),
@@ -16,7 +16,7 @@ export type Config = {
   replaceVariables: Object, // <string, Object>
 }
 
-export type Component<T1, T2> = BaseComponent<T1, T2> & {
+export type Component = ComponentAny & {
   pundleConfig: Object,
 }
 export type ConfigComponent = string | [string, Object]

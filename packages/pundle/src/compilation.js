@@ -18,9 +18,12 @@ export default class Compilation {
 
     this.subscriptions.add(this.emitter)
   }
-  addComponent(component: Component<string, Function>, config: Object): void {
+  addComponent(component: Component, config: Object): void {
     const callback = (...parameters: Array<any>) =>
-      component.callback.apply(this, [Object.assign({}, component.defaultConfig, config)].concat(parameters))
+      component.callback.apply(this, [
+        // $FlowIgnore: Flow doesn't like Object.assign with unions
+        Object.assign({}, component.defaultConfig, config),
+      ].concat(parameters))
     callback.config = config
     callback.component = component
 
@@ -31,7 +34,7 @@ export default class Compilation {
       this.emitter.off(component.$type, callback)
     })
   }
-  deleteComponent(component: Component<string, Function>, config: Object): void {
+  deleteComponent(component: Component, config: Object): void {
     for (const callback of this.callbacks) {
       // $FlowIgnore: These are our magical properties
       if (callback.config === config && callback.component === component) {

@@ -6,6 +6,6 @@ export {
   Emitter,
 }
 
-export * from './helpers'
+export { version } from './helpers'
 export * from './rules'
 export * from './components'

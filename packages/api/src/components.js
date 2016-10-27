@@ -1,7 +1,7 @@
 /* @flow */
 
 import invariant from 'assert'
-import { version } from './helpers'
+import { version, makePromisedLock } from './helpers'
 import * as Types from '../types'
 
 function create<T1, T2>(callback: T2, defaultConfig: Object, type: T1): Types.Component<T1, T2> {
@@ -24,7 +24,18 @@ export function createPlugin(callback: Types.PluginCallback, defaultConfig: Obje
   return create(callback, defaultConfig, 'plugin')
 }
 
-export function createResolver(callback: Types.ResolverCallback, defaultConfig: Object = {}): Types.Resolver {
+// NOTE:
+// The reason why we have the option allowRecursive is to allow external resolvers to keep their logic simple
+// For example, default resolver would allow recusion and npm-installer wouldn't. NPM installer would try to
+// resolve different types of requests when determining wether it should or should not install the requested
+// dependency (while not processing them itself), such requests are to the default module resolver.
+// Doing this in the npm installer requires rewriting and wrapping it all in a try/finally block and making it
+// unnecessarily complex. Keeping the logic here allows reuse.
+export function createResolver(givenCallback: Types.ResolverCallback, defaultConfig: Object = {}, allowRecursive: boolean = true): Types.Resolver {
+  let callback = givenCallback
+  if (!allowRecursive) {
+    callback = makePromisedLock(callback)
+  }
   return create(callback, defaultConfig, 'resolver')
 }
 
