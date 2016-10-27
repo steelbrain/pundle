@@ -3,8 +3,8 @@
 import { createTransformer, shouldProcess } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 
-export default createTransformer(async function(file: File, config: Object, pundle: Object) {
-  if (!shouldProcess(pundle.config.rootDirectory, file.filePath, config)) {
+export default createTransformer(async function(config: Object, file: File) {
+  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
     return null
   }
 

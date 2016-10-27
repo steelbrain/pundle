@@ -6,7 +6,6 @@ import type { ComponentAny } from 'pundle-api/types'
 import type { Config, ConfigComponent } from './types'
 
 const resolve = promisify(require('resolve'))
-export const pathIDMap = new Map()
 
 export function fillConfig(config: Object): Config {
   const toReturn = {}

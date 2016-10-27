@@ -76,15 +76,15 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
 // If module was relative, resolve it with source browser field
 
 // eslint-disable-next-line no-unused-vars
-export default createResolver(async function(givenRequest: string, fromFile: ?string, cached: boolean, config: Object, pundle: Object) {
+export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string, cached: boolean) {
   let request = givenRequest
   let fromDirectory = ''
-  const manifest = { rootDirectory: pundle.config.rootDirectory }
+  const manifest = { rootDirectory: this.config.rootDirectory }
   const targetManifest = {}
 
   if (fromFile) {
     fromDirectory = Path.dirname(fromFile)
-    Object.assign(manifest, await getManifest(fromDirectory, config, cached, pundle.config))
+    Object.assign(manifest, await getManifest(fromDirectory, config, cached, this.config))
   }
 
   if (isModuleRequested(request)) {
@@ -96,17 +96,17 @@ export default createResolver(async function(givenRequest: string, fromFile: ?st
     return pundleBrowser[request]
   }
   let resolved = await resolve(request, {
-    basedir: fromDirectory || pundle.config.rootDirectory,
+    basedir: fromDirectory || this.config.rootDirectory,
     extensions: config.extensions,
-    readFile(path, callback) {
-      pundle.config.fileSystem.readFile(path).then(function(result) {
+    readFile: (path, callback) => {
+      this.config.fileSystem.readFile(path).then(function(result) {
         callback(null, result)
       }, function(error) {
         callback(error, null)
       })
     },
-    isFile(path, callback) {
-      pundle.config.fileSystem.stat(path).then(function(stats) {
+    isFile: (path, callback) => {
+      this.config.fileSystem.stat(path).then(function(stats) {
         callback(null, stats.isFile())
       }, function() {
         callback(null, false)

@@ -13,14 +13,14 @@ import Installer from './installer'
 // Try spawning npm and await on it, pass it's stdout/stderr to afterInstall callback
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
-export default createResolver(async function(givenRequest: string, fromFile: ?string, cached: boolean, config: Object, pundle: Object) {
+export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string, cached: boolean) {
   if (givenRequest.slice(0, 1) === '.') {
     return null
   }
   try {
     return await this.resolve(givenRequest, fromFile)
   } catch (_) { /* No Op */ }
-  if (!shouldProcess(pundle.config.rootDirectory, fromFile, config)) {
+  if (!shouldProcess(this.config.rootDirectory, fromFile, config)) {
     return null
   }
 
@@ -32,7 +32,7 @@ export default createResolver(async function(givenRequest: string, fromFile: ?st
   config.beforeInstall(moduleName)
   let error = null
   try {
-    await Installer.install(moduleName, config.save, pundle.config.rootDirectory)
+    await Installer.install(moduleName, config.save, this.config.rootDirectory)
   } catch (_) {
     error = _
   }

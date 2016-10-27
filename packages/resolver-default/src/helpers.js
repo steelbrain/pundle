@@ -40,7 +40,7 @@ const findManifestCached = memoize(async function (givenFileDirectory: string, c
 
   const manifestPath = Path.join(fileDirectory, 'package.json')
   try {
-    await pundleConfig.fs.stat(manifestPath)
+    await pundleConfig.fileSystem.stat(manifestPath)
     return manifestPath
   } catch (_) { /* Ignore if not found */ }
 
