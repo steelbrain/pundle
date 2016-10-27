@@ -1,5 +1,7 @@
 /* @flow */
 
+import Path from 'path'
+import unique from 'lodash.uniq'
 import { Disposable } from 'sb-event-kit'
 import type { File, ComponentAny } from 'pundle-api/types'
 
@@ -29,12 +31,20 @@ export default class Compilation {
     throw error
   }
   // Order of execution:
-  // - Loader (some)
   // - Transformer (all)
+  // - Loader (some)
   // - Post-Transformer (all)
   // - Plugin (all)
+  // Notes:
+  // - Do NOT double-resolve if already an absolute path
+  // - We are executing Transformers before Loaders because imagine ES6 modules
+  //   being transpiled with babel BEFORE giving to loader-js
   async processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
-    const resolved = await this.resolve(request, from, cached)
+    let resolved = request
+    if (!Path.isAbsolute(resolved)) {
+      resolved = await this.resolve(request, from, cached)
+    }
+
     const source = await this.config.fileSystem.readFile(resolved)
     const file = {
       source,
@@ -45,18 +55,18 @@ export default class Compilation {
       publicPath: request,
     }
 
-    // Loader
-    // NOTE: Previous source map is dummy, no need to perform merge
-    for (const component of filterComponents(this.components, 'loader')) {
-      const loaderResult = await invokeComponent(this, component, Object.assign({}, file))
-      Object.assign(file, loaderResult)
-      break
-    }
-
     // Transformer
     for (const component of filterComponents(this.components, 'transformer')) {
       const transformerResult = await invokeComponent(this, component, Object.assign({}, file))
       mergeResult(file, transformerResult)
+    }
+
+    // Loader
+    for (const component of filterComponents(this.components, 'loader')) {
+      const loaderResult = await invokeComponent(this, component, Object.assign({}, file))
+      mergeResult(file, loaderResult)
+      file.imports = new Set(unique(Array.from(file.imports).concat(loaderResult.imports)))
+      break
     }
 
     // Post-Transformer
