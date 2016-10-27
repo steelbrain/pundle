@@ -1,5 +1,6 @@
 /* @flow */
 
+import sourceMap from 'source-map'
 import type { File, ComponentAny } from 'pundle-api/types'
 import type Compilation from './'
 import type { ComponentEntry } from './types'
@@ -20,6 +21,45 @@ export function invokeComponent(compilation: Compilation, component: { component
   ].concat(parameters))
 }
 
+export function mergeSourceMap(inputMap: Object, map: Object): Object {
+  const inputMapConsumer = new sourceMap.SourceMapConsumer(inputMap)
+  const outputMapConsumer = new sourceMap.SourceMapConsumer(map)
+
+  const mergedGenerator = new sourceMap.SourceMapGenerator({
+    file: inputMapConsumer.file,
+    sourceRoot: inputMapConsumer.sourceRoot,
+    skipValidation: true,
+  })
+
+  // This assumes the output map always has a single source, since Babel always compiles a single source file to a
+  // single output file.
+  const source = outputMapConsumer.sources[0]
+
+  inputMapConsumer.eachMapping(function(mapping) {
+    const generatedPosition = outputMapConsumer.generatedPositionFor({
+      line: mapping.generatedLine,
+      column: mapping.generatedColumn,
+      source,
+    })
+    if (typeof generatedPosition.column !== 'undefined') {
+      mergedGenerator.addMapping({
+        source: mapping.source,
+
+        original: !mapping.source ? null : {
+          line: mapping.originalLine,
+          column: mapping.originalColumn,
+        },
+
+        generated: generatedPosition,
+      })
+    }
+  })
+
+  const mergedMap = mergedGenerator.toJSON()
+  inputMap.mappings = mergedMap.mappings
+  return inputMap
+}
+
 // Notes:
 // - If we have sourceMap of previous steps but not of latest one, nuke previous sourceMap, it's invalid now
 export function mergeResult(file: File, result: ?{ contents: string, sourceMap: ?Object }): void {
@@ -28,5 +68,8 @@ export function mergeResult(file: File, result: ?{ contents: string, sourceMap: 
   }
   if (file.sourceMap && !result.sourceMap) {
     file.sourceMap = null
+  } else if (file.sourceMap && result.sourceMap) {
+    file.sourceMap = mergeSourceMap(file.sourceMap, result.sourceMap)
   }
+  file.contents = result.contents
 }

@@ -30,6 +30,7 @@
     "pundle-fs": "^1.1.3",
     "resolve": "^1.1.7",
     "sb-event-kit": "^2.0.0",
-    "sb-promisify": "^2.0.1"
+    "sb-promisify": "^2.0.1",
+    "source-map": "^0.5.6"
   }
 }
