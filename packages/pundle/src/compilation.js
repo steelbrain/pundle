@@ -18,6 +18,16 @@ export default class Compilation {
 
     this.subscriptions.add(this.emitter)
   }
+  async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
+    const resolved = await this.emitter.emitSome('resolver', request, from, cached)
+    if (!resolved) {
+      const error = new Error(`Cannot find module '${request}'${from ? ` from '${from}'` : ''}`)
+      // $FlowIgnore: This is a custom property
+      error.code = 'MODULE_NOT_FOUND'
+      throw error
+    }
+    return resolved
+  }
   addComponent(component: Component, config: Object): void {
     const callback = (...parameters: Array<any>) =>
       component.callback.apply(this, [

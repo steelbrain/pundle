@@ -2,11 +2,8 @@
 
 import Path from 'path'
 import pundleBrowser from 'pundle-browser'
-import { promisify } from 'sb-promisify'
 import { createResolver } from 'pundle-api'
-import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly } from './helpers'
-
-const resolve = promisify(require('resolve'))
+import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly, promisedResolve } from './helpers'
 
 // Spec:
 // Browser field first
@@ -95,7 +92,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   if (isModuleOnly(request) && request !== 'empty' && pundleBrowser[request]) {
     return pundleBrowser[request]
   }
-  let resolved = await resolve(request, {
+  let resolved = await promisedResolve(request, {
     basedir: fromDirectory || this.config.rootDirectory,
     extensions: config.extensions,
     readFile: (path, callback) => {
@@ -130,6 +127,9 @@ export default createResolver(async function(config: Object, givenRequest: strin
     },
     moduleDirectory: config.moduleDirectory,
   })
+  if (!resolved) {
+    return resolved
+  }
 
   const manifestToUse = isModuleRequested(request) ? targetManifest : manifest
   const relative = Path.relative(manifestToUse.rootDirectory, resolved)

@@ -21,8 +21,7 @@
     "pundle-api": "^1.1.6",
     "pundle-browser": "^1.1.3",
     "resolve": "^1.1.7",
-    "sb-memoize": "^2.1.0",
-    "sb-promisify": "^2.0.1"
+    "sb-memoize": "^2.1.0"
   },
   "devDependencies": {}
 }

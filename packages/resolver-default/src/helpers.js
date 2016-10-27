@@ -1,9 +1,19 @@
 /* @flow */
 
 import Path from 'path'
+import resolve from 'resolve'
 import memoize from 'sb-memoize'
 
 export const MODULE_SEPARATOR_REGEX = /\/|\\/
+
+export function promisedResolve(request: string, options: Object): Promise<?string> {
+  return new Promise(function(resolvePromise) {
+    resolve(request, options, function(error, path) {
+      resolvePromise(path || null)
+    })
+  })
+}
+
 export function isModuleRequested(request: string): boolean {
   return !(Path.isAbsolute(request) || request.substr(0, 1) === '.')
 }
