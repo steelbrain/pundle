@@ -13,7 +13,7 @@ import Installer from './installer'
 // Try spawning npm and await on it, pass it's stdout/stderr to afterInstall callback
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
-export default createResolver(async function(givenRequest: string, fromFile: string, cached: boolean, config: Object, pundle: Object) {
+export default createResolver(async function(givenRequest: string, fromFile: ?string, cached: boolean, config: Object, pundle: Object) {
   if (givenRequest.slice(0, 1) === '.') {
     return null
   }
@@ -37,7 +37,7 @@ export default createResolver(async function(givenRequest: string, fromFile: str
     error = _
   }
   config.afterInstall(moduleName, error)
-  return await this.resolve(givenRequest, fromFile)
+  return await this.resolve(givenRequest, fromFile, false)
 }, {
   save: false,
   beforeInstall() { /* No Op */ },

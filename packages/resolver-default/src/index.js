@@ -76,11 +76,16 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
 // If module was relative, resolve it with source browser field
 
 // eslint-disable-next-line no-unused-vars
-export default createResolver(async function(givenRequest: string, fromFile: string, cached: boolean, config: Object, pundle: Object) {
+export default createResolver(async function(givenRequest: string, fromFile: ?string, cached: boolean, config: Object, pundle: Object) {
   let request = givenRequest
-  const fromDirectory = Path.dirname(fromFile)
-  const manifest = await getManifest(fromDirectory, config, cached, pundle.config)
+  let fromDirectory = ''
+  const manifest = { rootDirectory: pundle.config.rootDirectory }
   const targetManifest = {}
+
+  if (fromFile) {
+    fromDirectory = Path.dirname(fromFile)
+    Object.assign(manifest, await getManifest(fromDirectory, config, cached, pundle.config))
+  }
 
   if (isModuleRequested(request)) {
     request = resolveAlias(request, config.alias, manifest, config.packageMains)
@@ -91,7 +96,7 @@ export default createResolver(async function(givenRequest: string, fromFile: str
     return pundleBrowser[request]
   }
   let resolved = await resolve(request, {
-    basedir: fromDirectory,
+    basedir: fromDirectory || pundle.config.rootDirectory,
     extensions: config.extensions,
     readFile(path, callback) {
       pundle.config.fileSystem.readFile(path).then(function(result) {

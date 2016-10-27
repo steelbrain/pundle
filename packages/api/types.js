@@ -30,7 +30,7 @@ export type Loader = Component<'loader', LoaderCallback>
 export type PluginCallback = ((file: File, config: Object, pundle: Object) => void)
 export type Plugin = Component<'plugin', PluginCallback>
 
-export type ResolverCallback = ((request: string, fromFile: string, cached: boolean, config: Object, pundle: Object) => ?string)
+export type ResolverCallback = ((request: string, fromFile: ?string, cached: boolean, config: Object, pundle: Object) => ?string)
 export type Resolver = Component<'resolver', ResolverCallback>
 
 export type ReporterCallback = ((error: Error | Array<Error>, config: Object, pundle: Object) => void)

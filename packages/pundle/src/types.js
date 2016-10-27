@@ -17,8 +17,8 @@ export type Config = {
 
 export type ConfigComponent = string | [string, Object]
 
-// TODO: Implement these in their plugins
 /*
+// TODO: Implement this in pundle-generator-default
   output: {
     filename: string,
     pathType: 'number' | 'filePath',
@@ -26,11 +26,5 @@ export type ConfigComponent = string | [string, Object]
     publicPath: ?string,
     // ^ Optional until you use the loaders that require this. They'll throw if this is not set
     sourceFileName: string,
-  },
-  resolve: {
-    alias: Object, // Object<key, value>
-    extensions: Array<string>,
-    packageMains: Array<string>,
-    modulesDirectories: Array<string>,
-  },
+  }
 */
