@@ -29,6 +29,7 @@ export default createTransformer(async function(file: File, config: Object, pund
 
   return { contents, sourceMap }
 }, {
+  config: {},
   include: [],
   exclude: [/(node_modules|bower_components)/],
 })
