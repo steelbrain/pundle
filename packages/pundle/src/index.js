@@ -60,8 +60,11 @@ class Pundle {
     }
     return this
   }
-  async processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
+  processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
     return this.compilation.processFile(request, from, cached)
+  }
+  resolve(request: string, from: ?string, cached: boolean = true): Promise<string> {
+    return this.compilation.resolve(request, from, cached)
   }
   dispose() {
     this.subscriptions.dispose()

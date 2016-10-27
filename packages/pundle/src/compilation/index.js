@@ -1,7 +1,7 @@
 /* @flow */
 
 import Path from 'path'
-import unique from 'lodash.uniq'
+import unique from 'lodash.uniqby'
 import { Disposable } from 'sb-event-kit'
 import type { File, ComponentAny } from 'pundle-api/types'
 
@@ -9,13 +9,17 @@ import { filterComponents, invokeComponent, mergeResult } from './helpers'
 import type { ComponentEntry } from './types'
 import type { Config } from '../types'
 
+let uniqueID = 0
+
 export default class Compilation {
   config: Config;
   components: Set<ComponentEntry>;
+  uniquePaths: Map<string, string>;
 
   constructor(config: Config) {
     this.config = config
     this.components = new Set()
+    this.uniquePaths = new Map()
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     for (const component of filterComponents(this.components, 'resolver')) {
@@ -65,7 +69,11 @@ export default class Compilation {
     for (const component of filterComponents(this.components, 'loader')) {
       const loaderResult = await invokeComponent(this, component, Object.assign({}, file))
       mergeResult(file, loaderResult)
-      file.imports = new Set(unique(Array.from(file.imports).concat(loaderResult.imports)))
+      const mergedImports = Array.from(file.imports).concat(Array.from(loaderResult.imports))
+      const mergedUniqueImports = unique(mergedImports, function({ value, id }) {
+        return `${value}:${id}`
+      })
+      file.imports = new Set(mergedUniqueImports)
       break
     }
 
@@ -81,6 +89,15 @@ export default class Compilation {
     }
 
     return file
+  }
+  getUniquePath(from: string, request: string): string {
+    let value = this.uniquePaths.get(`${from}:${request}`)
+    if (value) {
+      return value
+    }
+    value = (++uniqueID).toString()
+    this.uniquePaths.set(`${from}:${request}`, value)
+    return value
   }
   addComponent(component: ComponentAny, config: Object): void {
     const entry = { component, config }

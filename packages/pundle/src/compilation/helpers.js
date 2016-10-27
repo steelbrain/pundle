@@ -69,6 +69,8 @@ export function mergeResult(file: File, result: ?{ contents: string, sourceMap: 
     file.sourceMap = null
   } else if (file.sourceMap && result.sourceMap) {
     file.sourceMap = mergeSourceMap(file.sourceMap, result.sourceMap)
+  } else if (!file.sourceMap && result.sourceMap) {
+    file.sourceMap = result.sourceMap
   }
   file.contents = result.contents
 }

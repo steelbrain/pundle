@@ -109,7 +109,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
       })
     },
     packageFilter(packageManifest, manifestPath) {
-      Object.assign(packageManifest, manifest, {
+      Object.assign(targetManifest, packageManifest, {
         rootDirectory: Path.dirname(manifestPath),
       })
       if (isModuleOnly(request)) {

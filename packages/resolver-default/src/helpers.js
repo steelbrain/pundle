@@ -74,7 +74,7 @@ export function findManifest(fileDirectory: string, config: Object, cached: bool
 // Keep a rootDirectory in manifest
 // Return empty object if manifest is not found, parsed manifest contents otherwise
 const getManifestCached = memoize(async function(fileDirectory: string, config: Object, cached: boolean, pundleConfig: Object): Promise<Object> {
-  let manifest = { rootDirectory: null }
+  let manifest = {}
   const manifestPath = await findManifest(fileDirectory, config, cached, pundleConfig)
   if (manifestPath) {
     manifest = JSON.parse(await pundleConfig.fileSystem.readFile(manifestPath))

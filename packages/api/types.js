@@ -15,7 +15,7 @@ export type Component<T1, T2> = {
 
 export type File = {
   source: string,
-  imports: Set<string>,
+  imports: Set<{ value: string, id: string }>,
   filePath: string,
   // ^ The abs path on file system
   contents: string,
@@ -24,7 +24,7 @@ export type File = {
   // ^ Not the path on file system, but the path to show in frontend, like $root/some.js
 }
 
-export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<string>, contents: string, sourceMap: ?Object }>)
+export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<{ value: string, id: string }>, contents: string, sourceMap: ?Object }>)
 export type Loader = Component<'loader', LoaderCallback>
 
 export type PluginCallback = ((config: Object, file: File) => Promise<void>)

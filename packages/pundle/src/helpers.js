@@ -35,7 +35,7 @@ export function fillConfig(config: Object): Config {
     throw new Error('config.replaceVariables must be an Object')
   }
   toReturn.replaceVariables = Object.assign({}, {
-    'process.env.NODE_ENV': toReturn.debug ? 'development' : 'production',
+    'process.env.NODE_ENV': toReturn.debug ? '"development"' : '"production"',
   }, config.replaceVariables)
 
   return toReturn
