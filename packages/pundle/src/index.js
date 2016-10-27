@@ -4,21 +4,25 @@ import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import type { ComponentAny } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
+import Compilation from './compilation'
 import type { Config, ConfigComponent } from './types'
 
 class Pundle {
   config: Config;
   emitter: Emitter;
   components: Array<{ component: ComponentAny, config: Object }>
+  compilation: Compilation;
   subscriptions: CompositeDisposable;
 
   constructor(config: Object) {
     this.config = Helpers.fillConfig(config)
     this.emitter = new Emitter()
     this.components = []
+    this.compilation = new Compilation(this.config)
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
+    this.subscriptions.add(this.compilation)
   }
   async load(components: Array<ConfigComponent>): Promise<this> {
     if (!Array.isArray(components)) {
