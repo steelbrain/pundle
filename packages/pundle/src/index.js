@@ -45,7 +45,7 @@ class Pundle {
         || !entry.name || typeof entry.name !== 'string') {
         throw new Error('Invalid preset entry given to loadPreset()')
       }
-      const component = typeof entry.component === 'string' ? Helpers.resolveComponent(entry.component, this.config.rootDirectory) : entry.component
+      const component = typeof entry.component === 'string' ? Helpers.getComponent(entry.component, this.config.rootDirectory) : entry.component
       const componentConfig = Object.assign({}, entry.config)
       if (config[entry.name]) {
         Object.assign(componentConfig, config[entry.name])

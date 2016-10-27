@@ -1,4 +1,4 @@
-# Pundle-Loader-JS
+# Pundle Loader JS
 
 ### License
 

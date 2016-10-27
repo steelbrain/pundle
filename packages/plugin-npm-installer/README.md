@@ -1,4 +1,4 @@
-# Pundle-NPM-Installer
+# Pundle NPM Installer
 
 Automatically install npm dependencies for Pundle
 

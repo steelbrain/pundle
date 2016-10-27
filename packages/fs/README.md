@@ -1,4 +1,4 @@
-# Pundle-FS
+# Pundle FS
 
 FS module for Pundle. This is the module that is used as the FileSystem when none is provided by the user.
 

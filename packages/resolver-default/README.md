@@ -1,4 +1,4 @@
-# Pundle-Resolver-Default
+# Pundle Resolver Default
 
 ### License
 

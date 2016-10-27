@@ -41,8 +41,18 @@ export function fillConfig(config: Object): Config {
   return toReturn
 }
 
-export function resolveComponent(entry: string, rootDirectory: string) {
-  return resolve(entry, { basedir: rootDirectory })
+export function getComponent(entry: string, rootDirectory: string) {
+  const resolved = resolve(entry, { basedir: rootDirectory })
+  /* eslint-disable global-require */
+  // $FlowIgnore: We *have* to do this, sorry
+  const component = require(resolved)
+  /* eslint-enable global-require */
+  // eslint-disable-next-line no-underscore-dangle
+  const mainModule = component && component.__esModule ? component.default : component
+  if (typeof mainModule !== 'object' || !mainModule) {
+    throw new Error(`Component '${component}' exported incorrectly`)
+  }
+  return mainModule
 }
 
 export async function getComponents(components: Array<ComponentConfig>, rootDirectory: string): Promise<Array<{ component: ComponentAny, config: Object }>> {
@@ -50,25 +60,13 @@ export async function getComponents(components: Array<ComponentConfig>, rootDire
   for (const entry of (components: Array<ComponentConfig>)) {
     let config = {}
     let component
-    if (typeof entry === 'string') {
-      component = await resolveComponent(entry, rootDirectory)
-    } else if (Array.isArray(entry)) {
+    if (Array.isArray(entry)) {
       [component, config] = entry
+    } else {
+      component = entry
     }
-    if (typeof component !== 'string') {
-      throw new Error('Unable to load invalid component')
-    }
-    /* eslint-disable global-require */
-    // $FlowIgnore: I wanna use a variable in require
-    let mainModule = require(component)
-    /* eslint-disable no-underscore-dangle */
-    // Support babel's export default
-    mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
-    if (typeof mainModule !== 'object' || !mainModule) {
-      throw new Error(`Component '${component}' exported incorrectly`)
-    }
-    component = mainModule
-    processed.push({ component, config })
+    const mainModule = getComponent(component, rootDirectory)
+    processed.push({ component: mainModule, config })
   }
   return processed
 }

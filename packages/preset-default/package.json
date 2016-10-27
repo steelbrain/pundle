@@ -1,0 +1,26 @@
+{
+  "name": "pundle-preset-default",
+  "version": "1.1.6",
+  "description": "Default preset for Pundle",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/motion/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/motion/pundle/issues"
+  },
+  "homepage": "https://github.com/motion/pundle#readme",
+  "dependencies": {
+    "pundle-loader-js": "^1.1.6",
+    "pundle-loader-json": "^1.1.6",
+    "pundle-resolver-default": "^1.1.6"
+  },
+  "devDependencies": {}
+}
