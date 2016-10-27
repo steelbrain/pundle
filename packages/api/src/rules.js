@@ -8,8 +8,7 @@ export function matchesRules(relativePath: string, rules: Array<ComponentRule>):
   const fileName = Path.basename(relativePath)
   const ignoreRules = []
 
-  for (let i = 0, length = rules.length; i < length; i++) {
-    const rule = rules[i]
+  for (const rule of rules) {
     if (!(rule instanceof RegExp)) {
       ignoreRules.push(rule)
       continue

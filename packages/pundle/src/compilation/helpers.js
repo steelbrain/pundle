@@ -6,10 +6,9 @@ import type Compilation from './'
 import type { ComponentEntry } from './types'
 
 export function *filterComponents(components: Set<ComponentEntry>, type: string): Generator<ComponentEntry, void, void> {
-  const array = Array.from(components)
-  for (let i = 0, length = array.length; i < length; i++) {
-    if (array[i].component.$type === type) {
-      yield array[i]
+  for (const entry of components) {
+    if (entry.component.$type === type) {
+      yield entry
     }
   }
 }

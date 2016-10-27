@@ -15,7 +15,8 @@ export type Config = {
   replaceVariables: Object, // <string, Object>
 }
 
-export type ConfigComponent = string | [string, Object]
+export type ComponentConfig = string | [string, Object]
+export type Preset = Array<{ component: 'string' | Object, config: Object, name: string }>
 
 /*
 // TODO: Implement this in pundle-generator-default

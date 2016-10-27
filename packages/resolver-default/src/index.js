@@ -19,8 +19,7 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
   }
   let moduleName = chunks[0]
 
-  for (let i = 0, length = packageMains.length; i < length; i++) {
-    const packageMain = packageMains[i]
+  for (const packageMain of packageMains) {
     const value = typeof manifest[packageMain] === 'object' ? manifest[packageMain][moduleName] : undefined
     if (typeof value === 'boolean' && value === false) {
       if (isModuleOnly(request)) {
@@ -114,8 +113,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
         rootDirectory: Path.dirname(manifestPath),
       })
       if (isModuleOnly(request)) {
-        for (let i = 0, length = config.packageMains.length; i < length; i++) {
-          const packageMain = config.packageMains[i]
+        for (const packageMain of config.packageMains) {
           const value = packageManifest[packageMain]
           if (value && typeof value === 'string') {
             packageManifest.main = value

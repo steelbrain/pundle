@@ -3,7 +3,7 @@
 import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
 import type { ComponentAny } from 'pundle-api/types'
-import type { Config, ConfigComponent } from './types'
+import type { Config, ComponentConfig } from './types'
 
 const resolve = promisify(require('resolve'))
 
@@ -41,13 +41,17 @@ export function fillConfig(config: Object): Config {
   return toReturn
 }
 
-export async function getComponents(components: Array<ConfigComponent>, rootDirectory: string): Promise<Array<{ component: ComponentAny, config: Object }>> {
+export function resolveComponent(entry: string, rootDirectory: string) {
+  return resolve(entry, { basedir: rootDirectory })
+}
+
+export async function getComponents(components: Array<ComponentConfig>, rootDirectory: string): Promise<Array<{ component: ComponentAny, config: Object }>> {
   const processed = []
-  for (const entry of (components: Array<ConfigComponent>)) {
+  for (const entry of (components: Array<ComponentConfig>)) {
     let config = {}
     let component
     if (typeof entry === 'string') {
-      component = await resolve(entry, { basedir: rootDirectory })
+      component = await resolveComponent(entry, rootDirectory)
     } else if (Array.isArray(entry)) {
       [component, config] = entry
     }

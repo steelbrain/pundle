@@ -38,8 +38,7 @@ const findManifestCached = memoize(async function (givenFileDirectory: string, c
   if (fileDirectory.indexOf(pundleConfig.rootDirectory) === 0) {
     limitPath = pundleConfig.rootDirectory
   } else {
-    for (let i = 0, length = config.modulesDirectories.length; i < length; i++) {
-      const moduleDirectory = config.modulesDirectories[i]
+    for (const moduleDirectory of config.modulesDirectories) {
       const lastIndex = fileDirectory.lastIndexOf(moduleDirectory)
       if (lastIndex !== -1) {
         limitPath = fileDirectory.slice(0, lastIndex + moduleDirectory.length)
