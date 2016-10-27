@@ -41,8 +41,8 @@ export function fillConfig(config: Object): Config {
   return toReturn
 }
 
-export function getComponent(entry: string, rootDirectory: string) {
-  const resolved = resolve(entry, { basedir: rootDirectory })
+export async function getComponent(entry: string, rootDirectory: string): Promise<any> {
+  const resolved = await resolve(entry, { basedir: rootDirectory })
   /* eslint-disable global-require */
   // $FlowIgnore: We *have* to do this, sorry
   const component = require(resolved)
@@ -65,7 +65,7 @@ export async function getComponents(components: Array<ComponentConfig>, rootDire
     } else {
       component = entry
     }
-    const mainModule = getComponent(component, rootDirectory)
+    const mainModule = await getComponent(component, rootDirectory)
     processed.push({ component: mainModule, config })
   }
   return processed

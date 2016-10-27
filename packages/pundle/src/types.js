@@ -16,7 +16,7 @@ export type Config = {
 }
 
 export type ComponentConfig = string | [string, Object]
-export type Preset = Array<{ component: 'string' | Object, config: Object, name: string }>
+export type Preset = Array<{ component: string | Object, config: Object, name: string }>
 
 /*
 // TODO: Implement this in pundle-generator-default
