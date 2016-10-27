@@ -38,10 +38,7 @@ export default createLoader(function(config: Object, file: File) {
     throw error
   }
 
-  const replaceVariables = getParsedReplacements(Object.assign({}, this.config.replaceVariables, {
-    require: '__require',
-    'require.resolve': '__require',
-  }))
+  const replaceVariables = getParsedReplacements(Object.assign({}, this.config.replaceVariables))
 
   traverse(ast, node => {
     if (!node) {
