@@ -27,13 +27,13 @@ export type File = {
 export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<string>, contents: string, sourceMap: ?Object }>)
 export type Loader = Component<'loader', LoaderCallback>
 
-export type PluginCallback = ((config: Object, file: File) => void)
+export type PluginCallback = ((config: Object, file: File) => Promise<void>)
 export type Plugin = Component<'plugin', PluginCallback>
 
 export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?string>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
-export type ReporterCallback = ((config: Object, error: Error | Array<Error>) => void)
+export type ReporterCallback = ((config: Object, error: Error | Array<Error>) => Promise<void>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
 export type GeneratorCallback = ((config: Object, generated: Array<File>) => Promise<?{ contents: string, sourceMap: string }>)
