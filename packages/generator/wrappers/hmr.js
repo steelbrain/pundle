@@ -151,7 +151,7 @@ function __sb_pundle_hmr_apply(updatedModules) {
       callback(newModule.hot.data)
     })
     __sb_pundle.cache[id].callback.call(newModule.exports, newModule, newModule.exports)
-    oldModule.hot.callbacks_accept.forEach(function({ clause, callback }) {
+    newModule.hot.callbacks_accept.forEach(function({ clause, callback }) {
       if (clause === '*' || modules.indexOf(clause) !== -1) {
         callback()
       }

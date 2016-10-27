@@ -1,3 +1,7 @@
+#### 1.1.10
+
+- Yet another HMR fixes release
+
 #### 1.1.9
 
 - More compatibility fixes for HMR
