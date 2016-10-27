@@ -35,7 +35,7 @@ export default class Compilation {
   // - Plugin (all)
   async processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
     const resolved = await this.resolve(request, from, cached)
-    const source = await this.config.fileSystem.readFile(resolved).toString()
+    const source = await this.config.fileSystem.readFile(resolved)
     const file = {
       source,
       imports: new Set(),
