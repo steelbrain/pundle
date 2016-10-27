@@ -1,20 +1,11 @@
 /* @flow */
 
-import { version } from './helpers'
-import { matchesRules, shouldProcess } from './rules'
-
-import { createLoader, createPlugin, createResolver, createReporter, createGenerator, createTransformer, createPostTransformer } from './components'
+import Emitter from './emitter'
 
 export {
-  version,
-  matchesRules,
-  shouldProcess,
-
-  createLoader,
-  createPlugin,
-  createResolver,
-  createReporter,
-  createGenerator,
-  createTransformer,
-  createPostTransformer,
+  Emitter,
 }
+
+export * from './helpers'
+export * from './rules'
+export * from './components'
