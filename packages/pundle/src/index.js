@@ -32,16 +32,26 @@ class Pundle {
     })
     return this
   }
+  // Spec:
+  // - If preset is given as string, resolve/require that
+  // - Validate preset export to be an Array
+  // - Validate config to be an object
+  // - When iterating over preset entries:
+  //   - Validate each entry
+  //   - If given config has "false" as value of a preset component, skip it
+  //   - if component is string, resolve/require it
+  //   - Merge given config of that component with preset config of that component
+  //   - Store it in components list
   async loadPreset(givenPreset: Preset | string, config: Object = {}): Promise<this> {
-    if ((!Array.isArray(givenPreset) && typeof givenPreset !== 'string') || !givenPreset) {
-      throw new Error('Parameter 1 to loadPreset() must be an Array or String')
-    }
-    if (typeof config !== 'object' || !config) {
-      throw new Error('Parameter 2 to loadPreset() must be an Object')
-    }
     let preset = givenPreset
     if (typeof preset === 'string') {
       preset = await Helpers.getComponent(preset, this.config.rootDirectory)
+    }
+    if (!Array.isArray(preset)) {
+      throw new Error('Invalid preset value/export. It must be an Array')
+    }
+    if (typeof config !== 'object' || !config) {
+      throw new Error('Parameter 2 to loadPreset() must be an Object')
     }
 
     for (const entry of preset) {
@@ -50,6 +60,9 @@ class Pundle {
         || !entry.config || typeof entry.config !== 'object'
         || !entry.name || typeof entry.name !== 'string') {
         throw new Error('Invalid preset entry given to loadPreset()')
+      }
+      if (config[entry.name] === false) {
+        continue
       }
       const component = typeof entry.component === 'string' ? await Helpers.getComponent(entry.component, this.config.rootDirectory) : entry.component
       const componentConfig = Object.assign({}, entry.config)
