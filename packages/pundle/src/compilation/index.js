@@ -34,6 +34,26 @@ export default class Compilation {
     error.code = 'MODULE_NOT_FOUND'
     throw error
   }
+  // Notes:
+  // Lock as early as resolved to avoid duplicates
+  // Recurse asyncly until all resolves are taken care of
+  async processTree(givenRequest: string, givenFrom: ?string, cached: boolean = true, files: Map<string, File>): Promise<Map<string, File>> {
+    // const files: any = new Map()
+    const processFile = async (path, from = null) => {
+      const resolved = await this.resolve(path, from, cached)
+      if (files.has(resolved)) {
+        return
+      }
+      // $FlowIgnore: We are using an invalid-ish flow type on purpose, 'cause flow is dumb and doesn't understand that we *fix* these nulls two lines below
+      files.set(resolved, null)
+      const file = await this.processFile(resolved, from, cached)
+      files.set(resolved, file)
+      await Promise.all(Array.from(file.imports).map(entry => processFile(entry.value, resolved)))
+    }
+
+    await processFile(givenRequest, givenFrom)
+    return files
+  }
   // Order of execution:
   // - Transformer (all)
   // - Loader (some)

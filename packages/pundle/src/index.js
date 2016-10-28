@@ -60,6 +60,29 @@ class Pundle {
     }
     return this
   }
+  // Spec:
+  // - Normalize all givenRequests to an array
+  // - Asyncly and con-currently process all trees
+  // - Share files cache between tree resolutions to avoid duplicates
+  async processTree(givenRequest: ?string, givenFrom: ?string, cached: boolean = true): Promise<Array<File>> {
+    let requests
+    const files: Map<string, File> = new Map()
+    if (!givenRequest) {
+      requests = this.config.entry
+    } else if (typeof givenRequest === 'string') {
+      requests = [givenRequest]
+    } else if (!Array.isArray(givenRequest)) {
+      throw new Error('Parameter 1 to processTree() must be null, String or an Array')
+    } else {
+      requests = givenRequest
+    }
+
+    await Promise.all(requests.map(request =>
+      this.compilation.processTree(request, givenFrom, cached, files)
+    ))
+
+    return Array.from(files.values())
+  }
   processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
     return this.compilation.processFile(request, from, cached)
   }
