@@ -36,7 +36,7 @@ export type Resolver = Component<'resolver', ResolverCallback>
 export type ReporterCallback = ((config: Object, error: Error | Array<Error>) => Promise<void>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
-export type GeneratorCallback = ((config: Object, generated: Array<File>) => Promise<?{ contents: string, sourceMap: string }>)
+export type GeneratorCallback = ((config: Object, files: Array<File>, runtimeConfig: Object) => Promise<?{ contents: string, sourceMap: string }>)
 export type Generator = Component<'generator', GeneratorCallback>
 
 export type TransformerCallback = ((config: Object, file: File) => Promise<?{ contents: string, sourceMap: ?Object }>)

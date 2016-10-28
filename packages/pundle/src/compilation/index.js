@@ -34,6 +34,19 @@ export default class Compilation {
     error.code = 'MODULE_NOT_FOUND'
     throw error
   }
+  async generate(files: Array<File>, runtimeConfig: Object = {}): Promise<{ sourceMap: ?Object, contents: ?string }> {
+    for (const component of filterComponents(this.components, 'generator')) {
+      const result = await invokeComponent(this, component, files, runtimeConfig)
+      if (result) {
+        if (typeof result !== 'object') {
+          throw new Error('Generator returned invalid response')
+        }
+        return result
+      }
+    }
+
+    throw new Error('No suitable generator found')
+  }
   // Notes:
   // Lock as early as resolved to avoid duplicates
   // Recurse asyncly until all resolves are taken care of

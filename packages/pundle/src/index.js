@@ -60,6 +60,10 @@ class Pundle {
     }
     return this
   }
+  async generate(givenFiles: ?Array<File>, runtimeConfig: Object = {}): Promise<{ sourceMap: ?Object, contents: ?string }> {
+    const files = givenFiles || await this.processTree()
+    return await this.compilation.generate(files, runtimeConfig)
+  }
   // Spec:
   // - Normalize all givenRequests to an array
   // - Asyncly and con-currently process all trees
