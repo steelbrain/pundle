@@ -73,7 +73,7 @@ class Pundle {
     }
     return this
   }
-  async generate(givenFiles: ?Array<File>, runtimeConfig: Object = {}): Promise<{ sourceMap: ?Object, contents: ?string }> {
+  async generate(givenFiles: ?Array<File>, runtimeConfig: Object = {}): Promise<Object> {
     const files = givenFiles || await this.processTree()
     return await this.compilation.generate(files, runtimeConfig)
   }
