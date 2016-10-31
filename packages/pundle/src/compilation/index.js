@@ -86,7 +86,6 @@ export default class Compilation {
       filePath: resolved,
       contents: source,
       sourceMap: null,
-      publicPath: request,
     }
 
     // Transformer

@@ -20,8 +20,6 @@ export type File = {
   // ^ The abs path on file system
   contents: string,
   sourceMap: ?Object,
-  publicPath: string,
-  // ^ Not the path on file system, but the path to show in frontend, like $root/some.js
 }
 
 export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<{ value: string, id: string }>, contents: string, sourceMap: ?Object }>)

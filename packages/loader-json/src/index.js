@@ -19,7 +19,7 @@ export default createLoader(function(config: Object, file: File) {
     sourceMap: {
       mappings: [],
       names: [],
-      sources: [file.publicPath],
+      sources: [file.filePath],
       version: 3,
     },
     contents: `module.exports = ${JSON.stringify(parsed, null, 2)}\n`,

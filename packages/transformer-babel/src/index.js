@@ -22,7 +22,7 @@ export default createTransformer(async function(config: Object, file: File) {
     filename: file.filePath,
     sourceMap: true,
     highlightCode: false,
-    sourceFileName: file.publicPath,
+    sourceFileName: file.filePath,
   }))
   const contents = processed.code
   const sourceMap = processed.map
