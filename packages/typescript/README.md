@@ -12,14 +12,19 @@ npm install --save typescript-pundle
 
 ```
 pundle.loadPlugins([
-  ['typescript-pundle', {
+  ['pundle-typescript', {
     ignored?: RegExp,
-    extensions?: ['.js'],
+    extensions?: ['.ts'],
     config: {
       ... TypeScript config ...
     }
   }]
-]).then(() => console.log('Plugin loaded successfully'))
+]).then(() => {
+  pundle.loadLoaders([
+    { extensions: ['.ts'], loader: require('pundle/lib/loaders/javascript').default },
+  ])
+  console.log('Plugin loaded successfully')
+)
 ```
 
 ## License
