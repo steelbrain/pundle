@@ -1,0 +1,26 @@
+{
+  "name": "typescript-pundle",
+  "version": "1.0.0",
+  "description": "TypeScript transformer for Pundle",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/motion/pundle.git"
+  },
+  "contributors": [
+    "appsforartists",
+    "steelbrain"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/motion/pundle/issues"
+  },
+  "homepage": "https://github.com/motion/pundle#readme",
+  "dependencies": {
+    "typescript": "^2.0.7"
+  }
+}

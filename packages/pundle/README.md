@@ -70,6 +70,7 @@ pundle.loadPlugins([
   return pundle.compile()
 }).then(function() {
   pundle.loadLoaders([
+    // These are just examples.  pundle-coffee and pundle-less don't exist yet =)
     { extensions: ['.coffee'], loader: require('pundle-coffee') },
     { extensions: ['.less'], loader: require('pundle-less') },
   ])
