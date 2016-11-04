@@ -21,7 +21,7 @@ pundle.loadPlugins([
   }]
 ]).then(() => {
   pundle.loadLoaders([
-    { extensions: ['.ts', '.tsx'], loader: require('pundle/lib/loaders/javascript').default },
+    { extensions: ['.ts', '.tsx'], loader: require('typescript-pundle').default },
   ])
   console.log('Plugin loaded successfully')
 )
