@@ -12,7 +12,7 @@ npm install --save typescript-pundle
 
 ```
 pundle.loadPlugins([
-  ['pundle-typescript', {
+  ['typescript-pundle', {
     ignored?: RegExp,
     extensions?: ['.ts'],
     config: {
@@ -21,7 +21,7 @@ pundle.loadPlugins([
   }]
 ]).then(() => {
   pundle.loadLoaders([
-    { extensions: ['.ts'], loader: require('pundle/lib/loaders/javascript').default },
+    { extensions: ['.ts', '.tsx'], loader: require('pundle/lib/loaders/javascript').default },
   ])
   console.log('Plugin loaded successfully')
 )
