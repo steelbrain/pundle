@@ -1,3 +1,7 @@
+#### 1.1.11
+
+- We need tests for HMR...
+
 #### 1.1.10
 
 - Yet another HMR fixes release

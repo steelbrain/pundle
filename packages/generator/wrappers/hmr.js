@@ -150,12 +150,13 @@ function __sb_pundle_hmr_apply(updatedModules) {
     oldModule.hot.callbacks_dispose.forEach(function(callback) {
       callback(newModule.hot.data)
     })
-    __sb_pundle.cache[id].callback.call(newModule.exports, newModule, newModule.exports)
+    newModule.callback.call(newModule.exports, newModule, newModule.exports)
     newModule.hot.callbacks_accept.forEach(function({ clause, callback }) {
       if (clause === '*' || modules.indexOf(clause) !== -1) {
         callback()
       }
     })
+    __sb_pundle.cache[id] = newModule
   }
 }
 
