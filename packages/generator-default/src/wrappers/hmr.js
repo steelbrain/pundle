@@ -18,7 +18,6 @@ const __sb_pundle = {
   extensions: [],
   resolve(path) { return path },
 }
-let __require
 
 /**
  * Topological sorting function
@@ -149,12 +148,13 @@ function __sb_pundle_hmr_apply(updatedModules) {
     oldModule.hot.callbacks_dispose.forEach(function(callback) {
       callback(newModule.hot.data)
     })
-    __sb_pundle.cache[id].callback.call(module.exports, '', '', __sb_generate_require(), module, module.exports)
+    newModule.callback.call(module.exports, newModule.id, newModule.id, __sb_generate_require(newModule.id), module, module.exports)
     newModule.hot.callbacks_accept.forEach(function({ clause, callback }) {
       if (clause === '*' || modules.indexOf(clause) !== -1) {
         callback()
       }
     })
+    __sb_pundle.cache[id] = newModule
   }
 }
 
@@ -174,7 +174,7 @@ function __sb_pundle_register(filePath, callback) {
   }
 }
 
-function __sb_pundle_require_module(fromModule, request) {
+function __sb_pundle_require_module(fromModule: string, request: string) {
   if (!(request in __sb_pundle.cache)) {
     throw new Error('Module not found')
   }
@@ -184,16 +184,16 @@ function __sb_pundle_require_module(fromModule, request) {
   }
   if (module.exports === __SB_PUNDLE_DEFAULT_EXPORT) {
     module.exports = {}
-    module.callback.call(module.exports, '', '', __sb_generate_require(), module, module.exports)
+    module.callback.call(module.exports, fromModule, fromModule, __sb_generate_require(fromModule), module, module.exports)
   }
   return module.exports
 }
 
-function __sb_generate_require() {
-  const bound = __sb_pundle_require_module.bind(null, 'todo-fill-this')
+function __sb_generate_require(moduleName: string) {
+  const bound = __sb_pundle_require_module.bind(null, moduleName)
   bound.cache = __sb_pundle.cache
   bound.extensions = __sb_pundle.extensions
   bound.resolve = __sb_pundle.resolve
   return bound
 }
-const require = __sb_generate_require()
+const __sb_require = __sb_generate_require('$root')

@@ -13,7 +13,7 @@ import { getLinesCount, getFilePath, normalizeEntry, getWrapperContent } from '.
 
 export default createGenerator(async function(givenConfig: Object, files: Array<File>, runtimeConfig: Object) {
   const mergedConfig = Object.assign({}, givenConfig, runtimeConfig)
-  mergedConfig.entry = normalizeEntry(givenConfig.entry, this.config.entry, item => this.resolve(item))
+  const entry = await normalizeEntry(mergedConfig.entry, this.config.entry, item => this.resolve(item))
   const wrapperContents = await getWrapperContent(mergedConfig.wrapper, item => this.resolve(item), item => this.config.fileSystem.readFile(item))
 
   const output = [';(function() {', wrapperContents]
@@ -33,7 +33,8 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
       continue
     }
     const entryMap = new SourceMapConsumer(file.sourceMap)
-    for (const mapping of entryMap._generatedMappings) {
+    for (let _i = 0, _length = entryMap._generatedMappings.length; _i < _length; _i++) {
+      const mapping = entryMap._generatedMappings[_i]
       sourceMap.addMapping({
         source: filePath,
         original: { line: mapping.originalLine, column: mapping.originalColumn },
@@ -41,6 +42,10 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
       })
     }
     sourceMap.setSourceContent(filePath, file.source)
+  }
+  for (let i = 0, length = entry.length; i < length; i++) {
+    const entryEntry = getFilePath(this.config.rootDirectory, entry[i], mergedConfig.pathType, mergedConfig.sourceMapNamespace)
+    output.push(`__sb_require('${entryEntry}')`)
   }
   output.push('})();')
 
@@ -55,5 +60,5 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
   pathType: 'filePath',
   directory: null,
   sourceMap: false,
-  sourceMapNamespace: '$app',
+  sourceMapNamespace: 'app',
 })

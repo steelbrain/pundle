@@ -20,7 +20,8 @@
   "dependencies": {
     "pundle-loader-js": "^1.1.6",
     "pundle-loader-json": "^1.1.6",
-    "pundle-resolver-default": "^1.1.6"
+    "pundle-resolver-default": "^1.1.6",
+    "pundle-generator-default": "^1.1.6"
   },
   "devDependencies": {}
 }
