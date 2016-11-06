@@ -26,10 +26,10 @@ export function fillConfig(config: Object): Config {
     toReturn.fileSystem = PundleFS
   }
 
-  if (config.publicDirectory && typeof config.publicDirectory !== 'string') {
-    throw new Error('config.publicDirectory must be a string')
+  if (config.publicPath && typeof config.publicPath !== 'string') {
+    throw new Error('config.publicPath must be a string')
   }
-  toReturn.publicDirectory = config.publicDirectory || null
+  toReturn.publicPath = config.publicPath || null
 
   if (typeof config.rootDirectory !== 'string' || !config.rootDirectory) {
     throw new Error('config.rootDirectory must be a string')

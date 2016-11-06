@@ -12,7 +12,7 @@ export type Config = {
   entry: Array<string>,
   fileSystem: FileSystem,
   rootDirectory: string,
-  publicDirectory: ?string,
+  publicPath: ?string,
   replaceVariables: Object, // <string, Object>
 }
 

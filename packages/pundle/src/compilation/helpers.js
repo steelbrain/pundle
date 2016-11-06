@@ -15,11 +15,12 @@ export function *filterComponents(components: Set<ComponentEntry>, type: string)
 
 export function invokeComponent(compilation: Compilation, component: { component: ComponentAny, config: Object }, ...parameters: Array<any>): Promise<any> {
   return component.component.callback.apply(compilation, [
-    // $FlowIgnore: Flow gets confused with so many times
+    // $FlowIgnore: Flow gets confused with so many types
     Object.assign({}, component.component.defaultConfig, component.config),
   ].concat(parameters))
 }
 
+// Shamelessly copied from babel/babel under MIT License
 export function mergeSourceMap(inputMap: Object, map: Object): Object {
   const inputMapConsumer = new sourceMap.SourceMapConsumer(inputMap)
   const outputMapConsumer = new sourceMap.SourceMapConsumer(map)
