@@ -24,7 +24,7 @@ export function getFilePath(rootDirectory: string, filePath: string, pathType: s
 
 export async function normalizeEntry(givenEntry: Array<string>, defaultEntry: Array<string>, resolve: ((path: string) => Promise<string>)): Promise<Array<string>> {
   let entry = givenEntry
-  if (!Array.isArray(entry) || !entry.length) {
+  if (!Array.isArray(entry)) {
     entry = defaultEntry
   }
   entry = entry.slice()
@@ -47,9 +47,11 @@ export async function getWrapperContent(givenWrapper: string, resolve: ((path: s
     wrapper = wrapperNormal
   } else if (wrapper === 'hmr') {
     wrapper = wrapperHMR
+  } else if (wrapper === 'none') {
+    return ''
   }
   if (!Path.isAbsolute(wrapper)) {
     wrapper = await resolve(wrapper)
   }
-  return readFile(wrapper)
+  return await readFile(wrapper)
 }
