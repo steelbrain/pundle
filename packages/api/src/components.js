@@ -4,6 +4,7 @@ import invariant from 'assert'
 import { version, makePromisedLock } from './helpers'
 import type {
   Component,
+  CallbackOrConfig,
 
   Loader,
   LoaderCallback,
@@ -21,24 +22,45 @@ import type {
   PostTransformerCallback,
 } from '../types'
 
-function create<T1, T2>(callback: T2, defaultConfig: Object, type: T1): Component<T1, T2> {
-  invariant(typeof callback === 'function', 'Parameter 1 must be a function')
+function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, type: T1): Component<T1, T2> {
+  let callback
+  let activate = function() { /* No Op */ }
+  let dispose = function() { /* No Op */ }
+  if (typeof config === 'function') {
+    invariant(typeof config === 'function', 'Parameter 1 must be a function')
+    callback = config
+  } else if (typeof config === 'object' && config) {
+    if (config.activate) {
+      invariant(typeof config.activate === 'function', 'config.activate must be a function')
+      activate = config.activate
+    }
+    if (config.dispose) {
+      invariant(typeof config.dispose === 'function', 'config.dispose must be a function')
+      dispose = config.dispose
+    }
+    invariant(config.callback === 'function', 'config.callback must be a function')
+    callback = config.callback
+  } else {
+    throw new Error('Parameter 1 must be a function or config object')
+  }
   invariant(typeof defaultConfig === 'object' && defaultConfig, 'Parameter 2 must be an object')
 
   return {
     $type: type,
     $apiVersion: version,
+    activate,
     callback,
+    dispose,
     defaultConfig,
   }
 }
 
-export function createLoader(callback: LoaderCallback, defaultConfig: Object = {}): Loader {
-  return create(callback, defaultConfig, 'loader')
+export function createLoader(options: CallbackOrConfig<LoaderCallback>, defaultConfig: Object = {}): Loader {
+  return create(options, defaultConfig, 'loader')
 }
 
-export function createPlugin(callback: PluginCallback, defaultConfig: Object = {}): Plugin {
-  return create(callback, defaultConfig, 'plugin')
+export function createPlugin(options: CallbackOrConfig<PluginCallback>, defaultConfig: Object = {}): Plugin {
+  return create(options, defaultConfig, 'plugin')
 }
 
 // NOTE:
@@ -48,26 +70,30 @@ export function createPlugin(callback: PluginCallback, defaultConfig: Object = {
 // dependency (while not processing them itself), such requests are to the default module resolver.
 // Doing this in the npm installer requires rewriting and wrapping it all in a try/finally block and making it
 // unnecessarily complex. Keeping the logic here allows reuse.
-export function createResolver(givenCallback: ResolverCallback, defaultConfig: Object = {}, allowRecursive: boolean = true): Resolver {
-  let callback = givenCallback
+export function createResolver(givenOptions: CallbackOrConfig<ResolverCallback>, defaultConfig: Object = {}, allowRecursive: boolean = true): Resolver {
+  let options = givenOptions
   if (!allowRecursive) {
-    callback = makePromisedLock(callback)
+    if (typeof options === 'function') {
+      options = makePromisedLock(options)
+    } else if (typeof options === 'object' && options) {
+      options.callback = makePromisedLock(options.callback)
+    }
   }
-  return create(callback, defaultConfig, 'resolver')
+  return create(options, defaultConfig, 'resolver')
 }
 
-export function createReporter(callback: ReporterCallback, defaultConfig: Object = {}): Reporter {
-  return create(callback, defaultConfig, 'reporter')
+export function createReporter(options: CallbackOrConfig<ReporterCallback>, defaultConfig: Object = {}): Reporter {
+  return create(options, defaultConfig, 'reporter')
 }
 
-export function createGenerator(callback: GeneratorCallback, defaultConfig: Object = {}): Generator {
-  return create(callback, defaultConfig, 'generator')
+export function createGenerator(options: CallbackOrConfig<GeneratorCallback>, defaultConfig: Object = {}): Generator {
+  return create(options, defaultConfig, 'generator')
 }
 
-export function createTransformer(callback: TransformerCallback, defaultConfig: Object = {}): Transformer {
-  return create(callback, defaultConfig, 'transformer')
+export function createTransformer(options: CallbackOrConfig<TransformerCallback>, defaultConfig: Object = {}): Transformer {
+  return create(options, defaultConfig, 'transformer')
 }
 
-export function createPostTransformer(callback: PostTransformerCallback, defaultConfig: Object = {}): PostTransformer {
-  return create(callback, defaultConfig, 'post-transformer')
+export function createPostTransformer(options: CallbackOrConfig<PostTransformerCallback>, defaultConfig: Object = {}): PostTransformer {
+  return create(options, defaultConfig, 'post-transformer')
 }

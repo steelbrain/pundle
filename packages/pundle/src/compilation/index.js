@@ -129,20 +129,24 @@ export default class Compilation {
   addComponent(component: ComponentAny, config: Object): void {
     const entry = { component, config }
     this.components.add(entry)
+    entry.component.activate.call(this)
     return new Disposable(() => {
-      this.components.delete(entry)
+      this.deleteComponent(component, config)
     })
   }
   deleteComponent(component: ComponentAny, config: Object): void {
-    for (const callback of this.components) {
-      if (callback.config === config && callback.component === component) {
-        this.components.delete(callback)
+    for (const entry of this.components) {
+      if (entry.config === config && entry.component === component) {
+        entry.component.dispose.call(this)
+        this.components.delete(entry)
         break
       }
     }
   }
   dispose() {
-    // Somewhere over the rainbow
-    // This is gonna be useful when we have watching
+    for (const entry of this.components) {
+      entry.component.dispose.call(this)
+    }
+    this.components.clear()
   }
 }

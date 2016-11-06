@@ -9,8 +9,16 @@ export type ComponentConfig = {
 export type Component<T1, T2> = {
   $type: T1,
   $apiVersion: number,
+  activate(): void,
   callback: T2,
+  dispose(): void,
   defaultConfig: Object,
+}
+
+export type CallbackOrConfig<T> = T | {
+  activate?: (() => void),
+  callback: T,
+  dispose?: (() => void),
 }
 
 export type Import = {
