@@ -1,13 +1,8 @@
 /* @flow */
 
-import { createTransformer, shouldProcess } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import { createPostTransformer } from 'pundle-api'
 
-export default createTransformer(async function(config: Object, file: File) {
-  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
-    return null
-  }
-
+export default createPostTransformer(async function(config: Object, contents: string) {
   let uglifyPath
   try {
     uglifyPath = await this.resolve('uglify-js')
@@ -18,9 +13,8 @@ export default createTransformer(async function(config: Object, file: File) {
   // $FlowIgnore: Flow doesn't like dynamic requires
   const uglify = require(uglifyPath) // eslint-disable-line global-require
 
-  const processed = uglify.minify(file.contents, Object.assign({}, config.config, {
+  const processed = uglify.minify(contents, Object.assign({}, config.config, {
     fromString: true,
-    outSourceMap: 'unicorns',
   }))
 
   return {
@@ -29,6 +23,4 @@ export default createTransformer(async function(config: Object, file: File) {
   }
 }, {
   config: {},
-  include: ['*.js'],
-  exclude: [],
 })

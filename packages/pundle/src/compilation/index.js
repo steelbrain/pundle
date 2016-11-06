@@ -40,14 +40,22 @@ export default class Compilation {
     throw error
   }
   async generate(files: Array<File>, runtimeConfig: Object = {}): Promise<Object> {
+    let result
     for (const component of Helpers.filterComponents(this.components, 'generator')) {
-      const result = await Helpers.invokeComponent(this, component, files, runtimeConfig)
+      result = await Helpers.invokeComponent(this, component, files, runtimeConfig)
       if (result) {
-        return result
+        break
       }
     }
-
-    throw new Error('No suitable generator found')
+    if (!result) {
+      throw new Error('No suitable generator found')
+    }
+    // Post-Transformer
+    for (const component of Helpers.filterComponents(this.components, 'post-transformer')) {
+      const postTransformerResults = await Helpers.invokeComponent(this, component, result.contents)
+      Helpers.mergeResult(result, postTransformerResults)
+    }
+    return result
   }
   // Notes:
   // Lock as early as resolved to avoid duplicates
@@ -77,7 +85,6 @@ export default class Compilation {
   // Order of execution:
   // - Transformer (all)
   // - Loader (some)
-  // - Post-Transformer (all)
   // - Plugin (all)
   // Notes:
   // - Do NOT double-resolve if already an absolute path
@@ -117,12 +124,6 @@ export default class Compilation {
       const mergedUniqueImports = unique(mergedImports, 'request')
       file.imports = new Set(mergedUniqueImports)
       break
-    }
-
-    // Post-Transformer
-    for (const component of Helpers.filterComponents(this.components, 'post-transformer')) {
-      const postTransformerResults = await Helpers.invokeComponent(this, component, Object.assign({}, file))
-      Helpers.mergeResult(file, postTransformerResults)
     }
 
     // Plugin

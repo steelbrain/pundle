@@ -55,7 +55,7 @@ export type Generator = Component<'generator', GeneratorCallback>
 export type TransformerCallback = ((config: Object, file: File) => Promise<?{ contents: string, sourceMap: ?Object }>)
 export type Transformer = Component<'transformer', TransformerCallback>
 
-export type PostTransformerCallback = ((config: Object, file: File) => Promise<?{ contents: string, sourceMap: ?Object }>)
+export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?{ contents: string, sourceMap: ?Object }>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
 export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer
