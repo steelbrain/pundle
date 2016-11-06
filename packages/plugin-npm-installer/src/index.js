@@ -17,6 +17,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   if (givenRequest.slice(0, 1) === '.') {
     return null
   }
+
   try {
     return await this.resolve(givenRequest, fromFile)
   } catch (_) { /* No Op */ }

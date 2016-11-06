@@ -13,7 +13,7 @@ export type Config = {
 
 export type ModuleNormal = {
   filePath: string,
-  callback: Function,
+  callback(__filename: string, __dirname: string, require: Function, module: Object, exports: Object): void,
   exports: Object,
   parents: Array<string>,
 }
