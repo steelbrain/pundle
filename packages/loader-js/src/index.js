@@ -50,15 +50,15 @@ export default createLoader(function(config: Object, file: File) {
       name = getName(node.callee)
       const parameter = node.arguments[0]
       if ((name === 'require.resolve' || name === 'require') && node.arguments.length === 1 && parameter.value) {
-        const importId = this.getUniquePath(file.filePath, parameter.value)
-        imports.add({ id: importId, value: parameter.value })
-        parameter.value = importId
+        const request = this.getResolveRequest(parameter.value)
+        imports.add(request)
+        parameter.value = request.id
       }
     }
     if (node.type === 'ImportDeclaration') {
-      const importId = this.getUniquePath(file.filePath, node.source.value)
-      imports.add({ id: importId, value: node.source.value })
-      node.source.value = importId
+      const request = this.getResolveRequest(node.source.value)
+      imports.add(request)
+      node.source.value = request.id
     }
     if (node.type === 'MemberExpression' || node.type === 'Identifier') {
       name = getName(node)

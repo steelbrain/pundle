@@ -13,16 +13,22 @@ export type Component<T1, T2> = {
   defaultConfig: Object,
 }
 
+export type Import = {
+  id: string,
+  request: string,
+  resolved: ?string,
+}
+
 export type File = {
   source: string,
-  imports: Set<{ value: string, id: string }>,
+  imports: Set<Import>,
   filePath: string,
   // ^ The abs path on file system
   contents: string,
   sourceMap: ?Object,
 }
 
-export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<{ value: string, id: string }>, contents: string, sourceMap: ?Object }>)
+export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<Import>, contents: string, sourceMap: ?Object }>)
 export type Loader = Component<'loader', LoaderCallback>
 
 export type PluginCallback = ((config: Object, file: File) => Promise<void>)

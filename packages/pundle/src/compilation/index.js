@@ -3,7 +3,7 @@
 import Path from 'path'
 import unique from 'lodash.uniqby'
 import { Disposable } from 'sb-event-kit'
-import type { File, ComponentAny } from 'pundle-api/types'
+import type { File, ComponentAny, Import } from 'pundle-api/types'
 
 import { filterComponents, invokeComponent, mergeResult } from './helpers'
 import type { ComponentEntry } from './types'
@@ -14,12 +14,10 @@ let uniqueID = 0
 export default class Compilation {
   config: Config;
   components: Set<ComponentEntry>;
-  uniquePaths: Map<string, string>;
 
   constructor(config: Config) {
     this.config = config
     this.components = new Set()
-    this.uniquePaths = new Map()
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     for (const component of filterComponents(this.components, 'resolver')) {
@@ -47,18 +45,24 @@ export default class Compilation {
   // Notes:
   // Lock as early as resolved to avoid duplicates
   // Recurse asyncly until all resolves are taken care of
+  // Set resolved paths on all file#imports
   async processTree(givenRequest: string, givenFrom: ?string, cached: boolean = true, files: Map<string, File>): Promise<Map<string, File>> {
     // const files: any = new Map()
     const processFile = async (path, from = null) => {
       const resolved = await this.resolve(path, from, cached)
       if (files.has(resolved)) {
-        return
+        return resolved
       }
       // $FlowIgnore: We are using an invalid-ish flow type on purpose, 'cause flow is dumb and doesn't understand that we *fix* these nulls two lines below
       files.set(resolved, null)
       const file = await this.processFile(resolved, from, cached)
       files.set(resolved, file)
-      await Promise.all(Array.from(file.imports).map(entry => processFile(entry.value, resolved)))
+      await Promise.all(Array.from(file.imports).map(entry =>
+        processFile(entry.request, resolved).then(function(resolvedImport) {
+          entry.resolved = resolvedImport
+        })
+      ))
+      return resolved
     }
 
     await processFile(givenRequest, givenFrom)
@@ -72,7 +76,8 @@ export default class Compilation {
   // Notes:
   // - Do NOT double-resolve if already an absolute path
   // - We are executing Transformers before Loaders because imagine ES6 modules
-  //   being transpiled with babel BEFORE giving to loader-js
+  //   being transpiled with babel BEFORE giving to loader-js. If they are not
+  //   transpiled before hand, they'll give a syntax error in loader
   async processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
     let resolved = request
     if (!Path.isAbsolute(resolved)) {
@@ -99,9 +104,7 @@ export default class Compilation {
       const loaderResult = await invokeComponent(this, component, Object.assign({}, file))
       mergeResult(file, loaderResult)
       const mergedImports = Array.from(file.imports).concat(Array.from(loaderResult.imports))
-      const mergedUniqueImports = unique(mergedImports, function({ value, id }) {
-        return `${value}:${id}`
-      })
+      const mergedUniqueImports = unique(mergedImports, 'request')
       file.imports = new Set(mergedUniqueImports)
       break
     }
@@ -119,14 +122,9 @@ export default class Compilation {
 
     return file
   }
-  getUniquePath(from: string, request: string): string {
-    let value = this.uniquePaths.get(`${from}:${request}`)
-    if (value) {
-      return value
-    }
-    value = (++uniqueID).toString()
-    this.uniquePaths.set(`${from}:${request}`, value)
-    return value
+  getResolveRequest(request: string): Import {
+    const id = (++uniqueID).toString()
+    return { id, request, resolved: null }
   }
   addComponent(component: ComponentAny, config: Object): void {
     const entry = { component, config }
