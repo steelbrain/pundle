@@ -14,7 +14,8 @@ export type Component<T1, T2> = {
 }
 
 export type Import = {
-  id: string,
+  id: number,
+  from: string,
   request: string,
   resolved: ?string,
 }

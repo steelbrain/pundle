@@ -122,9 +122,9 @@ export default class Compilation {
 
     return file
   }
-  getResolveRequest(request: string): Import {
-    const id = (++uniqueID).toString()
-    return { id, request, resolved: null }
+  getImportRequest(request: string, from: string): Import {
+    const id = ++uniqueID
+    return { id, request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {
     const entry = { component, config }
@@ -143,5 +143,6 @@ export default class Compilation {
   }
   dispose() {
     // Somewhere over the rainbow
+    // This is gonna be useful when we have watching
   }
 }

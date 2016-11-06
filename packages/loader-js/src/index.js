@@ -49,14 +49,14 @@ export default createLoader(function(config: Object, file: File) {
     if (node.type === 'CallExpression') {
       name = getName(node.callee)
       const parameter = node.arguments[0]
-      if ((name === 'require.resolve' || name === 'require') && node.arguments.length === 1 && parameter.value) {
-        const request = this.getResolveRequest(parameter.value)
+      if ((name === 'require.resolve' || name === 'require' || name === 'module.hot.accept') && node.arguments.length === 1 && parameter.value) {
+        const request = this.getImportRequest(parameter.value, file.filePath)
         imports.add(request)
         parameter.value = request.id
       }
     }
     if (node.type === 'ImportDeclaration') {
-      const request = this.getResolveRequest(node.source.value)
+      const request = this.getImportRequest(node.source.value, file.filePath)
       imports.add(request)
       node.source.value = request.id
     }

@@ -10,3 +10,21 @@ export type Config = {
   sourceMap: boolean,
   sourceMapNamespace: string,
 }
+
+export type ModuleNormal = {
+  filePath: string,
+  callback: Function,
+  exports: Object,
+  parents: Array<string>,
+}
+
+export type ModuleHMR = ModuleNormal & {
+  hot: {
+    data: Object,
+    accept(): void,
+    decline(): void,
+    dispose(): void,
+    addDisposeHandler(): void,
+    removeDisposeHandler(): void,
+  },
+}
