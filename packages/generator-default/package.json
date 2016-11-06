@@ -21,5 +21,7 @@
     "pundle-api": "^1.1.6",
     "source-map": "^0.5.6"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "babel-preset-babili": "0.0.8"
+  }
 }

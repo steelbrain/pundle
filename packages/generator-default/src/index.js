@@ -48,7 +48,7 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
   for (let i = 0, length = entry.length; i < length; i++) {
     output.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entry[i])}')`)
   }
-  output.push('})();')
+  output.push('})();\n')
 
   return {
     contents: output.join('\n'),

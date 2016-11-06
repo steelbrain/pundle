@@ -55,7 +55,13 @@ export async function getWrapperContents(compilation: Object, config: Object): P
   if (!Path.isAbsolute(wrapper)) {
     wrapper = await compilation.resolve(wrapper)
   }
-  return await compilation.config.fileSystem.readFile(wrapper)
+  const fileContents = await compilation.config.fileSystem.readFile(wrapper)
+  if (fileContents.slice(1, 11) === 'use strict') {
+    // Trim off first line in case it starts with use strict, this is to allow
+    // unsafe modules to work inside of Pundle
+    return fileContents.slice(13)
+  }
+  return fileContents
 }
 
 export function getImportResolutions(compilation: Object, config: Object, files: Array<File>) : Object {
@@ -81,8 +87,8 @@ export function getImportResolutions(compilation: Object, config: Object, files:
 
 export function mergeSourceMap(sourceMap: Object, target: Object, filePath: string, sourceContents: string, offset: number): void {
   const entryMap = new SourceMapConsumer(sourceMap)
-  for (let _i = 0, _length = entryMap._generatedMappings.length; _i < _length; _i++) {
-    const mapping = entryMap._generatedMappings[_i]
+  for (let i = 0, length = entryMap._generatedMappings.length; i < length; i++) {
+    const mapping = entryMap._generatedMappings[i]
     target.addMapping({
       source: filePath,
       original: { line: mapping.originalLine, column: mapping.originalColumn },
