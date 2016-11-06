@@ -1,9 +1,11 @@
 /* @flow */
 
+import invariant from 'assert'
 import sourceMap from 'source-map'
 import type { File, ComponentAny } from 'pundle-api/types'
 import type Compilation from './'
 import type { ComponentEntry } from './types'
+import type { WatcherConfig } from '../types'
 
 export function *filterComponents(components: Set<ComponentEntry>, type: string): Generator<ComponentEntry, void, void> {
   for (const entry of components) {
@@ -74,4 +76,33 @@ export function mergeResult(file: File, result: ?{ contents: string, sourceMap: 
     file.sourceMap = result.sourceMap
   }
   file.contents = result.contents
+}
+
+// Notes:
+// - If usePolling on config object doesn't exist, check env for existance
+export function fillWatcherConfig(config: Object): WatcherConfig {
+  const toReturn = {}
+
+  invariant(typeof config === 'object' && config, 'Watcher config must be an object')
+  if ({}.hasOwnProperty.call(config, 'usePolling')) {
+    toReturn.usePolling = !!config.usePolling
+  } else {
+    toReturn.usePolling = {}.hasOwnProperty.call(process.env, 'PUNDLE_WATCHER_USE_POLLING')
+  }
+  if (config.tick) {
+    invariant(typeof config.tick === 'function', 'config.tick must be a function')
+    toReturn.tick = config.tick
+  } else toReturn.tick = function() { }
+  if (config.update) {
+    invariant(typeof config.update === 'function', 'config.update must be a function')
+    toReturn.update = config.update
+  } else toReturn.update = function() { }
+  if (config.ready) {
+    invariant(typeof config.ready === 'function', 'config.ready must be a function')
+    toReturn.ready = config.ready
+  } else toReturn.ready = function() { }
+  invariant(typeof config.compile === 'function', 'config.compile must be a function')
+  toReturn.compile = config.compile
+
+  return toReturn
 }

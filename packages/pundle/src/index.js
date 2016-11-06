@@ -2,6 +2,7 @@
 
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import type { File } from 'pundle-api/types'
+import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
 import Compilation from './compilation'
@@ -105,6 +106,9 @@ class Pundle {
   }
   resolve(request: string, from: ?string, cached: boolean = true): Promise<string> {
     return this.compilation.resolve(request, from, cached)
+  }
+  watch(config: Object = {}): Promise<Disposable> {
+    return this.compilation.watch(config)
   }
   dispose() {
     this.subscriptions.dispose()
