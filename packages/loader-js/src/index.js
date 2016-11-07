@@ -1,8 +1,9 @@
 /* @flow */
 
+import Path from 'path'
 import generate from 'babel-generator'
 import { parse } from 'babylon'
-import { createLoader, shouldProcess } from 'pundle-api'
+import { createLoader, shouldProcess, FileError, MessageError } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 
 import { traverse, getName, getParsedReplacements } from './helpers'
@@ -33,9 +34,12 @@ export default createLoader(function(config: Object, file: File) {
       ],
     })
   } catch (error) {
-    const location = error.loc ? `${error.loc.line}:${error.loc.column}` : '0:0'
-    error.stack = `${error.message}\n    at ${file.filePath}:${location}`
-    throw error
+    const errorMessage = `${error.message} in ${Path.relative(this.config.rootDirectory, file.filePath)}`
+    if (error.loc) {
+      throw new FileError(file.contents, error.loc.line, error.loc.column + 1, errorMessage, 'error')
+    } else {
+      throw new MessageError(errorMessage, 'error')
+    }
   }
 
   const replaceVariables = getParsedReplacements(Object.assign({}, this.config.replaceVariables))

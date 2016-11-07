@@ -14,7 +14,7 @@ export class FileError {
   message: string;
   severity: string;
 
-  constructor(contents: string, line: number, column: number, message: string, severity: string = 'info') {
+  constructor(contents: string, line: number, column: number, message: string, severity: string = 'error') {
     this.contents = contents
     this.line = line
     this.column = column
@@ -32,7 +32,7 @@ export class FileError {
 export class MessageError {
   message: string;
   severity: string;
-  constructor(message: string, severity: string = 'info') {
+  constructor(message: string, severity: string = 'error') {
     this.message = message
     this.severity = severity
     invariant(typeof this.message === 'string' && this.message, 'Message must be a valid string')

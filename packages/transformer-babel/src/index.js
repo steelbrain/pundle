@@ -1,6 +1,6 @@
 /* @flow */
 
-import { createTransformer, shouldProcess } from 'pundle-api'
+import { createTransformer, shouldProcess, MessageError } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 
 export default createTransformer(async function(config: Object, file: File) {
@@ -12,7 +12,7 @@ export default createTransformer(async function(config: Object, file: File) {
   try {
     babelPath = await this.resolve('babel-core')
   } catch (_) {
-    throw new Error('Unable to find babel-core installed locally in the project')
+    throw new MessageError('Unable to find babel-core in project root', 'error')
   }
 
   // $FlowIgnore: Flow doesn't like dynamic requires

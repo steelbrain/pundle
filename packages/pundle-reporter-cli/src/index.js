@@ -27,6 +27,8 @@ export default createReporter(async function(config: Object, error: Error | File
   if (error.constructor.name === 'FileError') {
     stack = codeFrame(error.contents, error.line, error.column, {
       highlightCode: chalk.supportsColor,
+      linesAbove: 4,
+      linesBelow: 3,
     })
   }
 

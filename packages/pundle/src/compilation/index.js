@@ -3,6 +3,7 @@
 import Path from 'path'
 import unique from 'lodash.uniqby'
 import chokidar from 'chokidar'
+import { MessageError } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
 
@@ -22,10 +23,10 @@ export default class Compilation {
     this.components = new Set()
     this.subscriptions = new CompositeDisposable()
   }
-  report(...parameters: Array<any>): void {
-    // TODO: Improve report() signature and behavior, also emit to consumers
-    // instead of doing this ourselves
-    console.log(...parameters)
+  async report(error: Object): Promise<void> {
+    for (const component of Helpers.filterComponents(this.components, 'reporter')) {
+      await Helpers.invokeComponent(this, component, error)
+    }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     for (const component of Helpers.filterComponents(this.components, 'resolver')) {
@@ -49,7 +50,7 @@ export default class Compilation {
       }
     }
     if (!result) {
-      throw new Error('No suitable generator found')
+      throw new MessageError('No matching generator found', 'error')
     }
     // Post-Transformer
     for (const component of Helpers.filterComponents(this.components, 'post-transformer')) {
