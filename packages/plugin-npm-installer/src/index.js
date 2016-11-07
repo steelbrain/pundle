@@ -1,6 +1,6 @@
 /* @flow */
 
-import { createResolver, shouldProcess, MessageError } from 'pundle-api'
+import { createResolver, shouldProcess, MessageIssue } from 'pundle-api'
 import { getModuleName } from './helpers'
 import Installer from './installer'
 
@@ -34,10 +34,10 @@ export default createResolver(async function(config: Object, givenRequest: strin
   let error = null
   try {
     await Installer.install(moduleName, config.save, this.config.rootDirectory)
-    this.report(new MessageError(`Installed '${moduleName}' in '${this.config.rootDirectory}'`, 'info'))
+    this.report(new MessageIssue(`Installed '${moduleName}' in '${this.config.rootDirectory}'`, 'info'))
   } catch (_) {
     error = _
-    this.report(new MessageError(`Failed to install '${moduleName}' in '${this.config.rootDirectory}'`, 'error'))
+    this.report(new MessageIssue(`Failed to install '${moduleName}' in '${this.config.rootDirectory}'`, 'error'))
   }
   config.afterInstall(moduleName, error)
   return await this.resolve(givenRequest, fromFile, false)

@@ -1,7 +1,7 @@
 /* @flow */
 
 import Path from 'path'
-import { MessageError } from 'pundle-api'
+import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
 import type { File, Import } from 'pundle-api/types'
 
@@ -70,7 +70,7 @@ export function getImportResolutions(compilation: Object, config: Object, files:
 
   function mergeResolutions(entry: Import) {
     if (!entry.resolved) {
-      throw new MessageError(`Error generating output, ${entry.request} not resolved from ${entry.from}`, 'error')
+      throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from}`, 'error')
     }
     const filePath = getFilePath(compilation, config, entry.resolved)
     if (resolutionMap[filePath]) {

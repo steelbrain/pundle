@@ -3,7 +3,7 @@
 import Path from 'path'
 import unique from 'lodash.uniqby'
 import chokidar from 'chokidar'
-import { MessageError } from 'pundle-api'
+import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
 
@@ -50,7 +50,7 @@ export default class Compilation {
       }
     }
     if (!result) {
-      throw new MessageError('No matching generator found', 'error')
+      throw new MessageIssue('No matching generator found', 'error')
     }
     // Post-Transformer
     for (const component of Helpers.filterComponents(this.components, 'post-transformer')) {

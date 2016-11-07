@@ -7,7 +7,7 @@ const VALID_SEVERITIES = new Set(['info', 'warning', 'error'])
 // NOTE: This function accepts both lines and numbers as 1-indexed
 // Babel by default has locs with 0-indexed columns, you'll have to
 // +1 them before feeding to this Class
-export class FileError {
+export class FileIssue {
   line: number;
   column: number;
   contents: string;
@@ -29,7 +29,7 @@ export class FileError {
   }
 }
 
-export class MessageError {
+export class MessageIssue {
   message: string;
   severity: string;
   constructor(message: string, severity: string = 'error') {

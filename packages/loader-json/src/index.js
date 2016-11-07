@@ -1,6 +1,6 @@
 /* @flow */
 
-import { createLoader, shouldProcess, MessageError } from 'pundle-api'
+import { createLoader, shouldProcess, MessageIssue } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 
 export default createLoader(function(config: Object, file: File) {
@@ -12,7 +12,7 @@ export default createLoader(function(config: Object, file: File) {
   try {
     parsed = JSON.parse(file.contents)
   } catch (_) {
-    throw new MessageError(`Malformed JSON found at '${file.filePath}'`, 'error')
+    throw new MessageIssue(`Malformed JSON found at '${file.filePath}'`, 'error')
   }
   return {
     imports: new Set(),

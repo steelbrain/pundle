@@ -1,7 +1,7 @@
 /* @flow */
 
-import type { FileError, MessageError } from './src/errors'
-export type { FileError, MessageError } from './src/errors'
+import type { FileIssue, MessageIssue } from './src/errors'
+export type { FileIssue, MessageIssue } from './src/errors'
 
 export type ComponentRule = string | RegExp
 export type ComponentConfig = {
@@ -49,7 +49,7 @@ export type Plugin = Component<'plugin', PluginCallback>
 export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?string>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
-export type ReporterCallback = ((config: Object, error: Error | FileError | MessageError) => Promise<void>)
+export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<void>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
 export type GeneratorCallback = ((config: Object, files: Array<File>, runtimeConfig: Object) => Promise<?Object>)

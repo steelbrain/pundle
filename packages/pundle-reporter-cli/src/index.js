@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import codeFrame from 'babel-code-frame'
 import invariant from 'assert'
 import { createReporter } from 'pundle-api'
-import type { FileError, MessageError } from 'pundle-api/types'
+import type { FileIssue, MessageIssue } from 'pundle-api/types'
 
 const SEVERITY_COLOR_MAP = {
   info: 'bgBlue',
@@ -17,14 +17,14 @@ const SEVERITY_TYPE_MAP = {
   warning: 'Warning',
 }
 
-export default createReporter(async function(config: Object, error: Error | FileError | MessageError) {
+export default createReporter(async function(config: Object, error: Error | FileIssue | MessageIssue) {
   invariant(typeof error === 'object' && error, 'Error must be an object')
 
   const severity = typeof error.severity === 'string' ? error.severity : 'error'
   const errorMessage = error.message
   const generatedType = chalk.bold[SEVERITY_COLOR_MAP[severity]](` ${SEVERITY_TYPE_MAP[severity]} `)
   let stack = ''
-  if (error.constructor.name === 'FileError') {
+  if (error.constructor.name === 'FileIssue') {
     stack = codeFrame(error.contents, error.line, error.column, {
       highlightCode: chalk.supportsColor,
       linesAbove: 4,

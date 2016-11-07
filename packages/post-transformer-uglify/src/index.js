@@ -1,13 +1,13 @@
 /* @flow */
 
-import { createPostTransformer, MessageError } from 'pundle-api'
+import { createPostTransformer, MessageIssue } from 'pundle-api'
 
 export default createPostTransformer(async function(config: Object, contents: string) {
   let uglifyPath
   try {
     uglifyPath = await this.resolve('uglify-js')
   } catch (_) {
-    throw new MessageError('Unable to find uglify-js in project root', 'error')
+    throw new MessageIssue('Unable to find uglify-js in project root', 'error')
   }
 
   // $FlowIgnore: Flow doesn't like dynamic requires
