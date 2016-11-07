@@ -3,7 +3,6 @@
 import Path from 'path'
 import unique from 'lodash.uniqby'
 import chokidar from 'chokidar'
-import difference from 'lodash.difference'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
 
@@ -24,6 +23,8 @@ export default class Compilation {
     this.subscriptions = new CompositeDisposable()
   }
   report(...parameters: Array<any>): void {
+    // TODO: Improve report() signature and behavior, also emit to consumers
+    // instead of doing this ourselves
     console.log(...parameters)
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
@@ -57,29 +58,8 @@ export default class Compilation {
     }
     return result
   }
-  // Notes:
-  // Lock as early as resolved to avoid duplicates
-  // Recurse asyncly until all resolves are taken care of
-  // Set resolved paths on all file#imports
-  async processTree(givenRequest: string, givenFrom: ?string, cached: boolean = true, files: Map<string, File>): Promise<Map<string, File>> {
-    const processFile = async (path, from = null) => {
-      const resolved = await this.resolve(path, from, cached)
-      if (files.has(resolved)) {
-        return resolved
-      }
-      // $FlowIgnore: We are using an invalid-ish flow type on purpose, 'cause flow is dumb and doesn't understand that we *fix* these nulls two lines below
-      files.set(resolved, null)
-      const file = await this.processFile(resolved, from, cached)
-      files.set(resolved, file)
-      await Promise.all(Array.from(file.imports).map(entry =>
-        processFile(entry.request, resolved).then(function(resolvedImport) {
-          entry.resolved = resolvedImport
-        })
-      ))
-      return resolved
-    }
-
-    await processFile(givenRequest, givenFrom)
+  async processTree(request: string, from: ?string, cached: boolean = true, files: Map<string, File>): Promise<Map<string, File>> {
+    await Helpers.processFileTree(this, files, request, from, cached)
     return files
   }
   // Order of execution:
@@ -154,6 +134,20 @@ export default class Compilation {
       }
     }
   }
+  // Spec:
+  // - Create promised queue
+  // - Create files map
+  // - Normalize watcher config
+  // - Resolve all given entries
+  // - Watch the resolved entries
+  // - Process trees of all resolved entries
+  // - Trigger config.ready regardless of initial success status
+  // - Trigger config.compile if initially successful
+  // - On each observed file change, try to re-build it's tree and trigger
+  //   cofig.compile() if tree rebuilding is successful (in queue)
+  // - On each observed unlink, make sure to delete the file (in queue)
+  // - Return a disposable, that's also attached to this Compilation instance
+  //   and closes the file watcher
   async watch(givenConfig: Object = {}): Promise<Disposable> {
     let queue = Promise.resolve()
     const files: Map<string, File> = new Map()
@@ -163,69 +157,8 @@ export default class Compilation {
     const watcher = chokidar.watch(resolvedEntries, {
       usePolling: config.usePolling,
     })
-    const processFile = async (filePath, force = true, from = null) => {
-      if (files.has(filePath) && !force) {
-        return true
-      }
-      const oldValue = files.get(filePath)
-      if (oldValue === null) {
-        // We are returning even when forced in case of null value, 'cause it
-        // means it is already in progress
-        return true
-      }
-      // Reset contents on both being unable to resolve and error in processing
-      let file
-      try {
-        // $FlowIgnore: Allow null
-        files.set(filePath, null)
-        file = await this.processFile(filePath, from)
-        files.set(filePath, file)
-        await Promise.all(Array.from(file.imports).map(entry => this.resolve(entry.request, filePath).then(resolved => {
-          entry.resolved = resolved
-        })))
-        try {
-          config.tick(filePath, null)
-        } catch (tickError) {
-          this.report(tickError)
-        }
-      } catch (error) {
-        // $FlowIgnore: Allow null
-        files.set(filePath, oldValue)
-        this.report(error)
-        try {
-          config.tick(filePath, error)
-        } catch (tickError) {
-          this.report(tickError)
-        }
-        return false
-      }
-
-      const oldImports = oldValue ? Array.from(oldValue.imports).map(e => e.resolved || '') : []
-      const newImports = Array.from(file.imports).map(e => e.resolved || '')
-      const addedImports = difference(newImports, oldImports)
-      const removedImports = difference(oldImports, newImports)
-      addedImports.forEach(function(entry) {
-        watcher.add(entry)
-      })
-      removedImports.forEach(function(entry) {
-        watcher.unwatch(entry)
-      })
-      try {
-        config.update(filePath, newImports, oldImports)
-      } catch (updateError) {
-        this.report(updateError)
-      }
-
-      try {
-        const promises = await Promise.all(Array.from(file.imports).map((entry: Object) =>
-          processFile(entry.resolved, false, filePath)
-        ))
-        return promises.every(i => i)
-      } catch (error) {
-        this.report(error)
-        return false
-      }
-    }
+    const processFile = (filePath, force = true, from = null) =>
+      Helpers.processWatcherFileTree(this, config, watcher, files, filePath, force, from)
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
