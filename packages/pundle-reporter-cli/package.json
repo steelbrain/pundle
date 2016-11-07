@@ -1,7 +1,7 @@
 {
-  "name": "pundle-preset-default",
+  "name": "pundle-reporter-cli",
   "version": "1.1.6",
-  "description": "Default preset for Pundle",
+  "description": "CLI reporter for Pundle",
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
@@ -18,11 +18,8 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-loader-js": "^1.1.6",
-    "pundle-loader-json": "^1.1.6",
-    "pundle-resolver-default": "^1.1.6",
-    "pundle-generator-default": "^1.1.6",
-    "pundle-reporter-cli": "^1.1.6"
+    "babel-code-frame": "^6.16.0",
+    "pundle-api": "^1.1.6"
   },
   "devDependencies": {}
 }
