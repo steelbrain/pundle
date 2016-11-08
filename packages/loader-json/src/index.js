@@ -14,15 +14,16 @@ export default createLoader(function(config: Object, file: File) {
   } catch (_) {
     throw new MessageIssue(`Malformed JSON found at '${file.filePath}'`, 'error')
   }
+
   return {
     imports: new Set(),
     sourceMap: {
-      mappings: [],
-      names: [],
-      sources: [file.filePath],
       version: 3,
+      sources: [file.filePath],
+      names: ['$'],
+      mappings: 'AAAAA',
     },
-    contents: `module.exports = ${JSON.stringify(parsed, null, 2)}\n`,
+    contents: `module.exports = ${JSON.stringify(parsed)}`,
   }
 }, {
   include: ['*.json'],
