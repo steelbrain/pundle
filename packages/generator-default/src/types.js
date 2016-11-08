@@ -8,6 +8,7 @@ export type Config = {
   pathType: 'filePath' | 'number',
   directory: string,
   sourceMap: boolean,
+  sourceMapPath: 'inline' | string | null,
   sourceMapNamespace: string,
 }
 
