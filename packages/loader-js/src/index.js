@@ -1,6 +1,5 @@
 /* @flow */
 
-import Path from 'path'
 import generate from 'babel-generator'
 import { parse } from 'babylon'
 import { createLoader, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
@@ -74,8 +73,8 @@ export default createLoader(function(config: Object, file: File) {
   })
 
   const compiled = generate(ast, {
-    concise: true,
     quotes: 'single',
+    compact: true,
     comments: false,
     filename: file.filePath,
     sourceMaps: true,
