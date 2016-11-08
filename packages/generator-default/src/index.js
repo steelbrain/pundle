@@ -31,17 +31,18 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
   const chunksMap = new SourceMapGenerator({
     skipValidation: true,
   })
-  let linesCount = Helpers.getLinesCount(chunks.join(''))
+  // NOTE: I don't know why we need a +1, but adding it works
+  let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
   for (let i = 0, length = files.length; i < length; i++) {
     const file = files[i]
     const publicPath = Helpers.getFilePath(this, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
     chunks.push(fileContents)
-    linesCount += Helpers.getLinesCount(fileContents)
     if (config.sourceMap && file.sourceMap) {
       Helpers.mergeSourceMap(file.sourceMap, chunksMap, `pundle:///${publicPath}`, file.source, linesCount)
     }
+    linesCount += Helpers.getLinesCount(fileContents)
   }
 
   const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
