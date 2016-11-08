@@ -3,7 +3,7 @@
 import Path from 'path'
 import unique from 'lodash.uniqby'
 import chokidar from 'chokidar'
-import { MessageIssue } from 'pundle-api'
+import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
 
@@ -36,7 +36,7 @@ export default class Compilation {
       }
     }
 
-    const error = new Error(`Cannot find module '${request}'${from ? ` from '${from}'` : ''}`)
+    const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
     // $FlowIgnore: This is a custom property
     error.code = 'MODULE_NOT_FOUND'
     throw error
