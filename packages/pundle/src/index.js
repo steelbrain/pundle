@@ -6,28 +6,34 @@ import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
 import Compilation from './compilation'
-import type { Config, Preset, ComponentConfig } from './types'
+import type { PundleConfig, Preset, Loadable } from './types'
+
+const UNIQUE_SIGNATURE_OBJ = {}
 
 class Pundle {
-  config: Config;
+  config: PundleConfig;
   emitter: Emitter;
   compilation: Compilation;
   subscriptions: CompositeDisposable;
 
-  constructor(config: Object) {
-    this.config = Helpers.fillConfig(config)
+  constructor(signature: typeof UNIQUE_SIGNATURE_OBJ, config: PundleConfig) {
+    if (signature !== UNIQUE_SIGNATURE_OBJ) {
+      throw new Error('Direct constructor call not allowed. Use Pundle.create() instead')
+    }
+
+    this.config = config
     this.emitter = new Emitter()
-    this.compilation = new Compilation(this.config)
+    this.compilation = new Compilation(config.compilation)
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.compilation)
   }
-  async loadComponents(givenComponents: Array<ComponentConfig>): Promise<this> {
+  async loadComponents(givenComponents: Array<Loadable>): Promise<this> {
     if (!Array.isArray(givenComponents)) {
       throw new Error('Parameter 1 to loadComponents() must be an Array')
     }
-    const components = await Helpers.getComponents(givenComponents, this.config.rootDirectory)
+    const components = await Helpers.getComponents(givenComponents, this.config.compilation.rootDirectory)
     components.forEach(({ component, config }) => {
       this.compilation.addComponent(component, config)
     })
@@ -46,7 +52,7 @@ class Pundle {
   async loadPreset(givenPreset: Preset | string, config: Object = {}): Promise<this> {
     let preset = givenPreset
     if (typeof preset === 'string') {
-      preset = await Helpers.getComponent(preset, this.config.rootDirectory)
+      preset = await Helpers.getComponent(preset, this.config.compilation.rootDirectory)
     }
     if (!Array.isArray(preset)) {
       throw new Error('Invalid preset value/export. It must be an Array')
@@ -65,7 +71,7 @@ class Pundle {
       if (config[entry.name] === false) {
         continue
       }
-      const component = typeof entry.component === 'string' ? await Helpers.getComponent(entry.component, this.config.rootDirectory) : entry.component
+      const component = typeof entry.component === 'string' ? await Helpers.getComponent(entry.component, this.config.compilation.rootDirectory) : entry.component
       const componentConfig = Object.assign({}, entry.config)
       if (config[entry.name]) {
         Object.assign(componentConfig, config[entry.name])
@@ -86,7 +92,7 @@ class Pundle {
     let requests
     const files: Map<string, File> = new Map()
     if (!givenRequest) {
-      requests = this.config.entry
+      requests = this.config.compilation.entry
     } else if (typeof givenRequest === 'string') {
       requests = [givenRequest]
     } else if (!Array.isArray(givenRequest)) {
@@ -112,6 +118,23 @@ class Pundle {
   }
   dispose() {
     this.subscriptions.dispose()
+  }
+  async create(givenConfig: Object): Promise<Pundle> {
+    const config = Helpers.fillPundleConfig(givenConfig)
+    const pundle = new Pundle(UNIQUE_SIGNATURE_OBJ, config)
+    if (config.enableConfigFile) {
+      // TODO: Merge pundle config into config here
+    }
+    await pundle.loadComponents(config.components)
+    for (const preset of config.presets) {
+      if (Array.isArray(preset)) {
+        // $FlowIgnore: Weird types union, confuses pundle
+        await pundle.loadPreset(preset[0], preset[1])
+      } else {
+        await pundle.loadPreset(preset)
+      }
+    }
+    return pundle
   }
 }
 

@@ -4,7 +4,7 @@ import type { FileIssue, MessageIssue } from './src/errors'
 export type { FileIssue, MessageIssue } from './src/errors'
 
 export type ComponentRule = string | RegExp
-export type ComponentConfig = {
+export type Loadable = {
   include?: ComponentRule | Array<ComponentRule>,
   exclude?: ComponentRule | Array<ComponentRule>,
 }

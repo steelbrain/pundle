@@ -3,11 +3,11 @@
 import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
 import type { ComponentAny } from 'pundle-api/types'
-import type { Config, ComponentConfig } from './types'
+import type { PundleConfig, CompilationConfig, Loadable } from './types'
 
 const resolve = promisify(require('resolve'))
 
-export function fillConfig(config: Object): Config {
+export function fillCompilationConfig(config: Object): CompilationConfig {
   const toReturn = {}
 
   toReturn.debug = !!config.debug
@@ -46,6 +46,31 @@ export function fillConfig(config: Object): Config {
   return toReturn
 }
 
+export function fillPundleConfig(config: Object): PundleConfig {
+  const toReturn = {}
+  toReturn.compilation = fillCompilationConfig(config)
+  if (config.watcher) {
+    if (typeof config.watcher !== 'object') {
+      throw new Error('config.watcher must be an Object')
+    }
+    toReturn.watcher = config.watcher
+  } else toReturn.watcher = {}
+  if (config.presets) {
+    if (!Array.isArray(config.presets)) {
+      throw new Error('config.presets must be an Array')
+    }
+    toReturn.presets = config.presets
+  } else toReturn.presets = []
+  if (config.components) {
+    if (!Array.isArray(config.components)) {
+      throw new Error('config.components must be an Array')
+    }
+    toReturn.components = config.components
+  } else toReturn.components = []
+  toReturn.enableConfigFile = typeof config.enableConfigFile === 'undefined' ? true : !!config.enableConfigFile
+  return toReturn
+}
+
 export async function getComponent(entry: string, rootDirectory: string): Promise<any> {
   const resolved = await resolve(entry, { basedir: rootDirectory })
   /* eslint-disable global-require */
@@ -60,9 +85,9 @@ export async function getComponent(entry: string, rootDirectory: string): Promis
   return mainModule
 }
 
-export async function getComponents(components: Array<ComponentConfig>, rootDirectory: string): Promise<Array<{ component: ComponentAny, config: Object }>> {
+export async function getComponents(components: Array<Loadable>, rootDirectory: string): Promise<Array<{ component: ComponentAny, config: Object }>> {
   const processed = []
-  for (const entry of (components: Array<ComponentConfig>)) {
+  for (const entry of (components: Array<Loadable>)) {
     let config = {}
     let component
     if (Array.isArray(entry)) {
@@ -70,6 +95,7 @@ export async function getComponents(components: Array<ComponentConfig>, rootDire
     } else {
       component = entry
     }
+    // $FlowIgnore: FIXME: Fix this
     const mainModule = await getComponent(component, rootDirectory)
     processed.push({ component: mainModule, config })
   }

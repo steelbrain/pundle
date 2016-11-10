@@ -9,16 +9,16 @@ import type { File, ComponentAny, Import } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ComponentEntry } from './types'
-import type { Config } from '../types'
+import type { CompilationConfig } from '../types'
 
 let uniqueID = 0
 
 export default class Compilation {
-  config: Config;
+  config: CompilationConfig;
   components: Set<ComponentEntry>;
   subscriptions: CompositeDisposable;
 
-  constructor(config: Config) {
+  constructor(config: CompilationConfig) {
     this.config = config
     this.components = new Set()
     this.subscriptions = new CompositeDisposable()

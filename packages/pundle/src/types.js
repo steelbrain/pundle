@@ -8,7 +8,7 @@ export type FileSystem = {
   readFile: ((filePath: string) => Promise<string>),
 }
 
-export type Config = {
+export type CompilationConfig = {
   debug: boolean,
   entry: Array<string>,
   fileSystem: FileSystem,
@@ -25,5 +25,22 @@ export type WatcherConfig = {
   compile(totalFiles: Array<File>): Promise<void> | void,
 }
 
-export type ComponentConfig = string | [string, Object]
 export type Preset = Array<{ component: string | Object, config: Object, name: string }>
+export type Loadable = string | [string, Object] | [Object, Object]
+
+// NOTE: This is the config after transformation, not what Pundle accepts
+export type PundleConfig = {
+  watcher: Object,
+  presets: Array<Loadable>,
+  components: Array<Loadable>,
+  compilation: CompilationConfig,
+  enableConfigFile: boolean,
+}
+
+// NOTE: Not used anywhere but this is what Pundle supports publically
+export type PublicPundleConfig = Loadable & {
+  watcher?: WatcherConfig,
+  presets?: Array<Loadable>,
+  components?: Array<Loadable>,
+  enableConfigFile: boolean,
+}
