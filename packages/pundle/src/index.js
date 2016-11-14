@@ -92,12 +92,6 @@ class Pundle {
 
     return Array.from(files.values())
   }
-  processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
-    return this.compilation.processFile(request, from, cached)
-  }
-  resolve(request: string, from: ?string, cached: boolean = true): Promise<string> {
-    return this.compilation.resolve(request, from, cached)
-  }
   watch(config: Object = {}): Promise<Disposable> {
     return this.compilation.watch(Object.assign({}, config, this.config.watcher))
   }
