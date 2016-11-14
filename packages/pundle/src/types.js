@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { File } from 'pundle-api/types'
+import type { File, ComponentAny } from 'pundle-api/types'
 import type { Stats } from 'fs'
 
 export type FileSystem = {
@@ -26,21 +26,22 @@ export type WatcherConfig = {
 }
 
 export type Preset = Array<{ component: string | Object, config: Object, name: string }>
-export type Loadable = string | [string, Object] | [Object, Object]
+export type Loadable<T> = string | [string, Object] | [T, Object]
+export type Loaded<T> = [T, Object]
 
 // NOTE: This is the config after transformation, not what Pundle accepts
 export type PundleConfig = {
   watcher: Object,
-  presets: Array<Loadable>,
-  components: Array<Loadable>,
+  presets: Array<Loadable<Preset>>,
+  components: Array<Loadable<ComponentAny>>,
   compilation: CompilationConfig,
   enableConfigFile: boolean,
 }
 
 // NOTE: Not used anywhere but this is what Pundle supports publically
-export type PublicPundleConfig = Loadable & {
+export type PublicPundleConfig = PundleConfig & {
   watcher?: WatcherConfig,
-  presets?: Array<Loadable>,
-  components?: Array<Loadable>,
+  presets?: Array<Loadable<Preset>>,
+  components?: Array<Loadable<ComponentAny>>,
   enableConfigFile: boolean,
 }

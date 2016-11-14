@@ -2,10 +2,10 @@
 
 import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
-import type { ComponentAny } from 'pundle-api/types'
-import type { PundleConfig, CompilationConfig, Loadable } from './types'
+import { getRelativeFilePath } from 'pundle-api'
+import type { PundleConfig, CompilationConfig, Loadable, Loaded } from './types'
 
-const resolve = promisify(require('resolve'))
+const resolveModule = promisify(require('resolve'))
 
 export function fillCompilationConfig(config: Object): CompilationConfig {
   const toReturn = {}
@@ -71,23 +71,30 @@ export function fillPundleConfig(config: Object): PundleConfig {
   return toReturn
 }
 
-export async function getComponent(entry: string, rootDirectory: string): Promise<any> {
-  const resolved = await resolve(entry, { basedir: rootDirectory })
+export async function resolve<T>(request: string, rootDirectory: string): Promise<T> {
+  let resolved
+  try {
+    resolved = await resolveModule(request, { basedir: rootDirectory })
+  } catch (e) {
+    throw new Error(`Unable to resolve '${request}' from root directory`)
+  }
   /* eslint-disable global-require */
-  // $FlowIgnore: We *have* to do this, sorry
-  const component = require(resolved)
+  // $FlowIgnore: This is how it works, loadables are dynamic requires
+  let mainModule = require(resolved)
   /* eslint-enable global-require */
   // eslint-disable-next-line no-underscore-dangle
-  const mainModule = component && component.__esModule ? component.default : component
-  if (typeof mainModule !== 'object' || !mainModule) {
-    throw new Error(`Component '${component}' exported incorrectly`)
+  mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
+  if (typeof mainModule === 'object' && mainModule) {
+    return mainModule
   }
-  return mainModule
+  throw new Error(`Module '${request}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
 }
 
-export async function getComponents(components: Array<Loadable>, rootDirectory: string): Promise<Array<{ component: ComponentAny, config: Object }>> {
-  const processed = []
-  for (const entry of (components: Array<Loadable>)) {
+export async function getLoadables<T>(loadables: Array<Loadable<T>>, rootDirectory: string): Promise<Array<Loaded<T>>> {
+  const toReturn = []
+  for (let i = 0, length = loadables.length; i < length; i++) {
+    const entry = loadables[i]
+
     let config = {}
     let component
     if (Array.isArray(entry)) {
@@ -95,9 +102,11 @@ export async function getComponents(components: Array<Loadable>, rootDirectory: 
     } else {
       component = entry
     }
-    // $FlowIgnore: FIXME: Fix this
-    const mainModule = await getComponent(component, rootDirectory)
-    processed.push({ component: mainModule, config })
+    if (typeof component === 'string') {
+      toReturn.push([await resolve(component, rootDirectory), config])
+    } else {
+      toReturn.push([component, config])
+    }
   }
-  return processed
+  return toReturn
 }
