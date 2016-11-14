@@ -7,7 +7,7 @@ import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
 import Compilation from './compilation'
-import type { PundleConfig, Preset, Loadable, Loaded } from '../types'
+import type { PundleConfig, Preset, Loadable } from '../types'
 
 const UNIQUE_SIGNATURE_OBJ = {}
 
@@ -30,18 +30,19 @@ class Pundle {
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.compilation)
   }
-  async loadComponents(givenComponents: Array<Loadable<ComponentAny>>): Promise<this> {
+  async loadComponents(givenComponents: Array<Loadable<ComponentAny>>): Promise<CompositeDisposable> {
     if (!Array.isArray(givenComponents)) {
       throw new Error('Parameter 1 to loadComponents() must be an Array')
     }
-    const components: Array<Loaded<ComponentAny>> = await Helpers.getLoadables(givenComponents, this.config.compilation.rootDirectory)
-    components.forEach(([component, config]) => this.compilation.addComponent(component, config))
-    return this
+    const components = await Helpers.getLoadables(givenComponents, this.config.compilation.rootDirectory)
+    const subscriptions = new CompositeDisposable()
+    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    return subscriptions
   }
   // Notes:
   // - False in a preset config for a component means ignore it
   // - Component config given takes presedence over preset component config
-  async loadPreset(givenPreset: Preset | string, presetConfig: Object = {}): Promise<this> {
+  async loadPreset(givenPreset: Preset | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
     let preset = givenPreset
     if (typeof preset === 'string') {
       preset = await Helpers.resolve(preset, this.config.compilation.rootDirectory)
@@ -62,8 +63,9 @@ class Pundle {
       return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
     }).filter(i => i)
     const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)
-    components.forEach(([component, config]) => this.compilation.addComponent(component, config))
-    return this
+    const subscriptions = new CompositeDisposable()
+    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    return subscriptions
   }
   async generate(givenFiles: ?Array<File>, runtimeConfig: Object = {}): Promise<Object> {
     const files = givenFiles || await this.processTree()
