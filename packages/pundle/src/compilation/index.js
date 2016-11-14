@@ -119,9 +119,8 @@ export default class Compilation {
     return { id, request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {
-    const entry = { component, config }
-    this.components.add(entry)
-    entry.component.activate.call(this)
+    this.components.add({ component, config })
+    component.activate.call(this)
     return new Disposable(() => {
       this.deleteComponent(component, config)
     })

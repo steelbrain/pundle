@@ -5,7 +5,9 @@ import { version, makePromisedLock } from './helpers'
 import type {
   Component,
   CallbackOrConfig,
+  ComponentCallbacks,
 
+  Simple,
   Loader,
   LoaderCallback,
   Plugin,
@@ -53,6 +55,10 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
     dispose,
     defaultConfig,
   }
+}
+
+export function createSimple(options: ComponentCallbacks): Simple {
+  return create({ activate: options.activate, callback() {}, dispose: options.dispose }, {}, 'simple')
 }
 
 export function createLoader(options: CallbackOrConfig<LoaderCallback>, defaultConfig: Object = {}): Loader {

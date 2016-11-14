@@ -99,7 +99,7 @@ class Pundle {
     return this.compilation.resolve(request, from, cached)
   }
   watch(config: Object = {}): Promise<Disposable> {
-    return this.compilation.watch(config)
+    return this.compilation.watch(Object.assign({}, config, this.config.watcher))
   }
   dispose() {
     this.subscriptions.dispose()
