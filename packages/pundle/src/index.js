@@ -1,5 +1,6 @@
 /* @flow */
 
+import invariant from 'assert'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import type { File, ComponentAny } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
@@ -37,16 +38,9 @@ class Pundle {
     components.forEach(([component, config]) => this.compilation.addComponent(component, config))
     return this
   }
-  // Spec:
-  // - If preset is given as string, resolve/require that
-  // - Validate preset export to be an Array
-  // - Validate config to be an object
-  // - When iterating over preset entries:
-  //   - Validate each entry
-  //   - If given config has "false" as value of a preset component, skip it
-  //   - if component is string, resolve/require it
-  //   - Merge given config of that component with preset config of that component
-  //   - Store it in components list
+  // Notes:
+  // - False in a preset config for a component means ignore it
+  // - Component config given takes presedence over preset component config
   async loadPreset(givenPreset: Preset | string, presetConfig: Object = {}): Promise<this> {
     let preset = givenPreset
     if (typeof preset === 'string') {
@@ -59,9 +53,14 @@ class Pundle {
       throw new Error('Parameter 2 to loadPreset() must be an Object')
     }
 
-    // $FlowIgnore: Types too complex
-    const loadables = preset.map(entry => [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])])
-                      .filter(i => i)
+    const loadables = preset.map(entry => {
+      if (presetConfig[entry.name] === false) {
+        // $FlowIgnore: We are filtering it later, dumb flow
+        return false
+      }
+      // $FlowIgnore: Types too complex for flow
+      return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
+    }).filter(i => i)
     const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)
     components.forEach(([component, config]) => this.compilation.addComponent(component, config))
     return this
@@ -105,12 +104,12 @@ class Pundle {
   dispose() {
     this.subscriptions.dispose()
   }
-  async create(givenConfig: Object): Promise<Pundle> {
-    const config = Helpers.fillPundleConfig(givenConfig)
+  static async create(givenConfig: Object): Promise<Pundle> {
+    invariant(typeof givenConfig === 'object' && givenConfig, 'Config must be an object')
+    invariant(typeof givenConfig.rootDirectory === 'string', 'config.rootDirectory must be a string')
+
+    const config = await Helpers.getPundleConfig(givenConfig.rootDirectory, givenConfig)
     const pundle = new Pundle(UNIQUE_SIGNATURE_OBJ, config)
-    if (config.enableConfigFile) {
-      // TODO: Merge pundle config into config here
-    }
     await pundle.loadComponents(config.components)
     for (const preset of config.presets) {
       if (Array.isArray(preset)) {

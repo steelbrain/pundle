@@ -1,93 +1,146 @@
 /* @flow */
+/* eslint-disable global-require, no-underscore-dangle */
 
+import Path from 'path'
+import invariant from 'assert'
 import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
 import { getRelativeFilePath } from 'pundle-api'
-import type { PundleConfig, CompilationConfig, Loadable, Loaded } from './types'
+import type { PundleConfig, Loadable, Loaded } from './types'
 
 const resolveModule = promisify(require('resolve'))
-
-export function fillCompilationConfig(config: Object): CompilationConfig {
-  const toReturn = {}
-
-  toReturn.debug = !!config.debug
-  if (config.entry && (typeof config.entry === 'string' || Array.isArray(config.entry))) {
-    toReturn.entry = [].concat(config.entry)
-  } else {
-    throw new Error('config.entry should be a string or an Array')
-  }
-
-  if (config.fileSystem) {
-    if (typeof config.fileSystem !== 'object' || typeof config.fileSystem.stat !== 'function' || typeof config.fileSystem.readFile !== 'function') {
-      throw new Error('config.fileSystem must be an object implementing FS interface')
-    }
-    toReturn.fileSystem = config.fileSystem
-  } else {
-    toReturn.fileSystem = PundleFS
-  }
-
-  if (config.publicPath && typeof config.publicPath !== 'string') {
-    throw new Error('config.publicPath must be a string')
-  }
-  toReturn.publicPath = config.publicPath || null
-
-  if (typeof config.rootDirectory !== 'string' || !config.rootDirectory) {
-    throw new Error('config.rootDirectory must be a string')
-  }
-  toReturn.rootDirectory = config.rootDirectory
-
-  if (config.replaceVariables && typeof config.replaceVariables !== 'object') {
-    throw new Error('config.replaceVariables must be an Object')
-  }
-  toReturn.replaceVariables = Object.assign({}, {
-    'process.env.NODE_ENV': toReturn.debug ? '"development"' : '"production"',
-  }, config.replaceVariables)
-
-  return toReturn
-}
-
-export function fillPundleConfig(config: Object): PundleConfig {
-  const toReturn = {}
-  toReturn.compilation = fillCompilationConfig(config)
-  if (config.watcher) {
-    if (typeof config.watcher !== 'object') {
-      throw new Error('config.watcher must be an Object')
-    }
-    toReturn.watcher = config.watcher
-  } else toReturn.watcher = {}
-  if (config.presets) {
-    if (!Array.isArray(config.presets)) {
-      throw new Error('config.presets must be an Array')
-    }
-    toReturn.presets = config.presets
-  } else toReturn.presets = []
-  if (config.components) {
-    if (!Array.isArray(config.components)) {
-      throw new Error('config.components must be an Array')
-    }
-    toReturn.components = config.components
-  } else toReturn.components = []
-  toReturn.enableConfigFile = typeof config.enableConfigFile === 'undefined' ? true : !!config.enableConfigFile
-  return toReturn
-}
 
 export async function resolve<T>(request: string, rootDirectory: string): Promise<T> {
   let resolved
   try {
     resolved = await resolveModule(request, { basedir: rootDirectory })
-  } catch (e) {
-    throw new Error(`Unable to resolve '${request}' from root directory`)
+  } catch (_) {
+    const error = new Error(`Unable to resolve '${request}' from root directory`)
+    // $FlowIgnore: Custom property
+    error.code = 'MODULE_NOT_FOUND'
+    throw error
   }
-  /* eslint-disable global-require */
   // $FlowIgnore: This is how it works, loadables are dynamic requires
   let mainModule = require(resolved)
-  /* eslint-enable global-require */
-  // eslint-disable-next-line no-underscore-dangle
   mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
   if (typeof mainModule === 'object' && mainModule) {
     return mainModule
   }
   throw new Error(`Module '${request}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
+}
+
+// NOTE:
+// In all configs but rootDirectory, given config takes precendece
+export async function getPundleConfig(rootDirectory: string, a: Object): Promise<PundleConfig> {
+  const config = {}
+
+  let b = {}
+  if (typeof a !== 'object' || !a) {
+    throw new Error('Config must be an object')
+  }
+  if (typeof a.enableConfigFile === 'undefined' || a.enableConfigFile) {
+    let configModule
+    try {
+      configModule = await resolve(Path.join(rootDirectory, a.configFileName || 'Pundleconfig.js'), rootDirectory)
+    } catch (error) {
+      if (error.code !== 'MODULE_NOT_FOUND') {
+        throw error
+      }
+    }
+    if (typeof configModule === 'function') {
+      b = await configModule()
+    } else if (typeof configModule === 'object') {
+      b = configModule
+    }
+    if (!b) {
+      throw new Error(`Invalid export value of config file in '${rootDirectory}'`)
+    }
+  }
+  config.watcher = {}
+  if (b.watcher) {
+    invariant(typeof b.watcher === 'object', 'config.watcher must be an Object')
+    Object.assign(config.watcher, b.watcher)
+  }
+  if (a.watcher) {
+    invariant(typeof a.watcher === 'object', 'config.watcher must be an Object')
+    Object.assign(config.watcher, a.watcher)
+  }
+  config.presets = []
+  if (a.presets) {
+    invariant(Array.isArray(a.presets), 'config.presets must be an Array')
+    config.presets = config.presets.concat(a.presets)
+  }
+  if (b.presets) {
+    invariant(Array.isArray(b.presets), 'config.presets must be an Array')
+    config.presets = config.presets.concat(b.presets)
+  }
+  config.components = []
+  if (a.components) {
+    invariant(Array.isArray(a.components), 'config.components must be an Array')
+    config.components = config.components.concat(a.components)
+  }
+  if (b.components) {
+    invariant(Array.isArray(b.components), 'config.components must be an Array')
+    config.components = config.components.concat(b.components)
+  }
+
+  const compilation = {}
+  compilation.debug = !!(a.debug || b.debug)
+  compilation.entry = []
+  if (!a.entry && !b.entry) {
+    throw new Error('config.entry should be an Array or string')
+  }
+  if (a.entry) {
+    invariant(typeof a.entry === 'string' || Array.isArray(a.entry), 'config.entry must be an Array or string')
+    compilation.entry = compilation.entry.concat(a.entry)
+  }
+  if (b.entry) {
+    invariant(typeof b.entry === 'string' || Array.isArray(b.entry), 'config.entry must be an Array or string')
+    compilation.entry = compilation.entry.concat(b.entry)
+  }
+  compilation.fileSystem = Object.assign({}, PundleFS)
+  if (b.fileSystem) {
+    invariant(typeof b.fileSystem === 'object', 'config.fileSystem must be an Object')
+    Object.assign(compilation.fileSystem, b.fileSystem)
+  }
+  if (a.fileSystem) {
+    invariant(typeof a.fileSystem === 'object', 'config.fileSystem must be an Object')
+    Object.assign(compilation.fileSystem, a.fileSystem)
+  }
+  compilation.publicPath = null
+  if (b.publicPath) {
+    invariant(typeof b.publicPath === 'string', 'config.publicPath must be a string')
+    compilation.publicPath = b.publicPath
+  }
+  if (a.publicPath) {
+    invariant(typeof a.publicPath === 'string', 'config.publicPath must be a string')
+    compilation.publicPath = a.publicPath
+  }
+  if (!a.rootDirectory && !b.rootDirectory) {
+    throw new Error('config.rootDirectory must be a string')
+  }
+  if (a.rootDirectory) {
+    invariant(a.rootDirectory, 'config.rootDirectory must be a string')
+    compilation.rootDirectory = a.rootDirectory
+  }
+  if (b.rootDirectory) {
+    invariant(b.rootDirectory, 'config.rootDirectory must be a string')
+    compilation.rootDirectory = b.rootDirectory
+  }
+  compilation.replaceVariables = Object.assign({}, {
+    'process.env.NODE_ENV': config.debug ? '"development"' : '"production"',
+  }, config.replaceVariables)
+  if (b.replaceVariables) {
+    invariant(typeof b.replaceVariables === 'object', 'config.replaceVariables must be an Object')
+    Object.assign(compilation.replaceVariables, b.replaceVariables)
+  }
+  if (a.replaceVariables) {
+    invariant(typeof a.replaceVariables === 'object', 'config.replaceVariables must be an Object')
+    Object.assign(compilation.replaceVariables, a.replaceVariables)
+  }
+
+  config.compilation = compilation
+  return config
 }
 
 export async function getLoadables<T>(loadables: Array<Loadable<T>>, rootDirectory: string): Promise<Array<Loaded<T>>> {
