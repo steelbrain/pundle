@@ -9,7 +9,7 @@ import type { File, ComponentAny, Import } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ComponentEntry } from './types'
-import type { CompilationConfig } from '../types'
+import type { CompilationConfig } from '../../types'
 
 let uniqueID = 0
 

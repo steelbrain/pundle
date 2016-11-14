@@ -6,7 +6,7 @@ import difference from 'lodash.difference'
 import type { File, ComponentAny } from 'pundle-api/types'
 import type Compilation from './'
 import type { ComponentEntry } from './types'
-import type { WatcherConfig } from '../types'
+import type { WatcherConfig } from '../../types'
 
 export function *filterComponents(components: Set<ComponentEntry>, type: string): Generator<ComponentEntry, void, void> {
   for (const entry of components) {

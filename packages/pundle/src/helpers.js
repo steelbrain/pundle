@@ -6,7 +6,7 @@ import invariant from 'assert'
 import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
 import { getRelativeFilePath } from 'pundle-api'
-import type { PundleConfig, Loadable, Loaded } from './types'
+import type { PundleConfig, Loadable, Loaded } from '../types'
 
 const resolveModule = promisify(require('resolve'))
 

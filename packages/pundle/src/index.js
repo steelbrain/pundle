@@ -7,7 +7,7 @@ import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
 import Compilation from './compilation'
-import type { PundleConfig, Preset, Loadable, Loaded } from './types'
+import type { PundleConfig, Preset, Loadable, Loaded } from '../types'
 
 const UNIQUE_SIGNATURE_OBJ = {}
 
