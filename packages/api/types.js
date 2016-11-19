@@ -1,5 +1,7 @@
 /* @flow */
 
+// TODO: Store loc in import requests so we can show that in not found errors
+
 import type { FileIssue, MessageIssue } from './src/errors'
 export type { FileIssue, MessageIssue } from './src/errors'
 

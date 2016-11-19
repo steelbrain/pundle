@@ -148,6 +148,7 @@ export default class Compilation {
   // - On each observed unlink, make sure to delete the file (in queue)
   // - Return a disposable, that's also attached to this Compilation instance
   //   and closes the file watcher
+  // NOTE: Return value of this function has a special "queue" property
   async watch(givenConfig: Object = {}): Promise<Disposable> {
     let queue = Promise.resolve()
     const files: Map<string, File> = new Map()
@@ -159,6 +160,13 @@ export default class Compilation {
     })
     const processFile = (filePath, force = true, from = null) =>
       Helpers.processWatcherFileTree(this, config, watcher, files, filePath, force, from)
+    const triggerCompile = async () => {
+      try {
+        await config.compile(Array.from(files.values()))
+      } catch (compileError) {
+        this.report(compileError)
+      }
+    }
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
@@ -168,37 +176,23 @@ export default class Compilation {
       this.report(readyError)
     }
     if (successful) {
-      try {
-        config.compile(Array.from(files.values()))
-      } catch (compileError) {
-        this.report(compileError)
-      }
+      await triggerCompile()
     }
 
     watcher.on('change', (filePath) => {
       queue = queue.then(function() {
         return processFile(filePath)
-      }).then((status) => {
-        if (!status) {
-          return
-        }
-        try {
-          config.compile(Array.from(files.values()))
-        } catch (compileError) {
-          this.report(compileError)
-        }
-      })
+      }).then((status) => status && triggerCompile())
     })
     watcher.on('unlink', (filePath) => {
-      queue = queue.then(function() {
-        files.delete(filePath)
-      })
+      queue = queue.then(() => files.delete(filePath))
     })
 
     const disposable = new Disposable(() => {
       this.subscriptions.delete(disposable)
       watcher.close()
     })
+    disposable.queue = queue
     this.subscriptions.add(disposable)
     return disposable
   }
