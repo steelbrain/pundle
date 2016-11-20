@@ -43,6 +43,7 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
         if (hmrEnabled) {
           express.get(config.hmrPath, function(req, res, next) {
             if (active) {
+              req.on('close', () => connections.delete(res))
               connections.add(res)
             } else next()
           })

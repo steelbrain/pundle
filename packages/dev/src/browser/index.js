@@ -26,13 +26,13 @@ function keepRequestingForUpdates() {
     }
     if (update.type === 'hmr') {
       eval(update.contents)
-      console.log('HMR Files Updated:', update.files.join(', '))
+      console.log('[HMR] Files Changed:', update.files.join(', '))
       __sbPundle.applyHMR(update.files)
     } else {
-      console.log('HMR Unknown response', update)
+      console.log('[HMR] Unknown response', update)
     }
   }).catch(function(error) {
-    console.log('HMR Error', error)
+    console.log('[HMR] Error', error)
   }).then(keepRequestingForUpdates)
 }
 
