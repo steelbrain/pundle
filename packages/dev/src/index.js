@@ -1,17 +1,22 @@
 /* @flow */
 
+import express from 'express'
 import { Disposable } from 'sb-event-kit'
 import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
-// NOTE: Middleware overwrites publicPath config in existing Pundle config
+// NOTE: MiddlewareConfig overwrites publicPath config in existing Pundle config
 const browserFile = require.resolve('./browser')
-export async function createMiddleware(pundle: Object, express: Object, givenConfig: Object = {}): Disposable {
+export async function attachMiddleware(pundle: Object, expressApp: Object, givenConfig: Object = {}): Disposable {
+  if (pundle.compilation.config.entry.indexOf(browserFile) !== -1) {
+    throw new Error('Cannot create two middlewares on one Pundle instance')
+  }
+
   let active = true
   let compiled: { contents: string, sourceMap: Object } = { contents: '', sourceMap: {} }
   let firstCompile = true
-  const config = Helpers.fillConfig(givenConfig)
+  const config = Helpers.fillMiddlewareConfig(givenConfig)
   const hmrEnabled = config.hmrPath !== null
   const connections = new Set()
   const filesChanged = new Set()
@@ -30,18 +35,18 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
         pundle.compilation.config.entry.unshift(browserFile)
         pundle.config.publicPath = config.publicPath || oldPublicPath
         pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-        express.get(config.bundlePath, function(req, res, next) {
+        expressApp.get(config.bundlePath, function(req, res, next) {
           if (active) {
             watcherSubscription.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
           } else next()
         })
-        express.get(`${config.bundlePath}.map`, function(req, res, next) {
+        expressApp.get(`${config.bundlePath}.map`, function(req, res, next) {
           if (active) {
             watcherSubscription.queue.then(() => res.json(compiled.sourceMap))
           } else next()
         })
         if (hmrEnabled) {
-          express.get(config.hmrPath, function(req, res, next) {
+          expressApp.get(config.hmrPath, function(req, res, next) {
             if (active) {
               req.on('close', () => connections.delete(res))
               connections.add(res)
@@ -99,4 +104,24 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
     watcherSubscription.dispose()
     componentSubscription.dispose()
   })
+}
+
+// NOTE: Also accepts all of middleware options
+// NOTE: The return value has a `server` and `app` property that references express instance and server instance
+export async function createServer(pundle: Object, givenConfig: Object): Promise<Disposable> {
+  const app = express()
+  const config = Helpers.fillServerConfig(givenConfig)
+  const subscription = await attachMiddleware(pundle, app, givenConfig)
+
+  app.use('/', express.static(config.directory))
+
+  const server = app.listen(config.port)
+  const disposable = new Disposable(function() {
+    server.close()
+    subscription.dispose()
+  })
+
+  disposable.app = app
+  disposable.server = server
+  return disposable
 }
