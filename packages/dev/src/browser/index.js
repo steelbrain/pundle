@@ -8,7 +8,9 @@ function requestForUpdates() {
       if (xhr.status >= 200 && xhr.status < 400) {
         resolve(xhr.responseText ? JSON.parse(xhr.responseText) : null)
       } else {
-        reject(new Error(`HTTP Error: Status code ${xhr.status}`))
+        setTimeout(function() {
+          reject(new Error(`HTTP Error: Status code ${xhr.status}`))
+        }, 2000)
       }
     }
     xhr.send()

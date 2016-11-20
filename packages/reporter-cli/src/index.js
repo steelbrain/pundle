@@ -10,17 +10,17 @@ const SEVERITIES = {
   info: {
     color: 'black',
     background: 'bgBlue',
-    title: 'Info',
+    title: '  Info   ',
   },
   error: {
     color: 'white',
     background: 'bgRed',
-    title: 'Error',
+    title: '  Error  ',
   },
   warning: {
     color: 'white',
     background: 'bgYellow',
-    title: 'Warning',
+    title: ' Warning ',
   },
 }
 
@@ -29,7 +29,7 @@ export default createReporter(async function(config: Object, error: Error | File
 
   const severity = SEVERITIES[typeof error.severity === 'string' ? error.severity : 'error']
   const errorMessage = error.message
-  const generatedType = chalk.bold[severity.background][severity.color](` ${severity.title} `)
+  const generatedType = chalk.bold[severity.background][severity.color](severity.title)
   let stack = ''
   if (error.constructor.name === 'FileIssue') {
     stack = codeFrame(error.contents, error.line, error.column, {

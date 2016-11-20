@@ -8,9 +8,9 @@ import * as Helpers from './helpers'
 // NOTE: Middleware overwrites publicPath config in existing Pundle config
 const browserFile = require.resolve('./browser')
 export async function createMiddleware(pundle: Object, express: Object, givenConfig: Object = {}): Disposable {
-  let ready = false
   let active = true
   let compiled: { contents: string, sourceMap: Object } = { contents: '', sourceMap: {} }
+  let firstCompile = true
   const config = Helpers.fillConfig(givenConfig)
   const hmrEnabled = config.hmrPath !== null
   const connections = new Set()
@@ -63,17 +63,11 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
 
   watcherSubscription = await pundle.watch({
     tick(filePath: string, error: ?null) {
-      if (!ready) {
-        return
-      }
       if (!error) {
         filesChanged.add(filePath)
         return
       }
       // TODO: Push these errors to browser
-    },
-    ready() {
-      ready = true
     },
     async compile(totalFiles: Array<File>) {
       compiled = await pundle.generate(totalFiles, {
@@ -82,7 +76,7 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
         sourceMapPath: config.sourceMapPath,
         sourceNamespace: 'app',
       })
-      if (hmrEnabled) {
+      if (hmrEnabled && !firstCompile) {
         pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
         const changedFilePaths = Array.from(filesChanged)
         const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
@@ -97,6 +91,7 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
         writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
         filesChanged.clear()
       }
+      firstCompile = false
     },
   })
 
