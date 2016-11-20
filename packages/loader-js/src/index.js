@@ -7,6 +7,13 @@ import type { File } from 'pundle-api/types'
 
 import { traverse, getName, getParsedReplacements } from './helpers'
 
+const RESOLVE_NAMES = new Set([
+  'require',
+  'require.resolve',
+  'module.hot.accept',
+])
+const NODE_TYPES_TO_PROCESS = new Set(['CallExpression', 'ImportDeclaration', 'MemberExpression', 'Identifier'])
+
 export default createLoader(function(config: Object, file: File) {
   if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
     return null
@@ -41,27 +48,36 @@ export default createLoader(function(config: Object, file: File) {
     }
   }
 
+  const updateNode = (node, filePath) => {
+    if (typeof node.value === 'string') {
+      const request = this.getImportRequest(filePath, file.filePath)
+      imports.add(request)
+      node.value = request.id
+    }
+  }
   const replaceVariables = getParsedReplacements(Object.assign({}, this.config.replaceVariables))
 
   traverse(ast, node => {
-    if (!node) {
+    if (!node || !NODE_TYPES_TO_PROCESS.has(node.type)) {
       return false
     }
 
     let name
     if (node.type === 'CallExpression') {
       name = getName(node.callee)
-      const parameter = node.arguments[0]
-      if ((name === 'require.resolve' || name === 'require' || name === 'module.hot.accept') && node.arguments.length === 1 && parameter.value) {
-        const request = this.getImportRequest(parameter.value, file.filePath)
-        imports.add(request)
-        parameter.value = request.id
+      const parameter = node.arguments && node.arguments[0]
+      if (RESOLVE_NAMES.has(name) && parameter) {
+        if (parameter.value) {
+          // StringLiteral
+          updateNode(parameter, parameter.value)
+        } else if (parameter.elements) {
+          // ArrayExpression
+          parameter.elements.forEach(element => updateNode(element, element.value))
+        }
       }
     }
     if (node.type === 'ImportDeclaration') {
-      const request = this.getImportRequest(node.source.value, file.filePath)
-      imports.add(request)
-      node.source.value = request.id
+      updateNode(node.source, node.source.value)
     }
     if (node.type === 'MemberExpression' || node.type === 'Identifier') {
       name = getName(node)
