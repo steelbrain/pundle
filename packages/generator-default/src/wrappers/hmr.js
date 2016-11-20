@@ -59,4 +59,7 @@ const __sbPundle = {
   require(request: string) {
     return this.requireModule('$root', request)
   },
+  applyHMR(files: Array<string>) {
+    console.log('apply HMR', files)
+  },
 }

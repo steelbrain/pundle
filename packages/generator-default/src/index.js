@@ -1,5 +1,6 @@
 /* @flow */
 
+import Path from 'path'
 import sourceMapToComment from 'source-map-to-comment'
 import { createGenerator } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
@@ -31,6 +32,7 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
   const chunksMap = new SourceMapGenerator({
     skipValidation: true,
   })
+  const filePaths = []
   // NOTE: I don't know why we need a +1, but adding it works
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
@@ -39,14 +41,19 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
     const publicPath = Helpers.getFilePath(this, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
     chunks.push(fileContents)
-    if (config.sourceMap && file.sourceMap) {
-      Helpers.mergeSourceMap(file.sourceMap, chunksMap, `pundle:///${publicPath}`, file.source, linesCount)
+    filePaths.push(publicPath)
+    const fileSourceMap = file.sourceMap
+    if (config.sourceMap && fileSourceMap) {
+      const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
+      Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.source, linesCount)
     }
     linesCount += Helpers.getLinesCount(fileContents)
   }
 
-  const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
-  chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
+  if (config.printResolutionMappings) {
+    const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
+    chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
+  }
 
   for (let i = 0, length = entry.length; i < length; i++) {
     chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entry[i])}')`)
@@ -66,6 +73,7 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
   return {
     contents: chunks.join('\n'),
     sourceMap,
+    filePaths,
   }
 }, {
   entry: null,
@@ -73,5 +81,7 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
   pathType: 'filePath',
   sourceMap: false,
   sourceMapPath: null,
+  sourceNamespace: 'app',
   sourceMapNamespace: 'app',
+  printResolutionMappings: true,
 })

@@ -29,7 +29,7 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
       activate() {
         pundle.compilation.config.entry.unshift(browserFile)
         pundle.config.publicPath = config.publicPath || oldPublicPath
-        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = config.hmrPath
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
         express.get(config.bundlePath, function(req, res, next) {
           if (active) {
             watcherSubscription.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
@@ -70,7 +70,6 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
         return
       }
       // TODO: Push these errors to browser
-      console.log('Push this error to the browser', error)
     },
     ready() {
       ready = true
@@ -80,17 +79,21 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
         wrapper: 'hmr',
         sourceMap: true,
         sourceMapPath: config.sourceMapPath,
+        sourceNamespace: 'app',
       })
       if (hmrEnabled && connections.size) {
         pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
         const changedFilePaths = Array.from(filesChanged)
         const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
+          entry: [],
           wrapper: 'none',
           sourceMap: true,
           sourceMapPath: 'inline',
+          sourceNamespace: 'app',
           sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
+          printResolutionMappings: false,
         })
-        writeToConnections({ type: 'hmr', contents: generated.contents })
+        writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
         filesChanged.clear()
       }
     },

@@ -15,7 +15,7 @@ export const numericPaths: Map<string, string> = new Map()
 export function getFilePath(compilation: Object, config: Object, filePath: string): string {
   let toReturn
   if (config.pathType === 'filePath') {
-    toReturn = Path.join(`$${config.sourceMapNamespace}`, Path.relative(compilation.config.rootDirectory, filePath))
+    toReturn = Path.join(`$${config.sourceNamespace}`, Path.relative(compilation.config.rootDirectory, filePath))
   } else {
     toReturn = numericPaths.get(filePath)
     if (!toReturn) {
