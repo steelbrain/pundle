@@ -70,9 +70,7 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
 }, {
   entry: null,
   wrapper: 'normal',
-  filename: null,
   pathType: 'filePath',
-  directory: null,
   sourceMap: false,
   sourceMapPath: null,
   sourceMapNamespace: 'app',

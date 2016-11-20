@@ -67,7 +67,7 @@ class Pundle {
     subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
     return subscriptions
   }
-  async generate(givenFiles: ?Array<File>, runtimeConfig: Object = {}): Promise<Object> {
+  async generate(givenFiles: ?Array<File> = null, runtimeConfig: Object = {}): Promise<Object> {
     const files = givenFiles || await this.processTree()
     return await this.compilation.generate(files, runtimeConfig)
   }
@@ -75,7 +75,7 @@ class Pundle {
   // - Normalize all givenRequests to an array
   // - Asyncly and con-currently process all trees
   // - Share files cache between tree resolutions to avoid duplicates
-  async processTree(givenRequest: ?string, givenFrom: ?string, cached: boolean = true): Promise<Array<File>> {
+  async processTree(givenRequest: ?string = null, givenFrom: ?string = null, cached: boolean = true): Promise<Array<File>> {
     let requests
     const files: Map<string, File> = new Map()
     if (!givenRequest) {

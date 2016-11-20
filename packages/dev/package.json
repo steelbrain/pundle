@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle": "^1.0.0"
+    "pundle": "^1.0.0",
+    "pundle-api": "^1.0.0",
+    "sb-event-kit": "^3.0.0"
   }
 }

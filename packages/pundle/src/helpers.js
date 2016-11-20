@@ -155,11 +155,11 @@ export async function getLoadables<T>(loadables: Array<Loadable<T>>, rootDirecto
     } else {
       component = entry
     }
-    if (typeof component === 'string') {
-      toReturn.push([await resolve(component, rootDirectory), config])
-    } else {
-      toReturn.push([component, config])
+    const resolved = typeof component === 'string' ? await resolve(component, rootDirectory) : component
+    if (!resolved || typeof resolved.$type !== 'string') {
+      throw new Error('Unable to load invalid component')
     }
+    toReturn.push([resolved, config])
   }
   return toReturn
 }

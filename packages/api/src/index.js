@@ -4,7 +4,7 @@ import Path from 'path'
 
 export { version } from './helpers'
 export * from './rules'
-export * from './errors'
+export * from './issues'
 export * from './components'
 
 export function getRelativeFilePath(filePath: string, rootDirectory: string): string {

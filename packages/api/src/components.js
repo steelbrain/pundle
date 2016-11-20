@@ -40,7 +40,10 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
       invariant(typeof config.dispose === 'function', 'config.dispose must be a function')
       dispose = config.dispose
     }
-    invariant(config.callback === 'function', 'config.callback must be a function')
+    // NOTE: Simple components have no callbacks
+    if (type !== 'simple') {
+      invariant(config.callback === 'function', 'config.callback must be a function')
+    }
     callback = config.callback
   } else {
     throw new Error('Parameter 1 must be a function or config object')
