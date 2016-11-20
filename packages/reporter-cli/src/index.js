@@ -6,23 +6,30 @@ import invariant from 'assert'
 import { createReporter } from 'pundle-api'
 import type { FileIssue, MessageIssue } from 'pundle-api/types'
 
-const SEVERITY_COLOR_MAP = {
-  info: 'bgBlue',
-  error: 'bgRed',
-  warning: 'bgYellow',
-}
-const SEVERITY_TYPE_MAP = {
-  info: 'Info',
-  error: 'Error',
-  warning: 'Warning',
+const SEVERITIES = {
+  info: {
+    color: 'black',
+    background: 'bgBlue',
+    title: 'Info',
+  },
+  error: {
+    color: 'white',
+    background: 'bgRed',
+    title: 'Error',
+  },
+  warning: {
+    color: 'white',
+    background: 'bgYellow',
+    title: 'Warning',
+  },
 }
 
 export default createReporter(async function(config: Object, error: Error | FileIssue | MessageIssue) {
   invariant(typeof error === 'object' && error, 'Error must be an object')
 
-  const severity = typeof error.severity === 'string' ? error.severity : 'error'
+  const severity = SEVERITIES[typeof error.severity === 'string' ? error.severity : 'error']
   const errorMessage = error.message
-  const generatedType = chalk.bold[SEVERITY_COLOR_MAP[severity]](` ${SEVERITY_TYPE_MAP[severity]} `)
+  const generatedType = chalk.bold[severity.background][severity.color](` ${severity.title} `)
   let stack = ''
   if (error.constructor.name === 'FileIssue') {
     stack = codeFrame(error.contents, error.line, error.column, {

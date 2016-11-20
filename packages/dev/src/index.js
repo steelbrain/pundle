@@ -82,7 +82,7 @@ export async function createMiddleware(pundle: Object, express: Object, givenCon
         sourceMapPath: config.sourceMapPath,
         sourceNamespace: 'app',
       })
-      if (hmrEnabled && connections.size) {
+      if (hmrEnabled) {
         pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
         const changedFilePaths = Array.from(filesChanged)
         const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
