@@ -11,6 +11,7 @@ const RESOLVE_NAMES = new Set([
   'require',
   'require.resolve',
   'module.hot.accept',
+  'module.hot.decline',
 ])
 const NODE_TYPES_TO_PROCESS = new Set(['CallExpression', 'ImportDeclaration', 'MemberExpression', 'Identifier'])
 
@@ -50,6 +51,7 @@ export default createLoader(function(config: Object, file: File) {
 
   const updateNode = (node, filePath) => {
     if (typeof node.value === 'string') {
+      // StringLiteral
       const request = this.getImportRequest(filePath, file.filePath)
       imports.add(request)
       node.value = request.id

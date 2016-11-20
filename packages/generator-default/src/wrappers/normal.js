@@ -10,10 +10,18 @@ const __sbPundle = {
   defaultExport: {},
   cache: {},
   extensions: [],
+  resolutionMap: {},
   resolve(path) {
     return path
   },
-  resolutionMap: {},
+  getModule(moduleId, callback) {
+    return {
+      id: moduleId,
+      callback,
+      exports: this.defaultExport,
+      parents: [],
+    }
+  },
   registerMappings(mappings) {
     for (const key in mappings) {
       mappings[key].forEach(value => {
@@ -25,12 +33,7 @@ const __sbPundle = {
     if (this.cache[moduleId]) {
       this.cache[moduleId].callback = callback
     } else {
-      this.cache[moduleId] = {
-        id: moduleId,
-        callback,
-        exports: this.defaultExport,
-        parents: [],
-      }
+      this.cache[moduleId] = this.getModule(moduleId, callback)
     }
   },
   requireModule(fromModule: string, givenRequest: string) {
