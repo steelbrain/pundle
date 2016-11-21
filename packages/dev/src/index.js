@@ -68,7 +68,7 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
 
   watcherSubscription = await pundle.watch({
     tick(filePath: string, error: ?null) {
-      if (!error) {
+      if (!error && filePath !== browserFile) {
         filesChanged.add(filePath)
         return
       }

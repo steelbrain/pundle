@@ -29,12 +29,14 @@ function keepRequestingForUpdates() {
     if (update.type === 'hmr') {
       eval(update.contents)
       console.log('[HMR] Files Changed:', update.files.join(', '))
-      __sbPundle.applyHMR(update.files)
+      __sbPundle.hmrApply(update.files)
     } else {
       console.log('[HMR] Unknown response', update)
     }
   }).catch(function(error) {
-    console.log('[HMR] Error', error)
+    if (error.code !== 'HMR_REBOOT_REQUIRED') {
+      console.log('[HMR] Error', error)
+    }
   }).then(keepRequestingForUpdates)
 }
 
