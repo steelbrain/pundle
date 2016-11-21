@@ -1,3 +1,19 @@
+#### 1.1.11
+
+- We need tests for HMR...
+
+#### 1.1.10
+
+- Yet another HMR fixes release
+
+#### 1.1.9
+
+- More compatibility fixes for HMR
+
+#### 1.1.8
+
+- Fix HMR to be more spec compliant
+
 #### 1.1.7
 
 - Fix an aggressiveness bug in npm installer (#69)

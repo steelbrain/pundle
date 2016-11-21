@@ -1,7 +1,7 @@
 {
-  "name": "pundle-dev",
-  "version": "1.1.11",
-  "description": "Dev module for Pundle",
+  "name": "typescript-pundle",
+  "version": "1.0.1",
+  "description": "TypeScript transformer for Pundle",
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
@@ -11,16 +11,16 @@
     "type": "git",
     "url": "git+ssh://git@github.com/motion/pundle.git"
   },
-  "author": "steelbrain",
+  "contributors": [
+    "appsforartists",
+    "steelbrain"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/motion/pundle/issues"
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "express": "^4.14.0",
-    "pundle": "^1.0.0",
-    "pundle-api": "^1.0.0",
-    "sb-event-kit": "^3.0.0"
+    "typescript": "^2.0.7"
   }
 }
