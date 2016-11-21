@@ -4,7 +4,7 @@ import invariant from 'assert'
 
 const VALID_SEVERITIES = new Set(['info', 'warning', 'error'])
 
-// NOTE: This function accepts both lines and numbers as 1-indexed
+// NOTE: This function accepts both lines and columns as 1-indexed
 // Babel by default has locs with 0-indexed columns, you'll have to
 // +1 them before feeding to this Class
 export class FileIssue {
