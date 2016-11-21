@@ -56,6 +56,13 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
       throw new Error(`Invalid export value of config file in '${rootDirectory}'`)
     }
   }
+
+  // NOTE: This copies all even non-standard stuff from Pundle config file to
+  // The config. This will allow any third party consumers to be able to define
+  // custom stuff and then use it. For example, the API package uses this
+  // to support output configurations
+  Object.assign(config, b)
+
   config.watcher = {}
   if (b.watcher) {
     invariant(typeof b.watcher === 'object', 'config.watcher must be an Object')
