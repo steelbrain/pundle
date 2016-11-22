@@ -39,7 +39,7 @@ export type PundleConfig = {
 }
 
 // NOTE: Not used anywhere but this is what Pundle supports publically
-export type PublicPundleConfig = PundleConfig & {
+export type PublicPundleConfig = CompilationConfig & {
   watcher?: WatcherConfig,
   presets?: Array<Loadable<Preset>>,
   components?: Array<Loadable<ComponentAny>>,

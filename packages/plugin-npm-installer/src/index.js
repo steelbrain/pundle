@@ -34,12 +34,15 @@ export default createResolver(async function(config: Object, givenRequest: strin
   let error = null
   try {
     await Installer.install(moduleName, config.save, this.config.rootDirectory)
-    this.report(new MessageIssue(`Installed '${moduleName}' in '${this.config.rootDirectory}'`, 'info'))
   } catch (_) {
     error = _
-    this.report(new MessageIssue(`Failed to install '${moduleName}' in '${this.config.rootDirectory}'`, 'error'))
   }
   config.afterInstall(moduleName, error)
+  if (error) {
+    this.report(new MessageIssue(`Failed to install '${moduleName}' in '${this.config.rootDirectory}'`, 'error'))
+  } else {
+    this.report(new MessageIssue(`Installed '${moduleName}' in '${this.config.rootDirectory}'`, 'info'))
+  }
   return await this.resolve(givenRequest, fromFile, false)
 }, {
   save: false,
