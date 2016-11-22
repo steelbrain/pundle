@@ -4,18 +4,20 @@ import { version as apiVersion } from '../package.json'
 
 export const version = apiVersion.split('.')[0]
 
-export function makePromisedLock(callback: Function): Function {
-  let inProgress = false
+export function makePromisedLock(callback: Function, keyCallback: Function): Function {
+  const progressMap: Map<string, boolean> = new Map()
   return function(...parameters: Array<any>) {
-    if (inProgress) {
+    const progressKey = keyCallback(...parameters)
+    const progressStatus = Boolean(progressMap.get(progressKey))
+    if (progressStatus) {
       return Promise.resolve(null)
     }
-    inProgress = true
+    progressMap.set(progressKey, true)
     return callback.apply(this, parameters).then(function(result) {
-      inProgress = false
+      progressMap.delete(progressKey)
       return result
     }, function(error) {
-      inProgress = false
+      progressMap.delete(progressKey)
       throw error
     })
   }

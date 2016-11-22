@@ -83,9 +83,9 @@ export function createResolver(givenOptions: CallbackOrConfig<ResolverCallback>,
   let options = givenOptions
   if (!allowRecursive) {
     if (typeof options === 'function') {
-      options = makePromisedLock(options)
+      options = makePromisedLock(options, (_, request, fromFile) => `${request}$${fromFile}`)
     } else if (typeof options === 'object' && options) {
-      options.callback = makePromisedLock(options.callback)
+      options.callback = makePromisedLock(options.callback, (_, request, fromFile) => `${request}$${fromFile}`)
     }
   }
   return create(options, defaultConfig, 'resolver')

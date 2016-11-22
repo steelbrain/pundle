@@ -5,8 +5,10 @@ export type Config = {
   // ^ If this is not provided, then entry from Pundle's config is used
   wrapper: 'normal' | 'hmr' | 'none' | string,
   pathType: 'filePath' | 'number',
+  sourceMap: boolean,
   sourceMapPath: 'inline' | string | null,
   sourceMapNamespace: string,
+  printResolutionMappings: boolean,
 }
 
 export type ModuleNormal = {
