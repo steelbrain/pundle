@@ -30,6 +30,7 @@ Pundle.create({
   configFileName: program.configFileName,
 }).then(function(pundle) {
   const config = Helpers.fillCLIConfig(pundle.config)
+  process.env.NODE_ENV = program.dev ? 'development' : 'production'
   if (program.dev) {
     return createServer(pundle, {
       port: program.port,
