@@ -1,4 +1,4 @@
-# `pundle-transformer-babel`
+# `pundle-transformer-typescript`
 
 TypeScript transformer for Pundle
 

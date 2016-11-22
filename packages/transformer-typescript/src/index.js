@@ -13,7 +13,7 @@ export default createTransformer(async function(config: Object, file: File) {
   try {
     typescriptPath = await this.resolve('typescript')
   } catch (_) {
-    throw new MessageIssue('Unable to find babel-core in project root', 'error')
+    throw new MessageIssue('Unable to find typescript in project root', 'error')
   }
 
   // NOTE: Docs at
