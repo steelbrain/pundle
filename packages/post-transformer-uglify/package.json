@@ -1,6 +1,6 @@
 {
   "name": "pundle-post-transformer-uglify",
-  "version": "1.1.6",
+  "version": "2.0.0-alpha1",
   "description": "Uglify Post-Transformer for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "^1.1.6"
+    "pundle-api": "^2.0.0-alpha1"
   },
   "devDependencies": {}
 }

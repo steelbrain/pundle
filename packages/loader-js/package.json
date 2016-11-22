@@ -1,6 +1,6 @@
 {
   "name": "pundle-loader-js",
-  "version": "1.1.6",
+  "version": "2.0.0-alpha1",
   "description": "Javascript loader for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "babel-generator": "^6.18.0",
     "babel-types": "^6.18.0",
     "babylon": "6.13.1",
-    "pundle-api": "^1.1.6"
+    "pundle-api": "^2.0.0-alpha1"
   },
   "devDependencies": {}
 }
