@@ -8,11 +8,11 @@ export default createTransformer(async function(config: Object, file: File) {
     return null
   }
 
-  let babelPath
+  let babelPath = config.babelPath
   try {
-    babelPath = await this.resolve('babel-core')
+    babelPath = await this.resolve(babelPath)
   } catch (_) {
-    throw new MessageIssue('Unable to find babel-core in project root', 'error')
+    throw new MessageIssue('Unable to find babel-core', 'error')
   }
 
   // $FlowIgnore: Flow doesn't like dynamic requires
@@ -29,6 +29,8 @@ export default createTransformer(async function(config: Object, file: File) {
 
   return { contents, sourceMap }
 }, {
+  babelPath: 'babel-core',
+  // ^ Path to resolve to get the babel-core module
   config: {},
   include: [],
   exclude: [/(node_modules|bower_components)/],

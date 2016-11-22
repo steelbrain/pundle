@@ -5,7 +5,7 @@ import { parse } from 'babylon'
 import { createLoader, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 
-import { traverse, getName, getParsedReplacements } from './helpers'
+import { traverse, getName, getParsedReplacement } from './helpers'
 
 const RESOLVE_NAMES = new Set([
   'require',
@@ -57,7 +57,6 @@ export default createLoader(function(config: Object, file: File) {
       node.value = request.id
     }
   }
-  const replaceVariables = getParsedReplacements(Object.assign({}, this.config.replaceVariables))
 
   traverse(ast, node => {
     if (!node || !NODE_TYPES_TO_PROCESS.has(node.type)) {
@@ -83,8 +82,8 @@ export default createLoader(function(config: Object, file: File) {
     }
     if (node.type === 'MemberExpression' || node.type === 'Identifier') {
       name = getName(node)
-      if (replaceVariables[name]) {
-        return replaceVariables[name]
+      if (this.config.replaceVariables[name]) {
+        return getParsedReplacement(this.config.replaceVariables[name])
       }
     }
     return false

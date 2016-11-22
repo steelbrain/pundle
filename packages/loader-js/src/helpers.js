@@ -45,26 +45,17 @@ export function getName(obj: Object): string {
 }
 
 const STRING_REGEX = /^"[^"]*"$/
-export function getParsedReplacements(replaceVariables: Object): Object {
-  const parsedVariables = {}
 
-  for (const key in replaceVariables) {
-    if (!{}.hasOwnProperty.call(replaceVariables, key)) {
-      continue
-    }
-    const rawValue = replaceVariables[key]
-    let parsedValue
-    if (STRING_REGEX.test(rawValue)) {
-      // Extract value between ""
-      // Unescape backward slahes
-      parsedValue = t.stringLiteral(rawValue.slice(1, -1).replace(/\\(.)/g, '$1'))
-    } else if (typeof rawValue === 'number') {
-      parsedValue = t.numericLiteral(rawValue)
-    } else {
-      parsedValue = t.identifier(rawValue)
-    }
-    parsedVariables[key] = parsedValue
+export function getParsedReplacement(rawValue: any): Object {
+  let parsedValue
+  if (STRING_REGEX.test(rawValue)) {
+    // Extract value between ""
+    // Unescape backward slahes
+    parsedValue = t.stringLiteral(rawValue.slice(1, -1).replace(/\\(.)/g, '$1'))
+  } else if (typeof rawValue === 'number') {
+    parsedValue = t.numericLiteral(rawValue)
+  } else {
+    parsedValue = t.identifier(rawValue)
   }
-
-  return parsedVariables
+  return parsedValue
 }

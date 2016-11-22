@@ -48,5 +48,6 @@ export default createResolver(async function(config: Object, givenRequest: strin
   save: false,
   beforeInstall() { /* No Op */ },
   afterInstall() { /* No Op */ },
+  include: ['*'],
   exclude: [/(node_modules|bower_components)/],
 }, false)

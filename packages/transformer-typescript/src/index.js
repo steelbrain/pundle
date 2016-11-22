@@ -9,9 +9,9 @@ export default createTransformer(async function(config: Object, file: File) {
     return null
   }
 
-  let typescriptPath
+  let typescriptPath = config.typescriptPath
   try {
-    typescriptPath = await this.resolve('typescript')
+    typescriptPath = await this.resolve(typescriptPath)
   } catch (_) {
     throw new MessageIssue('Unable to find typescript in project root', 'error')
   }
@@ -29,6 +29,8 @@ export default createTransformer(async function(config: Object, file: File) {
 
   return { contents, sourceMap }
 }, {
+  typescriptPath: 'typescript',
+  // ^ Path to resolve to get the typescript module
   config: {},
   include: [],
   exclude: [/(node_modules|bower_components)/],
