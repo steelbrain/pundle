@@ -34,14 +34,14 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   // while also waiting on the watcher
   const watcherInfo = {
     get queue() {
-      if (watcherSubscription) {
-        return watcherSubscription.queue
+      if (!watcherSubscription || firstCompile) {
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            resolve(watcherInfo.queue)
+          }, 100)
+        })
       }
-      return new Promise(function(resolve) {
-        setTimeout(function() {
-          resolve(watcherInfo.queue)
-        }, 100)
-      })
+      return watcherSubscription.queue
     },
   }
 
