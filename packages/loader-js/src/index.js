@@ -82,7 +82,7 @@ export default createLoader(function(config: Object, file: File) {
     }
     if (node.type === 'MemberExpression' || node.type === 'Identifier') {
       name = getName(node)
-      if (this.config.replaceVariables[name]) {
+      if ({}.hasOwnProperty.call(this.config.replaceVariables, name)) {
         return getParsedReplacement(this.config.replaceVariables[name])
       }
     }
