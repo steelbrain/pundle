@@ -24,8 +24,11 @@ export default createTransformer(async function(config: Object, file: File) {
     file.contents,
     Object.assign({}, config.config)
   )
+
   const contents = processed.outputText
-  const sourceMap = JSON.parse(processed.sourceMapText)
+  const sourceMap = processed.sourceMap
+    ? JSON.parse(processed.sourceMapText)
+    : undefined;
 
   return { contents, sourceMap }
 }, {
