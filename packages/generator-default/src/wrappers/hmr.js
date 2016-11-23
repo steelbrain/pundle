@@ -65,33 +65,33 @@ const __sbPundle = {
   cache: {},
   extensions: [],
   resolutionMap: {},
-  resolve(path) {
+  resolve: function(path) {
     return path
   },
-  getModule(moduleId, callback) {
+  getModule: function(moduleId, callback) {
     return {
       id: moduleId,
       hot: new __sbPundle_HMR(),
-      callback,
+      callback: callback,
       exports: this.defaultExport,
       parents: [],
     }
   },
-  registerMappings(mappings) {
+  registerMappings: function(mappings) {
     for (const key in mappings) {
       mappings[key].forEach(value => {
         this.resolutionMap[value] = key
       })
     }
   },
-  registerModule(moduleId, callback) {
+  registerModule: function(moduleId, callback) {
     if (this.cache[moduleId]) {
       this.cache[moduleId].callback = callback
     } else {
       this.cache[moduleId] = this.getModule(moduleId, callback)
     }
   },
-  requireModule(fromModule: ?string, givenRequest: string) {
+  requireModule: function(fromModule: ?string, givenRequest: string) {
     const request = this.resolutionMap[givenRequest] || givenRequest
     const module: ?ModuleNormal = this.cache[request]
     if (!module) {
@@ -106,14 +106,14 @@ const __sbPundle = {
     }
     return module.exports
   },
-  generateRequire(fromModule: ?string) {
+  generateRequire: function(fromModule: ?string) {
     const require = this.requireModule.bind(this, fromModule)
     require.cache = this.cache
     require.extensions = this.extensions
     require.resolve = this.resolve
     return require
   },
-  require(request: string) {
+  require: function(request: string) {
     return this.requireModule('$root', request)
   },
   /* eslint-disable */
@@ -124,7 +124,7 @@ const __sbPundle = {
    */
   hmrSort: function(){function n(n,r){function e(f,u,d){if(d.indexOf(f)>=0)throw Error("Cyclic dependency: "+JSON.stringify(f));if(!~n.indexOf(f))throw Error("Found unknown node. Make sure to provided all involved nodes. Unknown node: "+JSON.stringify(f));if(!t[u]){t[u]=!0;var c=r.filter(function(n){return n[0]===f});if(u=c.length){var a=d.concat(f);do{var l=c[--u][1];e(l,n.indexOf(l),a)}while(u)}o[--i]=f}}for(var i=n.length,o=Array(i),t={},f=i;f--;)t[f]||e(n[f],f,[]);return o}function r(n){for(var r=[],e=0,i=n.length;i>e;e++){var o=n[e];r.indexOf(o[0])<0&&r.push(o[0]),r.indexOf(o[1])<0&&r.push(o[1])}return r}return function(e){return n(r(e),e)}}(),
   /* eslint-enable */
-  hmrIsAccepted(moduleId: string, matchAgainst: string = moduleId): 'no' | 'direct' | 'parent' {
+  hmrIsAccepted: function(moduleId: string, matchAgainst: string = moduleId): 'no' | 'direct' | 'parent' {
     const module = this.cache[moduleId]
     if (module.hot.accepts.has('*') || module.hot.accepts.has(matchAgainst)) {
       return 'direct'
@@ -134,7 +134,7 @@ const __sbPundle = {
     }
     return 'no'
   },
-  hmrGetOrder(files: Array<string>): Array<string> {
+  hmrGetOrder: function(files: Array<string>): Array<string> {
     const input: Array<[string, string]> = []
     const added: Set<string> = new Set()
     const failed: Array<string> = []
@@ -210,7 +210,7 @@ const __sbPundle = {
 
     return sorted
   },
-  hmrApply(files: Array<string>) {
+  hmrApply: function(files: Array<string>) {
     const updateOrder = this.hmrGetOrder(files)
     for (let i = 0, length = updateOrder.length; i < length; i++) {
       const file = updateOrder[i]

@@ -4,6 +4,7 @@
     "camelcase": "off",
     "guard-for-in": "off",
     "no-unused-vars": "off",
+    "object-shorthand": ["error", "never"],
     "no-use-before-define": "off",
     "no-underscore-dangle": "off"
   }

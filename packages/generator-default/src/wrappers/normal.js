@@ -11,32 +11,32 @@ const __sbPundle = {
   cache: {},
   extensions: [],
   resolutionMap: {},
-  resolve(path) {
+  resolve: function(path) {
     return path
   },
-  getModule(moduleId, callback) {
+  getModule: function(moduleId, callback) {
     return {
       id: moduleId,
-      callback,
+      callback: callback,
       exports: this.defaultExport,
       parents: [],
     }
   },
-  registerMappings(mappings) {
+  registerMappings: function(mappings) {
     for (const key in mappings) {
       mappings[key].forEach(value => {
         this.resolutionMap[value] = key
       })
     }
   },
-  registerModule(moduleId, callback) {
+  registerModule: function(moduleId, callback) {
     if (this.cache[moduleId]) {
       this.cache[moduleId].callback = callback
     } else {
       this.cache[moduleId] = this.getModule(moduleId, callback)
     }
   },
-  requireModule(fromModule: string, givenRequest: string) {
+  requireModule: function(fromModule: string, givenRequest: string) {
     const request = this.resolutionMap[givenRequest] || givenRequest
     const module: ?ModuleNormal = this.cache[request]
     if (!module) {
@@ -51,14 +51,14 @@ const __sbPundle = {
     }
     return module.exports
   },
-  generateRequire(fromModule: string) {
+  generateRequire: function(fromModule: string) {
     const require = this.requireModule.bind(this, fromModule)
     require.cache = this.cache
     require.extensions = this.extensions
     require.resolve = this.resolve
     return require
   },
-  require(request: string) {
+  require: function(request: string) {
     return this.requireModule('$root', request)
   },
 }
