@@ -49,5 +49,5 @@ export function shouldProcess(sourceRoot: string, filePath: string, config: Load
   }
 
   // NOTE: If neither include nor exclude is provided, instead of processing all files, process none
-  return !!(include || exclude)
+  return !!(include || exclude || extensions)
 }
