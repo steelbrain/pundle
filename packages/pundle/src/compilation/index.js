@@ -1,7 +1,6 @@
 /* @flow */
 
 import Path from 'path'
-import unique from 'lodash.uniqby'
 import chokidar from 'chokidar'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
@@ -103,9 +102,7 @@ export default class Compilation {
       }
 
       Helpers.mergeResult(file, loaderResult)
-      const mergedImports = Array.from(file.imports).concat(Array.from(loaderResult.imports))
-      const mergedUniqueImports = unique(mergedImports, 'request')
-      file.imports = new Set(mergedUniqueImports)
+      file.imports = new Set(Array.from(file.imports).concat(Array.from(loaderResult.imports)))
       break
     }
 
