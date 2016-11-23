@@ -2,7 +2,7 @@
 
 function requestForUpdates() {
   return new Promise(function(resolve, reject) {
-    const xhr = new XMLHttpRequest()
+    var xhr = new XMLHttpRequest()
     xhr.open('GET', SB_PUNDLE_HMR_PATH, true)
     xhr.onload = function() {
       if (xhr.status >= 200 && xhr.status < 400) {
