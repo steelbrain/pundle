@@ -9,6 +9,7 @@ export type ComponentRule = string | RegExp
 export type Loadable = {
   include?: ComponentRule | Array<ComponentRule>,
   exclude?: ComponentRule | Array<ComponentRule>,
+  extensions?: Array<string>,
 }
 
 export type Component<T1, T2> = {

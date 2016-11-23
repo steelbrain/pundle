@@ -40,6 +40,13 @@ export function shouldProcess(sourceRoot: string, filePath: string, config: Load
       return false
     }
   }
+  const extensions = config.extensions
+  if (extensions) {
+    const fileExtension = Path.extname(filePath).slice(1)
+    if (extensions.indexOf(fileExtension) === -1) {
+      return false
+    }
+  }
 
   // NOTE: If neither include nor exclude is provided, instead of processing all files, process none
   return !!(include || exclude)

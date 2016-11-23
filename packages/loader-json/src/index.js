@@ -26,5 +26,5 @@ export default createLoader(function(config: Object, file: File) {
     contents: `module.exports = ${JSON.stringify(parsed)}`,
   }
 }, {
-  include: ['*.json'],
+  extensions: ['json'],
 })
