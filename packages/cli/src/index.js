@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* @flow */
 
-import FS from 'sb-fs'
+import FS from 'fs'
 import Path from 'path'
 import chalk from 'chalk'
 import Pundle from 'pundle'
@@ -25,6 +25,13 @@ program
   .option('--dev-directory', 'Directory to use as root for dev server', process.cwd())
   .parse(process.argv)
 
+try {
+  FS.statSync(Path.join(program.rootDirectory, program.configFileName))
+} catch (_) {
+  console.error('Unable to find Pundle configuration file')
+  process.exit(1)
+}
+
 Pundle.create({
   rootDirectory: program.rootDirectory,
   configFileName: program.configFileName,
@@ -44,11 +51,11 @@ Pundle.create({
   }).then(async function(generated) {
     const outputFilePath = Path.join(pundle.config.compilation.rootDirectory, config.bundlePath)
     const outputSourceMapPath = Path.join(pundle.config.compilation.rootDirectory, config.sourceMapPath)
-    await FS.writeFile(outputFilePath, generated.contents)
+    FS.writeFileSync(outputFilePath, generated.contents)
     console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
     if (config.sourceMap) {
       const sourceMap = JSON.stringify(generated.sourceMap)
-      await FS.writeFile(outputSourceMapPath, sourceMap)
+      FS.writeFileSync(outputSourceMapPath, sourceMap)
       console.log(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
     }
   })
