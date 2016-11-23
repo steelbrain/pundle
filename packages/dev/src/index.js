@@ -28,8 +28,24 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
     connections.clear()
   }
   let watcherSubscription
+  // The watcherInfo implementation below is useful because
+  // the watcher below takes time to boot up, and we have to start server
+  // instantly. With the help of this, we can immediately start server
+  // while also waiting on the watcher
+  const watcherInfo = {
+    get queue() {
+      if (watcherSubscription) {
+        return watcherSubscription.queue
+      }
+      return new Promise(function(resolve) {
+        setTimeout(function() {
+          resolve(watcherInfo.queue)
+        }, 100)
+      })
+    },
+  }
 
-  const componentPromise = pundle.loadComponents([
+  const componentSubscription = await pundle.loadComponents([
     createSimple({
       activate() {
         pundle.compilation.config.entry.unshift(browserFile)
@@ -37,12 +53,12 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
         pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
         expressApp.get(config.bundlePath, function(req, res, next) {
           if (active) {
-            watcherSubscription.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
+            watcherInfo.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
           } else next()
         })
         expressApp.get(`${config.bundlePath}.map`, function(req, res, next) {
           if (active) {
-            watcherSubscription.queue.then(() => res.json(compiled.sourceMap))
+            watcherInfo.queue.then(() => res.json(compiled.sourceMap))
           } else next()
         })
         if (hmrEnabled) {
@@ -99,8 +115,6 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
       firstCompile = false
     },
   })
-
-  const componentSubscription = await componentPromise
 
   return new Disposable(function() {
     watcherSubscription.dispose()
