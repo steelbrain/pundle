@@ -93,7 +93,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   }
   let resolved = await promisedResolve(request, {
     basedir: fromDirectory || this.config.rootDirectory,
-    extensions: config.extensions,
+    extensions: config.extensions || config.knownExtensions.map(i => `.${i}`),
     readFile: (path, callback) => {
       this.config.fileSystem.readFile(path).then(function(result) {
         callback(null, result)
@@ -139,7 +139,8 @@ export default createResolver(async function(config: Object, givenRequest: strin
   return resolved
 }, {
   alias: {},
-  extensions: ['', '.js', '.json'],
+  extensions: null,
+  // ^ Set to any non-null value to override "knownExtensions"
   packageMains: ['browser', 'browserify', 'webpack', 'main'],
   modulesDirectories: ['node_modules'],
 })

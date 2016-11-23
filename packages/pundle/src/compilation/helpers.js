@@ -1,5 +1,6 @@
 /* @flow */
 
+import unique from 'lodash.uniq'
 import invariant from 'assert'
 import sourceMap from 'source-map'
 import difference from 'lodash.difference'
@@ -214,4 +215,17 @@ export async function processWatcherFileTree(
     compilation.report(compilationError)
     return false
   }
+}
+
+export function getAllKnownExtensions(components: Set<ComponentEntry>): Array<string> {
+  let toReturn = ['']
+  for (const component of filterComponents(components, 'loader')) {
+    if (component.config.extensions) {
+      toReturn = toReturn.concat(component.config.extensions)
+    }
+    if (component.component.defaultConfig.extensions) {
+      toReturn = toReturn.concat(component.component.defaultConfig.extensions)
+    }
+  }
+  return unique(toReturn)
 }

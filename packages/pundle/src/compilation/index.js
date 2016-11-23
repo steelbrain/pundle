@@ -29,8 +29,10 @@ export default class Compilation {
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
-    for (const component of Helpers.filterComponents(this.components, 'resolver')) {
-      const result = await Helpers.invokeComponent(this, component, request, from, cached)
+    const knownExtensions = Helpers.getAllKnownExtensions(this.components)
+    for (const { component, config } of Helpers.filterComponents(this.components, 'resolver')) {
+      const mergedConfig = Object.assign({}, config, { knownExtensions })
+      const result = await Helpers.invokeComponent(this, { component, config: mergedConfig }, request, from, cached)
       if (result) {
         return result
       }
