@@ -29,7 +29,7 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   }
   let watcherSubscription
 
-  const componentSubscription = await pundle.loadComponents([
+  const componentPromise = pundle.loadComponents([
     createSimple({
       activate() {
         pundle.compilation.config.entry.unshift(browserFile)
@@ -100,6 +100,8 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
     },
   })
 
+  const componentSubscription = await componentPromise
+
   return new Disposable(function() {
     watcherSubscription.dispose()
     componentSubscription.dispose()
@@ -111,11 +113,10 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
 export async function createServer(pundle: Object, givenConfig: Object): Promise<Disposable> {
   const app = express()
   const config = Helpers.fillServerConfig(givenConfig)
-  const subscription = await attachMiddleware(pundle, app, givenConfig)
-
-  app.use('/', express.static(config.directory))
 
   const server = app.listen(config.port)
+  app.use('/', express.static(config.directory))
+  const subscription = await attachMiddleware(pundle, app, givenConfig)
   const disposable = new Disposable(function() {
     server.close()
     subscription.dispose()
