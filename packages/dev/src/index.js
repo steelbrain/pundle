@@ -138,7 +138,7 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
     subscription.dispose()
   })
 
-  if (config.notFoundToIndex) {
+  if (config.redirectNotFoundToIndex) {
     app.use(errorHandler.httpError(404))
     app.use(function(err, req, res, next) {
       if (err && err.status === 404 && req.url !== '/index.html' && req.baseUrl !== '/index.html') {

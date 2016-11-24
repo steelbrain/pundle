@@ -23,9 +23,9 @@ export function fillCLIConfig(config: Object): CLIConfig {
       : Path.normalize(output.sourceMapPath)
   } else toReturn.sourceMapPath = `${toReturn.bundlePath}.map`
 
-  if (typeof server.notFoundToIndex !== 'undefined') {
-    toReturn.notFoundToIndex = !!server.server
-  } else toReturn.notFoundToIndex = true
+  if (typeof server.redirectNotFoundToIndex !== 'undefined') {
+    toReturn.redirectNotFoundToIndex = !!server.server
+  } else toReturn.redirectNotFoundToIndex = true
 
   return toReturn
 }
