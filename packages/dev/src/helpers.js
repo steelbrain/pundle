@@ -16,10 +16,6 @@ export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
     invariant(typeof config.bundlePath === 'string', 'config.bundlePath must be a string')
     toReturn.bundlePath = config.bundlePath
   } else toReturn.bundlePath = '/bundle.js'
-  if (config.publicPath) {
-    invariant(typeof config.publicPath === 'string', 'config.publicPath must be a string')
-    toReturn.publicPath = config.publicPath
-  } else toReturn.publicPath = '/'
   if (config.sourceMapPath) {
     invariant(typeof config.sourceMapPath === 'string', 'config.sourceMapPath must be a string')
     toReturn.sourceMapPath = config.sourceMapPath

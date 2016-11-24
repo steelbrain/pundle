@@ -114,15 +114,6 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
     invariant(typeof a.fileSystem === 'object', 'config.fileSystem must be an Object')
     Object.assign(compilation.fileSystem, a.fileSystem)
   }
-  compilation.publicPath = null
-  if (b.publicPath) {
-    invariant(typeof b.publicPath === 'string', 'config.publicPath must be a string')
-    compilation.publicPath = b.publicPath
-  }
-  if (a.publicPath) {
-    invariant(typeof a.publicPath === 'string', 'config.publicPath must be a string')
-    compilation.publicPath = a.publicPath
-  }
   if (!a.rootDirectory && !b.rootDirectory) {
     throw new Error('config.rootDirectory must be a string')
   }

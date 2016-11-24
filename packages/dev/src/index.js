@@ -8,7 +8,6 @@ import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
-// NOTE: MiddlewareConfig overwrites publicPath config in existing Pundle config
 const browserFile = require.resolve('./browser')
 export async function attachMiddleware(pundle: Object, expressApp: Object, givenConfig: Object = {}): Disposable {
   if (pundle.compilation.config.entry.indexOf(browserFile) !== -1) {
@@ -22,7 +21,6 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   const hmrEnabled = config.hmrPath !== null
   const connections = new Set()
   const filesChanged = new Set()
-  const oldPublicPath = pundle.config.publicPath
   const oldReplacementVar = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
 
   const writeToConnections = (contents) => {
@@ -51,7 +49,6 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
     createSimple({
       activate() {
         pundle.compilation.config.entry.unshift(browserFile)
-        pundle.config.publicPath = config.publicPath || oldPublicPath
         pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
         expressApp.get(config.bundlePath, function(req, res, next) {
           if (active) {
@@ -78,7 +75,6 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
         if (entryIndex !== -1) {
           pundle.compilation.config.entry.splice(entryIndex, 1)
         }
-        pundle.config.publicPath = oldPublicPath
         pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldReplacementVar
       },
     }, config),

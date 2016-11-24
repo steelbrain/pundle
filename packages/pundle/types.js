@@ -13,7 +13,6 @@ export type CompilationConfig = {
   entry: Array<string>,
   fileSystem: FileSystem,
   rootDirectory: string,
-  publicPath: ?string,
   replaceVariables: Object, // <string, Object>
 }
 

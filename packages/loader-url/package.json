@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "^2.0.0-alpha2"
+    "pundle-api": "^2.0.0-alpha2",
+    "sb-fs": "^1.1.1"
   },
   "devDependencies": {}
 }
