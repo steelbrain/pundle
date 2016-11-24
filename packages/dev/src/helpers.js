@@ -37,6 +37,9 @@ export function fillServerConfig(config: Object): ServerConfig {
   } else toReturn.port = 8080
   invariant(typeof config.directory === 'string' && config.directory, 'config.directory must be a string')
   toReturn.directory = config.directory
+  if (typeof config.notFoundToIndex !== 'undefined') {
+    toReturn.notFoundToIndex = !!config.notFoundToIndex
+  } else toReturn.notFoundToIndex = true
 
   return toReturn
 }

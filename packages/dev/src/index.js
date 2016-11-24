@@ -1,6 +1,8 @@
 /* @flow */
 
+import send from 'send'
 import express from 'express'
+import errorHandler from 'express-error-handler'
 import { Disposable } from 'sb-event-kit'
 import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
@@ -29,8 +31,8 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   }
   let watcherSubscription
   // The watcherInfo implementation below is useful because
-  // the watcher below takes time to boot up, and we have to start server
-  // instantly. With the help of this, we can immediately start server
+  // the watcher further below takes time to boot up, and we have to start
+  // server instantly. With the help of this, we can immediately start server
   // while also waiting on the watcher
   const watcherInfo = {
     get queue() {
@@ -135,6 +137,21 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
     server.close()
     subscription.dispose()
   })
+
+  if (config.notFoundToIndex) {
+    app.use(errorHandler.httpError(404))
+    app.use(function(err, req, res, next) {
+      if (err && err.status === 404 && req.url !== '/index.html' && req.baseUrl !== '/index.html') {
+        req.baseUrl = req.url = '/index.html'
+        send(req, req.baseUrl, { root: config.directory, index: 'index.html' })
+          .on('error', function() {
+            next(err)
+          })
+          .on('directory', () => next(err))
+          .pipe(res)
+      } else next(err)
+    })
+  }
 
   disposable.app = app
   disposable.server = server

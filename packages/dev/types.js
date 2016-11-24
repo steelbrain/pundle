@@ -11,4 +11,6 @@ export type MiddlewareConfig = {
 export type ServerConfig = {
   port: number,
   directory: string,
+  notFoundToIndex: boolean,
+  // ^ Setting this to true means it'll redirect all 404 requests to index
 }
