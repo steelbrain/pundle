@@ -44,6 +44,7 @@ Pundle.create({
       directory: program.devDirectory,
       bundlePath: config.bundlePath,
       sourceMapPath: config.sourceMapPath,
+      notFoundToIndex: config.notFoundToIndex,
     })
   }
   return pundle.generate(null, {
