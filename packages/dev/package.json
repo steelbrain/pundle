@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev",
-  "version": "2.0.0-alpha2",
+  "version": "2.0.0-alpha3",
   "description": "Dev module for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "dependencies": {
     "express": "^4.14.0",
     "express-error-handler": "^1.1.0",
-    "pundle": "^2.0.0-alpha2",
+    "pundle": "^2.0.0-alpha3",
     "pundle-api": "^2.0.0-alpha2",
     "sb-event-kit": "^3.0.0",
     "send": "^0.14.1"
