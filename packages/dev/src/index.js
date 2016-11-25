@@ -90,27 +90,29 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
       // TODO: Push these errors to browser
     },
     async compile(totalFiles: Array<File>) {
+      if (hmrEnabled && !firstCompile) {
+        pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
+        if (connections.size) {
+          const changedFilePaths = Array.from(filesChanged)
+          const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
+            entry: [],
+            wrapper: 'none',
+            sourceMap: true,
+            sourceMapPath: 'inline',
+            sourceNamespace: 'app',
+            sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
+          })
+          writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
+          filesChanged.clear()
+        }
+      }
+      firstCompile = false
       compiled = await pundle.generate(totalFiles, {
         wrapper: 'hmr',
         sourceMap: true,
         sourceMapPath: config.sourceMapPath,
         sourceNamespace: 'app',
       })
-      if (hmrEnabled && !firstCompile) {
-        pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
-        const changedFilePaths = Array.from(filesChanged)
-        const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
-          entry: [],
-          wrapper: 'none',
-          sourceMap: true,
-          sourceMapPath: 'inline',
-          sourceNamespace: 'app',
-          sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
-        })
-        writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
-        filesChanged.clear()
-      }
-      firstCompile = false
     },
   })
 
