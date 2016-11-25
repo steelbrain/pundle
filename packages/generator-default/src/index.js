@@ -50,11 +50,8 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
     linesCount += Helpers.getLinesCount(fileContents)
   }
 
-  if (config.printResolutionMappings) {
-    const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
-    chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
-  }
-
+  const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
+  chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
   for (let i = 0, length = entry.length; i < length; i++) {
     chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entry[i])}')`)
   }
@@ -83,5 +80,4 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
   sourceMapPath: null,
   sourceNamespace: 'app',
   sourceMapNamespace: 'app',
-  printResolutionMappings: true,
 })

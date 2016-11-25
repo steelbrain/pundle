@@ -8,7 +8,6 @@ export type Config = {
   sourceMap: boolean,
   sourceMapPath: 'inline' | string | null,
   sourceMapNamespace: string,
-  printResolutionMappings: boolean,
 }
 
 export type ModuleNormal = {

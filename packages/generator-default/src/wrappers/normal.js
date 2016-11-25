@@ -47,7 +47,7 @@ const __sbPundle = {
     }
     if (module.exports === this.defaultExport) {
       module.exports = {}
-      module.callback.call(module.exports, module.id, '/', this.generateRequire(fromModule), module, module.exports)
+      module.callback.call(module.exports, module.id, '/', this.generateRequire(module.id), module, module.exports)
     }
     return module.exports
   },

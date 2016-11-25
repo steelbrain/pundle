@@ -102,7 +102,7 @@ const __sbPundle = {
     }
     if (module.exports === this.defaultExport) {
       module.exports = {}
-      module.callback.call(module.exports, module.id, '/', this.generateRequire(fromModule), module, module.exports)
+      module.callback.call(module.exports, module.id, '/', this.generateRequire(module.id), module, module.exports)
     }
     return module.exports
   },
@@ -129,7 +129,7 @@ const __sbPundle = {
     if (module.hot.accepts.has('*') || module.hot.accepts.has(matchAgainst)) {
       return 'direct'
     }
-    if (module.parents.some(i => this.hmrIsAccepted(i, matchAgainst))) {
+    if (module.parents.some(i => this.hmrIsAccepted(i, matchAgainst) !== 'no')) {
       return 'parent'
     }
     return 'no'

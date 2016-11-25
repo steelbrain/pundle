@@ -45,29 +45,30 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
     },
   }
 
+  expressApp.get(config.bundlePath, function(req, res, next) {
+    if (active) {
+      watcherInfo.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
+    } else next()
+  })
+  expressApp.get(`${config.bundlePath}.map`, function(req, res, next) {
+    if (active) {
+      watcherInfo.queue.then(() => res.json(compiled.sourceMap))
+    } else next()
+  })
+  if (hmrEnabled) {
+    expressApp.get(config.hmrPath, function(req, res, next) {
+      if (active) {
+        req.on('close', () => connections.delete(res))
+        connections.add(res)
+      } else next()
+    })
+  }
+
   const componentSubscription = await pundle.loadComponents([
     createSimple({
       activate() {
         pundle.compilation.config.entry.unshift(browserFile)
         pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-        expressApp.get(config.bundlePath, function(req, res, next) {
-          if (active) {
-            watcherInfo.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
-          } else next()
-        })
-        expressApp.get(`${config.bundlePath}.map`, function(req, res, next) {
-          if (active) {
-            watcherInfo.queue.then(() => res.json(compiled.sourceMap))
-          } else next()
-        })
-        if (hmrEnabled) {
-          expressApp.get(config.hmrPath, function(req, res, next) {
-            if (active) {
-              req.on('close', () => connections.delete(res))
-              connections.add(res)
-            } else next()
-          })
-        }
       },
       dispose() {
         active = false
@@ -105,7 +106,6 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
           sourceMapPath: 'inline',
           sourceNamespace: 'app',
           sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
-          printResolutionMappings: false,
         })
         writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
         filesChanged.clear()
@@ -128,12 +128,7 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
 
   const server = app.listen(config.port)
   app.use('/', express.static(config.directory))
-  const subscription = await attachMiddleware(pundle, app, givenConfig)
-  const disposable = new Disposable(function() {
-    server.close()
-    subscription.dispose()
-  })
-
+  const middlewarePromise = attachMiddleware(pundle, app, givenConfig)
   if (config.redirectNotFoundToIndex) {
     app.use(errorHandler.httpError(404))
     app.use(function(err, req, res, next) {
@@ -148,6 +143,11 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
       } else next(err)
     })
   }
+  const subscription = await middlewarePromise
+  const disposable = new Disposable(function() {
+    server.close()
+    subscription.dispose()
+  })
 
   disposable.app = app
   disposable.server = server

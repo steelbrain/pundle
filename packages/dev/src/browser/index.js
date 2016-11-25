@@ -1,5 +1,7 @@
 'use strict'
 
+var numUpdate = 1
+
 function requestForUpdates() {
   return new Promise(function(resolve, reject) {
     var xhr = new XMLHttpRequest()
@@ -27,7 +29,7 @@ function keepRequestingForUpdates() {
       return
     }
     if (update.type === 'hmr') {
-      eval(update.contents)
+      eval(`${update.contents}\n//@ sourceURL=${location.origin}/__pundle__/hmr-${numUpdate++}`)
       console.log('[HMR] Files Changed:', update.files.join(', '))
       __sbPundle.hmrApply(update.files)
     } else {

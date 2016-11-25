@@ -1,7 +1,8 @@
 {
   "rules": {
     "strict": "off",
-    "no-eval": "off"
+    "no-eval": "off",
+    "no-var": "off"
   },
   "globals": {
     "__sbPundle": true,
