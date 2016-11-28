@@ -41,7 +41,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   if (typeof a.enableConfigFile === 'undefined' || a.enableConfigFile) {
     let configModule
     try {
-      configModule = await resolve(Path.join(rootDirectory, a.configFileName || 'Pundleconfig.js'), rootDirectory)
+      configModule = await resolve(Path.join(rootDirectory, a.configFileName || '.pundle.js'), rootDirectory)
     } catch (error) {
       if (error.code !== 'MODULE_NOT_FOUND') {
         throw error
