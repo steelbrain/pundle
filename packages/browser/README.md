@@ -1,4 +1,4 @@
-# Pundl -Browser
+# Pundle-Browser
 
 Browser compatible core module polyfills for Pundle.
 
