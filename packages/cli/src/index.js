@@ -21,8 +21,8 @@ program
   .option('-r, --root-directory <directory>', 'Root path where Pundle config file exists', process.cwd())
   .option('-c, --config-file-name <name>', 'Name of Pundle config file (defaults to .pundle.js)', '.pundle.js')
   .option('-d, --dev', 'Enable dev http server', false)
-  .option('-p, --port', 'Port for dev server to listen on', 8080)
-  .option('--dev-directory', 'Directory to use as root for dev server', process.cwd())
+  .option('-p, --port [port]', 'Port for dev server to listen on', 8080)
+  .option('--dev-directory <dir>', 'Directory to use as root for dev server', process.cwd())
   .parse(process.argv)
 
 try {
@@ -40,7 +40,7 @@ Pundle.create({
   process.env.NODE_ENV = program.dev ? 'development' : 'production'
   if (program.dev) {
     return createServer(pundle, {
-      port: program.port,
+      port: parseInt(program.port),
       directory: program.devDirectory,
       bundlePath: config.bundlePath,
       sourceMapPath: config.sourceMapPath,
