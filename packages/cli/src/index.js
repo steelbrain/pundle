@@ -40,7 +40,7 @@ Pundle.create({
   process.env.NODE_ENV = program.dev ? 'development' : 'production'
   if (program.dev) {
     return createServer(pundle, {
-      port: parseInt(program.port),
+      port: parseInt(program.port, 10),
       directory: program.devDirectory,
       bundlePath: config.bundlePath,
       sourceMapPath: config.sourceMapPath,
