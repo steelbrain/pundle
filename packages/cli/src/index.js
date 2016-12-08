@@ -21,14 +21,14 @@ program
   .option('-r, --root-directory <directory>', 'Root path where Pundle config file exists', process.cwd())
   .option('-c, --config-file-name <name>', 'Name of Pundle config file (defaults to .pundle.js)', '.pundle.js')
   .option('-d, --dev', 'Enable dev http server', false)
-  .option('-p, --port [port]', 'Port for dev server to listen on', 8080)
+  .option('-p, --port [port]', 'Port for dev server to listen on')
   .option('--dev-directory <dir>', 'Directory to use as root for dev server', process.cwd())
   .parse(process.argv)
 
 try {
   FS.statSync(Path.join(program.rootDirectory, program.configFileName))
 } catch (_) {
-  console.error('Unable to find Pundle configuration file')
+  console.error('Cannot find Pundle configuration file')
   process.exit(1)
 }
 
@@ -40,21 +40,23 @@ Pundle.create({
   process.env.NODE_ENV = program.dev ? 'development' : 'production'
   if (program.dev) {
     return createServer(pundle, {
-      port: parseInt(program.port, 10),
+      port: program.port || config.server.port,
       directory: program.devDirectory,
-      bundlePath: config.bundlePath,
-      sourceMapPath: config.sourceMapPath,
-      redirectNotFoundToIndex: config.redirectNotFoundToIndex,
+      hmrPath: config.server.hmrPath,
+      bundlePath: config.server.bundlePath,
+      sourceMap: config.server.sourceMap,
+      sourceMapPath: config.server.sourceMapPath,
+      redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
     })
   }
   return pundle.generate(null, {
-    sourceMapPath: Path.relative(Path.dirname(config.bundlePath), config.sourceMapPath),
+    sourceMapPath: config.output.sourceMapPath,
   }).then(async function(generated) {
-    const outputFilePath = Path.join(pundle.config.compilation.rootDirectory, config.bundlePath)
-    const outputSourceMapPath = Path.join(pundle.config.compilation.rootDirectory, config.sourceMapPath)
+    const outputFilePath = Path.join(pundle.config.compilation.rootDirectory, config.output.bundlePath)
+    const outputSourceMapPath = Path.join(pundle.config.compilation.rootDirectory, config.output.sourceMapPath)
     FS.writeFileSync(outputFilePath, generated.contents)
     console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
-    if (config.sourceMap) {
+    if (config.sourceMap && config.output.sourceMapPath !== 'inline') {
       const sourceMap = JSON.stringify(generated.sourceMap)
       FS.writeFileSync(outputSourceMapPath, sourceMap)
       console.log(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)

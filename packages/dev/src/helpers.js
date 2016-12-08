@@ -16,6 +16,9 @@ export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
     invariant(typeof config.bundlePath === 'string', 'config.bundlePath must be a string')
     toReturn.bundlePath = config.bundlePath
   } else toReturn.bundlePath = '/bundle.js'
+  if (typeof config.sourceMap !== 'undefined') {
+    toReturn.sourceMap = !!config.sourceMap
+  } else toReturn.sourceMap = true
   if (config.sourceMapPath) {
     invariant(typeof config.sourceMapPath === 'string', 'config.sourceMapPath must be a string')
     toReturn.sourceMapPath = config.sourceMapPath
@@ -27,11 +30,9 @@ export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
 export function fillServerConfig(config: Object): ServerConfig {
   const toReturn = {}
 
-  if (config.port) {
-    invariant(typeof config.port === 'number' && Number.isFinite(config.port), 'config.port must be a valid number')
-    toReturn.port = config.port
-  } else toReturn.port = 8080
+  invariant(typeof config.port === 'number' && Number.isFinite(config.port), 'config.port must be a valid number')
   invariant(typeof config.directory === 'string' && config.directory, 'config.directory must be a string')
+  toReturn.port = config.port
   toReturn.directory = config.directory
   toReturn.redirectNotFoundToIndex = !!config.redirectNotFoundToIndex
 

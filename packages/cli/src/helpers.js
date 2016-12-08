@@ -1,6 +1,5 @@
 /* @flow */
 
-import Path from 'path'
 import invariant from 'assert'
 import type { CLIConfig } from './types'
 
@@ -9,23 +8,39 @@ export function fillCLIConfig(config: Object): CLIConfig {
   const server = config.server || {}
   const toReturn = {}
 
-  if (output.bundlePath) {
-    invariant(typeof output.bundlePath === 'string' && output.bundlePath, 'output.bundlePath must be a string')
-    toReturn.bundlePath = Path.isAbsolute(output.bundlePath)
-      ? Path.relative(config.compilation.rootDirectory, output.bundlePath)
-      : Path.normalize(output.bundlePath)
-  } else toReturn.bundlePath = '/bundle.js'
-  toReturn.sourceMap = !!output.sourceMap
-  if (output.sourceMapPath) {
-    invariant(typeof output.sourceMapPath === 'string' && output.sourceMapPath, 'output.sourceMapPath must be a string')
-    toReturn.sourceMapPath = Path.isAbsolute(output.sourceMapPath)
-      ? Path.relative(config.compilation.rootDirectory, output.sourceMapPath)
-      : Path.normalize(output.sourceMapPath)
-  } else toReturn.sourceMapPath = `${toReturn.bundlePath}.map`
+  toReturn.output = {}
+  toReturn.server = {}
 
+  if (output.bundlePath) {
+    invariant(typeof output.bundlePath === 'string', 'config.output.bundlePath must be a string')
+    toReturn.output.bundlePath = output.bundlePath
+  } else toReturn.output.bundlePath = 'bundle.js'
+  toReturn.output.sourceMap = !!output.sourceMap
+  if (output.sourceMapPath) {
+    invariant(typeof output.sourceMapPath === 'string', 'config.output.sourceMapPath must be a string')
+    toReturn.output.sourceMapPath = output.sourceMapPath
+  } else toReturn.output.sourceMapPath = 'bundle.js.map'
+
+  if (server.port) {
+    invariant(typeof server.port === 'number' && Number.isFinite(server.port), 'config.server.port must be a valid number')
+    toReturn.server.port = server.port
+  } else toReturn.server.port = 8080
+  if (server.hmrPath) {
+    invariant(typeof server.hmrPath === 'string', 'config.server.hmrPath must be a string')
+    toReturn.server.hmrPath = server.hmrPath
+  } else toReturn.server.hmrPath = '/__sb_pundle_hmr'
+  if (server.bundlePath) {
+    invariant(typeof config.bundlePath === 'string', 'config.server.bundlePath must be a string')
+    toReturn.server.bundlePath = server.bundlePath
+  } else toReturn.server.bundlePath = '/bundle.js'
+  toReturn.server.sourceMap = !!server.sourceMap
+  if (server.sourceMapPath) {
+    invariant(typeof config.sourceMapPath === 'string', 'config.server.sourceMapPath must be a string')
+    toReturn.server.sourceMapPath = server.sourceMapPath
+  } else toReturn.server.sourceMapPath = '/bundle.js.map'
   if (typeof server.redirectNotFoundToIndex !== 'undefined') {
-    toReturn.redirectNotFoundToIndex = !!server.server
-  } else toReturn.redirectNotFoundToIndex = true
+    toReturn.server.redirectNotFoundToIndex = !!server.redirectNotFoundToIndex
+  } else toReturn.server.redirectNotFoundToIndex = true
 
   return toReturn
 }

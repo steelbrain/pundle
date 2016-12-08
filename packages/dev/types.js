@@ -4,6 +4,7 @@ export type MiddlewareConfig = {
   hmrPath: ?string,
   // NOTE: ^ Set to null to disable hmr
   bundlePath: string,
+  sourceMap: boolean,
   sourceMapPath: 'none' | 'inline' | string,
 }
 

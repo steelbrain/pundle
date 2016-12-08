@@ -19,6 +19,7 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   let firstCompile = true
   const config = Helpers.fillMiddlewareConfig(givenConfig)
   const hmrEnabled = config.hmrPath !== null
+  const sourceMapEnabled = config.sourceMap && config.sourceMapPath !== 'none' && config.sourceMapPath !== 'inline'
   const connections = new Set()
   const filesChanged = new Set()
   const oldReplacementVar = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
@@ -50,11 +51,13 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
       watcherInfo.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
     } else next()
   })
-  expressApp.get(`${config.bundlePath}.map`, function(req, res, next) {
-    if (active) {
-      watcherInfo.queue.then(() => res.json(compiled.sourceMap))
-    } else next()
-  })
+  if (sourceMapEnabled) {
+    expressApp.get(config.sourceMapPath, function(req, res, next) {
+      if (active) {
+        watcherInfo.queue.then(() => res.json(compiled.sourceMap))
+      } else next()
+    })
+  }
   if (hmrEnabled) {
     expressApp.get(config.hmrPath, function(req, res, next) {
       if (active) {
@@ -97,7 +100,7 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
           const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
             entry: [],
             wrapper: 'none',
-            sourceMap: true,
+            sourceMap: config.sourceMap,
             sourceMapPath: 'inline',
             sourceNamespace: 'app',
             sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
@@ -109,7 +112,7 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
       firstCompile = false
       compiled = await pundle.generate(totalFiles, {
         wrapper: 'hmr',
-        sourceMap: true,
+        sourceMap: config.sourceMap,
         sourceMapPath: config.sourceMapPath,
         sourceNamespace: 'app',
       })

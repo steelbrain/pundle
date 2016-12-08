@@ -45,6 +45,10 @@ export type PublicPundleConfig = CompilationConfig & {
     sourceMapPath?: string,
   },
   server: {
+    port?: number,
+    hmrPath?: string,
+    bundlePath?: string,
+    sourceMapPath?: string,
     redirectNotFoundToIndex?: boolean,
   },
   watcher?: WatcherConfig,

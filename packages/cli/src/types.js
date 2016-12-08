@@ -1,8 +1,17 @@
 /* @flow */
 
 export type CLIConfig = {
-  bundlePath: string,
-  sourceMap: boolean,
-  sourceMapPath: string,
-  redirectNotFoundToIndex: boolean,
+  output: {
+    bundlePath: string,
+    sourceMap: boolean,
+    sourceMapPath: string,
+  },
+  server: {
+    port: number,
+    hmrPath: string,
+    bundlePath: string,
+    sourceMap: boolean,
+    sourceMapPath: string,
+    redirectNotFoundToIndex: boolean,
+  },
 }
