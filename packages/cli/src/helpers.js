@@ -30,12 +30,12 @@ export function fillCLIConfig(config: Object): CLIConfig {
     toReturn.server.hmrPath = server.hmrPath
   } else toReturn.server.hmrPath = '/__sb_pundle_hmr'
   if (server.bundlePath) {
-    invariant(typeof config.bundlePath === 'string', 'config.server.bundlePath must be a string')
+    invariant(typeof server.bundlePath === 'string', 'config.server.bundlePath must be a string')
     toReturn.server.bundlePath = server.bundlePath
   } else toReturn.server.bundlePath = '/bundle.js'
   toReturn.server.sourceMap = !!server.sourceMap
   if (server.sourceMapPath) {
-    invariant(typeof config.sourceMapPath === 'string', 'config.server.sourceMapPath must be a string')
+    invariant(typeof server.sourceMapPath === 'string', 'config.server.sourceMapPath must be a string')
     toReturn.server.sourceMapPath = server.sourceMapPath
   } else toReturn.server.sourceMapPath = '/bundle.js.map'
   if (typeof server.redirectNotFoundToIndex !== 'undefined') {

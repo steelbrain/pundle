@@ -2,7 +2,6 @@
 
 import send from 'send'
 import express from 'express'
-import errorHandler from 'express-error-handler'
 import { Disposable } from 'sb-event-kit'
 import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
@@ -135,17 +134,15 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
   app.use('/', express.static(config.directory))
   const middlewarePromise = attachMiddleware(pundle, app, givenConfig)
   if (config.redirectNotFoundToIndex) {
-    app.use(errorHandler.httpError(404))
-    app.use(function(err, req, res, next) {
-      if (err && err.status === 404 && req.url !== '/index.html' && req.baseUrl !== '/index.html') {
+    // app.use(errorHandler.httpError(404))
+    app.use(function httpErr(req, res, next) {
+      if (req.url === '/index.html' && req.baseUrl !== '/index.html') {
         req.baseUrl = req.url = '/index.html'
         send(req, req.baseUrl, { root: config.directory, index: 'index.html' })
-          .on('error', function() {
-            next(err)
-          })
-          .on('directory', () => next(err))
+          .on('error', next)
+          .on('directory', next)
           .pipe(res)
-      } else next(err)
+      } else next()
     })
   }
   const subscription = await middlewarePromise
