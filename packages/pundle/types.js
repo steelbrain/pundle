@@ -39,6 +39,14 @@ export type PundleConfig = {
 
 // NOTE: Not used anywhere but this is what Pundle supports publically
 export type PublicPundleConfig = CompilationConfig & {
+  output: {
+    bundlePath?: string,
+    sourceMap?: boolean,
+    sourceMapPath?: string,
+  },
+  server: {
+    redirectNotFoundToIndex?: boolean,
+  },
   watcher?: WatcherConfig,
   presets?: Array<Loadable<Preset>>,
   components?: Array<Loadable<ComponentAny>>,
