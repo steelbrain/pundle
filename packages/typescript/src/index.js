@@ -33,6 +33,9 @@ export default function getTypeScriptTransformer(pundle: Object, parameters: Obj
     )
 
     event.contents = processed.outputText
-    event.sourceMap = JSON.parse(processed.sourceMapText);
+
+    if (event.sourceMap) {
+      event.sourceMap = JSON.parse(processed.sourceMapText)
+    }
   })
 }
