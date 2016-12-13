@@ -1,6 +1,6 @@
 {
   "name": "typescript-pundle",
-  "version": "1.0.1",
+  "version": "1.1.12",
   "description": "TypeScript transformer for Pundle",
   "main": "lib/index.js",
   "scripts": {
