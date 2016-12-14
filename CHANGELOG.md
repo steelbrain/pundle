@@ -1,3 +1,7 @@
+#### 1.1.14
+
+- Fix slowdown in HMRs caused by last release
+
 #### 1.1.13
 
 - Cache compilation results in dev server to make it CPU friendly

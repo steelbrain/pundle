@@ -46,18 +46,21 @@ class Server {
     const filesUpdated = new Set()
     const wsConnections = new Set()
 
+    const regenerate = () => {
+      generated = this.pundle.generate(this.config.generator)
+      if (generated.sourceMap) {
+        generated.contents += `\n//# sourceMappingURL=${Path.relative(Path.dirname(this.config.server.bundlePath), this.config.server.sourceMapPath)}`
+      }
+    }
+
     const subscriptions = new CompositeDisposable()
     const watcherInfo = this.pundle.watch(Object.assign(this.config.watcher, {
       generate: () => {
-        generated = this.pundle.generate(this.config.generator)
-        if (generated.sourceMap) {
-          generated.contents += `\n//# sourceMappingURL=${Path.relative(Path.dirname(this.config.server.bundlePath), this.config.server.sourceMapPath)}`
-        }
-
         debugServer(`Sending HMR of ${filesUpdated.size} file(s) to ${wsConnections.size} connection(s)`)
         if (!filesUpdated.size || !wsConnections.size) {
           filesUpdated.clear()
           this.config.server.generated(filesUpdated)
+          regenerate()
           return
         }
         const hmr = this.pundle.generate(Object.assign({}, this.config.generator, {
@@ -80,6 +83,7 @@ class Server {
         }
         filesUpdated.clear()
         this.config.server.generated(filesUpdated)
+        regenerate()
       },
       ready() {
         ready = true
