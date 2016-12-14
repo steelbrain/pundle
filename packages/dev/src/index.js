@@ -42,27 +42,33 @@ class Server {
   async activate() {
     // HMR Stuff
     let ready = false
-    const wsConnections = new Set()
+    let generated
     const filesUpdated = new Set()
+    const wsConnections = new Set()
 
     const subscriptions = new CompositeDisposable()
     const watcherInfo = this.pundle.watch(Object.assign(this.config.watcher, {
       generate: () => {
+        generated = this.pundle.generate(this.config.generator)
+        if (generated.sourceMap) {
+          generated.contents += `\n//# sourceMappingURL=${Path.relative(Path.dirname(this.config.server.bundlePath), this.config.server.sourceMapPath)}`
+        }
+
         debugServer(`Sending HMR of ${filesUpdated.size} file(s) to ${wsConnections.size} connection(s)`)
         if (!filesUpdated.size || !wsConnections.size) {
           filesUpdated.clear()
           this.config.server.generated(filesUpdated)
           return
         }
-        const generated = this.pundle.generate(Object.assign({}, this.config.generator, {
+        const hmr = this.pundle.generate(Object.assign({}, this.config.generator, {
           wrapper: 'none',
           contents: Array.from(filesUpdated),
           requires: [],
           projectName: `hmr-${Date.now()}`,
         }))
-        let contents = generated.contents
-        if (generated.sourceMap) {
-          contents += `\n${sourceMapToComment(generated.sourceMap)}`
+        let contents = hmr.contents
+        if (hmr.sourceMap) {
+          contents += `\n${sourceMapToComment(hmr.sourceMap)}`
         }
         const payload = JSON.stringify({
           type: 'update',
@@ -83,14 +89,14 @@ class Server {
     const app = this.server
     app.get(this.config.server.bundlePath, (req, res) => {
       filesUpdated.clear()
-      watcherInfo.queue = watcherInfo.queue.then(() => {
-        const generated = this.pundle.generate(this.config.generator)
-        let contents = generated.contents
-        if (generated.sourceMap) {
-          contents += `\n//# sourceMappingURL=${Path.relative(Path.dirname(this.config.server.bundlePath), this.config.server.sourceMapPath)}`
+      watcherInfo.queue = watcherInfo.queue.then(async function respond() {
+        if (!generated) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+          respond()
+          return
         }
         res.header('Content-Type', 'application/javascript')
-        res.end(contents)
+        res.end(generated.contents)
       }).catch(error => {
         res.sendStatus(500)
         res.end()
@@ -100,8 +106,12 @@ class Server {
 
     if (this.config.generator.sourceMap) {
       app.get(this.config.server.sourceMapPath, (req, res) => {
-        watcherInfo.queue = watcherInfo.queue.then(() => {
-          const generated = this.pundle.generate(this.config.generator)
+        watcherInfo.queue = watcherInfo.queue.then(async function respond() {
+          if (!generated) {
+            await new Promise(resolve => setTimeout(resolve, 100))
+            respond()
+            return
+          }
           res.header('Content-Type', 'application/json')
           res.end(JSON.stringify(generated.sourceMap, null, 2))
         }).catch(error => {
