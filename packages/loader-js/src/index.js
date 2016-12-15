@@ -41,7 +41,8 @@ export default createLoader(function(config: Object, file: File) {
       ],
     })
   } catch (error) {
-    const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, this.config.rootDirectory)}`
+    const givenMessage = error.loc ? error.message.split(':').slice(1).join(':').trim() : error.message
+    const errorMessage = `${givenMessage} in ${getRelativeFilePath(file.filePath, this.config.rootDirectory)}`
     if (error.loc) {
       throw new FileIssue(file.contents, error.loc.line, error.loc.column + 1, errorMessage, 'error')
     } else {
