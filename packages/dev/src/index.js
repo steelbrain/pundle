@@ -124,6 +124,8 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   })
 }
 
+// NOTE: Make SURE to setup the static handler AFTER middleware is invoked and
+//       that the middleware doesn't await before registering the route
 // NOTE: Also accepts all of middleware options
 // NOTE: The return value has a `server` and `app` property that references express instance and server instance
 export async function createServer(pundle: Object, givenConfig: Object): Promise<Disposable> {
@@ -131,8 +133,8 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
   const config = Helpers.fillServerConfig(givenConfig)
 
   const server = app.listen(config.port)
-  app.use('/', express.static(config.directory))
   const middlewarePromise = attachMiddleware(pundle, app, givenConfig)
+  app.use('/', express.static(config.directory))
   if (config.redirectNotFoundToIndex) {
     // app.use(errorHandler.httpError(404))
     app.use(function httpErr(req, res, next) {
