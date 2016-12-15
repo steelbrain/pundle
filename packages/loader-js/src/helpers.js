@@ -51,7 +51,7 @@ export function getParsedReplacement(rawValue: any): Object {
   if (STRING_REGEX.test(rawValue)) {
     // Extract value between ""
     // Unescape backward slahes
-    parsedValue = t.stringLiteral(rawValue.slice(1, -1).replace(/\\(.)/g, '$1'))
+    parsedValue = t.stringLiteral(JSON.parse(rawValue))
   } else if (typeof rawValue === 'number') {
     parsedValue = t.numericLiteral(rawValue)
   } else {

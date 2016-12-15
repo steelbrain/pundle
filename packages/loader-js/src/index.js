@@ -54,7 +54,8 @@ export default createLoader(function(config: Object, file: File) {
       // StringLiteral
       const request = this.getImportRequest(filePath, file.filePath)
       imports.add(request)
-      node.value = request.id
+      // NOTE: Casting it to string is VERY important and required
+      node.value = request.id.toString()
     }
   }
 
