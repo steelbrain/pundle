@@ -16,7 +16,7 @@ module.exports = {
   },
   presets: [
     [require.resolve('pundle-preset-default'), {
-      resolver: { extensions: ['', '.js', '.json', '.ts', '.tsx'] },
+      // Put any preset config here
     }],
   ],
 }
