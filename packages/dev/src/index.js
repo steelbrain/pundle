@@ -143,8 +143,8 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
   const middlewarePromise = attachMiddleware(pundle, givenConfig, app, server)
   app.use('/', express.static(config.directory))
   if (config.redirectNotFoundToIndex) {
-    app.use(function(req, res, next) {
-      if (req.url === '/index.html' && req.baseUrl !== '/index.html') {
+    app.use(function httpError(req, res, next) {
+      if (req.url !== '/index.html' && req.baseUrl !== '/index.html') {
         req.baseUrl = req.url = '/index.html'
         send(req, req.baseUrl, { root: config.directory, index: 'index.html' })
           .on('error', next)
