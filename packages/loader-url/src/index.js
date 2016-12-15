@@ -18,7 +18,7 @@ export default createLoader(async function(config: Object, file: File) {
       names: ['$'],
       mappings: 'AAAAA',
     },
-    contents: `module.exports = ${JSON.stringify(`data:application/json;base64,${contents.toString('base64')}`)}`,
+    contents: `module.exports = ${JSON.stringify(`data:application/octet-stream;base64,${contents.toString('base64')}`)}`,
   }
 }, {
   extensions: null,
