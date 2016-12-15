@@ -97,8 +97,8 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     },
     async compile(totalFiles: Array<File>) {
       if (hmrEnabled && !firstCompile) {
-        pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
         if (connections.size) {
+          pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
           const changedFilePaths = Array.from(filesChanged)
           const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
             entry: [],
