@@ -48,6 +48,7 @@ export type PublicPundleConfig = CompilationConfig & {
     port?: number,
     hmrPath?: string,
     bundlePath?: string,
+    devDirectory: string,
     sourceMapPath?: string,
     redirectNotFoundToIndex?: boolean,
   },

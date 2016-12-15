@@ -11,6 +11,7 @@ export type CLIConfig = {
     hmrPath: string,
     bundlePath: string,
     sourceMap: boolean,
+    devDirectory: string,
     sourceMapPath: string,
     redirectNotFoundToIndex: boolean,
   },

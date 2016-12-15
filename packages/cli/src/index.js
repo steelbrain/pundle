@@ -59,7 +59,7 @@ command
         const serverPort = options.port || config.server.port
         return createServer(pundle, {
           port: serverPort,
-          directory: options.devDirectory,
+          directory: options.devDirectory || config.server.devDirectory,
           hmrPath: config.server.hmrPath,
           bundlePath: config.server.bundlePath,
           sourceMap: config.server.sourceMap,
