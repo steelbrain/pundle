@@ -2,13 +2,15 @@
 
 import send from 'send'
 import express from 'express'
+import { Server } from 'ws'
 import { Disposable } from 'sb-event-kit'
 import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 const browserFile = require.resolve('./browser')
-export async function attachMiddleware(pundle: Object, expressApp: Object, givenConfig: Object = {}): Disposable {
+// NOTE: HMR server will not be created unless server is provided
+export async function attachMiddleware(pundle: Object, givenConfig: Object = {}, expressApp: Object, server: Object): Disposable {
   if (pundle.compilation.config.entry.indexOf(browserFile) !== -1) {
     throw new Error('Cannot create two middlewares on one Pundle instance')
   }
@@ -24,8 +26,7 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   const oldReplacementVar = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
 
   const writeToConnections = (contents) => {
-    connections.forEach((connection) => connection.json(contents))
-    connections.clear()
+    connections.forEach((connection) => connection.send(JSON.stringify(contents)))
   }
   let watcherSubscription
   // The watcherInfo implementation below is useful because
@@ -57,12 +58,15 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
       } else next()
     })
   }
+
+  let wss
   if (hmrEnabled) {
-    expressApp.get(config.hmrPath, function(req, res, next) {
+    wss = new Server({ server, path: config.hmrPath })
+    wss.on('connection', function(connection) {
       if (active) {
-        req.on('close', () => connections.delete(res))
-        connections.add(res)
-      } else next()
+        connection.on('close', () => connections.delete(connection))
+        connections.add(connection)
+      }
     })
   }
 
@@ -119,6 +123,9 @@ export async function attachMiddleware(pundle: Object, expressApp: Object, given
   })
 
   return new Disposable(function() {
+    if (wss) {
+      wss.close()
+    }
     watcherSubscription.dispose()
     componentSubscription.dispose()
   })
@@ -133,11 +140,10 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
   const config = Helpers.fillServerConfig(givenConfig)
 
   const server = app.listen(config.port)
-  const middlewarePromise = attachMiddleware(pundle, app, givenConfig)
+  const middlewarePromise = attachMiddleware(pundle, givenConfig, app, server)
   app.use('/', express.static(config.directory))
   if (config.redirectNotFoundToIndex) {
-    // app.use(errorHandler.httpError(404))
-    app.use(function httpErr(req, res, next) {
+    app.use(function(req, res, next) {
       if (req.url === '/index.html' && req.baseUrl !== '/index.html') {
         req.baseUrl = req.url = '/index.html'
         send(req, req.baseUrl, { root: config.directory, index: 'index.html' })

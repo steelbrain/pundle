@@ -22,6 +22,7 @@
     "pundle": "^2.0.0-alpha3",
     "pundle-api": "^2.0.0-alpha2",
     "sb-event-kit": "^3.0.0",
-    "send": "^0.14.1"
+    "send": "^0.14.1",
+    "ws": "^1.1.1"
   }
 }

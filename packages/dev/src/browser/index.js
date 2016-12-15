@@ -1,45 +1,28 @@
 'use strict'
 
-var numUpdate = 1
+let numUpdate = 1
 
-function requestForUpdates() {
-  return new Promise(function(resolve, reject) {
-    var xhr = new XMLHttpRequest()
-    xhr.open('GET', SB_PUNDLE_HMR_PATH, true)
-    xhr.onload = function() {
-      if (xhr.status >= 200 && xhr.status < 400) {
-        resolve(xhr.responseText ? JSON.parse(xhr.responseText) : null)
-      } else {
-        setTimeout(function() {
-          reject(new Error(`HTTP Error: Status code ${xhr.status}`))
-        }, 2000)
-      }
+function openHMRConnection() {
+  const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}${SB_PUNDLE_HMR_PATH}`)
+  socket.addEventListener('open', function() {
+    console.log('[HMR] Connected')
+  })
+  socket.addEventListener('close', function() {
+    console.log('[HMR] Disconnected')
+  })
+  socket.addEventListener('message', function(event) {
+    const message = JSON.parse(event.data)
+    if (message.type === 'hmr') {
+      eval(`${message.contents}\n//@ sourceURL=${location.origin}/__pundle__/hmr-${numUpdate++}`)
+      console.log('[HMR] Files Changed:', message.files.join(', '))
+      __sbPundle.hmrApply(message.files)
+    } else {
+      console.log('[HMR] Unknown response', message)
     }
-    xhr.send()
-    setTimeout(function() {
-      resolve(null)
-      xhr.abort()
-    }, 5000)
+  })
+  socket.addEventListener('close', function() {
+    console.log('[HMR] Retrying in 5 seconds')
+    setTimeout(openHMRConnection, 5000)
   })
 }
-
-function keepRequestingForUpdates() {
-  requestForUpdates().then(function(update) {
-    if (!update) {
-      return
-    }
-    if (update.type === 'hmr') {
-      eval(`${update.contents}\n//@ sourceURL=${location.origin}/__pundle__/hmr-${numUpdate++}`)
-      console.log('[HMR] Files Changed:', update.files.join(', '))
-      __sbPundle.hmrApply(update.files)
-    } else {
-      console.log('[HMR] Unknown response', update)
-    }
-  }).catch(function(error) {
-    if (error.code !== 'HMR_REBOOT_REQUIRED') {
-      console.log('[HMR] Error', error)
-    }
-  }).then(keepRequestingForUpdates)
-}
-
-keepRequestingForUpdates()
+openHMRConnection()
