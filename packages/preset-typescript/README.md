@@ -1,6 +1,6 @@
 # Pundle Preset Typescript
 
-### Usage
+### Configuration
 
 If you want to include the preset with default configurations, add it to your configuration like
 
@@ -17,6 +17,18 @@ presets: [
     loader: { extensions: ['jsts'] },
     transformer: { extensions: ['jsts'] },
     resolver: { extensions: ['jsts'] },
+  }]
+]
+```
+
+## Excluding some components
+
+To disable specific components in a preset, simply set it's config property to `false`, for example
+
+```js
+presets: [
+  ['pundle-preset-default', {
+    reporter: false,
   }]
 ]
 ```
