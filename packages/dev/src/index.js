@@ -1,12 +1,15 @@
 /* @flow */
 
 import send from 'send'
+import debug from 'debug'
 import express from 'express'
 import { Server } from 'ws'
 import { Disposable } from 'sb-event-kit'
 import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
+
+const debugTick = debug('PUNDLE:DEV:TICK')
 
 const browserFile = require.resolve('./browser')
 // NOTE: HMR server will not be created unless server is provided
@@ -88,7 +91,8 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   ])
 
   watcherSubscription = await pundle.watch({
-    tick(filePath: string, error: ?null) {
+    tick(filePath: string, error: ?Error) {
+      debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
       if (!error && filePath !== browserFile) {
         filesChanged.add(filePath)
         return

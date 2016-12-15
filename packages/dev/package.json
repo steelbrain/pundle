@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
+    "debug": "^2.4.4",
     "express": "^4.14.0",
     "pundle": "^2.0.0-beta1",
     "pundle-api": "^2.0.0-alpha4",
