@@ -28,13 +28,13 @@ export default createTransformer(async function(config: Object, file: File) {
   const contents = processed.outputText
   const sourceMap = processed.sourceMap
     ? JSON.parse(processed.sourceMapText)
-    : undefined;
+    : undefined
 
   return { contents, sourceMap }
 }, {
   typescriptPath: 'typescript',
   // ^ Path to resolve to get the typescript module
   config: {},
-  include: [],
   exclude: [/(node_modules|bower_components)/],
+  extensions: ['ts', 'tsx'],
 })
