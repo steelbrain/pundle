@@ -1,6 +1,6 @@
 {
   "name": "pundle-resolver-default",
-  "version": "2.0.0-alpha4",
+  "version": "2.0.0-beta1",
   "description": "Require resolver for Pundle",
   "main": "lib/index.js",
   "scripts": {

@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-babel",
-  "version": "2.0.0-alpha4",
+  "version": "2.0.0-beta1",
   "description": "Babel transformer for Pundle",
   "main": "lib/index.js",
   "scripts": {
