@@ -18,6 +18,8 @@ export async function resolve<T>(request: string, rootDirectory: string): Promis
     const error = new Error(`Unable to resolve '${request}' from root directory`)
     // $FlowIgnore: Custom property
     error.code = 'MODULE_NOT_FOUND'
+    // $FlowIgnore: Custom property
+    error.duringResolution = true
     throw error
   }
   // $FlowIgnore: This is how it works, loadables are dynamic requires
@@ -43,7 +45,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
     try {
       configModule = await resolve(Path.join(rootDirectory, a.configFileName || '.pundle.js'), rootDirectory)
     } catch (error) {
-      if (error.code !== 'MODULE_NOT_FOUND') {
+      if (!error.duringResolution) {
         throw error
       }
     }
