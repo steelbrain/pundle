@@ -9,7 +9,7 @@ module.exports = {
   },
   server: {
     port: 8090,
-    hmrPath: '/__sb_pundle_shiny_hmr',
+    hmrPath: '/__sb_pundle_hmr',
     bundlePath: '/bundle.js',
     sourceMapPath: '/bundle.js.map',
     redirectNotFoundToIndex: true,
