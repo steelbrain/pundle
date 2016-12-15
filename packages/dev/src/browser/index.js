@@ -21,8 +21,8 @@ function openHMRConnection() {
     }
   })
   socket.addEventListener('close', function() {
-    console.log('[HMR] Retrying in 5 seconds')
-    setTimeout(openHMRConnection, 5000)
+    console.log('[HMR] Retrying in 2 seconds')
+    setTimeout(openHMRConnection, 2000)
   })
 }
 openHMRConnection()
