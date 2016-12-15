@@ -220,6 +220,7 @@ const __sbPundle = {
         callback(newModule.hot.data)
       })
       this.cache[file] = newModule
+      newModule.parents = oldModule.parents
       newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(null), newModule, newModule.exports)
       newModule.hot.callbacks_accept.forEach(function(callback) {
         callback()
