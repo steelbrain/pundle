@@ -93,7 +93,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   watcherSubscription = await pundle.watch({
     tick(filePath: string, error: ?Error) {
       debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
-      if (!error && filePath !== browserFile) {
+      if (!error && filePath !== browserFile && !firstCompile) {
         filesChanged.add(filePath)
         return
       }
