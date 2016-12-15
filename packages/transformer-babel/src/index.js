@@ -32,6 +32,6 @@ export default createTransformer(async function(config: Object, file: File) {
   babelPath: 'babel-core',
   // ^ Path to resolve to get the babel-core module
   config: {},
-  include: [],
+  extensions: [],
   exclude: [/(node_modules|bower_components)/],
 })
