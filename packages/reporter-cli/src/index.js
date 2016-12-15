@@ -43,5 +43,7 @@ export default createReporter(async function(config: Object, error: Error | File
   if (!chalk.supportsColor) {
     generatedText = chalk.stripColor(generatedText)
   }
-  console.log(generatedText)
+  config.log(generatedText)
+}, {
+  log: o => console.log(o),
 })
