@@ -4,6 +4,12 @@ let numUpdate = 1
 
 function openHMRConnection() {
   const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}${SB_PUNDLE_HMR_PATH}`)
+  const interval = setInterval(function() {
+    if (socket.readyState === 1) {
+      // NOTE: This is to keep the connection alive
+      socket.send('ping')
+    }
+  }, 2000)
   socket.addEventListener('open', function() {
     console.log('[HMR] Connected')
   })
@@ -21,6 +27,7 @@ function openHMRConnection() {
     }
   })
   socket.addEventListener('close', function() {
+    clearInterval(interval)
     console.log('[HMR] Retrying in 2 seconds')
     setTimeout(openHMRConnection, 2000)
   })
