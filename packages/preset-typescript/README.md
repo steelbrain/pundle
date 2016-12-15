@@ -2,7 +2,7 @@
 
 ### Usage
 
-If you want to include the preset with default configurations, add it to your preset like
+If you want to include the preset with default configurations, add it to your configuration like
 
 ```js
 presets: ['pundle-preset-typescript']
