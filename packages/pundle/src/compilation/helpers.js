@@ -222,8 +222,7 @@ export function getAllKnownExtensions(components: Set<ComponentEntry>): Array<st
   for (const component of filterComponents(components, 'loader')) {
     if (component.config.extensions) {
       toReturn = toReturn.concat(component.config.extensions)
-    }
-    if (component.component.defaultConfig.extensions) {
+    } else if (component.component.defaultConfig.extensions) {
       toReturn = toReturn.concat(component.component.defaultConfig.extensions)
     }
   }
