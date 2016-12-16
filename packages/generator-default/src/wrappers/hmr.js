@@ -221,7 +221,18 @@ const __sbPundle = {
       })
       this.cache[file] = newModule
       newModule.parents = oldModule.parents
-      newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(null), newModule, newModule.exports)
+      try {
+        newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(null), newModule, newModule.exports)
+      } catch (error) {
+        // NOTE: In case of error, copy last HMR info
+        Object.assign(newModule.hot, {
+          accepts: oldModule.hot.accepts,
+          declines: oldModule.hot.declines,
+          callbacks_accept: oldModule.hot.callbacks_accept,
+          callbacks_dispose: oldModule.hot.callbacks_dispose,
+        })
+        throw error
+      }
       newModule.hot.callbacks_accept.forEach(function(callback) {
         callback()
       })
