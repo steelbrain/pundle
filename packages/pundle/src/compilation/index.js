@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import debounce from 'sb-debounce'
 import chokidar from 'chokidar'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
@@ -166,6 +167,8 @@ export default class Compilation {
         this.report(compileError)
       }
     }
+    const triggerDebouncedCompile = debounce(triggerCompile, 20)
+    // The 20ms latency is for batch change operations to be compiled at once
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
@@ -181,7 +184,7 @@ export default class Compilation {
     watcher.on('change', (filePath) => {
       queue = queue.then(function() {
         return processFile(filePath)
-      }).then((status) => status && triggerCompile())
+      }).then((status) => status && triggerDebouncedCompile())
     })
     watcher.on('unlink', (filePath) => {
       queue = queue.then(() => files.delete(filePath))
