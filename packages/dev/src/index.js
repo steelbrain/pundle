@@ -3,7 +3,7 @@
 import send from 'send'
 import debug from 'debug'
 import express from 'express'
-import { Server } from 'ws'
+import { Server } from 'uws'
 import { Disposable } from 'sb-event-kit'
 import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
