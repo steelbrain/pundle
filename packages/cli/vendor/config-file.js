@@ -1,3 +1,5 @@
+const path = require('path')
+
 module.exports = {
   debug: true,
   // ^ Setting this to true sets "process.env.NODE_ENV" to "development" in processed js, it's set to "production" otherwise
@@ -11,6 +13,8 @@ module.exports = {
     port: 8090,
     hmrPath: '/__sb_pundle_hmr',
     bundlePath: '/bundle.js',
+    sourceMap: true,
+    devDirectory: path.join(__dirname, 'static'),
     sourceMapPath: '/bundle.js.map',
     redirectNotFoundToIndex: true,
   },
