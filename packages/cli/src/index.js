@@ -22,7 +22,7 @@ command
   .option('-c, --config-file-name <name>', 'Name of Pundle config file (defaults to .pundle.js)', '.pundle.js')
   .option('-d, --dev', 'Enable dev http server', false)
   .option('-p, --port [port]', 'Port for dev server to listen on')
-  .option('--dev-directory <dir>', 'Directory to use as root for dev server', process.cwd())
+  .option('--dev-directory <dir>', 'Directory to use as root for dev server')
   .command('init', 'Copy default Pundle configuration into root directory', function(options) {
     let exists = false
     const sourceConfigFilePath = Path.normalize(Path.join(__dirname, '..', 'vendor', 'config-file.js'))
@@ -59,10 +59,10 @@ command
         const serverPort = options.port || config.server.port
         return createServer(pundle, {
           port: serverPort,
-          directory: options.devDirectory || config.server.devDirectory,
           hmrPath: config.server.hmrPath,
-          bundlePath: config.server.bundlePath,
           sourceMap: config.server.sourceMap,
+          directory: options.devDirectory || Path.resolve(options.rootDirectory, config.server.devDirectory),
+          bundlePath: config.server.bundlePath,
           sourceMapPath: config.server.sourceMapPath,
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
         }).then(function() {
