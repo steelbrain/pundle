@@ -15,6 +15,8 @@ module.exports = {
     // hmrHost: 'https://google.com',
     // ^ Only specify if different from the host bundle is served on
     hmrPath: '/__sb_pundle_hmr',
+    // hmrReports: false,
+    // ^ Defaults to true, shows cli reports in browser if enabled
     bundlePath: '/bundle.js',
     // sourceMap: true,
     // ^ Only specify it if it's different from output.sourceMap

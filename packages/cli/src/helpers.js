@@ -51,5 +51,7 @@ export function fillCLIConfig(config: Object): CLIConfig {
     toReturn.server.redirectNotFoundToIndex = !!server.redirectNotFoundToIndex
   } else toReturn.server.redirectNotFoundToIndex = true
 
+  toReturn.server.hmrReports = typeof server.hmrReports === 'undefined' ? true : !!server.hmrReports
+
   return toReturn
 }
