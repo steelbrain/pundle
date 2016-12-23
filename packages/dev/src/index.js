@@ -4,6 +4,7 @@ import send from 'send'
 import debug from 'debug'
 import express from 'express'
 import { Server } from 'uws'
+import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { MessageIssue, createSimple } from 'pundle-api'
 import type { File } from 'pundle-api/types'
@@ -91,6 +92,13 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
         pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
       },
     }, config),
+    [cliReporter, {
+      log(text, error) {
+        if (config.hmrReports) {
+          writeToConnections({ type: 'reporter', text, severity: error.severity || 'error' })
+        }
+      },
+    }],
   ])
 
   watcherSubscription = await pundle.watch({
@@ -100,7 +108,6 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
         filesChanged.add(filePath)
         return
       }
-      // TODO: Push these errors to browser
     },
     async compile(totalFiles: Array<File>) {
       if (hmrEnabled && !firstCompile) {
