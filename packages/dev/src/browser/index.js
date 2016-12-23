@@ -13,7 +13,7 @@ function getHMRUrl() {
   } else if (host.slice(0, 7) === 'http://') {
     scheme = 'ws'
   } else throw new Error('Invalid HMR host specified in Pundle configuration')
-  return `${scheme}://${host.slice(host.indexOf('//')) + 2}${path}`
+  return `${scheme}://${host.slice(host.indexOf('//') + 2)}${path}`
 }
 function openHMRConnection() {
   const socket = new WebSocket(getHMRUrl())
