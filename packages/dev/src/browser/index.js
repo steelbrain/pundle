@@ -35,6 +35,13 @@ function openHMRConnection() {
       eval(`${message.contents}\n//@ sourceURL=${location.origin}/__pundle__/hmr-${numUpdate++}`)
       console.log('[HMR] Files Changed:', message.files.join(', '))
       __sbPundle.hmrApply(message.files)
+    } else if (message.type === 'report') {
+      const container = document.createElement('div')
+      container.innerHTML = __sbPundle.ansi.ansi_to_html(message.text)
+      document.body.insertBefore(container, document.body.firstChild)
+      setTimeout(function() {
+        container.remove()
+      }, 5000)
     } else {
       console.log('[HMR] Unknown response', message)
     }

@@ -95,7 +95,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     [cliReporter, {
       log(text, error) {
         if (config.hmrReports) {
-          writeToConnections({ type: 'reporter', text, severity: error.severity || 'error' })
+          writeToConnections({ type: 'report', text, severity: error.severity || 'error' })
         }
       },
     }],
