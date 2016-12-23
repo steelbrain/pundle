@@ -2,7 +2,8 @@ const path = require('path')
 
 module.exports = {
   debug: true,
-  // ^ Setting this to true sets "process.env.NODE_ENV" to "development" in processed js, it's set to "production" otherwise
+  // ^ Setting this to true replaces "process.env.NODE_ENV" in bundle to
+  // "development", it's set to "production" otherwise
   entry: ['./index.js'],
   output: {
     bundlePath: '/bundle.js',
@@ -13,7 +14,8 @@ module.exports = {
     port: 8090,
     hmrPath: '/__sb_pundle_hmr',
     bundlePath: '/bundle.js',
-    sourceMap: true,
+    // sourceMap: true,
+    // ^ Only specify it if it's different from output.sourceMap
     devDirectory: path.join(__dirname, 'static'),
     sourceMapPath: '/bundle.js.map',
     redirectNotFoundToIndex: true,
