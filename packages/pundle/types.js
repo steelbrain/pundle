@@ -46,6 +46,7 @@ export type PublicPundleConfig = CompilationConfig & {
   },
   server: {
     port?: number,
+    hmrHost?: string,
     hmrPath?: string,
     bundlePath?: string,
     devDirectory: string,

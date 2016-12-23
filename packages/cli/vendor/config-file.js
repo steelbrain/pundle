@@ -12,6 +12,8 @@ module.exports = {
   },
   server: {
     port: 8090,
+    // hmrHost: 'https://google.com',
+    // ^ Only specify if different from the host bundle is served on
     hmrPath: '/__sb_pundle_hmr',
     bundlePath: '/bundle.js',
     // sourceMap: true,

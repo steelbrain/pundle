@@ -9,6 +9,7 @@ export type CLIConfig = {
   server: {
     port: number,
     hmrPath: string,
+    hmrHost: string,
     bundlePath: string,
     sourceMap: boolean,
     devDirectory: string,

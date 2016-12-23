@@ -30,6 +30,10 @@ export function fillCLIConfig(config: Object): CLIConfig {
     invariant(typeof server.hmrPath === 'string', 'config.server.hmrPath must be a string')
     toReturn.server.hmrPath = server.hmrPath
   } else toReturn.server.hmrPath = '/__sb_pundle_hmr'
+  if (server.hmrHost) {
+    invariant(typeof server.hmrHost === 'string', 'config.server.hmrHost must be a string')
+    toReturn.server.hmrHost = server.hmrHost
+  } else toReturn.server.hmrHost = ''
   if (server.bundlePath) {
     invariant(typeof server.bundlePath === 'string', 'config.server.bundlePath must be a string')
     toReturn.server.bundlePath = server.bundlePath

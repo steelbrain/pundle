@@ -60,6 +60,7 @@ command
         return createServer(pundle, {
           port: serverPort,
           hmrPath: config.server.hmrPath,
+          hmrHost: config.server.hmrHost,
           sourceMap: config.server.sourceMap,
           directory: options.devDirectory || Path.resolve(options.rootDirectory, config.server.devDirectory),
           bundlePath: config.server.bundlePath,
