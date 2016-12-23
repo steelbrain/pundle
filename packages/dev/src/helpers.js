@@ -28,7 +28,9 @@ export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
     toReturn.sourceMapPath = config.sourceMapPath
   } else toReturn.sourceMapPath = '/bundle.js.map'
 
-  toReturn.hmrReports = typeof config.hmrReports === 'undefined' ? true : !!config.hmrReports
+  // toReturn.hmrReports = typeof config.hmrReports === 'undefined' ? true : !!config.hmrReports
+  // ^ TODO: Uncomment this when HMR Reports are not ugly
+  toReturn.hmrReports = !!config.hmrReports
 
   return toReturn
 }
