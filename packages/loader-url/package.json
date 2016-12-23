@@ -1,6 +1,6 @@
 {
   "name": "pundle-loader-url",
-  "version": "2.0.0-beta2",
+  "version": "2.0.0-beta3",
   "description": "URL loader for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "^2.0.0-beta2",
+    "pundle-api": "^2.0.0-beta3",
     "sb-fs": "^1.1.1"
   },
   "devDependencies": {}
