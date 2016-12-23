@@ -26,7 +26,8 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   const sourceMapEnabled = config.sourceMap && config.sourceMapPath !== 'none' && config.sourceMapPath !== 'inline'
   const connections = new Set()
   const filesChanged = new Set()
-  const oldReplacementVar = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  const oldHMRPath = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  const oldHMRHost = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
 
   const writeToConnections = (contents) => {
     connections.forEach((connection) => connection.send(JSON.stringify(contents)))
@@ -78,6 +79,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
       activate() {
         pundle.compilation.config.entry.unshift(browserFile)
         pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
       },
       dispose() {
         active = false
@@ -85,7 +87,8 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
         if (entryIndex !== -1) {
           pundle.compilation.config.entry.splice(entryIndex, 1)
         }
-        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldReplacementVar
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
       },
     }, config),
   ])

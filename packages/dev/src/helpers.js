@@ -12,6 +12,10 @@ export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
       toReturn.hmrPath = config.hmrPath
     } else toReturn.hmrPath = null
   } else toReturn.hmrPath = '/__sb_pundle_hmr'
+  if (config.hmrHost) {
+    invariant(typeof config.hmrHost === 'string', 'config.hmrHost must be a string')
+    toReturn.hmrHost = config.hmrHost
+  } else toReturn.hmrHost = ''
   if (config.bundlePath) {
     invariant(typeof config.bundlePath === 'string', 'config.bundlePath must be a string')
     toReturn.bundlePath = config.bundlePath

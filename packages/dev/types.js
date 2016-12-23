@@ -1,6 +1,8 @@
 /* @flow */
 
 export type MiddlewareConfig = {
+  hmrHost: ?string,
+  // NOTE: Must specify protocol, for example "https://google.com"
   hmrPath: ?string,
   // NOTE: ^ Set to null to disable hmr
   bundlePath: string,

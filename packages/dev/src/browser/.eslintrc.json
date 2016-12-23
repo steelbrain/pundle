@@ -6,6 +6,7 @@
   },
   "globals": {
     "__sbPundle": true,
-    "SB_PUNDLE_HMR_PATH": true
+    "SB_PUNDLE_HMR_PATH": true,
+    "SB_PUNDLE_HMR_HOST": true
   }
 }

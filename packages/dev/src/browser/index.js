@@ -2,8 +2,21 @@
 
 let numUpdate = 1
 
+function getHMRUrl() {
+  // NOTE: SB_PUNDLE_HMR_HOST format is "protocol://hostname"
+  // For example, "http://google.com" or "https://reddit.com"
+  const host = SB_PUNDLE_HMR_HOST || location.origin
+  const path = SB_PUNDLE_HMR_PATH
+  let scheme
+  if (host.slice(0, 8) === 'https://') {
+    scheme = 'wss'
+  } else if (host.slice(0, 7) === 'http://') {
+    scheme = 'ws'
+  } else throw new Error('Invalid HMR host specified in Pundle configuration')
+  return `${scheme}://${host.slice(host.indexOf('//')) + 2}${path}`
+}
 function openHMRConnection() {
-  const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}${SB_PUNDLE_HMR_PATH}`)
+  const socket = new WebSocket(getHMRUrl())
   const interval = setInterval(function() {
     if (socket.readyState === 1) {
       // NOTE: This is to keep the connection alive
