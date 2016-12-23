@@ -1,4 +1,9 @@
 {
-  "presets": ["steelbrain", "babili"],
+  "presets": ["steelbrain"],
+  "plugins": [
+    ["inline-import", {
+      "extensions": [".js"]
+    }]
+  ],
   "comments": false
 }

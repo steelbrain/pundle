@@ -37,7 +37,7 @@ function openHMRConnection() {
       __sbPundle.hmrApply(message.files)
     } else if (message.type === 'report') {
       const container = document.createElement('div')
-      container.innerHTML = new __sbPundle.AnsiToHTML().toHtml(message.text)
+      container.innerHTML = __sbPundle.ansiToHtml(message.text)
       document.body.insertBefore(container, document.body.firstChild)
       setTimeout(function() {
         container.remove()
