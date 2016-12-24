@@ -1,3 +1,15 @@
+#### 1.1.14
+
+- Fix slowdown in HMRs caused by last release
+
+#### 1.1.13
+
+- Cache compilation results in dev server to make it CPU friendly
+
+#### 1.1.12
+
+- Fix an issue in pundle-typescript
+
 #### 1.1.11
 
 - We need tests for HMR...
