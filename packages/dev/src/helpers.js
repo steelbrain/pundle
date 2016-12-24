@@ -37,9 +37,9 @@ export function fillServerConfig(config: Object): ServerConfig {
   const toReturn = {}
 
   invariant(typeof config.port === 'number' && Number.isFinite(config.port), 'config.port must be a valid number')
-  invariant(typeof config.directory === 'string' && config.directory, 'config.directory must be a string')
+  invariant(typeof config.rootDirectory === 'string' && config.rootDirectory, 'config.rootDirectory must be a string')
   toReturn.port = config.port
-  toReturn.directory = config.directory
+  toReturn.rootDirectory = config.rootDirectory
   toReturn.redirectNotFoundToIndex = !!config.redirectNotFoundToIndex
 
   return toReturn

@@ -64,8 +64,8 @@ command
           hmrReports: config.server.hmrReports,
           sourceMap: config.server.sourceMap,
           sourceMapPath: config.server.sourceMapPath,
-          directory: options.rootDirectory || Path.resolve(options.serverRootDirectory, config.server.rootDirectory),
           bundlePath: config.server.bundlePath,
+          rootDirectory: options.rootDirectory || Path.resolve(options.serverRootDirectory, config.server.rootDirectory),
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
         }).then(function() {
           console.log(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
