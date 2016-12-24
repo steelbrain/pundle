@@ -12,13 +12,13 @@ describe('Components', function() {
     it('throws an error if parameter 1 is not a function', function() {
       expect(function() {
         makeRequest(null, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
       expect(function() {
         makeRequest({}, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('config.callback must be a function')
       expect(function() {
         makeRequest(false, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
     })
     it('throws an error if parameter 2 is not an object', function() {
       expect(function() {
@@ -48,13 +48,13 @@ describe('Components', function() {
     it('throws an error if parameter 1 is not a function', function() {
       expect(function() {
         makeRequest(null, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
       expect(function() {
         makeRequest({}, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('config.callback must be a function')
       expect(function() {
         makeRequest(false, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
     })
     it('throws an error if parameter 2 is not an object', function() {
       expect(function() {
@@ -84,13 +84,13 @@ describe('Components', function() {
     it('throws an error if parameter 1 is not a function', function() {
       expect(function() {
         makeRequest(null, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
       expect(function() {
         makeRequest({}, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('config.callback must be a function')
       expect(function() {
         makeRequest(false, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
     })
     it('throws an error if parameter 2 is not an object', function() {
       expect(function() {
@@ -158,13 +158,13 @@ describe('Components', function() {
     it('throws an error if parameter 1 is not a function', function() {
       expect(function() {
         makeRequest(null, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
       expect(function() {
         makeRequest({}, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('config.callback must be a function')
       expect(function() {
         makeRequest(false, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
     })
     it('throws an error if parameter 2 is not an object', function() {
       expect(function() {
@@ -194,13 +194,13 @@ describe('Components', function() {
     it('throws an error if parameter 1 is not a function', function() {
       expect(function() {
         makeRequest(null, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
       expect(function() {
         makeRequest({}, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('config.callback must be a function')
       expect(function() {
         makeRequest(false, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
     })
     it('throws an error if parameter 2 is not an object', function() {
       expect(function() {
@@ -230,13 +230,13 @@ describe('Components', function() {
     it('throws an error if parameter 1 is not a function', function() {
       expect(function() {
         makeRequest(null, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
       expect(function() {
         makeRequest({}, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('config.callback must be a function')
       expect(function() {
         makeRequest(false, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
     })
     it('throws an error if parameter 2 is not an object', function() {
       expect(function() {
@@ -266,13 +266,13 @@ describe('Components', function() {
     it('throws an error if parameter 1 is not a function', function() {
       expect(function() {
         makeRequest(null, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
       expect(function() {
         makeRequest({}, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('config.callback must be a function')
       expect(function() {
         makeRequest(false, {})
-      }).toThrow('Parameter 1 must be a function')
+      }).toThrow('Parameter 1 must be a function or config object')
     })
     it('throws an error if parameter 2 is not an object', function() {
       expect(function() {
