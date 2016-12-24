@@ -29,4 +29,7 @@ module.exports = {
       // Put any preset config here
     }],
   ],
+  components: [
+    require.resolve('pundle-transformer-babel'),
+  ],
 }
