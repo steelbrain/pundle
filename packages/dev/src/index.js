@@ -112,11 +112,11 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     },
     async compile(totalFiles: Array<File>) {
       if (hmrEnabled && !firstCompile) {
-        writeToConnections({ type: 'report-clear' })
         if (connections.size) {
           pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
+          writeToConnections({ type: 'report-clear' })
           const changedFilePaths = Array.from(filesChanged)
-          const generated = await pundle.generate(totalFiles.filter(i => changedFilePaths.indexOf(i.filePath) !== -1), {
+          const generated = await pundle.generate(totalFiles.filter(entry => !changedFilePaths.indexOf(entry.filePath)), {
             entry: [],
             wrapper: 'none',
             sourceMap: config.sourceMap,
@@ -160,7 +160,7 @@ export async function createServer(pundle: Object, givenConfig: Object): Promise
   const middlewarePromise = attachMiddleware(pundle, givenConfig, app, server)
   app.use('/', express.static(config.directory))
   if (config.redirectNotFoundToIndex) {
-    app.use(function httpError(req, res, next) {
+    app.use(function(req, res, next) {
       if (req.url !== '/index.html' && req.baseUrl !== '/index.html') {
         req.baseUrl = req.url = '/index.html'
         send(req, req.baseUrl, { root: config.directory, index: 'index.html' })
