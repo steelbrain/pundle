@@ -20,6 +20,7 @@
   "dependencies": {
     "debug": "^2.4.4",
     "express": "^4.14.0",
+    "lodash.difference": "^4.5.0",
     "pundle": "^2.0.0-beta3",
     "pundle-api": "^2.0.0-beta3",
     "pundle-reporter-cli": "^2.0.0-beta3",

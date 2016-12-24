@@ -3,6 +3,7 @@
 import send from 'send'
 import debug from 'debug'
 import express from 'express'
+import arrayDiff from 'lodash.difference'
 import { Server } from 'uws'
 import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
@@ -20,7 +21,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   }
 
   let active = true
-  let compiled: { contents: string, sourceMap: Object } = { contents: '', sourceMap: {} }
+  let compiled: { contents: string, sourceMap: Object, filePaths: Array<string> } = { contents: '', sourceMap: {}, filePaths: [] }
   let firstCompile = true
   const config = Helpers.fillMiddlewareConfig(givenConfig)
   const hmrEnabled = config.hmrPath !== null
@@ -123,7 +124,8 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
             sourceNamespace: 'app',
             sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
           })
-          writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
+          const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
+          writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
           filesChanged.clear()
         }
       }
