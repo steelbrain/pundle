@@ -1,5 +1,184 @@
 /**
- * @source https://github.com/rburns/ansi-to-html/blob/master/src/ansi_to_html.coffee
- * @license MIT
+ * ANSI to HTML converter
+ *
+ * @returns {Array}
+ * @license Apache v2
+ * @source https://github.com/Tjatse/ansi-html/blob/4d773153e38a5d50225333b121bb9f1916a2b79a/index.js
+ * @note Modified to work outside of commonjs
  */
-(function(){var t,r,o,n,e,u,c,i=[].slice;return r={ef0:"color:#000",ef1:"color:#A00",ef2:"color:#0A0",ef3:"color:#A50",ef4:"color:#00A",ef5:"color:#A0A",ef6:"color:#0AA",ef7:"color:#AAA",ef8:"color:#555",ef9:"color:#F55",ef10:"color:#5F5",ef11:"color:#FF5",ef12:"color:#55F",ef13:"color:#F5F",ef14:"color:#5FF",ef15:"color:#FFF",eb0:"background-color:#000",eb1:"background-color:#A00",eb2:"background-color:#0A0",eb3:"background-color:#A50",eb4:"background-color:#00A",eb5:"background-color:#A0A",eb6:"background-color:#0AA",eb7:"background-color:#AAA",eb8:"background-color:#555",eb9:"background-color:#F55",eb10:"background-color:#5F5",eb11:"background-color:#FF5",eb12:"background-color:#55F",eb13:"background-color:#F5F",eb14:"background-color:#5FF",eb15:"background-color:#FFF"},c=function(t){for(t=t.toString(16);t.length<2;)t="0"+t;return t},[0,1,2,3,4,5].forEach(function(t){return[0,1,2,3,4,5].forEach(function(o){return[0,1,2,3,4,5].forEach(function(n){var e,u,i,s,a,l;return u=16+36*t+6*o+n,a=t>0?40*t+55:0,i=o>0?40*o+55:0,e=n>0?40*n+55:0,l=function(){var t,r,o,n;for(o=[a,i,e],n=[],t=0,r=o.length;r>t;t++)s=o[t],n.push(c(s));return n}().join(""),r["ef"+u]="color:#"+l,r["eb"+u]="background-color:#"+l})})}),function(){for(u=[],e=0;23>=e;e++)u.push(e);return u}.apply(this).forEach(function(t){var o,n;return o=t+232,n=c(10*t+8),r["ef"+o]="color:#"+n+n+n,r["eb"+o]="background-color:#"+n+n+n}),n=function(){var t,r,o,n,e,u,c;for(t=arguments[0],u=2<=arguments.length?i.call(arguments,1):[],n=0,o=u.length;o>n;n++){e=u[n];for(r in e)c=e[r],t[r]=c}return t},o={fg:"#FFF",bg:"#000",newline:!0},t=function(){function t(t){null==t&&(t={}),this.opts=n({},o,t),this.input=[],this.stack=[],this.stickyStack=[]}return t.prototype.toHtml=function(t){var r;return this.input="string"==typeof t?[t]:t,r=[],this.stickyStack.forEach(function(t){return function(o){return t.generateOutput(o.token,o.data,function(t){return r.push(t)})}}(this)),this.forEach(function(t){return r.push(t)}),this.input=[],r.join("")},t.prototype.forEach=function(t){var r;return r="",this.input.forEach(function(o){return function(n){return r+=n,o.tokenize(r,function(r,n){return o.generateOutput(r,n,t)})}}(this)),this.stack.length?t(this.resetStyles()):void 0},t.prototype.generateOutput=function(t,r,o){switch(t){case"text":return o(r);case"display":return this.handleDisplay(r,o);case"xterm256":return o(this.pushStyle("ef"+r))}},t.prototype.updateStickyStack=function(t,r){var o;return o=function(t){return function(r){return(null===t||r.category!==t)&&"all"!==t}},"text"!==t?(this.stickyStack=this.stickyStack.filter(o(this.categoryForCode(r))),this.stickyStack.push({token:t,data:r,category:this.categoryForCode(r)})):void 0},t.prototype.handleDisplay=function(t,r){return t=parseInt(t,10),-1===t&&r("<br/>"),0===t&&this.stack.length&&r(this.resetStyles()),1===t&&r(this.pushTag("b")),3===t&&r(this.pushTag("i")),4===t&&r(this.pushTag("u")),t>4&&7>t&&r(this.pushTag("blink")),8===t&&r(this.pushStyle("display:none")),9===t&&r(this.pushTag("strike")),22===t&&r(this.closeTag("b")),23===t&&r(this.closeTag("i")),24===t&&r(this.closeTag("u")),t>29&&38>t&&r(this.pushStyle("ef"+(t-30))),39===t&&r(this.pushStyle("color:"+this.opts.fg)),t>39&&48>t&&r(this.pushStyle("eb"+(t-40))),49===t&&r(this.pushStyle("background-color:"+this.opts.bg)),t>89&&98>t&&r(this.pushStyle("ef"+(8+(t-90)))),t>99&&108>t?r(this.pushStyle("eb"+(8+(t-100)))):void 0},t.prototype.categoryForCode=function(t){return t=parseInt(t,10),0===t?"all":1===t?"bold":t>2&&5>t?"underline":t>4&&7>t?"blink":8===t?"hide":9===t?"strike":t>29&&38>t||39===t||t>89&&98>t?"foreground-color":t>39&&48>t||49===t||t>99&&108>t?"background-color":null},t.prototype.pushTag=function(t,o){return null==o&&(o=""),o.length&&-1===o.indexOf(":")&&(o=r[o]),this.stack.push(t),"<"+t+(o?' style="'+o+'"':void 0)+">"},t.prototype.pushStyle=function(t){return this.pushTag("span",t)},t.prototype.closeTag=function(t){var r;return this.stack.slice(-1)[0]===t&&(r=this.stack.pop()),null!=r?"</"+t+">":void 0},t.prototype.resetStyles=function(){var t,r;return t=[this.stack,[]],r=t[0],this.stack=t[1],r.reverse().map(function(t){return"</"+t+">"}).join("")},t.prototype.tokenize=function(t,r){var o,n,e,u,c,i,s,a,l,h,f,p,b,g,k;for(n=!1,o=3,p=function(t){return""},b=function(t,o){return r("xterm256",o),""},a=function(t){return function(o){return t.opts.newline?r("display",-1):r("text",o),""}}(this),e=function(t,o){var e,u,c;for(n=!0,0===o.trim().length&&(o="0"),o=o.trimRight(";").split(";"),c=0,u=o.length;u>c;c++)e=o[c],r("display",e);return""},f=function(t){return r("text",t),""},k=[{pattern:/^\x08+/,sub:p},{pattern:/^\x1b\[[012]?K/,sub:p},{pattern:/^\x1b\[38;5;(\d+)m/,sub:b},{pattern:/^\n/,sub:a},{pattern:/^\x1b\[((?:\d{1,3};?)+|)m/,sub:e},{pattern:/^\x1b\[?[\d;]{0,3}/,sub:p},{pattern:/^([^\x1b\x08\n]+)/,sub:f}],h=function(r,e){var u;e>o&&n||(n=!1,u=t.match(r.pattern),t=t.replace(r.pattern,r.sub))},g=[];(s=t.length)>0;){for(c=l=0,i=k.length;i>l;c=++l)u=k[c],h(u,c);if(t.length===s)break;g.push(void 0)}return g},t}()}())
+
+(function() {
+  // Reference to https://github.com/sindresorhus/ansi-regex
+  var _regANSI = /(?:(?:\u001b\[)|\u009b)(?:(?:[0-9]{1,3})?(?:(?:;[0-9]{0,3})*)?[A-M|f-m])|\u001b[A-M]/
+
+  var _defColors = {
+    reset: ['fff', '000'], // [FOREGROUD_COLOR, BACKGROUND_COLOR]
+    black: '000',
+    red: 'ff0000',
+    green: '209805',
+    yellow: 'e8bf03',
+    blue: '0000ff',
+    magenta: 'ff00ff',
+    cyan: '00ffee',
+    lightgrey: 'f0f0f0',
+    darkgrey: '888'
+  }
+  var _styles = {
+    30: 'black',
+    31: 'red',
+    32: 'green',
+    33: 'yellow',
+    34: 'blue',
+    35: 'magenta',
+    36: 'cyan',
+    37: 'lightgrey'
+  }
+  var _openTags = {
+    '1': 'font-weight:bold', // bold
+    '2': 'opacity:0.8', // dim
+    '3': '<i>', // italic
+    '4': '<u>', // underscore
+    '8': 'display:none', // hidden
+    '9': '<del>' // delete
+  }
+  var _closeTags = {
+    '23': '</i>', // reset italic
+    '24': '</u>', // reset underscore
+    '29': '</del>' // reset delete
+  }
+
+  ;[0, 21, 22, 27, 28, 39, 49].forEach(function (n) {
+    _closeTags[n] = '</span>'
+  })
+
+  /**
+   * Converts text with ANSI color codes to HTML markup.
+   * @param {String} text
+   * @returns {*}
+   */
+  function ansiHTML (text) {
+    // Returns the text if the string has no ANSI escape code.
+    if (!_regANSI.test(text)) {
+      return text
+    }
+
+    // Cache opened sequence.
+    var ansiCodes = []
+    // Replace with markup.
+    var ret = text.replace(/\033\[(\d+)*m/g, function (match, seq) {
+      var ot = _openTags[seq]
+      if (ot) {
+        // If current sequence has been opened, close it.
+        if (!!~ansiCodes.indexOf(seq)) { // eslint-disable-line no-extra-boolean-cast
+          ansiCodes.pop()
+          return '</span>'
+        }
+        // Open tag.
+        ansiCodes.push(seq)
+        return ot[0] === '<' ? ot : '<span style="' + ot + ';">'
+      }
+
+      var ct = _closeTags[seq]
+      if (ct) {
+        // Pop sequence
+        ansiCodes.pop()
+        return ct
+      }
+      return ''
+    })
+
+    // Make sure tags are closed.
+    var l = ansiCodes.length
+    ;(l > 0) && (ret += Array(l + 1).join('</span>'))
+
+    return ret
+  }
+
+  /**
+   * Customize colors.
+   * @param {Object} colors reference to _defColors
+   */
+  ansiHTML.setColors = function (colors) {
+    if (typeof colors !== 'object') {
+      throw new Error('`colors` parameter must be an Object.')
+    }
+
+    var _finalColors = {}
+    for (var key in _defColors) {
+      var hex = colors.hasOwnProperty(key) ? colors[key] : null
+      if (!hex) {
+        _finalColors[key] = _defColors[key]
+        continue
+      }
+      if ('reset' === key) {
+        if (typeof hex === 'string') {
+          hex = [hex]
+        }
+        if (!Array.isArray(hex) || hex.length === 0 || hex.some(function (h) {
+          return typeof h !== 'string'
+        })) {
+          throw new Error('The value of `' + key + '` property must be an Array and each item could only be a hex string, e.g.: FF0000')
+        }
+        var defHexColor = _defColors[key]
+        if (!hex[0]) {
+          hex[0] = defHexColor[0]
+        }
+        if (hex.length === 1 || !hex[1]) {
+          hex = [hex[0]]
+          hex.push(defHexColor[1])
+        }
+
+        hex = hex.slice(0, 2)
+      } else if (typeof hex !== 'string') {
+        throw new Error('The value of `' + key + '` property must be a hex string, e.g.: FF0000')
+      }
+      _finalColors[key] = hex
+    }
+    _setTags(_finalColors)
+  }
+
+  /**
+   * Reset colors.
+   */
+  ansiHTML.reset = function () {
+    _setTags(_defColors)
+  }
+
+  /**
+   * Expose tags, including open and close.
+   * @type {Object}
+   */
+  ansiHTML.tags = {}
+
+  if (Object.defineProperty) {
+    Object.defineProperty(ansiHTML.tags, 'open', {
+      get: function () { return _openTags }
+    })
+    Object.defineProperty(ansiHTML.tags, 'close', {
+      get: function () { return _closeTags }
+    })
+  } else {
+    ansiHTML.tags.open = _openTags
+    ansiHTML.tags.close = _closeTags
+  }
+
+  function _setTags (colors) {
+    // reset all
+    _openTags['0'] = 'font-weight:normal;opacity:1;color:#' + colors.reset[0] + ';background:#' + colors.reset[1]
+    // inverse
+    _openTags['7'] = 'color:#' + colors.reset[1] + ';background:#' + colors.reset[0]
+    // dark grey
+    _openTags['90'] = 'color:#' + colors.darkgrey
+
+    for (var code in _styles) {
+      var color = _styles[code]
+      var oriColor = colors[color] || '000'
+      _openTags[code] = 'color:#' + oriColor
+      code = parseInt(code)
+      _openTags[(code + 10).toString()] = 'background:#' + oriColor
+    }
+  }
+
+  ansiHTML.reset()
+  return ansiHTML
+})()

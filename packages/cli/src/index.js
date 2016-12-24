@@ -62,6 +62,7 @@ command
           hmrPath: config.server.hmrPath,
           hmrHost: config.server.hmrHost,
           sourceMap: config.server.sourceMap,
+          hmrReports: config.server.hmrReports,
           directory: options.devDirectory || Path.resolve(options.rootDirectory, config.server.devDirectory),
           bundlePath: config.server.bundlePath,
           sourceMapPath: config.server.sourceMapPath,

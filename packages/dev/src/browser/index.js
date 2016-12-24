@@ -1,6 +1,26 @@
 'use strict'
 
+let overlay
 let numUpdate = 1
+const overlayStyle = {
+  position: 'fixed',
+  boxSizing: 'border-box',
+  left: 0,
+  top: 0,
+  right: 0,
+  bottom: 0,
+  width: '100vw',
+  height: '100vh',
+  backgroundColor: 'black',
+  color: '#E8E8E8',
+  fontFamily: 'Menlo, Consolas, monospace',
+  fontSize: 'large',
+  padding: '2rem',
+  lineHeight: '1.2',
+  whiteSpace: 'pre-wrap',
+  overflow: 'auto',
+}
+// ^ Shamelessly copied from create-react-app ( https://github.com/facebookincubator/create-react-app/blob/master/packages/react-dev-utils/webpackHotDevClient.js#L59 )
 
 function getHMRUrl() {
   // NOTE: SB_PUNDLE_HMR_HOST format is "protocol://hostname"
@@ -36,12 +56,20 @@ function openHMRConnection() {
       console.log('[HMR] Files Changed:', message.files.join(', '))
       __sbPundle.hmrApply(message.files)
     } else if (message.type === 'report') {
-      const container = document.createElement('div')
-      container.innerHTML = __sbPundle.ansiToHtml(message.text)
-      document.body.insertBefore(container, document.body.firstChild)
+      if (overlay) {
+        overlay.remove()
+      }
+      overlay = document.createElement('div')
+      overlay.innerHTML = __sbPundle.ansiToHtml(message.text)
+      Object.assign(overlay.style, overlayStyle)
+      document.body.appendChild(overlay)
       setTimeout(function() {
-        container.remove()
-      }, 5000)
+        overlay.remove()
+      }, 60000)
+    } else if (message.type === 'report-clear') {
+      if (overlay) {
+        overlay.remove()
+      }
     } else {
       console.log('[HMR] Unknown response', message)
     }
