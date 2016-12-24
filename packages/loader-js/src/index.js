@@ -105,5 +105,5 @@ export default createLoader(function(config: Object, file: File) {
     sourceMap: compiled.map,
   }
 }, {
-  extensions: ['js'],
+  extensions: ['js', 'jsx'],
 })
