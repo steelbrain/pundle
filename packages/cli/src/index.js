@@ -21,7 +21,7 @@ command
   .option('-r, --root-directory <directory>', 'Root path where Pundle config file exists', process.cwd())
   .option('-c, --config-file-name <name>', 'Name of Pundle config file (defaults to .pundle.js)', '.pundle.js')
   .option('-d, --dev', 'Enable dev http server', false)
-  .option('-p, --port [port]', 'Port for dev server to listen on')
+  .option('-p, --port <port>', 'Port for dev server to listen on')
   .option('--dev-directory <dir>', 'Directory to use as root for dev server')
   .command('init', 'Copy default Pundle configuration into root directory', function(options) {
     let exists = false
@@ -61,11 +61,11 @@ command
           port: serverPort,
           hmrPath: config.server.hmrPath,
           hmrHost: config.server.hmrHost,
-          sourceMap: config.server.sourceMap,
           hmrReports: config.server.hmrReports,
-          directory: options.devDirectory || Path.resolve(options.rootDirectory, config.server.devDirectory),
-          bundlePath: config.server.bundlePath,
+          sourceMap: config.server.sourceMap,
           sourceMapPath: config.server.sourceMapPath,
+          directory: options.rootDirectory || Path.resolve(options.devDirectory, config.server.rootDirectory),
+          bundlePath: config.server.bundlePath,
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
         }).then(function() {
           console.log(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)

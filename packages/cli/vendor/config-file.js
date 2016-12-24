@@ -20,8 +20,8 @@ module.exports = {
     bundlePath: '/bundle.js',
     // sourceMap: true,
     // ^ Only specify it if it's different from output.sourceMap
-    devDirectory: path.join(__dirname, 'static'),
     sourceMapPath: '/bundle.js.map',
+    rootDirectory: path.join(__dirname, 'static'),
     redirectNotFoundToIndex: true,
   },
   presets: [

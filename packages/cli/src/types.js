@@ -13,7 +13,7 @@ export type CLIConfig = {
     hmrReports: boolean,
     bundlePath: string,
     sourceMap: boolean,
-    devDirectory: string,
+    rootDirectory: string,
     sourceMapPath: string,
     redirectNotFoundToIndex: boolean,
   },

@@ -49,7 +49,7 @@ export type PublicPundleConfig = CompilationConfig & {
     hmrHost?: string,
     hmrPath?: string,
     bundlePath?: string,
-    devDirectory: string,
+    rootDirectory: string,
     sourceMapPath?: string,
     redirectNotFoundToIndex?: boolean,
   },

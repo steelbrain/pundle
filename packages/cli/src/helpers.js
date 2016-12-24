@@ -39,10 +39,10 @@ export function fillCLIConfig(config: Object): CLIConfig {
     toReturn.server.bundlePath = server.bundlePath
   } else toReturn.server.bundlePath = '/bundle.js'
   toReturn.server.sourceMap = !!server.sourceMap
-  if (server.devDirectory) {
-    invariant(typeof server.devDirectory === 'string', 'config.server.sourceMapPath must be a string')
-    toReturn.server.devDirectory = server.devDirectory
-  } else toReturn.server.devDirectory = Path.dirname(toReturn.output.bundlePath)
+  if (server.rootDirectory) {
+    invariant(typeof server.rootDirectory === 'string', 'config.server.sourceMapPath must be a string')
+    toReturn.server.rootDirectory = server.rootDirectory
+  } else toReturn.server.rootDirectory = Path.dirname(toReturn.output.bundlePath)
   if (server.sourceMapPath) {
     invariant(typeof server.sourceMapPath === 'string', 'config.server.sourceMapPath must be a string')
     toReturn.server.sourceMapPath = server.sourceMapPath
