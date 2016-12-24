@@ -20,7 +20,7 @@ export function getFilePath(compilation: Object, config: Object, filePath: strin
     toReturn = numericPaths.get(filePath)
     if (!toReturn) {
       nextNumericPath++
-      numericPaths.set(filePath, toReturn = `un-${nextNumericPath}`)
+      numericPaths.set(filePath, toReturn = `m-${nextNumericPath}`)
     }
   }
   return toReturn

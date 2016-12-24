@@ -64,7 +64,11 @@ module.exports = {
   },
   presets: [
     [require.resolve('pundle-preset-default'), {
-      // Put any preset config here
+      generator: {
+        // pathType: 'number'
+        // ^ Default is "filePath", use number to hide file paths in production builds
+      },
+      // Put any other preset component config here
     }],
   ],
   components: [
