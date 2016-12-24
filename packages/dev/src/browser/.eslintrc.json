@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "strict": "off",
+    "no-eval": "off",
+    "no-var": "off"
+  },
+  "globals": {
+    "__sbPundle": true,
+    "SB_PUNDLE_HMR_PATH": true,
+    "SB_PUNDLE_HMR_HOST": true
+  }
+}

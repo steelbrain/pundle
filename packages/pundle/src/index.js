@@ -1,219 +1,153 @@
 /* @flow */
 
-import Path from 'path'
-import debug from 'debug'
-import Watcher from 'chokidar'
 import invariant from 'assert'
-import arrayDifference from 'lodash.difference'
-import { CompositeDisposable, Emitter, Disposable } from 'sb-event-kit'
+import { CompositeDisposable, Emitter } from 'sb-event-kit'
+import type { File, ComponentAny } from 'pundle-api/types'
+import type { Disposable } from 'sb-event-kit'
+
 import * as Helpers from './helpers'
-import * as Loaders from './loaders'
-import Files from './files'
-import Resolver from './resolver'
-import PundlePath from './path'
-import FileSystem from './filesystem'
-import type { Config, State, Loader } from './types'
+import Compilation from './compilation'
+import type { PundleConfig, Preset, Loadable } from '../types'
 
-const debugWatcher = debug('Pundle:Watcher')
+const UNIQUE_SIGNATURE_OBJ = {}
 
-@Files.attach
-@Resolver.attach
-@PundlePath.attach
-@FileSystem.attach
 class Pundle {
-  fs: FileSystem;
-  path: PundlePath;
-  state: State;
-  files: Files;
-  config: Config;
+  config: PundleConfig;
   emitter: Emitter;
-  resolver: Resolver;
+  compilation: Compilation;
   subscriptions: CompositeDisposable;
 
-  constructor(config: Object) {
-    this.state = {
-      loaders: new Map(),
+  constructor(signature: typeof UNIQUE_SIGNATURE_OBJ, config: PundleConfig) {
+    if (signature !== UNIQUE_SIGNATURE_OBJ) {
+      throw new Error('Direct constructor call not allowed. Use Pundle.create() instead')
     }
-    this.config = Helpers.fillConfig(config)
+
+    this.config = config
     this.emitter = new Emitter()
+    this.compilation = new Compilation(config.compilation)
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
-    this.state.loaders.set('.json', Loaders.json)
-    this.state.loaders.set('.js', Loaders.javascript)
+    this.subscriptions.add(this.compilation)
   }
-  loadLoaders(entries: Array<{ extensions: Array<string>, loader: Loader }>): Array<string> {
-    const overwroteLoaders = []
-    for (const entry of entries) {
-      const loader = entry.loader
-      for (const extension of entry.extensions) {
-        if (this.state.loaders.has(extension)) {
-          overwroteLoaders.push(extension)
-        }
-        this.state.loaders.set(extension, loader)
-      }
+  async loadComponents(givenComponents: Array<Loadable<ComponentAny>>): Promise<CompositeDisposable> {
+    if (!Array.isArray(givenComponents)) {
+      throw new Error('Parameter 1 to loadComponents() must be an Array')
     }
-    return overwroteLoaders
+    const components = await Helpers.getLoadables(givenComponents, this.config.compilation.rootDirectory)
+    const subscriptions = new CompositeDisposable()
+    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    return subscriptions
   }
-  async loadPlugins(givenPlugins: Array<Plugin>): Promise<void> {
-    const plugins = await Helpers.getPlugins(this, givenPlugins)
-    for (const { plugin, parameters } of plugins) {
-      plugin(this, parameters)
+  // Notes:
+  // - False in a preset config for a component means ignore it
+  // - Component config given takes presedence over preset component config
+  async loadPreset(givenPreset: Preset | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
+    let preset = givenPreset
+    if (typeof preset === 'string') {
+      preset = await Helpers.resolve(preset, this.config.compilation.rootDirectory)
     }
-  }
-  async read(givenFilePath: string): Promise<void> {
-    const filePath = this.path.in(givenFilePath)
-    const oldFile = this.files.get(filePath)
-    const contents = await this.fs.read(filePath)
-    if (oldFile && oldFile.source === contents) {
-      return
+    if (!Array.isArray(preset)) {
+      throw new Error('Invalid preset value/export. It must be an Array')
     }
-    const extension = Path.extname(filePath)
-    const loader = this.state.loaders.get(extension)
-    invariant(loader, `Unrecognized extension '${extension}' for '${givenFilePath}'`)
-
-    const event: { filePath: string, contents: string, sourceMap: any, oldFile: ?Object } = { filePath, contents, sourceMap: null, oldFile }
-    this.emitter.emit('before-process', event)
-    let result = loader(this, filePath, event.contents, event.sourceMap)
-    if (result instanceof Promise) {
-      result = await result
-    }
-    event.contents = result.contents
-    event.sourceMap = result.sourceMap
-    this.emitter.emit('after-process', event)
-    this.files.set(filePath, {
-      source: contents,
-      imports: result.imports,
-      filePath,
-      contents: event.contents,
-      sourceMap: event.sourceMap,
-    })
-
-    try {
-      await Array.from(result.imports).reduce((promise, entry) =>
-        promise.then(() => !this.files.has(entry) && this.read(entry))
-      , Promise.resolve())
-    } catch (error) {
-      if (oldFile) {
-        this.files.set(filePath, oldFile)
-      } else {
-        this.files.delete(filePath)
-      }
-      throw error
-    }
-    if (oldFile) {
-      const removedImports = arrayDifference(Array.from(oldFile.imports), Array.from(result.imports))
-      for (const entry of (removedImports: Array<string>)) {
-        if (this.files.getOccurancesOf(entry) === 1) {
-          this.files.delete(entry)
-        }
-      }
-    }
-    this.emitter.emit('did-process', event)
-  }
-  async compile(): Promise<void> {
-    await Promise.all(this.config.entry.map(entry => this.read(entry)))
-  }
-  generate(givenConfig: Object = {}): Object {
-    const config = Helpers.fillGeneratorConfig(givenConfig, this)
-    // $FlowIgnore: I know what I'm doing
-    config.contents = config.contents.map(i => this.files.get(i))
-    const result = config.generate(this, config)
-    if (!result || typeof result !== 'object') {
-      throw new Error('Pundle generator returned invalid results')
-    }
-    return result
-  }
-  watch(givenConfig: Object): { queue: Promise<void>, subscription: Disposable } {
-    let ready = false
-    const config = Helpers.fillWatcherConfig(givenConfig)
-    const watcher = Watcher.watch([], {
-      usePolling: config.usePolling,
-      followSymlinks: true,
-    })
-    const toReturn = {
-      queue: Promise.resolve(),
-      subscription: new Disposable(() => {
-        this.subscriptions.remove(toReturn.subscription)
-        watcher.close()
-      }),
-    }
-    const addToWatcher = (filePath: string) => {
-      toReturn.queue = toReturn.queue.then(() =>
-        !this.files.has(filePath) && this.read(filePath)
-      ).catch(config.error)
-      watcher.add(filePath)
+    if (typeof presetConfig !== 'object' || !presetConfig) {
+      throw new Error('Parameter 2 to loadPreset() must be an Object')
     }
 
-    watcher.on('change', filePath => {
-      debugWatcher(`File Changed :: ${filePath}`)
-      toReturn.queue = toReturn.queue.then(() => {
-        const retValue = this.read(filePath)
-        if (ready) {
-          return retValue.then(config.generate)
-        }
-        return retValue
-      }).catch(config.error)
-    })
-    watcher.on('unlink', filePath => {
-      debugWatcher(`File Removed :: ${filePath}`)
-      toReturn.queue = toReturn.queue.then(() => {
-        this.files.delete(filePath)
-        return ready && config.generate()
-      }).catch(config.error)
-    })
-    this.config.entry.forEach(filePath => {
-      addToWatcher(this.path.out(filePath))
-    })
-    this.files.forEach((_, filePath) => {
-      addToWatcher(this.path.out(filePath))
-    })
-    this.files.onDidAdd(filePath => {
-      toReturn.queue = toReturn.queue.then(() => {
-        if (this.files.has(filePath)) {
-          addToWatcher(this.path.out(filePath))
-        }
-      }).catch(config.error)
-    })
-    this.files.onDidDelete(filePath => {
-      watcher.unwatch(this.path.out(filePath))
-    })
-    this.subscriptions.add(toReturn.subscription)
-    toReturn.queue = toReturn.queue.then(config.ready).catch(config.error)
-    toReturn.queue = toReturn.queue.then(() => {
-      ready = true
-      return Helpers.isEverythingIn(this) && config.generate()
-    }).catch(config.error)
-    return toReturn
+    const loadables = preset.map(entry => {
+      if (presetConfig[entry.name] === false) {
+        // $FlowIgnore: We are filtering it later, dumb flow
+        return false
+      }
+      // $FlowIgnore: Types too complex for flow
+      return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
+    }).filter(i => i)
+    const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)
+    const subscriptions = new CompositeDisposable()
+    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    return subscriptions
   }
-  /**
-    A helper function get a unique ID of any given file Path
-    Useful when config.pathType is number. Should be used across all plugins to generate the same unique IDs for files
-  */
-  getUniquePathID(path: string): string {
-    const internalPath = this.path.in(path)
-    if (this.config.pathType === 'number') {
-      return Helpers.getPathID(this.path.in(path)).toString() + Path.extname(path)
+  async generate(givenFiles: ?Array<File> = null, runtimeConfig: Object = {}): Promise<Object> {
+    const files = givenFiles || await this.processTree()
+    return await this.compilation.generate(files, runtimeConfig)
+  }
+  // Spec:
+  // - Normalize all givenRequests to an array
+  // - Asyncly and con-currently process all trees
+  // - Share files cache between tree resolutions to avoid duplicates
+  async processTree(givenRequest: ?string = null, givenFrom: ?string = null, cached: boolean = true): Promise<Array<File>> {
+    let requests
+    const files: Map<string, File> = new Map()
+    if (!givenRequest) {
+      requests = this.config.compilation.entry
+    } else if (typeof givenRequest === 'string') {
+      requests = [givenRequest]
+    } else if (!Array.isArray(givenRequest)) {
+      throw new Error('Parameter 1 to processTree() must be null, String or an Array')
+    } else {
+      requests = givenRequest
     }
-    return internalPath
+
+    await Promise.all(requests.map(request =>
+      this.compilation.processTree(request, givenFrom, cached, files)
+    ))
+
+    return Array.from(files.values())
   }
-  onBeforeProcess(callback: Function): Disposable {
-    return this.emitter.on('before-process', callback)
-  }
-  onAfterProcess(callback: Function): Disposable {
-    return this.emitter.on('after-process', callback)
-  }
-  onDidProcess(callback: Function): Disposable {
-    return this.emitter.on('did-process', callback)
-  }
-  clearCache() {
-    this.files.forEach((_, file) => this.files.delete(file))
-    this.fs.cache.clear()
-    this.resolver.cache.clear()
-    this.resolver.manifestCache.clear()
+  watch(config: Object = {}): Promise<Disposable> {
+    return this.compilation.watch(Object.assign({}, config, this.config.watcher, {
+      tick: (filePath: string, error: ?Error) => {
+        const givenTick = config.tick
+        const defaultTick = this.config.watcher.tick
+        return Promise.all([
+          defaultTick ? defaultTick(filePath, error) : null,
+          givenTick ? givenTick(filePath, error) : null,
+        ])
+      },
+      update: (filePath: string, newImports: Array<string>, oldImports: Array<string>) => {
+        const givenUpdate = config.update
+        const defaultUpdate = this.config.watcher.update
+        return Promise.all([
+          givenUpdate ? givenUpdate(filePath, newImports, oldImports) : null,
+          defaultUpdate ? defaultUpdate(filePath, newImports, oldImports) : null,
+        ])
+      },
+      ready: (initialCompileStatus: boolean, totalFiles: Array<File>) => {
+        const givenReady = config.ready
+        const defaultReady = this.config.watcher.ready
+        return Promise.all([
+          givenReady ? givenReady(initialCompileStatus, totalFiles) : null,
+          defaultReady ? defaultReady(initialCompileStatus, totalFiles) : null,
+        ])
+      },
+      compile: (totalFiles: Array<File>) => {
+        const givenCompile = config.compile
+        const defaultCompile = this.config.watcher.compile
+        return Promise.all([
+          givenCompile ? givenCompile(totalFiles) : null,
+          defaultCompile ? defaultCompile(totalFiles) : null,
+        ])
+      },
+    }))
   }
   dispose() {
     this.subscriptions.dispose()
+  }
+  static async create(givenConfig: Object): Promise<Pundle> {
+    invariant(typeof givenConfig === 'object' && givenConfig, 'Config must be an object')
+    invariant(typeof givenConfig.rootDirectory === 'string', 'config.rootDirectory must be a string')
+
+    const config = await Helpers.getPundleConfig(givenConfig.rootDirectory, givenConfig)
+    const pundle = new Pundle(UNIQUE_SIGNATURE_OBJ, config)
+    await pundle.loadComponents(config.components)
+    for (const preset of config.presets) {
+      if (Array.isArray(preset)) {
+        await pundle.loadPreset(preset[0], preset[1])
+      } else {
+        await pundle.loadPreset(preset)
+      }
+    }
+    return pundle
   }
 }
 

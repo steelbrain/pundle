@@ -1,6 +1,6 @@
 /* @flow */
 
-import FS from 'fs'
+import * as FS from 'fs'
 
 export default {
   stat(path: string): Promise<FS.Stats> {
@@ -16,11 +16,15 @@ export default {
   },
   readFile(filePath: string): Promise<string> {
     return new Promise(function(resolve, reject) {
-      FS.readFile(filePath, 'utf8', function(error, stats) {
+      FS.readFile(filePath, 'utf8', function(error, contents) {
         if (error) {
           reject(error)
         } else {
-          resolve(stats)
+          // NOTE: Strip BOM
+          if (contents.charCodeAt(0) === 0xFEFF) {
+            contents = contents.slice(1)
+          }
+          resolve(contents)
         }
       })
     })

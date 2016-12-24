@@ -1,20 +1,16 @@
 /* @flow */
 
-import { version } from './helpers'
-import { matchesRules, shouldProcess } from './rules'
+import Path from 'path'
 
-import { createLoader, createPlugin, createResolver, createReporter, createGenerator, createTransformer, createPostTransformer } from './components'
+export { version } from './helpers'
+export * from './rules'
+export * from './issues'
+export * from './components'
 
-export {
-  version,
-  matchesRules,
-  shouldProcess,
-
-  createLoader,
-  createPlugin,
-  createResolver,
-  createReporter,
-  createGenerator,
-  createTransformer,
-  createPostTransformer,
+export function getRelativeFilePath(filePath: string, rootDirectory: string): string {
+  const relative = Path.relative(rootDirectory, filePath)
+  if (relative.slice(0, 2) === '..') {
+    return filePath
+  }
+  return relative
 }

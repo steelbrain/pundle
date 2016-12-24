@@ -1,0 +1,27 @@
+{
+  "name": "pundle-resolver-default",
+  "version": "2.0.0-beta3",
+  "description": "Require resolver for Pundle",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/motion/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/motion/pundle/issues"
+  },
+  "homepage": "https://github.com/motion/pundle#readme",
+  "dependencies": {
+    "pundle-api": "^2.0.0-beta3",
+    "pundle-browser": "^2.0.0-beta3",
+    "resolve": "^1.1.7",
+    "sb-memoize": "^2.1.0"
+  },
+  "devDependencies": {}
+}

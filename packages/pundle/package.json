@@ -1,14 +1,11 @@
 {
   "name": "pundle",
-  "version": "1.1.12",
+  "version": "2.0.0-beta3",
   "description": "Creating peaceful bundles for everyone",
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
     "lint": "eslint ."
-  },
-  "bin": {
-    "pundle": "./lib/bin/pundle.js"
   },
   "repository": {
     "type": "git",
@@ -26,23 +23,18 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "babel-generator": "^6.11.4",
-    "babel-types": "^6.11.1",
-    "babylon": "^6.8.4",
-    "chokidar": "^1.6.0",
-    "commander": "^2.9.0",
-    "debug": "^2.2.0",
-    "lodash.difference": "^4.3.0",
+    "chalk": "^1.1.3",
+    "chokidar": "^1.6.1",
+    "lodash.difference": "^4.5.0",
     "lodash.invert": "^4.1.1",
-    "lodash.isregexp": "^3.0.5",
-    "process-bootstrap": "^1.0.0",
-    "pundle-browser": "^1.1.12",
-    "pundle-fs": "^1.1.12",
-    "pundle-generator": "^1.1.12",
+    "lodash.uniq": "^4.5.0",
+    "pundle-api": "^2.0.0-beta3",
+    "pundle-browser": "^2.0.0-beta3",
+    "pundle-fs": "^2.0.0-beta3",
+    "resolve": "^1.1.7",
+    "sb-debounce": "^1.0.2",
     "sb-event-kit": "^2.0.0",
-    "sb-promisify": "^1.3.0",
-    "sb-resolve": "^3.0.4",
-    "source-map": "^0.5.6",
-    "source-map-to-comment": "^1.1.0"
+    "sb-promisify": "^2.0.1",
+    "source-map": "^0.5.6"
   }
 }

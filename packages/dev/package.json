@@ -1,11 +1,8 @@
 {
   "name": "pundle-dev",
-  "version": "1.1.14",
-  "description": "Dev Server for Pundle",
+  "version": "2.0.0-beta3",
+  "description": "Dev module for Pundle",
   "main": "lib/index.js",
-  "bin": {
-    "pundle-dev": "./lib/bin/pundle.js"
-  },
   "scripts": {
     "test": "apm test",
     "lint": "eslint ."
@@ -21,13 +18,14 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "commander": "^2.9.0",
-    "debug": "^2.2.0",
-    "express": "^4.13.4",
-    "process-bootstrap": "^1.0.0",
-    "pundle": "^1.1.12",
-    "sb-event-kit": "^2.0.0",
-    "source-map-to-comment": "^1.1.0",
-    "ws": "^1.1.1"
+    "debug": "^2.4.4",
+    "express": "^4.14.0",
+    "lodash.difference": "^4.5.0",
+    "pundle": "^2.0.0-beta3",
+    "pundle-api": "^2.0.0-beta3",
+    "pundle-reporter-cli": "^2.0.0-beta3",
+    "sb-event-kit": "^3.0.0",
+    "send": "^0.14.1",
+    "uws": "^0.12.0"
   }
 }

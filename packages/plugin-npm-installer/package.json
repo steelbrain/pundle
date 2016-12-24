@@ -1,0 +1,24 @@
+{
+  "name": "pundle-plugin-npm-installer",
+  "version": "2.0.0-beta3",
+  "description": "NPM Installer for Pundle",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/motion/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/motion/pundle/issues"
+  },
+  "homepage": "https://github.com/motion/pundle#readme",
+  "dependencies": {
+    "pundle-api": "^2.0.0-beta3",
+    "sb-exec": "^3.1.0"
+  }
+}

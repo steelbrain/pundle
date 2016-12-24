@@ -2,14 +2,13 @@
 
 import Path from 'path'
 import createIgnore from 'ignore'
-import type { ComponentRule, ComponentConfig } from '../types'
+import type { ComponentRule, Loadable } from '../types'
 
 export function matchesRules(relativePath: string, rules: Array<ComponentRule>): boolean {
   const fileName = Path.basename(relativePath)
   const ignoreRules = []
 
-  for (let i = 0, length = rules.length; i < length; i++) {
-    const rule = rules[i]
+  for (const rule of rules) {
     if (!(rule instanceof RegExp)) {
       ignoreRules.push(rule)
       continue
@@ -26,7 +25,7 @@ export function matchesRules(relativePath: string, rules: Array<ComponentRule>):
   return false
 }
 
-export function shouldProcess(sourceRoot: string, filePath: string, config: ComponentConfig): boolean {
+export function shouldProcess(sourceRoot: string, filePath: string, config: Loadable): boolean {
   const relativePath = Path.relative(sourceRoot, filePath)
 
   const exclude = config.exclude
@@ -41,7 +40,14 @@ export function shouldProcess(sourceRoot: string, filePath: string, config: Comp
       return false
     }
   }
+  const extensions = config.extensions
+  if (extensions) {
+    const fileExtension = Path.extname(filePath).slice(1)
+    if (extensions.indexOf(fileExtension) === -1) {
+      return false
+    }
+  }
 
   // NOTE: If neither include nor exclude is provided, instead of processing all files, process none
-  return !!(include || exclude)
+  return !!(include || exclude || extensions)
 }

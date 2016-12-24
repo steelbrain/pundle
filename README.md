@@ -15,6 +15,19 @@ Here are some quick links for you
 - [TypeScript Plugin](https://github.com/motion/pundle/blob/master/packages/typescript/README.md)
 - [NPM Installer Plugin](https://github.com/motion/pundle/blob/master/packages/npm-installer/README.md)
 
+## Setting up for development
+
+Clone the repo and run these two commands for initial setup
+
+```
+ $ npm install
+ $ npm run bootstrap
+```
+
+Then run either the `watch` or the `compile` npm scripts depending on the occasion.
+
+After running those for the first time, make sure to link in the pundle cli by running `cd packages/cli; npm link`. You can then use the `pundle` cli (presuming you've added npm bin path to your PATH env var).
+
 ## License
 
 This project is licensed under the terms of MIT License. See the LICENSE file for more info.

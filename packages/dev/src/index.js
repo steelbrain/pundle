@@ -1,166 +1,182 @@
 /* @flow */
 
-import ws from 'ws'
-import Path from 'path'
+import send from 'send'
 import debug from 'debug'
-import Pundle from 'pundle'
 import express from 'express'
-import sourceMapToComment from 'source-map-to-comment'
-import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import { fillConfig } from './helpers'
-import type { Config, WatcherConfig, GeneratorConfig } from '../../pundle/src/types'
-import type { ServerConfig } from './types'
+import arrayDiff from 'lodash.difference'
+import { Server } from 'uws'
+import cliReporter from 'pundle-reporter-cli'
+import { Disposable } from 'sb-event-kit'
+import { MessageIssue, createSimple } from 'pundle-api'
+import type { File } from 'pundle-api/types'
+import * as Helpers from './helpers'
 
-const debugServer = debug('Pundle:Server')
-const browserClient = require.resolve('../browser')
+const debugTick = debug('PUNDLE:DEV:TICK')
 
-class Server {
-  config: {
-    server: ServerConfig,
-    pundle: Config,
-    watcher: WatcherConfig,
-    generator: GeneratorConfig,
-  };
-  pundle: Pundle;
-  server: express;
-  subscriptions: CompositeDisposable;
-
-  constructor(config: { server: ServerConfig, pundle: Object, watcher: Object, generator: Object }) {
-    this.config = config
-    this.config.server = fillConfig(this.config.server)
-    if (this.config.server.hmr) {
-      this.config.pundle.entry.unshift(browserClient)
-    }
-    this.config.pundle.replaceVariables = Object.assign({
-      'PUNDLE.MAGIC.HMR_PATH': this.config.server.hmrPath,
-    }, this.config.pundle.replaceVariables)
-
-    this.pundle = new Pundle(config.pundle)
-    this.server = express()
-    this.subscriptions = new CompositeDisposable()
+const browserFile = require.resolve('./browser')
+// NOTE: HMR server will not be created unless server is provided
+export async function attachMiddleware(pundle: Object, givenConfig: Object = {}, expressApp: Object, server: Object): Disposable {
+  if (pundle.compilation.config.entry.indexOf(browserFile) !== -1) {
+    throw new Error('Cannot create two middlewares on one Pundle instance')
   }
-  async activate() {
-    // HMR Stuff
-    let ready = false
-    let generated
-    const filesUpdated = new Set()
-    const wsConnections = new Set()
 
-    const regenerate = () => {
-      generated = this.pundle.generate(this.config.generator)
-      if (generated.sourceMap) {
-        generated.contents += `\n//# sourceMappingURL=${Path.relative(Path.dirname(this.config.server.bundlePath), this.config.server.sourceMapPath)}`
+  let active = true
+  let compiled: { contents: string, sourceMap: Object, filePaths: Array<string> } = { contents: '', sourceMap: {}, filePaths: [] }
+  let firstCompile = true
+  const config = Helpers.fillMiddlewareConfig(givenConfig)
+  const hmrEnabled = config.hmrPath !== null
+  const sourceMapEnabled = config.sourceMap && config.sourceMapPath !== 'none' && config.sourceMapPath !== 'inline'
+  const connections = new Set()
+  const filesChanged = new Set()
+  const oldHMRPath = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  const oldHMRHost = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
+
+  const writeToConnections = (contents) => {
+    connections.forEach((connection) => connection.send(JSON.stringify(contents)))
+  }
+  let watcherSubscription
+  // The watcherInfo implementation below is useful because
+  // the watcher further below takes time to boot up, and we have to start
+  // server instantly. With the help of this, we can immediately start server
+  // while also waiting on the watcher
+  const watcherInfo = {
+    get queue() {
+      if (!watcherSubscription || firstCompile) {
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            resolve(watcherInfo.queue)
+          }, 100)
+        })
       }
-    }
+      return watcherSubscription.queue
+    },
+  }
 
-    const subscriptions = new CompositeDisposable()
-    const watcherInfo = this.pundle.watch(Object.assign(this.config.watcher, {
-      generate: () => {
-        debugServer(`Sending HMR of ${filesUpdated.size} file(s) to ${wsConnections.size} connection(s)`)
-        if (!filesUpdated.size || !wsConnections.size) {
-          filesUpdated.clear()
-          this.config.server.generated(filesUpdated)
-          regenerate()
-          return
-        }
-        const hmr = this.pundle.generate(Object.assign({}, this.config.generator, {
-          wrapper: 'none',
-          contents: Array.from(filesUpdated),
-          requires: [],
-          projectName: `hmr-${Date.now()}`,
-        }))
-        let contents = hmr.contents
-        if (hmr.sourceMap) {
-          contents += `\n${sourceMapToComment(hmr.sourceMap)}`
-        }
-        const payload = JSON.stringify({
-          type: 'update',
-          contents,
-          filesUpdated: Array.from(filesUpdated).map(i => this.pundle.getUniquePathID(i)),
-        })
-        for (const entry of wsConnections) {
-          entry.send(payload)
-        }
-        filesUpdated.clear()
-        this.config.server.generated(filesUpdated)
-        regenerate()
-      },
-      ready() {
-        ready = true
-      },
-      error: this.config.server.error,
-    }))
-    const app = this.server
-    app.get(this.config.server.bundlePath, (req, res) => {
-      filesUpdated.clear()
-      watcherInfo.queue = watcherInfo.queue.then(async function respond() {
-        if (!generated) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-          respond()
-          return
-        }
-        res.header('Content-Type', 'application/javascript')
-        res.end(generated.contents)
-      }).catch(error => {
-        res.sendStatus(500)
-        res.end()
-        this.config.server.error(error)
-      })
+  expressApp.get(config.bundlePath, function(req, res, next) {
+    if (active) {
+      watcherInfo.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
+    } else next()
+  })
+  if (sourceMapEnabled) {
+    expressApp.get(config.sourceMapPath, function(req, res, next) {
+      if (active) {
+        watcherInfo.queue.then(() => res.json(compiled.sourceMap))
+      } else next()
     })
-
-    if (this.config.generator.sourceMap) {
-      app.get(this.config.server.sourceMapPath, (req, res) => {
-        watcherInfo.queue = watcherInfo.queue.then(async function respond() {
-          if (!generated) {
-            await new Promise(resolve => setTimeout(resolve, 100))
-            respond()
-            return
-          }
-          res.header('Content-Type', 'application/json')
-          res.end(JSON.stringify(generated.sourceMap, null, 2))
-        }).catch(error => {
-          res.sendStatus(500)
-          res.end()
-          this.config.server.error(error)
-        })
-      })
-    }
-    if (this.config.server.sourceRoot) {
-      app.use(express.static(this.config.server.sourceRoot))
-    }
-    const server = app.listen(this.config.server.port, this.config.server.ready)
-    if (this.config.server.hmr) {
-      // $FlowIgnore: Flow doesn't want the custom prop
-      this.config.generator.wrapper = 'hmr'
-      const wsServer = new ws.Server({ server })
-      wsServer.on('connection', connection => {
-        if (connection.upgradeReq.url !== this.config.server.hmrPath) {
-          connection.close()
-          return
-        }
-        wsConnections.add(connection)
-        connection.onclose = function() {
-          wsConnections.delete(this)
-        }
-      })
-      this.pundle.onDidProcess(function({ filePath }) {
-        if (ready) {
-          filesUpdated.add(filePath)
-        }
-      })
-    }
-
-    subscriptions.add(watcherInfo.subscription)
-    subscriptions.add(new Disposable(() => {
-      this.subscriptions.remove(subscriptions)
-      server.close()
-    }))
-    this.subscriptions.add(subscriptions)
-    return subscriptions
   }
-  dispose() {
-    this.subscriptions.dispose()
+
+  let wss
+  if (hmrEnabled) {
+    wss = new Server({ server, path: config.hmrPath })
+    wss.on('connection', function(connection) {
+      if (active) {
+        connection.on('close', () => connections.delete(connection))
+        connections.add(connection)
+      }
+    })
   }
+
+  const componentSubscription = await pundle.loadComponents([
+    createSimple({
+      activate() {
+        pundle.compilation.config.entry.unshift(browserFile)
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
+      },
+      dispose() {
+        active = false
+        const entryIndex = pundle.compilation.config.entry.indexOf(browserFile)
+        if (entryIndex !== -1) {
+          pundle.compilation.config.entry.splice(entryIndex, 1)
+        }
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
+        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
+      },
+    }, config),
+    [cliReporter, {
+      log(text, error) {
+        if (config.hmrReports && error.severity && error.severity !== 'info') {
+          writeToConnections({ type: 'report', text, severity: error.severity || 'error' })
+        }
+      },
+    }],
+  ])
+
+  watcherSubscription = await pundle.watch({
+    tick(filePath: string, error: ?Error) {
+      debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
+      if (!error && filePath !== browserFile && !firstCompile) {
+        filesChanged.add(filePath)
+        return
+      }
+    },
+    async compile(totalFiles: Array<File>) {
+      if (hmrEnabled && !firstCompile) {
+        if (connections.size) {
+          pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
+          writeToConnections({ type: 'report-clear' })
+          const changedFilePaths = Array.from(filesChanged)
+          const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
+            entry: [],
+            wrapper: 'none',
+            sourceMap: config.sourceMap,
+            sourceMapPath: 'inline',
+            sourceNamespace: 'app',
+            sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
+          })
+          const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
+          writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
+          filesChanged.clear()
+        }
+      }
+      firstCompile = false
+      compiled = await pundle.generate(totalFiles, {
+        wrapper: 'hmr',
+        sourceMap: config.sourceMap,
+        sourceMapPath: config.sourceMapPath,
+        sourceNamespace: 'app',
+      })
+    },
+  })
+
+  return new Disposable(function() {
+    if (wss) {
+      wss.close()
+    }
+    watcherSubscription.dispose()
+    componentSubscription.dispose()
+  })
 }
 
-module.exports = Server
+// NOTE: Make SURE to setup the static handler AFTER middleware is invoked and
+//       that the middleware doesn't await before registering the route
+// NOTE: Also accepts all of middleware options
+// NOTE: The return value has a `server` and `app` property that references express instance and server instance
+export async function createServer(pundle: Object, givenConfig: Object): Promise<Disposable> {
+  const app = express()
+  const config = Helpers.fillServerConfig(givenConfig)
+
+  const server = app.listen(config.port)
+  const middlewarePromise = attachMiddleware(pundle, givenConfig, app, server)
+  app.use('/', express.static(config.rootDirectory))
+  if (config.redirectNotFoundToIndex) {
+    app.use(function(req, res, next) {
+      if (req.url !== '/index.html' && req.baseUrl !== '/index.html') {
+        req.baseUrl = req.url = '/index.html'
+        send(req, req.baseUrl, { root: config.rootDirectory, index: 'index.html' })
+          .on('error', next)
+          .on('directory', next)
+          .pipe(res)
+      } else next()
+    })
+  }
+  const subscription = await middlewarePromise
+  const disposable = new Disposable(function() {
+    server.close()
+    subscription.dispose()
+  })
+
+  disposable.app = app
+  disposable.server = server
+  return disposable
+}

@@ -19,3 +19,8 @@ test:
 machine:
   node:
     version: 6.3.0
+
+general:
+  branches:
+    ignore:
+      - steelbrain/v2
