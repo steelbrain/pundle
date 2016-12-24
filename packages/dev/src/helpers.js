@@ -26,7 +26,7 @@ export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
   if (config.sourceMapPath) {
     invariant(typeof config.sourceMapPath === 'string', 'config.sourceMapPath must be a string')
     toReturn.sourceMapPath = config.sourceMapPath
-  } else toReturn.sourceMapPath = '/bundle.js.map'
+  } else toReturn.sourceMapPath = `${toReturn.bundlePath}.map`
 
   toReturn.hmrReports = typeof config.hmrReports === 'undefined' ? true : !!config.hmrReports
 
