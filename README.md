@@ -11,9 +11,8 @@ Here are some quick links for you
 
 - [Pundle](https://github.com/motion/pundle/blob/master/packages/pundle/README.md)
 - [Pundle Dev Server](https://github.com/motion/pundle/blob/master/packages/dev/README.md)
-- [Babel Plugin](https://github.com/motion/pundle/blob/master/packages/babel/README.md)
-- [TypeScript Plugin](https://github.com/motion/pundle/blob/master/packages/typescript/README.md)
-- [NPM Installer Plugin](https://github.com/motion/pundle/blob/master/packages/npm-installer/README.md)
+- [TypeScript preset](https://github.com/motion/pundle/tree/master/packages/preset-typescript/README.md)
+- [NPM Installer Plugin](https://github.com/motion/pundle/blob/master/packages/plugin-npm-installer/README.md)
 
 ## Setting up for development
 
