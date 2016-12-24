@@ -23,19 +23,12 @@ command
   .option('-d, --dev', 'Enable dev http server', false)
   .option('-p, --port <port>', 'Port for dev server to listen on')
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
-  .command('init', 'Copy default Pundle configuration into root directory', function(options) {
-    let exists = false
-    const sourceConfigFilePath = Path.normalize(Path.join(__dirname, '..', 'vendor', 'config-file.js'))
-    const targetConfigFilePath = Path.join(options.rootDirectory, options.configFileName)
-
-    try {
-      FS.statSync(targetConfigFilePath)
-      exists = true
-    } catch (_) { /* No Op */ }
-    if (!exists) {
-      console.log(`Adding ${targetConfigFilePath}`)
-      FS.createReadStream(sourceConfigFilePath).pipe(FS.createWriteStream(targetConfigFilePath))
-    }
+  .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', function(options, givenType) {
+    const configType = givenType === 'full' ? 'full' : 'basic'
+    console.log(`Initializing with ${configType} configuration`)
+    Helpers.copyFiles(Path.normalize(Path.join(__dirname, '..', 'vendor')), options.rootDirectory, [
+      [`config-${configType}.js`, options.configFileName],
+    ])
   })
   .default(function(options, ...commands) {
     if (commands.length !== 0) {

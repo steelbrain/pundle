@@ -1,5 +1,6 @@
 /* @flow */
 
+import FS from 'fs'
 import Path from 'path'
 import invariant from 'assert'
 import type { CLIConfig } from './types'
@@ -54,4 +55,19 @@ export function fillCLIConfig(config: Object): CLIConfig {
   toReturn.server.hmrReports = typeof server.hmrReports === 'undefined' ? true : !!server.hmrReports
 
   return toReturn
+}
+
+export function copyFiles(sourceRoot: string, destRoot: string, files: Array<[string, string]>): void {
+  for (let i = 0, length = files.length; i < length; i++) {
+    const file = files[i]
+    const fileSource = Path.isAbsolute(file[0]) ? file[0] : Path.join(sourceRoot, file[0])
+    const fileDest = Path.isAbsolute(file[1]) ? file[1] : Path.join(destRoot, file[1])
+    try {
+      FS.statSync(fileDest)
+      console.log(`Skipping ${file[1]} because it already exists`)
+    } catch (_) {
+      FS.writeFileSync(fileDest, FS.readFileSync(fileSource))
+      console.log(`Copying default ${file[1]}`)
+    }
+  }
 }
