@@ -36,6 +36,7 @@ function getHMRUrl() {
   return `${scheme}://${host.slice(host.indexOf('//') + 2)}${path}`
 }
 function openHMRConnection() {
+  let connectedOnce = false
   const socket = new WebSocket(getHMRUrl())
   const interval = setInterval(function() {
     if (socket.readyState === 1) {
@@ -44,10 +45,18 @@ function openHMRConnection() {
     }
   }, 2000)
   socket.addEventListener('open', function() {
+    connectedOnce = true
     console.log('[HMR] Connected')
   })
   socket.addEventListener('close', function() {
-    console.log('[HMR] Disconnected')
+    clearInterval(interval)
+    if (connectedOnce) {
+      console.log('[HMR] Disconnected')
+      console.log('[HMR] Retrying in 2 seconds')
+      setTimeout(openHMRConnection, 2000)
+    } else {
+      console.log('[HMR] Server seems down, giving up')
+    }
   })
   socket.addEventListener('message', function(event) {
     const message = JSON.parse(event.data)
@@ -73,11 +82,6 @@ function openHMRConnection() {
     } else {
       console.log('[HMR] Unknown response', message)
     }
-  })
-  socket.addEventListener('close', function() {
-    clearInterval(interval)
-    console.log('[HMR] Retrying in 2 seconds')
-    setTimeout(openHMRConnection, 2000)
   })
 }
 openHMRConnection()
