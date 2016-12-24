@@ -69,8 +69,8 @@ command
         promise = pundle.generate(null, {
           sourceMapPath: config.output.sourceMapPath,
         }).then(async function(generated) {
-          const outputFilePath = Path.join(pundle.config.compilation.rootDirectory, config.output.bundlePath)
-          const outputSourceMapPath = Path.join(pundle.config.compilation.rootDirectory, config.output.sourceMapPath)
+          const outputFilePath = Path.resolve(pundle.config.compilation.rootDirectory, config.output.bundlePath)
+          const outputSourceMapPath = Path.resolve(pundle.config.compilation.rootDirectory, config.output.sourceMapPath)
           FS.writeFileSync(outputFilePath, generated.contents)
           console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
           if (config.sourceMap && config.output.sourceMapPath !== 'inline') {
