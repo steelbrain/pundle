@@ -204,7 +204,8 @@ const __sbPundle = {
 
     return sorted
   },
-  hmrApply: function(files: Array<string>) {
+  hmrApply: function(givenFiles: Array<string>, newFiles: Array<string>) {
+    const files = givenFiles.filter(file => !~newFiles.indexOf(file))
     const updateOrder = this.hmrGetOrder(files)
     for (let i = 0, length = updateOrder.length; i < length; i++) {
       const file = updateOrder[i]
