@@ -46,11 +46,13 @@ command
       rootDirectory: options.rootDirectory,
       configFileName: options.configFileName,
     }).then(function(pundle) {
-      const config = Helpers.fillCLIConfig(pundle.config)
       process.env.NODE_ENV = options.dev ? 'development' : 'production'
+      let promise
+      const config = Helpers.fillCLIConfig(pundle.config)
+
       if (options.dev) {
         const serverPort = options.port || config.server.port
-        return createServer(pundle, {
+        promise = createServer(pundle, {
           port: serverPort,
           hmrPath: config.server.hmrPath,
           hmrHost: config.server.hmrHost,
@@ -63,22 +65,28 @@ command
         }).then(function() {
           console.log(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
         })
+      } else {
+        promise = pundle.generate(null, {
+          sourceMapPath: config.output.sourceMapPath,
+        }).then(async function(generated) {
+          const outputFilePath = Path.join(pundle.config.compilation.rootDirectory, config.output.bundlePath)
+          const outputSourceMapPath = Path.join(pundle.config.compilation.rootDirectory, config.output.sourceMapPath)
+          FS.writeFileSync(outputFilePath, generated.contents)
+          console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
+          if (config.sourceMap && config.output.sourceMapPath !== 'inline') {
+            const sourceMap = JSON.stringify(generated.sourceMap)
+            FS.writeFileSync(outputSourceMapPath, sourceMap)
+            console.log(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
+          }
+        })
       }
-      return pundle.generate(null, {
-        sourceMapPath: config.output.sourceMapPath,
-      }).then(async function(generated) {
-        const outputFilePath = Path.join(pundle.config.compilation.rootDirectory, config.output.bundlePath)
-        const outputSourceMapPath = Path.join(pundle.config.compilation.rootDirectory, config.output.sourceMapPath)
-        FS.writeFileSync(outputFilePath, generated.contents)
-        console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
-        if (config.sourceMap && config.output.sourceMapPath !== 'inline') {
-          const sourceMap = JSON.stringify(generated.sourceMap)
-          FS.writeFileSync(outputSourceMapPath, sourceMap)
-          console.log(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
-        }
+      return promise.catch(function(error) {
+        process.exitCode = 1
+        pundle.compilation.report(error)
       })
     }).catch(function(error) {
-      console.log('Error', error.message)
+      process.exitCode = 1
+      console.log(error)
     })
   })
   .parse(process.argv)
