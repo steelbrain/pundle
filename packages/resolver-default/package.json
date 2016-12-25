@@ -1,6 +1,6 @@
 {
   "name": "pundle-resolver-default",
-  "version": "2.0.0-beta3",
+  "version": "2.0.0-beta4",
   "description": "Require resolver for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -18,8 +18,8 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "^2.0.0-beta3",
-    "pundle-browser": "^2.0.0-beta3",
+    "pundle-api": "^2.0.0-beta4",
+    "pundle-browser": "^2.0.0-beta4",
     "resolve": "^1.1.7",
     "sb-memoize": "^2.1.0"
   },
