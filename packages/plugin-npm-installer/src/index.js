@@ -30,6 +30,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
     await this.resolve(`${moduleName}/package.json`, fromFile)
     return null
   } catch (_) { /* No Op */ }
+  this.report(new MessageIssue(`Installing '${moduleName}' in ${this.config.rootDirectory}`, 'info'))
   config.beforeInstall(moduleName)
   let error = null
   try {
@@ -39,9 +40,9 @@ export default createResolver(async function(config: Object, givenRequest: strin
   }
   config.afterInstall(moduleName, error)
   if (error) {
-    this.report(new MessageIssue(`Failed to install '${moduleName}' in '${this.config.rootDirectory}'`, 'error'))
+    this.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
   } else {
-    this.report(new MessageIssue(`Installed '${moduleName}' in '${this.config.rootDirectory}'`, 'info'))
+    this.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
   }
   return await this.resolve(givenRequest, fromFile, false)
 }, {
