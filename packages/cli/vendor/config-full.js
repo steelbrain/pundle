@@ -18,9 +18,9 @@ module.exports = {
     // ^ This will not be replaced with a string literal but a variable
   },
   output: {
-    bundlePath: '/bundle.js',
+    bundlePath: 'bundle.js',
     sourceMap: true,
-    sourceMapPath: '/bundle.js.map',
+    sourceMapPath: 'bundle.js.map',
   },
   server: {
     port: 8090,

@@ -6,9 +6,9 @@ module.exports = {
   // "development", it's set to "production" otherwise
   entry: ['./index.js'],
   output: {
-    bundlePath: '/bundle.js',
+    bundlePath: 'bundle.js',
     sourceMap: true,
-    sourceMapPath: '/bundle.js.map',
+    sourceMapPath: 'bundle.js.map',
   },
   server: {
     port: 8090,
@@ -34,6 +34,7 @@ module.exports = {
     }],
   ],
   components: [
-    require.resolve('pundle-transformer-babel'),
+    // require.resolve('pundle-transformer-babel'),
+    // ^ Uncomment to enable babel compilation of all js files (except node_modules)
   ],
 }
