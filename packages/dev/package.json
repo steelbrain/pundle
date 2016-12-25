@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev",
-  "version": "2.0.0-beta4",
+  "version": "2.0.0-beta5",
   "description": "Dev module for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -21,9 +21,9 @@
     "debug": "^2.4.4",
     "express": "^4.14.0",
     "lodash.difference": "^4.5.0",
-    "pundle": "^2.0.0-beta4",
-    "pundle-api": "^2.0.0-beta4",
-    "pundle-reporter-cli": "^2.0.0-beta4",
+    "pundle": "^2.0.0-beta5",
+    "pundle-api": "^2.0.0-beta5",
+    "pundle-reporter-cli": "^2.0.0-beta5",
     "sb-event-kit": "^3.0.0",
     "send": "^0.14.1",
     "uws": "^0.12.0"
