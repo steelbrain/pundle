@@ -3,7 +3,7 @@
 import Path from 'path'
 import debounce from 'sb-debounce'
 import chokidar from 'chokidar'
-import { getRelativeFilePath, MessageIssue } from 'pundle-api'
+import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
 
@@ -119,6 +119,9 @@ export default class Compilation {
     return { id, request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {
+    if (!component || component.$apiVersion !== API_VERSION) {
+      throw new Error('API version of component mismatches')
+    }
     this.components.add({ component, config })
     component.activate.call(this)
     return new Disposable(() => {
