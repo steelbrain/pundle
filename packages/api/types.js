@@ -6,7 +6,7 @@ import type { FileIssue, MessageIssue } from './src/issues'
 export type { FileIssue, MessageIssue } from './src/issues'
 
 export type ComponentRule = string | RegExp
-export type Loadable = {
+export type ComponentRules = {
   include?: ComponentRule | Array<ComponentRule>,
   exclude?: ComponentRule | Array<ComponentRule>,
   extensions?: Array<string>,
@@ -42,7 +42,7 @@ export type File = {
   source: string,
   imports: Set<Import>,
   filePath: string,
-  // ^ The abs path on file system
+  // ^ The absolute path on file system
   contents: string,
   sourceMap: ?Object,
 }

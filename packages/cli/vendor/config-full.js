@@ -9,6 +9,9 @@ module.exports = {
   entry: ['./index.js'],
   fileSystem,
   rootDirectory: __dirname,
+  // ^ The dir that everything including output paths, entries are relative of.
+  // Also used by other packages like npm-installer to determine where to install
+  // the npm packages.
   replaceVariables: {
     'process.env.SOME_MAGIC_VAR': 5,
     // ^ This will be replaced with numerical value 5 in bundle
