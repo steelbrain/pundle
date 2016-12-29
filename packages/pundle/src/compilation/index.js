@@ -123,7 +123,7 @@ export default class Compilation {
       throw new Error('API version of component mismatches')
     }
     this.components.add({ component, config })
-    component.activate.call(this)
+    component.activate.call(this, Object.assign({}, component.defaultConfig, config))
     return new Disposable(() => {
       this.deleteComponent(component, config)
     })
@@ -131,7 +131,7 @@ export default class Compilation {
   deleteComponent(component: ComponentAny, config: Object): void {
     for (const entry of this.components) {
       if (entry.config === config && entry.component === component) {
-        entry.component.dispose.call(this)
+        entry.component.call(this, Object.assign({}, component.defaultConfig, config))
         this.components.delete(entry)
         break
       }
