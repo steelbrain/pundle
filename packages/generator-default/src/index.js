@@ -23,8 +23,7 @@ import * as Helpers from './helpers'
 // - Push sourceMap stringified or it's path (depending on config) (if enabled)
 // - Return all chunks joined, and sourceMap (if enabled)
 
-export default createGenerator(async function(givenConfig: Object, files: Array<File>, givenRuntimeConfig: Object) {
-  const config = Object.assign({}, givenConfig, givenRuntimeConfig)
+export default createGenerator(async function(config: Object, files: Array<File>) {
   const entry = await Helpers.normalizeEntry(this, config)
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 

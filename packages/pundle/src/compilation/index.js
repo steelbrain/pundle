@@ -23,30 +23,29 @@ export default class Compilation {
     this.components = new Set()
     this.subscriptions = new CompositeDisposable()
   }
-  async report(error: Object): Promise<void> {
-    for (const component of Helpers.filterComponents(this.components, 'reporter')) {
-      await Helpers.invokeComponent(this, component, error)
+  async report(report: Object): Promise<void> {
+    for (const { component, config } of Helpers.filterComponents(this.components, 'reporter')) {
+      await Helpers.invokeComponent(this, component, 'callback', [config], report)
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
     for (const { component, config } of Helpers.filterComponents(this.components, 'resolver')) {
-      const mergedConfig = Object.assign({}, config, { knownExtensions })
-      const result = await Helpers.invokeComponent(this, { component, config: mergedConfig }, request, from, cached)
+      const configs = [config, { knownExtensions }]
+      const result = await Helpers.invokeComponent(this, component, 'callback', configs, request, from, cached)
       if (result) {
         return result
       }
     }
 
     const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
-    // $FlowIgnore: This is a custom property
     error.code = 'MODULE_NOT_FOUND'
     throw error
   }
-  async generate(files: Array<File>, runtimeConfig: Object = {}): Promise<Object> {
+  async generate(files: Array<File>, generateConfig: Object = {}): Promise<Object> {
     let result
-    for (const component of Helpers.filterComponents(this.components, 'generator')) {
-      result = await Helpers.invokeComponent(this, component, files, runtimeConfig)
+    for (const { component, config } of Helpers.filterComponents(this.components, 'generator')) {
+      result = await Helpers.invokeComponent(this, component, 'callback', [config, generateConfig], files)
       if (result) {
         break
       }
@@ -55,8 +54,8 @@ export default class Compilation {
       throw new MessageIssue('No matching generator found', 'error')
     }
     // Post-Transformer
-    for (const component of Helpers.filterComponents(this.components, 'post-transformer')) {
-      const postTransformerResults = await Helpers.invokeComponent(this, component, result.contents)
+    for (const { component, config } of Helpers.filterComponents(this.components, 'post-transformer')) {
+      const postTransformerResults = await Helpers.invokeComponent(this, component, 'callback', [config], result.contents)
       Helpers.mergeResult(result, postTransformerResults)
     }
     return result
@@ -90,26 +89,24 @@ export default class Compilation {
     }
 
     // Transformer
-    for (const component of Helpers.filterComponents(this.components, 'transformer')) {
-      const transformerResult = await Helpers.invokeComponent(this, component, Object.assign({}, file))
+    for (const { component, config } of Helpers.filterComponents(this.components, 'transformer')) {
+      const transformerResult = await Helpers.invokeComponent(this, component, 'callback', [config], file)
       Helpers.mergeResult(file, transformerResult)
     }
 
     // Loader
-    for (const component of Helpers.filterComponents(this.components, 'loader')) {
-      const loaderResult = await Helpers.invokeComponent(this, component, Object.assign({}, file))
-      if (!loaderResult) {
-        continue
+    for (const { component, config } of Helpers.filterComponents(this.components, 'loader')) {
+      const loaderResult = await Helpers.invokeComponent(this, component, 'callback', [config], file)
+      if (loaderResult) {
+        Helpers.mergeResult(file, loaderResult)
+        file.imports = new Set(Array.from(file.imports).concat(Array.from(loaderResult.imports)))
+        break
       }
-
-      Helpers.mergeResult(file, loaderResult)
-      file.imports = new Set(Array.from(file.imports).concat(Array.from(loaderResult.imports)))
-      break
     }
 
     // Plugin
-    for (const component of Helpers.filterComponents(this.components, 'plugin')) {
-      await Helpers.invokeComponent(this, component, Object.assign({}, file))
+    for (const { component, config } of Helpers.filterComponents(this.components, 'plugin')) {
+      await Helpers.invokeComponent(this, component, 'callback', [config], file)
     }
 
     return file
@@ -123,19 +120,20 @@ export default class Compilation {
       throw new Error('API version of component mismatches')
     }
     this.components.add({ component, config })
-    component.activate.call(this, Object.assign({}, component.defaultConfig, config))
+    Helpers.invokeComponent(this, component, 'activate', [config])
     return new Disposable(() => {
       this.deleteComponent(component, config)
     })
   }
-  deleteComponent(component: ComponentAny, config: Object): void {
+  deleteComponent(component: ComponentAny, config: Object): boolean {
     for (const entry of this.components) {
       if (entry.config === config && entry.component === component) {
-        entry.component.dispose.call(this, Object.assign({}, component.defaultConfig, config))
         this.components.delete(entry)
-        break
+        Helpers.invokeComponent(this, component, 'dispose', [config])
+        return true
       }
     }
+    return false
   }
   // Spec:
   // - Create promised queue
@@ -203,10 +201,7 @@ export default class Compilation {
     return disposable
   }
   dispose() {
-    for (const entry of this.components) {
-      entry.component.dispose.call(this, Object.assign({}, entry.component.defaultConfig, entry.config))
-    }
-    this.components.clear()
+    this.components.forEach(({ component, config }) => this.deleteComponent(component, config))
     this.subscriptions.dispose()
   }
 }

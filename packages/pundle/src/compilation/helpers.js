@@ -17,12 +17,19 @@ export function *filterComponents(components: Set<ComponentEntry>, type: string)
   }
 }
 
-export function invokeComponent(compilation: Compilation, component: { component: ComponentAny, config: Object }, ...parameters: Array<any>): Promise<any> {
-  invariant(component.component.$type !== 'watcher', 'Cannot invokeComponent() a watcher')
-  return component.component.callback.apply(compilation, [
-    // $FlowIgnore: Flow gets confused with so many types
-    Object.assign({}, component.component.defaultConfig, component.config),
-  ].concat(parameters))
+// Spec:
+// - Validate method to exist on component
+// - Clone all Objects in the parameters to make sure components can't override originals
+// - Invoke the method requested on component with merged configs as first arg and params as others
+export function invokeComponent(thisArg: any, component: ComponentAny, method: string, configs: Array<Object>, ...givenParameters: Array<any>) {
+  invariant(typeof component[method] === 'function', `Component method '${method}' does not exist on given component`)
+  const parameters = givenParameters.map(function(item) {
+    if (item && item.constructor === Object) {
+      return Object.assign({}, item)
+    }
+    return item
+  })
+  return component[method].apply(thisArg, [Object.assign({}, component.defaultConfig, ...configs)].concat(parameters))
 }
 
 // Shamelessly copied from babel/babel under MIT License
