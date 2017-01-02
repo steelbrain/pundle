@@ -106,7 +106,6 @@ export function createWatcher(callbacks: WatcherCallbacks, defaultConfig: Object
   let anyCallbackGiven = false
   let activate = noOp
   let tick = noOp
-  let update = noOp
   let ready = noOp
   let compile = noOp
   let dispose = noOp
@@ -122,11 +121,6 @@ export function createWatcher(callbacks: WatcherCallbacks, defaultConfig: Object
     anyCallbackGiven = true
     invariant(typeof callbacks.tick === 'function', 'callbacks.tick() must be a function')
     tick = callbacks.tick
-  }
-  if (callbacks.update) {
-    anyCallbackGiven = true
-    invariant(typeof callbacks.update === 'function', 'callbacks.update() must be a function')
-    update = callbacks.update
   }
   if (callbacks.ready) {
     anyCallbackGiven = true
@@ -153,7 +147,6 @@ export function createWatcher(callbacks: WatcherCallbacks, defaultConfig: Object
     $apiVersion: version,
     activate,
     tick,
-    update,
     ready,
     compile,
     dispose,

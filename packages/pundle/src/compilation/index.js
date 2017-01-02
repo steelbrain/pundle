@@ -162,10 +162,12 @@ export default class Compilation {
     const processFile = (filePath, force = true, from = null) =>
       Helpers.processWatcherFileTree(this, config, watcher, files, filePath, force, from)
     const triggerCompile = async () => {
-      try {
-        await config.compile(Array.from(files.values()))
-      } catch (compileError) {
-        this.report(compileError)
+      for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+        try {
+          await Helpers.invokeComponent(this, entry.component, 'compile', [entry.config], Array.from(files.values()))
+        } catch (error) {
+          this.report(error)
+        }
       }
     }
     const triggerDebouncedCompile = debounce(triggerCompile, 20)
@@ -174,10 +176,13 @@ export default class Compilation {
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
-    try {
-      config.ready(successful, Array.from(files.values()))
-    } catch (readyError) {
-      this.report(readyError)
+
+    for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+      try {
+        await Helpers.invokeComponent(this, entry.component, 'ready', [entry.config], Array.from(files.values()))
+      } catch (error) {
+        this.report(error)
+      }
     }
     if (successful) {
       await triggerCompile()

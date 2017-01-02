@@ -104,14 +104,6 @@ class Pundle {
           givenTick ? givenTick(filePath, error) : null,
         ])
       },
-      update: (filePath: string, newImports: Array<string>, oldImports: Array<string>) => {
-        const givenUpdate = config.update
-        const defaultUpdate = this.config.watcher.update
-        return Promise.all([
-          givenUpdate ? givenUpdate(filePath, newImports, oldImports) : null,
-          defaultUpdate ? defaultUpdate(filePath, newImports, oldImports) : null,
-        ])
-      },
       ready: (initialCompileStatus: boolean, totalFiles: Array<File>) => {
         const givenReady = config.ready
         const defaultReady = this.config.watcher.ready

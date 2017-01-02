@@ -150,7 +150,6 @@ export async function processFileTree(compilation: Compilation, files: Map<strin
 // - Trigger config.tick() without the error object in case of success
 // - Diff the new and old imports
 // - Watch new imports and unwatch old imports
-// - Trigger config.update() with the new and old imports
 // - Try to:
 //   - Resolve all imports recursively
 //   - Return a array.every result of all the return values
@@ -191,10 +190,12 @@ export async function processWatcherFileTree(
     compilation.report(error)
     return false
   } finally {
-    try {
-      config.tick(filePath, processError)
-    } catch (tickError) {
-      compilation.report(tickError)
+    for (const entry of filterComponents(compilation.components, 'watcher')) {
+      try {
+        await invokeComponent(this, entry.component, 'tick', [entry.config], filePath, processError)
+      } catch (error) {
+        compilation.report(error)
+      }
     }
   }
 
@@ -208,11 +209,6 @@ export async function processWatcherFileTree(
   removedImports.forEach(function(entry) {
     watcher.unwatch(entry)
   })
-  try {
-    config.update(filePath, newImports, oldImports)
-  } catch (updateError) {
-    compilation.report(updateError)
-  }
 
   try {
     const promises = await Promise.all(Array.from(file.imports).map((entry: Object) =>

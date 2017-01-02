@@ -45,11 +45,6 @@ module.exports = {
     tick(filePath, error) {
       console.log(`${filePath} ${error ? 'had error during compile' : 'was compiled successfully'}`)
     },
-    update(filePath, newImports, oldImports) {
-      console.log(`${filePath} was updated`)
-      console.log('All imports in the last processed version', oldImports)
-      console.log('All imports in the new processed version', newImports)
-    },
     ready(initialCompileStatus, totalFiles) {
       // ^ To see what type of objects are in totalFiles, look for "File" type in docs
       if (initialCompileStatus) {

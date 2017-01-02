@@ -19,7 +19,6 @@ export type CompilationConfig = {
 export type WatcherConfig = {
   usePolling: boolean,
   tick(filePath: string, error: ?null): Promise<void> | void,
-  update(filePath: string, newImports: Array<string>, oldImports: Array<string>): Promise<void> | void,
   ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
   compile(totalFiles: Array<File>): Promise<void> | void,
 }

@@ -75,7 +75,6 @@ export type Watcher = {
   $apiVersion: number,
   activate(config: Object): void,
   tick(filePath: string, error: ?Error): Promise<void> | void,
-  update(filePath: string, newImports: Array<string>, oldImports: Array<string>): Promise<void> | void,
   ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
   compile(totalFiles: Array<File>): Promise<void> | void,
   dispose(config: Object): void,
