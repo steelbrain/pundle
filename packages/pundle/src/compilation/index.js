@@ -172,6 +172,7 @@ export default class Compilation {
     }
     const triggerDebouncedCompile = debounce(triggerCompile, 20)
     // The 20ms latency is for batch change operations to be compiled at once
+    // For example, git checkout another-branch changes a lot of files at once
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
@@ -203,7 +204,7 @@ export default class Compilation {
   }
   dispose() {
     for (const entry of this.components) {
-      entry.component.dispose.call(this)
+      entry.component.dispose.call(this, Object.assign({}, entry.component.defaultConfig, entry.config))
     }
     this.components.clear()
     this.subscriptions.dispose()

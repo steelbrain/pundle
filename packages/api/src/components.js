@@ -20,6 +20,8 @@ import type {
   TransformerCallback,
   PostTransformer,
   PostTransformerCallback,
+  Watcher,
+  WatcherCallbacks,
 } from '../types'
 
 const noOp: any = function() { /* No Op */ }
@@ -98,4 +100,63 @@ export function createTransformer(options: CallbackOrConfig<TransformerCallback>
 
 export function createPostTransformer(options: CallbackOrConfig<PostTransformerCallback>, defaultConfig: Object = {}): PostTransformer {
   return create(options, defaultConfig, 'post-transformer')
+}
+
+export function createWatcher(callbacks: WatcherCallbacks, defaultConfig: Object = {}): Watcher {
+  let anyCallbackGiven = false
+  let activate = noOp
+  let tick = noOp
+  let update = noOp
+  let ready = noOp
+  let compile = noOp
+  let dispose = noOp
+
+  invariant(typeof callbacks === 'object' && callbacks, 'Parameter 1 to createWatcher() must be an object')
+
+  if (callbacks.activate) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.activate === 'function', 'callbacks.activate() must be a function')
+    activate = callbacks.activate
+  }
+  if (callbacks.tick) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.tick === 'function', 'callbacks.tick() must be a function')
+    tick = callbacks.tick
+  }
+  if (callbacks.update) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.update === 'function', 'callbacks.update() must be a function')
+    update = callbacks.update
+  }
+  if (callbacks.ready) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.ready === 'function', 'callbacks.ready() must be a function')
+    ready = callbacks.ready
+  }
+  if (callbacks.compile) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.compile === 'function', 'callbacks.compile() must be a function')
+    compile = callbacks.compile
+  }
+  if (callbacks.dispose) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.dispose === 'function', 'callbacks.dispose() must be a function')
+    dispose = callbacks.dispose
+  }
+
+  if (!anyCallbackGiven) {
+    throw new Error('createWatcher() expects at least one valid callback')
+  }
+
+  return {
+    $type: 'watcher',
+    $apiVersion: version,
+    activate,
+    tick,
+    update,
+    ready,
+    compile,
+    dispose,
+    defaultConfig,
+  }
 }

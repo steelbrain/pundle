@@ -15,16 +15,16 @@ export type ComponentRules = {
 export type Component<T1, T2> = {
   $type: T1,
   $apiVersion: number,
-  activate(): void,
+  activate(config: Object): void,
   callback: T2,
-  dispose(): void,
+  dispose(config: Object): void,
   defaultConfig: Object,
 }
 
 export type CallbackOrConfig<T> = T | {
-  activate?: (() => void),
+  activate?: ((config: Object) => void),
   callback: T,
-  dispose?: (() => void),
+  dispose?: ((config: Object) => void),
 }
 
 export type Import = {
@@ -64,4 +64,22 @@ export type Transformer = Component<'transformer', TransformerCallback>
 export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?{ contents: string, sourceMap: ?Object }>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
-export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer
+export type WatcherCallbacks = {
+  tick?: ((filePath: string, error: ?Error) => Promise<void> | void),
+  update?: ((filePath: string, newImports: Array<string>, oldImports: Array<string>) => Promise<void> | void),
+  ready?: ((initialCompileStatus: boolean, totalFiles: Array<File>) => Promise<void> | void),
+  compile?: ((totalFiles: Array<File>) => Promise<void> | void),
+}
+export type Watcher = {
+  $type: 'watcher',
+  $apiVersion: number,
+  activate(config: Object): void,
+  tick(filePath: string, error: ?Error): Promise<void> | void,
+  update(filePath: string, newImports: Array<string>, oldImports: Array<string>): Promise<void> | void,
+  ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
+  compile(totalFiles: Array<File>): Promise<void> | void,
+  dispose(config: Object): void,
+  defaultConfig: Object,
+}
+
+export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher
