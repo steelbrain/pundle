@@ -26,10 +26,6 @@ export type CallbackOrConfig<T> = T | {
   callback: T,
   dispose?: (() => void),
 }
-export type ComponentCallbacks = {
-  activate?: (() => void),
-  dispose?: (() => void),
-}
 
 export type Import = {
   id: number,
@@ -46,8 +42,6 @@ export type File = {
   contents: string,
   sourceMap: ?Object,
 }
-
-export type Simple = Component<'simple', any>
 
 export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<Import>, contents: string, sourceMap: ?Object }>)
 export type Loader = Component<'loader', LoaderCallback>
@@ -70,4 +64,4 @@ export type Transformer = Component<'transformer', TransformerCallback>
 export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?{ contents: string, sourceMap: ?Object }>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
-export type ComponentAny = Simple | Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer
+export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer

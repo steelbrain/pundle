@@ -5,9 +5,7 @@ import { version, makePromisedLock } from './helpers'
 import type {
   Component,
   CallbackOrConfig,
-  ComponentCallbacks,
 
-  Simple,
   Loader,
   LoaderCallback,
   Plugin,
@@ -42,13 +40,8 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
       invariant(typeof config.dispose === 'function', 'config.dispose must be a function')
       dispose = config.dispose
     }
-    // NOTE: Simple components have no callbacks
-    if (type === 'simple') {
-      callback = noOp
-    } else {
-      invariant(config.callback === 'function', 'config.callback must be a function')
-      callback = config.callback
-    }
+    invariant(config.callback === 'function', 'config.callback must be a function')
+    callback = config.callback
   } else {
     throw new Error('Parameter 1 must be a function or config object')
   }
@@ -62,10 +55,6 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
     dispose,
     defaultConfig,
   }
-}
-
-export function createSimple(options: ComponentCallbacks): Simple {
-  return create({ activate: options.activate, callback: noOp, dispose: options.dispose }, {}, 'simple')
 }
 
 export function createLoader(options: CallbackOrConfig<LoaderCallback>, defaultConfig: Object = {}): Loader {

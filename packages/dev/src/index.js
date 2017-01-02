@@ -7,7 +7,7 @@ import arrayDiff from 'lodash.difference'
 import { Server } from 'uws'
 import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
-import { MessageIssue, createSimple } from 'pundle-api'
+import { MessageIssue } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
@@ -76,23 +76,20 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     })
   }
 
+  pundle.compilation.config.entry.unshift(browserFile)
+  pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+  pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
+  const configSubscription = new Disposable(function() {
+    active = false
+    const entryIndex = pundle.compilation.config.entry.indexOf(browserFile)
+    if (entryIndex !== -1) {
+      pundle.compilation.config.entry.splice(entryIndex, 1)
+    }
+    pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
+    pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
+  })
+
   const componentSubscription = await pundle.loadComponents([
-    createSimple({
-      activate() {
-        pundle.compilation.config.entry.unshift(browserFile)
-        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
-      },
-      dispose() {
-        active = false
-        const entryIndex = pundle.compilation.config.entry.indexOf(browserFile)
-        if (entryIndex !== -1) {
-          pundle.compilation.config.entry.splice(entryIndex, 1)
-        }
-        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
-        pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
-      },
-    }, config),
     [cliReporter, {
       log(text, error) {
         if (config.hmrReports && error.severity && error.severity !== 'info') {
@@ -143,6 +140,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     if (wss) {
       wss.close()
     }
+    configSubscription.dispose()
     watcherSubscription.dispose()
     componentSubscription.dispose()
   })

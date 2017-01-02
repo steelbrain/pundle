@@ -131,7 +131,7 @@ export default class Compilation {
   deleteComponent(component: ComponentAny, config: Object): void {
     for (const entry of this.components) {
       if (entry.config === config && entry.component === component) {
-        entry.component.call(this, Object.assign({}, component.defaultConfig, config))
+        entry.component.dispose.call(this, Object.assign({}, component.defaultConfig, config))
         this.components.delete(entry)
         break
       }
