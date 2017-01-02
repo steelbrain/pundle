@@ -42,23 +42,6 @@ module.exports = {
   watcher: {
     usePolling: true,
     // ^ Default value is false, set to true to use polling based FS watching
-    tick(filePath, error) {
-      console.log(`${filePath} ${error ? 'had error during compile' : 'was compiled successfully'}`)
-    },
-    ready(initialCompileStatus, totalFiles) {
-      // ^ To see what type of objects are in totalFiles, look for "File" type in docs
-      if (initialCompileStatus) {
-        console.log('All files had no syntax or import errors and initial build was successful')
-      } else {
-        console.log('Some file(s) had errors during initial compile')
-      }
-      console.log('Successfully processed files: ', totalFiles.length)
-    },
-    compile(totalFiles) {
-      // ^ To see what type of objects are in totalFiles, look for "File" type in docs
-      console.log('Bundle is ready for initial compile or was updated recently')
-      console.log('Generate output of', totalFiles.length, 'files here')
-    },
   },
   presets: [
     [require.resolve('pundle-preset-default'), {

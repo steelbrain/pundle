@@ -66,7 +66,6 @@ export type PostTransformer = Component<'post-transformer', PostTransformerCallb
 
 export type WatcherCallbacks = {
   tick?: ((filePath: string, error: ?Error) => Promise<void> | void),
-  update?: ((filePath: string, newImports: Array<string>, oldImports: Array<string>) => Promise<void> | void),
   ready?: ((initialCompileStatus: boolean, totalFiles: Array<File>) => Promise<void> | void),
   compile?: ((totalFiles: Array<File>) => Promise<void> | void),
 }
@@ -74,7 +73,7 @@ export type Watcher = {
   $type: 'watcher',
   $apiVersion: number,
   activate(config: Object): void,
-  tick(filePath: string, error: ?Error): Promise<void> | void,
+  tick(filePath: string, error: ?Error, file: ?File): Promise<void> | void,
   ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
   compile(totalFiles: Array<File>): Promise<void> | void,
   dispose(config: Object): void,

@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { File, ComponentAny } from 'pundle-api/types'
+import type { ComponentAny } from 'pundle-api/types'
 import type { Stats } from 'fs'
 
 export type FileSystem = {
@@ -18,9 +18,6 @@ export type CompilationConfig = {
 
 export type WatcherConfig = {
   usePolling: boolean,
-  tick(filePath: string, error: ?null): Promise<void> | void,
-  ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
-  compile(totalFiles: Array<File>): Promise<void> | void,
 }
 
 export type Preset = Array<{ component: string | Object, config: Object, name: string }>

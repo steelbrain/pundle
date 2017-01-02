@@ -4,7 +4,7 @@ import unique from 'lodash.uniq'
 import invariant from 'assert'
 import sourceMap from 'source-map'
 import difference from 'lodash.difference'
-import type { File, ComponentAny } from 'pundle-api/types'
+import type { File } from 'pundle-api/types'
 import type Compilation from './'
 import type { ComponentEntry } from './types'
 import type { WatcherConfig } from '../../types'
@@ -21,15 +21,15 @@ export function *filterComponents(components: Set<ComponentEntry>, type: string)
 // - Validate method to exist on component
 // - Clone all Objects in the parameters to make sure components can't override originals
 // - Invoke the method requested on component with merged configs as first arg and params as others
-export function invokeComponent(thisArg: any, component: ComponentAny, method: string, configs: Array<Object>, ...givenParameters: Array<any>) {
-  invariant(typeof component[method] === 'function', `Component method '${method}' does not exist on given component`)
+export function invokeComponent(thisArg: any, entry: ComponentEntry, method: string, configs: Array<Object>, ...givenParameters: Array<any>) {
+  invariant(typeof entry.component[method] === 'function', `Component method '${method}' does not exist on given component`)
   const parameters = givenParameters.map(function(item) {
     if (item && item.constructor === Object) {
       return Object.assign({}, item)
     }
     return item
   })
-  return component[method].apply(thisArg, [Object.assign({}, component.defaultConfig, ...configs)].concat(parameters))
+  return entry.component[method].apply(thisArg, [Object.assign({}, entry.component.defaultConfig, entry.config, ...configs)].concat(parameters))
 }
 
 // Shamelessly copied from babel/babel under MIT License
@@ -94,25 +94,9 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
   const toReturn = {}
 
   invariant(typeof config === 'object' && config, 'Watcher config must be an object')
-  if ({}.hasOwnProperty.call(config, 'usePolling')) {
-    toReturn.usePolling = !!config.usePolling
-  } else {
-    toReturn.usePolling = {}.hasOwnProperty.call(process.env, 'PUNDLE_WATCHER_USE_POLLING')
-  }
-  if (config.tick) {
-    invariant(typeof config.tick === 'function', 'config.tick must be a function')
-    toReturn.tick = config.tick
-  } else toReturn.tick = function() { }
-  if (config.update) {
-    invariant(typeof config.update === 'function', 'config.update must be a function')
-    toReturn.update = config.update
-  } else toReturn.update = function() { }
-  if (config.ready) {
-    invariant(typeof config.ready === 'function', 'config.ready must be a function')
-    toReturn.ready = config.ready
-  } else toReturn.ready = function() { }
-  invariant(typeof config.compile === 'function', 'config.compile must be a function')
-  toReturn.compile = config.compile
+  toReturn.usePolling = typeof config.usePolling === 'undefined'
+    ? {}.hasOwnProperty.call(process.env, 'PUNDLE_WATCHER_USE_POLLING')
+    : !! config.usePolling
 
   return toReturn
 }
@@ -173,7 +157,7 @@ export async function processWatcherFileTree(
     return true
   }
   // Reset contents on both being unable to resolve and error in processing
-  let file
+  let file = null
   let processError = null
   try {
     // $FlowIgnore: Allow null
@@ -192,7 +176,7 @@ export async function processWatcherFileTree(
   } finally {
     for (const entry of filterComponents(compilation.components, 'watcher')) {
       try {
-        await invokeComponent(this, entry.component, 'tick', [entry.config], filePath, processError)
+        await invokeComponent(this, entry, 'tick', [], filePath, processError, file)
       } catch (error) {
         compilation.report(error)
       }

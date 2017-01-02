@@ -95,32 +95,7 @@ class Pundle {
     return Array.from(files.values())
   }
   watch(config: Object = {}): Promise<Disposable> {
-    return this.compilation.watch(Object.assign({}, config, this.config.watcher, {
-      tick: (filePath: string, error: ?Error) => {
-        const givenTick = config.tick
-        const defaultTick = this.config.watcher.tick
-        return Promise.all([
-          defaultTick ? defaultTick(filePath, error) : null,
-          givenTick ? givenTick(filePath, error) : null,
-        ])
-      },
-      ready: (initialCompileStatus: boolean, totalFiles: Array<File>) => {
-        const givenReady = config.ready
-        const defaultReady = this.config.watcher.ready
-        return Promise.all([
-          givenReady ? givenReady(initialCompileStatus, totalFiles) : null,
-          defaultReady ? defaultReady(initialCompileStatus, totalFiles) : null,
-        ])
-      },
-      compile: (totalFiles: Array<File>) => {
-        const givenCompile = config.compile
-        const defaultCompile = this.config.watcher.compile
-        return Promise.all([
-          givenCompile ? givenCompile(totalFiles) : null,
-          defaultCompile ? defaultCompile(totalFiles) : null,
-        ])
-      },
-    }))
+    return this.compilation.watch(Object.assign({}, this.config.watcher, config))
   }
   dispose() {
     this.subscriptions.dispose()

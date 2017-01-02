@@ -4,10 +4,10 @@ import send from 'send'
 import debug from 'debug'
 import express from 'express'
 import arrayDiff from 'lodash.difference'
-import { Server } from 'uws'
+import { Server } from 'ws'
 import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
-import { MessageIssue } from 'pundle-api'
+import { createWatcher, MessageIssue } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
@@ -97,44 +97,45 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
         }
       },
     }],
+    createWatcher({
+      tick(_: Object, filePath: string, error: ?Error) {
+        debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
+        if (!error && filePath !== browserFile && !firstCompile) {
+          filesChanged.add(filePath)
+          return
+        }
+      },
+      async compile(_: Object, totalFiles: Array<File>) {
+        if (hmrEnabled && !firstCompile) {
+          if (connections.size) {
+            pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
+            writeToConnections({ type: 'report-clear' })
+            const changedFilePaths = Array.from(filesChanged)
+            const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
+              entry: [],
+              wrapper: 'none',
+              sourceMap: config.sourceMap,
+              sourceMapPath: 'inline',
+              sourceNamespace: 'app',
+              sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
+            })
+            const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
+            writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
+            filesChanged.clear()
+          }
+        }
+        firstCompile = false
+        compiled = await pundle.generate(totalFiles, {
+          wrapper: 'hmr',
+          sourceMap: config.sourceMap,
+          sourceMapPath: config.sourceMapPath,
+          sourceNamespace: 'app',
+        })
+      },
+    }),
   ])
 
-  watcherSubscription = await pundle.watch({
-    tick(filePath: string, error: ?Error) {
-      debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
-      if (!error && filePath !== browserFile && !firstCompile) {
-        filesChanged.add(filePath)
-        return
-      }
-    },
-    async compile(totalFiles: Array<File>) {
-      if (hmrEnabled && !firstCompile) {
-        if (connections.size) {
-          pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
-          writeToConnections({ type: 'report-clear' })
-          const changedFilePaths = Array.from(filesChanged)
-          const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
-            entry: [],
-            wrapper: 'none',
-            sourceMap: config.sourceMap,
-            sourceMapPath: 'inline',
-            sourceNamespace: 'app',
-            sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
-          })
-          const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
-          writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
-          filesChanged.clear()
-        }
-      }
-      firstCompile = false
-      compiled = await pundle.generate(totalFiles, {
-        wrapper: 'hmr',
-        sourceMap: config.sourceMap,
-        sourceMapPath: config.sourceMapPath,
-        sourceNamespace: 'app',
-      })
-    },
-  })
+  watcherSubscription = await pundle.watch()
 
   return new Disposable(function() {
     if (wss) {

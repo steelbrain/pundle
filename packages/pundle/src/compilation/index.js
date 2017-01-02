@@ -24,15 +24,14 @@ export default class Compilation {
     this.subscriptions = new CompositeDisposable()
   }
   async report(report: Object): Promise<void> {
-    for (const { component, config } of Helpers.filterComponents(this.components, 'reporter')) {
-      await Helpers.invokeComponent(this, component, 'callback', [config], report)
+    for (const entry of Helpers.filterComponents(this.components, 'reporter')) {
+      await Helpers.invokeComponent(this, entry, 'callback', [], report)
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
-    for (const { component, config } of Helpers.filterComponents(this.components, 'resolver')) {
-      const configs = [config, { knownExtensions }]
-      const result = await Helpers.invokeComponent(this, component, 'callback', configs, request, from, cached)
+    for (const entry of Helpers.filterComponents(this.components, 'resolver')) {
+      const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
       if (result) {
         return result
       }
@@ -44,8 +43,8 @@ export default class Compilation {
   }
   async generate(files: Array<File>, generateConfig: Object = {}): Promise<Object> {
     let result
-    for (const { component, config } of Helpers.filterComponents(this.components, 'generator')) {
-      result = await Helpers.invokeComponent(this, component, 'callback', [config, generateConfig], files)
+    for (const entry of Helpers.filterComponents(this.components, 'generator')) {
+      result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], files)
       if (result) {
         break
       }
@@ -54,8 +53,8 @@ export default class Compilation {
       throw new MessageIssue('No matching generator found', 'error')
     }
     // Post-Transformer
-    for (const { component, config } of Helpers.filterComponents(this.components, 'post-transformer')) {
-      const postTransformerResults = await Helpers.invokeComponent(this, component, 'callback', [config], result.contents)
+    for (const entry of Helpers.filterComponents(this.components, 'post-transformer')) {
+      const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
       Helpers.mergeResult(result, postTransformerResults)
     }
     return result
@@ -89,14 +88,14 @@ export default class Compilation {
     }
 
     // Transformer
-    for (const { component, config } of Helpers.filterComponents(this.components, 'transformer')) {
-      const transformerResult = await Helpers.invokeComponent(this, component, 'callback', [config], file)
+    for (const entry of Helpers.filterComponents(this.components, 'transformer')) {
+      const transformerResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
       Helpers.mergeResult(file, transformerResult)
     }
 
     // Loader
-    for (const { component, config } of Helpers.filterComponents(this.components, 'loader')) {
-      const loaderResult = await Helpers.invokeComponent(this, component, 'callback', [config], file)
+    for (const entry of Helpers.filterComponents(this.components, 'loader')) {
+      const loaderResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
         file.imports = new Set(Array.from(file.imports).concat(Array.from(loaderResult.imports)))
@@ -105,8 +104,8 @@ export default class Compilation {
     }
 
     // Plugin
-    for (const { component, config } of Helpers.filterComponents(this.components, 'plugin')) {
-      await Helpers.invokeComponent(this, component, 'callback', [config], file)
+    for (const entry of Helpers.filterComponents(this.components, 'plugin')) {
+      await Helpers.invokeComponent(this, entry, 'callback', [], file)
     }
 
     return file
@@ -120,7 +119,7 @@ export default class Compilation {
       throw new Error('API version of component mismatches')
     }
     this.components.add({ component, config })
-    Helpers.invokeComponent(this, component, 'activate', [config])
+    Helpers.invokeComponent(this, { component, config }, 'activate', [])
     return new Disposable(() => {
       this.deleteComponent(component, config)
     })
@@ -129,7 +128,7 @@ export default class Compilation {
     for (const entry of this.components) {
       if (entry.config === config && entry.component === component) {
         this.components.delete(entry)
-        Helpers.invokeComponent(this, component, 'dispose', [config])
+        Helpers.invokeComponent(this, entry, 'dispose', [])
         return true
       }
     }
@@ -164,7 +163,7 @@ export default class Compilation {
     const triggerCompile = async () => {
       for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
         try {
-          await Helpers.invokeComponent(this, entry.component, 'compile', [entry.config], Array.from(files.values()))
+          await Helpers.invokeComponent(this, entry, 'compile', [], Array.from(files.values()))
         } catch (error) {
           this.report(error)
         }
@@ -179,7 +178,7 @@ export default class Compilation {
 
     for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
       try {
-        await Helpers.invokeComponent(this, entry.component, 'ready', [entry.config], Array.from(files.values()))
+        await Helpers.invokeComponent(this, entry, 'ready', [], Array.from(files.values()))
       } catch (error) {
         this.report(error)
       }
