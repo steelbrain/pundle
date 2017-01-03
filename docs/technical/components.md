@@ -1,85 +1,67 @@
 # Pundle Components
 
-Components are the building blocks of the Pundle architecture. Please read the basic introduction of [Components](../introduction/components.md) if you have not already. You should also read the [LifeCycles of Pundle](../introduction/lifecycles.md) so you can better understand what type of component you need to write to solve a specific problem.
+Components are the building blocks of the Pundle architecture. You should read the basic introduction of [Components](../introduction/components.md) if you have not already. You should also read the [LifeCycles of Pundle](lifecycles.md) so you can better understand what type of component you need to write to solve a specific problem.
 
 Pundle provides the [`pundle-api`](../../packages/api) package to help package authors write their components. It provides `create*` methods for creating each type of Component. For example, you would invoke the `createLoader(...)` method if you wanted to create a loader component.
 
-There are several types of components, each having a unique priority and place for execution. Their structure is shown below, it consists of three callbacks. The `activate()` and `dispose()` are entirely optional. The `callback()` is a requirement for all but `simple` type of components.
-
-```js
-type Component = {
-  activate?: Function,
-  callback?: Function,
-  dispose?: Function,
-}
-```
-
-The main callback is invoked depending on the type of each component, while `activate()` is added when a component is loaded into Pundle and `dispose()` when it's removed or Pundle itself is disposed.
-
-It is also important to note that each callback in the Component structure is executed with `pundle.compilation` as their thisVar. It allows them to do things like
+Components have different structures depending on their type. Each component and it's structured is explained in their sections below.
+It is important to note that all callback methods of the component are invoked with `pundle.compilation` as their thisVar. It allows them to do things like
 
 - `this.report(...)`
 - `this.resolve(...)`
 - `this.getImportRequest(...)`
 
-The component creation methods accept two parameters. First one being the main callback or an object with the callbacks described on the type above. The second component is optional and is the default configuration of the component. One particular creation method `createResolver` however accepts three, you can find more about it in it's section.
+Another important thing to note is that all callback methods receive the user-config merged with default config as their first parameter. The given config object is cloned for every invocation so you cannot use it to store state of your component.
 
-The return value of component creation methods is shown below. You can either export that value or use it directly in the configuration.
+All components regardless of their types have two lifecycle methods, `activate()` and `dispose()`. They are invoked when a component is added to Pundle and when Pundle is disposed or the component is removed respectively.
+
+The return value of `create*` methods has these additional properties in addition to the given callbacks.
 
 ```js
 {
   $type: string,
   $apiVersion: number,
-  activate(config): void,
-  callback(config, ...): ...,
-  dispose(config): void,
   defaultConfig: Object,
 }
 ```
 
-## Types used by Components
+### Loader Components
 
-Types provided here are for reference and will be used throughout this document.
+Loader Components are represented by the type `loader`. These components add support for new languages to Pundle. Loader Components have a callback that receives a file and returns the processed contents and sourceMap. If you don't want to process a particular request, you can simply return a falsy value from the callback.
 
-```js
-type Import = {
-  id: number,
-  from: string,
-  request: string,
-  resolved: ?string,
-}
-type File = {
-  source: string,
-  imports: Set<Import>,
-  filePath: string,
-  // ^ The absolute path on file system
-  contents: string,
-  sourceMap: ?Object,
-}
-type ComponentRule = string | RegExp
-type ComponentRules = {
-  include?: ComponentRule | Array<ComponentRule>,
-  exclude?: ComponentRule | Array<ComponentRule>,
-  extensions?: Array<string>,
-  // ^ extensions without the dot
-}
-```
+Please note that if you want to add support for a language is transpiled into javascript like CoffeeScript or TypeScript, you should **not** write a new loader but should re-use the `pundle-loader-js` instead; and should give it the required extensions in config. It's because TypeScript or any other similar language is transpiled to pure js **before** it's fed to a loader.
 
-### Simple Components
-
-Simple components are represented by the type `simple`. These components only have `activate()` and `dispose()` callbacks. This is useful for [FlowType](https://flowtype.org/) and similar software that run a daemon in the background and report errors as files are changed.
-
-An example simple component is demonstrated below, please note that it focuses only on component creation therefore things like imports are kept out of this demonstration.
+Below is the simplest example of a loader (`json`)
 
 ```js
-module.exports = createSimple({
-  activate(config) {
-    // TODO: Do something here
-  },
-  dispose(config) {
-    // TODO: Do something here
-  },
+const { createLoader, shouldProcess, MessageIssue } = require('pundle-api')
+
+module.exports = createLoader(function(config, file) {
+  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
+    return null
+  }
+
+  let parsed
+  try {
+    parsed = JSON.parse(file.contents)
+  } catch (_) {
+    throw new MessageIssue(`Malformed JSON found at '${file.filePath}'`, 'error')
+  }
+
+  return {
+    imports: new Set(),
+    contents: `module.exports = ${JSON.stringify(parsed)}`,
+    sourceMap: null,
+    // Or:
+    // sourceMap: {
+    //   version: 3,
+    //   sources: [file.filePath],
+    //   names: ...,
+    //   mappings: ...,
+    // }
+  }
 }, {
-  flowBin: 'flow',
+  extensions: ['json'],
+  // ^ This is the default configuration for the component
 })
 ```
