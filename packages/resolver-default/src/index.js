@@ -71,7 +71,6 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
 // If module was whole, resolve it with target browser field
 // If module was relative, resolve it with source browser field
 
-// eslint-disable-next-line no-unused-vars
 export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string, cached: boolean) {
   let request = givenRequest
   let fromDirectory = ''
