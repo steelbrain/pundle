@@ -147,3 +147,66 @@ Transformers Components are Pundle's source-to-source converters. They are usefu
 You should note that if you want to add support of a language that is transformed into javascript, you should also addd `pundle-loader-js` with the extensions configured (unless it's `js`). If you are compiling from less to css for example, in addition to the less transformer you should also be adding a css loader to your configuration.
 
 [`pundle-transformer-typescript`](../../packages/transformer-typescript) and [`pundle-transformer-babel`](../../packages/transformer-babel) are examples of Transformer components.
+
+## Post Transformer Components
+
+Post Transformer Components perform operations on a fully generated output bundle. The component's main callback recieves the contents of the generated bundle as a string that the operations must be performed on.
+
+The operations of a post transformer include uglifying and prettifying the entire output, for example, here's an uglifyjs post-transformer
+
+```js
+const { minify } = require('uglify-js')
+const { createPostTransformer } = require('pundle-api')
+
+module.exports = createPostTransformer(function(config, contents) {
+  const processed = minify(contents, Object.assign({}, config.config, {
+    fromString: true,
+  }))
+
+  return {
+    contents: processed.code,
+    sourceMap: processed.map,
+  }
+}, {
+  config: {},
+})
+```
+
+## Watcher Components
+
+Watcher Components are Pundle components that have more than one main callback. They are used when Pundle is running in watcher or dev server mode. Watcher Components usually have `tick`, `ready` and `compile` callbacks.
+
+These components are useful for usecases like ESLint and TypeScript checker. They provide real time reports in browser (if configured) as well as the CLI.
+
+Here's an example Watcher Component that logs to the console on lifecycle events
+
+```js
+const { createWatcher } = require('pundle-api')
+
+module.exports = createWatcher({
+  tick(filePath, error, file) {
+    if (error) {
+      console.log('Error processing', filePath)
+    } else {
+      console.log(`${filePath} has ${file.imports.size} imports`)
+    }
+  },
+  async ready(initialCompileStatus, files) {
+    if (initialCompileStatus) {
+      console.log('number of files in bundle', files.length)
+      console.log('generated', await this.generate(files))
+    } else {
+      console.log('Initial compile failed, there was probably an unresolved require or syntax error somewhere')
+    }
+  },
+  await compile(files) {
+    console.log('Files should be generated as they have changed and are ready again')
+    console.log('generated', await this.generate(files))
+  },
+}, {})
+```
+
+## Notes
+
+- All of the life cycle callbacks can return Promises
+- Callbacks that have to process a file and return a sourceMap and new contents don't have to go through the trouble of merging the sourceMap with the old one. They can just return the new sourceMap, it's merged with the old one to create a multi-step-sourceMap directly.
