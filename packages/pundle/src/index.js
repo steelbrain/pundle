@@ -100,6 +100,7 @@ class Pundle {
   dispose() {
     this.subscriptions.dispose()
   }
+  // NOTE: Components are loaded before presets. This is important for order-sensitive components
   static async create(givenConfig: Object): Promise<Pundle> {
     invariant(typeof givenConfig === 'object' && givenConfig, 'Config must be an object')
     invariant(typeof givenConfig.rootDirectory === 'string', 'config.rootDirectory must be a string')

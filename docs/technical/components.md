@@ -2,7 +2,7 @@
 
 Components are the building blocks of the Pundle architecture. You should read the basic introduction of [Components](../introduction/components.md) if you have not already. You should also read the [LifeCycles of Pundle](lifecycles.md) so you can better understand what type of component you need to write to solve a specific problem.
 
-Pundle provides the [`pundle-api`](../../packages/api) package to help package authors write their components. It provides `create*` methods for creating each type of Component. For example, you would invoke the `createLoader(...)` method if you wanted to create a loader component.
+Pundle provides the [`pundle-api`](../../packages/api) package to help package authors write their components. It provides `create*` methods for creating each type of Component. For example, you would invoke the `createLoader(...)` function if you wanted to create a loader component.
 
 Components have different structures depending on their type. Each component and it's structured is explained in their sections below.
 It is important to note that all callback methods of the component are invoked with `pundle.compilation` as their thisVar. It allows them to do things like
@@ -15,7 +15,7 @@ Another important thing to note is that all callback methods receive the user-co
 
 All components regardless of their types have two lifecycle methods, `activate()` and `dispose()`. They are invoked when a component is added to Pundle and when Pundle is disposed or the component is removed respectively.
 
-The return value of `create*` methods has these additional properties in addition to the given callbacks.
+The return value of `create*` methods has these properties in addition to the given callbacks.
 
 ```js
 {
@@ -27,11 +27,11 @@ The return value of `create*` methods has these additional properties in additio
 
 ### Loader Components
 
-Loader Components are represented by the type `loader`. These components add support for new languages to Pundle. Loader Components have a callback that receives a file and returns the processed contents and sourceMap. If you don't want to process a particular request, you can simply return a falsy value from the callback.
+Loader Components add support for new languages to Pundle. Loader Components have a callback that receives a file and returns the processed contents and sourceMap. If you don't want to process a particular request, you can simply return a falsy value from the callback.
 
-Please note that if you want to add support for a language is transpiled into javascript like CoffeeScript or TypeScript, you should **not** write a new loader but should re-use the `pundle-loader-js` instead; and should give it the required extensions in config. It's because TypeScript or any other similar language is transpiled to pure js **before** it's fed to a loader.
+Please note that if you want to add support for a language is transpiled into javascript like CoffeeScript or TypeScript, you should **not** write a new loader but should re-use the `pundle-loader-js` instead; and give it the required extensions in config. It's because TypeScript or any other similar language is transpiled to pure js **before** it's fed to a loader. Have a look at `pundle-preset-typescript` for an idea.
 
-Below is the simplest example of a loader (`json`)
+Below is an example of a JSON loader
 
 ```js
 const { createLoader, shouldProcess, MessageIssue } = require('pundle-api')
@@ -68,12 +68,11 @@ module.exports = createLoader(function(config, file) {
 
 ### Resolver Components
 
-Resolver components are represented by the type `resolver`. They are responsible for finding files required in modules on the file system. In their main callbacks, these components receive the request string, the file it was required from and whether or not to use cache.
+Resolver components are responsible for finding files required in modules on the file system. The main callback of these components receives the request string, the file it was required from (optional) and whether or not to use cache.
 
-Pundle's official default resolver `pundle-resolver-default` should be suitable for most cases, but you might want to write this type of component if you want to intercept every require request. It's especially useful for packages that want to install non-existent npm packages automatically as they are imported in codebase like in `pundle-plugin-npm-installer`. The return value of the main callback should be a string on success and falsy in case resolver was not able to find the file.
+Pundle's official default resolver `pundle-resolver-default` should be suitable for most cases, but you might want to write this type of component if you want to intercept every require request. It's especially useful for components that want to install non-existent npm packages automatically as they are imported in codebase like in `pundle-plugin-npm-installer`. The return value of the main callback should be a string on success and falsy in case resolver was not able to find the file.
 
-The main callback for resolver components receives an extra `knownExtensions` in it's config object. It's an array of all extensions that any registered component accepts. This gives resolvers the ability to work with any new extension without extra configuration.
-Also make sure not to throw an error in your resolver if the file is not found. Throwing an error will make pundle halt the resolution process instead of moving on to the next available resolver.
+The main callback for resolver components receives an extra `knownExtensions` in it's config object. It's an array of all known extensions known to Pundle through different components. This gives resolvers the ability to work with any new extension without extra configuration. Also make sure not to throw an error in your resolver if the file is not found. Throwing an error will make pundle halt the resolution process instead of moving on to the next available resolver.
 
 Below is an example resolver that will resolve all request in a file-tree manner, for example requiring `foo.js` from `/dir/bar.js` would resolve to `/dir/foo.js` in it.
 
@@ -115,3 +114,36 @@ module.exports = createPlugin(function(config, file) {
   this.report(new MessageIssue(`File '${relativeFilePath}' has ${file.imports.size} imports`, 'info'))
 }, {})
 ```
+
+### Reporter Components
+
+Reporter Components are used to output the reports of Pundle core or other components. It has a main callback that recieves an error or any `Issue` constructed by `pundle-api` package.
+
+Reporter Components are where all of `pundle.compilation.report(...)` results goto. Each report is fed to all of registered reporter components. Each of them can have different means of output. For example, the default reporter writes the errors and other output to CLI, you could write one to output to websockets etc.
+
+Here's an example reporter that writes the errors onto the console
+
+```js
+const { createReporter } = require('pundle-api')
+
+module.exports = createReporter(function(config, issue) {
+  const severity = issue.severity || 'error'
+  console.log(`${severity}: ${issue.message}`)
+}, {})
+```
+
+### Generator Components
+
+Generator Components generate the javascript output for the browser, concatinating all of the individual processed modules into one big module that can be served directly.
+
+Generators receive an array of modules to generate output of as their second parameter, first being the component configuration. They are expected to have a config `wrapper` that supports `normal`, `hmr` and `none` to function properly with Pundle's core. In addition to that, generators are also expected to respect `inline` as `sourceMapPath` option when specified.
+
+Generators are components too complex to write a functional example of in this doc. Please have a look at [`pundle-generator-default`](../../packages/generator-default)'s source code for more information.
+
+## Transformer Components
+
+Transformers Components are Pundle's source-to-source converters. They are useful for compiling languages like CoffeeScript or TypeScript to pure Javascript. They are also used to transpile ESNext into ESCurrent using Babel or other transpilers.
+
+You should note that if you want to add support of a language that is transformed into javascript, you should also addd `pundle-loader-js` with the extensions configured (unless it's `js`). If you are compiling from less to css for example, in addition to the less transformer you should also be adding a css loader to your configuration.
+
+[`pundle-transformer-typescript`](../../packages/transformer-typescript) and [`pundle-transformer-babel`](../../packages/transformer-babel) are examples of Transformer components.
