@@ -94,13 +94,17 @@ export default class Compilation {
     }
 
     // Loader
+    let loaderResult
     for (const entry of Helpers.filterComponents(this.components, 'loader')) {
-      const loaderResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
+      loaderResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
         file.imports = new Set(Array.from(file.imports).concat(Array.from(loaderResult.imports)))
         break
       }
+    }
+    if (!loaderResult) {
+      throw new Error(`No loader accepted '${resolved}'`)
     }
 
     // Plugin

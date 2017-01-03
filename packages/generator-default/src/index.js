@@ -32,7 +32,7 @@ export default createGenerator(async function(config: Object, files: Array<File>
     skipValidation: true,
   })
   const filePaths = []
-  // NOTE: I don't know why we need a +1, but adding it works
+  // NOTE: I don't know why we need a +1, but adding it makes things work
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
   for (let i = 0, length = files.length; i < length; i++) {
