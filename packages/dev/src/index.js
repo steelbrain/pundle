@@ -3,8 +3,9 @@
 import send from 'send'
 import debug from 'debug'
 import express from 'express'
+import unique from 'lodash.uniq'
 import arrayDiff from 'lodash.difference'
-import { Server } from 'ws'
+import { Server } from 'uws'
 import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { createWatcher, MessageIssue } from 'pundle-api'
@@ -110,7 +111,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
           if (connections.size) {
             pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
             writeToConnections({ type: 'report-clear' })
-            const changedFilePaths = Array.from(filesChanged)
+            const changedFilePaths = unique(Array.from(filesChanged))
             const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
               entry: [],
               wrapper: 'none',
