@@ -10,7 +10,7 @@ Components are resolved from the root directory of your Pundle project or the ro
 
 Each component has a default configuration, which is then merged with the Preset configuration for that component and finally with the user configuration in order. Most of the components use the three options `include`, `exclude` and `extensions` to determine if the specific file should be processed (if relevant). Respecting these rules is entirely upto the component; you should consult the component docs if you are in doubt.
 
-Components are specified as an array with the `components` in the configuration, for example
+Components are specified as an array with the `components` key in the configuration, for example
 
 ```js
 components: [

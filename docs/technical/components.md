@@ -13,7 +13,7 @@ It is important to note that all callback methods of the component are invoked w
 
 Another important thing to note is that all callback methods receive the user-config merged with default config as their first parameter. The given config object is cloned for every invocation so you cannot use it to store state of your component.
 
-All components regardless of their types have atleast two lifecycle methods, `activate()` and `dispose()`. They are invoked when a component is added to Pundle and when Pundle is disposed or the component is removed respectively.
+All components regardless of their types have at least two lifecycle methods, `activate()` and `dispose()`. They are invoked when a component is added to Pundle and when Pundle is disposed or the component is removed respectively.
 
 The return value of `create*` methods has these properties in addition to the given lifecycle methods.
 
@@ -119,7 +119,7 @@ module.exports = createPlugin(function(config, file) {
 
 Reporter Components are used to output the reports of Pundle and it's components. It has a main callback that recieves an error or any `Issue` constructed by `pundle-api` package.
 
-Reporter Components are where all of `pundle.compilation.report(...)` input goes to. Each report is fed to all of registered reporter components. They can have different means of output. For example, the default reporter writes the errors and other output to CLI, you could write one to output to websockets etc.
+Reporter Components are where all of `pundle.compilation.report(...)` input goes. Each report is fed to all of registered reporter components. They can have different means of output. For example, the default reporter writes the errors and other output to CLI, you could write one to output to websockets etc.
 
 Here's an example reporter that writes the errors onto the console
 
@@ -174,7 +174,7 @@ module.exports = createPostTransformer(function(config, contents) {
 
 ## Watcher Components
 
-Watcher Components are Pundle components that have more than one main callback. They are used when Pundle is running in watcher or dev server mode. Watcher Components have `tick`, `ready` and `compile` callbacks, all of which are optional; though you must at least specify one of them.
+Watcher Components are Pundle components that have more than one main callback. They are used when Pundle is running in watcher or dev server mode. Watcher Components have `tick`, `ready` and `compile` callbacks, all of which are optional (though you must at least specify one of them).
 
 These components are useful for usecases like ESLint and TypeScript checker. They provide real time reports in browser (if configured) as well as the CLI.
 
@@ -210,3 +210,4 @@ module.exports = createWatcher({
 
 - All of the life cycle callbacks can return Promises
 - Callbacks that have to process a file and return a sourceMap and new contents don't have to go through the trouble of merging the sourceMap with the old one. They can just return the new sourceMap, it's merged with the old one to create a multi-step-sourceMap automatically.
+- To better understand some of the parameters in components in examples above, have a look at `pundle-api/types.js`.

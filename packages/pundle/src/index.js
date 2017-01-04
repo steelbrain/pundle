@@ -54,6 +54,7 @@ class Pundle {
       throw new Error('Parameter 2 to loadPreset() must be an Object')
     }
 
+    // TODO: Resolve components relative of their preset path
     const loadables = preset.map(entry => {
       if (presetConfig[entry.name] === false) {
         // $FlowIgnore: We are filtering it later, dumb flow
