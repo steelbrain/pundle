@@ -207,10 +207,17 @@ const __sbPundle = {
   hmrApply: function(givenFiles: Array<string>, newFiles: Array<string>) {
     const files = givenFiles.filter(file => !~newFiles.indexOf(file))
     const updateOrder = this.hmrGetOrder(files)
+    const hmrDebugging = __sbPundle.debugHMR
+    if (hmrDebugging) {
+      console.log('[HMR] Update order is', updateOrder)
+    }
     for (let i = 0, length = updateOrder.length; i < length; i++) {
       const file = updateOrder[i]
       const oldModule = this.cache[file]
       const newModule = this.getModule(oldModule.id, oldModule.callback)
+      if (hmrDebugging) {
+        console.log('[HMR] Updating', file)
+      }
       oldModule.hot.callbacks_dispose.forEach(function(callback) {
         callback(newModule.hot.data)
       })
@@ -231,6 +238,16 @@ const __sbPundle = {
       newModule.hot.callbacks_accept.forEach(function(callback) {
         callback()
       })
+    }
+  },
+  get debugHMR() {
+    return !!localStorage.getItem('__sbPundleDebugHMR')
+  },
+  set debugHMR(value) {
+    if (value) {
+      localStorage.setItem('__sbPundleDebugHMR', 'true')
+    } else {
+      localStorage.removeItem('__sbPundleDebugHMR')
     }
   },
 }
