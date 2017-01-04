@@ -93,7 +93,13 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   }
 
   const compilation = {}
-  compilation.debug = !!(a.debug || b.debug)
+  if (typeof a.debug !== 'undefined') {
+    compilation.debug = !!a.debug
+  } else if (typeof b.debug !== 'undefined') {
+    compilation.debug = !!b.debug
+  } else {
+    compilation.debug = !process.env.NODE_ENV !== 'production'
+  }
   compilation.entry = []
   if (!a.entry && !b.entry) {
     throw new Error('config.entry should be an Array or string')

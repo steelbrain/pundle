@@ -1,9 +1,10 @@
 const path = require('path')
 
 module.exports = {
-  debug: true,
+  // debug: true,
   // ^ Setting this to true replaces "process.env.NODE_ENV" in bundle to
   // "development", it's set to "production" otherwise
+  // By default, it's true for dev mode and false for anything else
   entry: ['./index.js'],
   output: {
     bundlePath: 'bundle.js',

@@ -4,7 +4,6 @@
 import FS from 'fs'
 import Path from 'path'
 import chalk from 'chalk'
-import Pundle from 'pundle'
 import command from 'sb-command'
 import fileSize from 'filesize'
 import { createServer } from 'pundle-dev'
@@ -41,12 +40,14 @@ command
       console.error('Cannot find Pundle configuration file')
       process.exit(1)
     }
+    process.env.NODE_ENV = options.dev ? 'development' : 'production'
+    // eslint-disable-next-line global-require
+    const Pundle = require('pundle')
 
     Pundle.create({
       rootDirectory: options.rootDirectory,
       configFileName: options.configFileName,
     }).then(function(pundle) {
-      process.env.NODE_ENV = options.dev ? 'development' : 'production'
       let promise
       const config = Helpers.fillCLIConfig(pundle.config)
 
