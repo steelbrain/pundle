@@ -1,8 +1,8 @@
 /* @flow */
 
 import Path from 'path'
-import debounce from 'sb-debounce'
 import chokidar from 'chokidar'
+import debounce from 'sb-debounce'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
@@ -164,7 +164,9 @@ export default class Compilation {
     })
     const processFile = (filePath, force = true, from = null) =>
       Helpers.processWatcherFileTree(this, config, watcher, files, filePath, force, from)
-    const triggerCompile = async () => {
+
+    const triggerDebouncedCompile = debounce(async () => {
+      await queue
       for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
         try {
           await Helpers.invokeComponent(this, entry, 'compile', [], Array.from(files.values()))
@@ -172,10 +174,9 @@ export default class Compilation {
           this.report(error)
         }
       }
-    }
-    const triggerDebouncedCompile = debounce(triggerCompile, 20)
-    // The 20ms latency is for batch change operations to be compiled at once
-    // For example, git checkout another-branch changes a lot of files at once
+    }, 10)
+    // The 10ms latency is for batch change operations to be compiled at once
+    // For example, git checkout another-branch changes a lot of files at once`
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
@@ -188,13 +189,12 @@ export default class Compilation {
       }
     }
     if (successful) {
-      await triggerCompile()
+      await triggerDebouncedCompile()
     }
 
     watcher.on('change', (filePath) => {
-      queue = queue.then(function() {
-        return processFile(filePath)
-      }).then((status) => status && triggerDebouncedCompile())
+      queue = queue.then(() => processFile(filePath))
+      triggerDebouncedCompile()
     })
     watcher.on('unlink', (filePath) => {
       queue = queue.then(() => files.delete(filePath))
