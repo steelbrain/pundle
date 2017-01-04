@@ -5,7 +5,6 @@ import debug from 'debug'
 import express from 'express'
 import unique from 'lodash.uniq'
 import arrayDiff from 'lodash.difference'
-import { Server } from 'uws'
 import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { createWatcher, MessageIssue } from 'pundle-api'
@@ -13,6 +12,14 @@ import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 const debugTick = debug('PUNDLE:DEV:TICK')
+let Server
+try {
+  // eslint-disable-next-line global-require
+  Server = require('uws').Server
+} catch (_) {
+  // eslint-disable-next-line global-require
+  Server = require('ws').Server
+}
 
 const browserFile = require.resolve('./browser')
 // NOTE: HMR server will not be created unless server is provided
