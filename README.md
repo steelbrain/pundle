@@ -1,4 +1,4 @@
-![Pundle](https://raw.githubusercontent.com/motion/motion/master/pundle.png)
+![Pundle](https://raw.githubusercontent.com/motion/pundle/tree/steelbrain/docs/pundle.png)
 
 <p align="center">
   A bundler without compromise.
