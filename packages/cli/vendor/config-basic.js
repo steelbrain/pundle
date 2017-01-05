@@ -17,6 +17,7 @@ module.exports = {
     // hmrHost: 'https://google.com',
     // ^ Only specify if different from the host bundle is served on
     hmrPath: '/__sb_pundle_hmr',
+    // ^ Set the hmrPath to null to disable HMR entirely
     // hmrReports: false,
     // ^ Defaults to true, shows cli reports in browser if enabled
     bundlePath: '/bundle.js',

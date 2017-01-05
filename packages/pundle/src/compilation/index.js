@@ -24,8 +24,13 @@ export default class Compilation {
     this.subscriptions = new CompositeDisposable()
   }
   async report(report: Object): Promise<void> {
+    let tried = false
     for (const entry of Helpers.filterComponents(this.components, 'reporter')) {
       await Helpers.invokeComponent(this, entry, 'callback', [], report)
+      tried = true
+    }
+    if (!tried) {
+      console.log(report)
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
