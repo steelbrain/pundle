@@ -30,7 +30,11 @@ export default class Compilation {
       tried = true
     }
     if (!tried) {
-      console.log(report)
+      if (report && (report.constructor.name === 'MessageIssue' || report.constructor.name === 'FileIssue')) {
+        console.log(`${report.severity}: ${report.message}`)
+      } else {
+        console.log(report)
+      }
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
