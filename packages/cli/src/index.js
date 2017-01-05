@@ -36,7 +36,7 @@ command
       const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
       const configTarget = Path.resolve(options.rootDirectory, options.configFileName)
       if (!await FS.exists(configTarget)) {
-        successful.add(configSource)
+        successful.add(Path.join(vendorDirectory, options.configFileName))
         await FS.writeFile(configTarget, await FS.readFile(configSource))
       }
 
@@ -118,8 +118,9 @@ command
           sourceMap: config.output.sourceMap,
           sourceMapPath: config.output.sourceMapPath,
         }).then(async function(generated) {
-          const outputFilePath = Path.resolve(pundle.config.compilation.rootDirectory, config.output.bundlePath)
-          const outputSourceMapPath = Path.resolve(pundle.config.compilation.rootDirectory, config.output.sourceMapPath)
+          const outputDirectory = Path.resolve(pundle.config.compilation.rootDirectory, config.output.rootDirectory)
+          const outputFilePath = Path.resolve(outputDirectory, config.output.bundlePath)
+          const outputSourceMapPath = Path.resolve(outputDirectory, config.output.sourceMapPath)
           FS.writeFileSync(outputFilePath, generated.contents)
           console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
           if (config.output.sourceMap && config.output.sourceMapPath !== 'inline') {

@@ -21,6 +21,10 @@ export function fillCLIConfig(config: Object): CLIConfig {
     invariant(typeof output.sourceMapPath === 'string', 'config.output.sourceMapPath must be a string')
     toReturn.output.sourceMapPath = output.sourceMapPath
   } else toReturn.output.sourceMapPath = `${toReturn.output.bundlePath}.map`
+  if (output.rootDirectory) {
+    invariant(typeof output.rootDirectory === 'string', 'output.rootDirectory must be a string')
+    toReturn.output.rootDirectory = output.rootDirectory
+  } else toReturn.output.rootDirectory = '.'
 
   if (server.port) {
     invariant(typeof server.port === 'number' && Number.isFinite(server.port), 'config.server.port must be a valid number')

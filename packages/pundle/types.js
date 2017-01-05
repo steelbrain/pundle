@@ -39,6 +39,7 @@ export type PublicPundleConfig = CompilationConfig & {
     bundlePath?: string,
     sourceMap?: boolean,
     sourceMapPath?: string,
+    rootDirectory?: string,
   },
   server: {
     port?: number,

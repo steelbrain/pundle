@@ -25,6 +25,7 @@ module.exports = {
     bundlePath: 'bundle.js',
     sourceMap: true,
     sourceMapPath: 'bundle.js.map',
+    rootDirectory: path.join(__dirname, 'static'),
   },
   server: {
     port: 8090,
