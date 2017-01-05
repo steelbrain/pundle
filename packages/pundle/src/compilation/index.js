@@ -34,12 +34,17 @@ export default class Compilation {
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
+    let tried = false
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
     for (const entry of Helpers.filterComponents(this.components, 'resolver')) {
       const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
       if (result) {
         return result
       }
+      tried = true
+    }
+    if (!tried) {
+      throw new MessageIssue('No module resolver configured in Pundle. Try adding pundle-resolver-default to your configuration', 'error')
     }
 
     const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
@@ -55,7 +60,7 @@ export default class Compilation {
       }
     }
     if (!result) {
-      throw new MessageIssue('No matching generator found', 'error')
+      throw new MessageIssue('No generator returned generated contents. Try adding pundle-generator-default to your configuration', 'error')
     }
     // Post-Transformer
     for (const entry of Helpers.filterComponents(this.components, 'post-transformer')) {
