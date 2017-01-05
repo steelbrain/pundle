@@ -5,7 +5,7 @@ import Path from 'path'
 import invariant from 'assert'
 import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
-import { getRelativeFilePath } from 'pundle-api'
+import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { PundleConfig, Loadable, Loaded } from '../types'
 
 const resolveModule = promisify(require('resolve'))
@@ -27,7 +27,7 @@ export async function resolve<T>(request: string, rootDirectory: string): Promis
   if (typeof mainModule === 'object' && mainModule) {
     return mainModule
   }
-  throw new Error(`Module '${request}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
+  throw new MessageIssue(`Module '${request}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
 }
 
 // NOTE:
@@ -54,7 +54,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
       b = configModule
     }
     if (!b) {
-      throw new Error(`Invalid export value of config file in '${rootDirectory}'`)
+      throw new MessageIssue(`Invalid export value of config file in '${rootDirectory}'`)
     }
   }
 
@@ -102,7 +102,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   }
   compilation.entry = []
   if (!a.entry && !b.entry) {
-    throw new Error('config.entry should be an Array or string')
+    throw new MessageIssue('config.entry should be an Array or string')
   }
   if (a.entry) {
     invariant(typeof a.entry === 'string' || Array.isArray(a.entry), 'config.entry must be an Array or string')
@@ -122,7 +122,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
     Object.assign(compilation.fileSystem, a.fileSystem)
   }
   if (!a.rootDirectory && !b.rootDirectory) {
-    throw new Error('config.rootDirectory must be a string')
+    throw new MessageIssue('config.rootDirectory must be a string')
   }
   if (a.rootDirectory) {
     invariant(a.rootDirectory, 'config.rootDirectory must be a string')
@@ -162,7 +162,7 @@ export async function getLoadables<T>(loadables: Array<Loadable<T>>, rootDirecto
     }
     const resolved = typeof component === 'string' ? await resolve(component, rootDirectory) : component
     if (!resolved || typeof resolved.$type !== 'string') {
-      throw new Error('Unable to load invalid component')
+      throw new MessageIssue('Unable to load invalid component')
     }
     toReturn.push([resolved, config])
   }
