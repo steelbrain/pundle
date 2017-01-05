@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /* @flow */
 
-import FS from 'fs'
+import FS from 'sb-fs'
 import Path from 'path'
+import copy from 'sb-copy'
 import chalk from 'chalk'
 import command from 'sb-command'
 import fileSize from 'filesize'
+import difference from 'lodash.difference'
 import { createServer } from 'pundle-dev'
 
 import manifestPundle from 'pundle/package.json'
@@ -22,12 +24,57 @@ command
   .option('-d, --dev', 'Enable dev http server', false)
   .option('-p, --port <port>', 'Port for dev server to listen on')
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
-  .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', function(options, givenType) {
+  .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', async function(options, givenType) {
     const configType = givenType === 'full' ? 'full' : 'basic'
-    console.log(`Initializing with ${configType} configuration`)
-    Helpers.copyFiles(Path.normalize(Path.join(__dirname, '..', 'vendor')), options.rootDirectory, [
-      [`config-${configType}.js`, options.configFileName],
-    ])
+    console.log(`Using configuration type '${configType}'`)
+
+    const vendorDirectory = Path.normalize(Path.join(__dirname, '..', 'vendor'))
+    const successful = new Set()
+    const everything = new Set()
+
+    try {
+      const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
+      const configTarget = Path.resolve(options.rootDirectory, options.configFileName)
+      if (!await FS.exists(configTarget)) {
+        successful.add(configSource)
+        await FS.writeFile(configTarget, await FS.readFile(configSource))
+      }
+
+      await copy(vendorDirectory, options.rootDirectory, {
+        dotFiles: false,
+        overwrite: false,
+        failIfExists: false,
+        filter(source) {
+          const basename = Path.basename(source)
+          if (basename === 'config-basic.js' || basename === 'config-full.js') {
+            return false
+          }
+          if (FS.statSync(source).isFile()) {
+            everything.add(source)
+          }
+          return true
+        },
+        tickCallback(source) {
+          if (FS.statSync(source).isFile()) {
+            successful.add(source)
+          }
+        },
+      })
+    } catch (error) {
+      console.log(error)
+      process.exitCode = 1
+    } finally {
+      if (successful.size) {
+        console.log('These files were successfully copied into the project')
+        console.log(Array.from(successful).map(e => `- ${Path.relative(vendorDirectory, e)}`).join('\n'))
+      }
+
+      const skippedFiles = difference(Array.from(everything), Array.from(successful))
+      if (skippedFiles.length) {
+        console.log('These files were skipped')
+        console.log(skippedFiles.map(e => `- ${Path.relative(vendorDirectory, e)}`).join('\n'))
+      }
+    }
   })
   .default(function(options, ...commands) {
     if (commands.length !== 0) {
