@@ -1,5 +1,16 @@
-Pundle
-======
+![Pundle](https://raw.githubusercontent.com/motion/motion/master/pundle.png)
+
+<p align="center">
+  A bundler without compromise.
+</p>
+
+<p align="center">
+  <a href="http://badge.fury.io/js/pundle"><img alt="npm version" src="https://badge.fury.io/js/pundle.svg"></a>
+  <a href="https://npmjs.org/package/pundle"><img alt="Downloads" src="http://img.shields.io/npm/dm/pundle.svg"></a>
+  <a href="https://circleci.com/gh/motion/pundle/tree/master">
+    <img src="https://img.shields.io/circleci/project/motion/pundle/master.svg" alt="CircleCI Build Status">
+  </a>
+</p>
 
 Pundle is a next generation module bundler. It's written with extensibility and performance in mind and out performs any other bundler out there.
 
