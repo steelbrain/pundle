@@ -118,7 +118,7 @@ export default class Compilation {
       }
     }
     if (!loaderResult) {
-      throw new Error(`No loader accepted '${resolved}'`)
+      throw new MessageIssue(`No loader configured in Pundle for '${resolved}'. Try adding pundle-loader-js (or another depending on filetype) with appropriate settings to your configuration`, 'error')
     }
 
     // Plugin

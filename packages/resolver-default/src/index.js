@@ -8,7 +8,7 @@ import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly, p
 // Spec:
 // Browser field first
 // Config aliases later
-function resolveAlias(request: string, alias: Object, manifest: Object, packageMains: Array<string>): string {
+function resolveInManifestAndAlias(request: string, alias: Object, manifest: Object, packageMains: Array<string>): string {
   let chunks
   const isDirectory = request.slice(-1) === '/'
 
@@ -19,6 +19,7 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
   }
   let moduleName = chunks[0]
 
+  // Process the object fields first { browser: { './index.js': './something.js' } }
   for (const packageMain of packageMains) {
     const value = typeof manifest[packageMain] === 'object' ? manifest[packageMain][moduleName] : undefined
     if (typeof value === 'boolean' && value === false) {
@@ -30,14 +31,6 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
     } else if (typeof value === 'string') {
       moduleName = value
       break
-    }
-    const manifestInfo = manifest[packageMain]
-    // Ignore string type packageMains because this is outgoing resolution
-    if (manifestInfo && typeof manifestInfo === 'object') {
-      if (manifestInfo[moduleName]) {
-        moduleName = manifestInfo[moduleName]
-        break
-      }
     }
   }
 
@@ -84,7 +77,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   }
 
   if (isModuleRequested(request)) {
-    request = resolveAlias(request, config.alias, manifest, config.packageMains)
+    request = resolveInManifestAndAlias(request, config.alias, manifest, config.packageMains)
   }
 
   // NOTE: Empty is our special property in pundle-browser
@@ -132,7 +125,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   const manifestToUse = isModuleRequested(request) ? targetManifest : manifest
   const relative = Path.relative(manifestToUse.rootDirectory, resolved)
   if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
-    resolved = resolveAlias(`./${relative}`, {}, manifestToUse, config.packageMains)
+    resolved = resolveInManifestAndAlias(`./${relative}`, {}, manifestToUse, config.packageMains)
     resolved = Path.resolve(manifestToUse.rootDirectory, resolved)
   }
 
