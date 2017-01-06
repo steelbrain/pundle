@@ -1,12 +1,12 @@
 /* @flow */
 
 import Path from 'path'
-import chokidar from 'chokidar'
 import debounce from 'sb-debounce'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
 
+import Watcher from './watcher'
 import * as Helpers from './helpers'
 import type { ComponentEntry } from './types'
 import type { CompilationConfig } from '../../types'
@@ -173,9 +173,10 @@ export default class Compilation {
     const config = Helpers.fillWatcherConfig(givenConfig)
     const resolvedEntries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
 
-    const watcher = chokidar.watch(resolvedEntries, {
+    const watcher = new Watcher(resolvedEntries, {
       usePolling: config.usePolling,
     })
+
     const processFile = (filePath, force = true, from = null) =>
       Helpers.processWatcherFileTree(this, config, watcher, files, filePath, force, from)
 
@@ -216,7 +217,7 @@ export default class Compilation {
 
     const disposable = new Disposable(() => {
       this.subscriptions.delete(disposable)
-      watcher.close()
+      watcher.dispose()
     })
     disposable.queue = queue
     this.subscriptions.add(disposable)

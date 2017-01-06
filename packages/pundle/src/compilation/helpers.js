@@ -5,6 +5,7 @@ import invariant from 'assert'
 import sourceMap from 'source-map'
 import difference from 'lodash.difference'
 import type { File } from 'pundle-api/types'
+import type Watcher from './watcher'
 import type Compilation from './'
 import type { ComponentEntry } from './types'
 import type { WatcherConfig } from '../../types'
@@ -141,7 +142,7 @@ export async function processFileTree(compilation: Compilation, files: Map<strin
 export async function processWatcherFileTree(
   compilation: Compilation,
   config: WatcherConfig,
-  watcher: Object,
+  watcher: Watcher,
   files: Map<string, File>,
   filePath: string,
   force: boolean,
@@ -188,7 +189,7 @@ export async function processWatcherFileTree(
   const addedImports = difference(newImports, oldImports)
   const removedImports = difference(oldImports, newImports)
   addedImports.forEach(function(entry) {
-    watcher.add(entry)
+    watcher.watch(entry)
   })
   removedImports.forEach(function(entry) {
     watcher.unwatch(entry)
