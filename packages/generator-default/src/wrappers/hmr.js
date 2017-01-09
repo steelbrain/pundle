@@ -132,7 +132,6 @@ const __sbPundle = {
     const input: Array<[string, string]> = []
     const added: Set<string> = new Set()
     const failed: Array<string> = []
-    const duplicates: Array<[string, string]> = []
     const directUpdates: Array<string> = []
 
     const iterate = (from: string, parents: Array<string>) => {
@@ -152,10 +151,6 @@ const __sbPundle = {
         }
 
         const parentModule = this.cache[parent]
-        if (added.has(`${from}-${parent}`) || added.has(`${parent}-${from}`)) {
-          duplicates.push([from, parent])
-          continue
-        }
         added.add(`${from}-${parent}`)
         input.push([parent, from])
         if (accepted === 'parent' && parentModule.parents.length) {
@@ -180,12 +175,6 @@ const __sbPundle = {
       } else if (accepted === 'parent' && updatedModule.parents.length) {
         iterate(file, updatedModule.parents)
       }
-    }
-    if (duplicates.length) {
-      console.log('[HMR] Error: Update could not be applied because these modules require each other:\n' + duplicates.map(item => `  • ${item[0]} <--> ${item[0]}`).join('\n'))
-      const error: Object = new Error('Unable to apply HMR because some modules require their parents')
-      error.code = 'HMR_REBOOT_REQUIRED'
-      throw error
     }
     if (failed.length) {
       console.log('[HMR] Error: Update could not be applied because these modules did not accept:\n' + failed.map(item => `  • ${item}`).join('\n'))
