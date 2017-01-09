@@ -7,9 +7,9 @@ const GLOBAL = global
 const root = global
 
 const __sbPundle = {
-  defaultExport: {},
   cache: {},
   extensions: [],
+  defaultExport: {},
   resolutionMap: {},
   resolve: function(path) {
     return path

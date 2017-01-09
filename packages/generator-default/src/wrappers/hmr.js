@@ -61,9 +61,9 @@ class __sbPundle_HMR {
 }
 
 const __sbPundle = {
-  defaultExport: {},
   cache: {},
   extensions: [],
+  defaultExport: {},
   resolutionMap: {},
   resolve: function(path) {
     return path
