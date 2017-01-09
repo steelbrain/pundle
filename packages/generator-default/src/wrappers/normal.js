@@ -9,7 +9,6 @@ const root = global
 const __sbPundle = {
   cache: {},
   extensions: [],
-  defaultExport: {},
   resolutionMap: {},
   resolve: function(path) {
     return path
@@ -17,8 +16,8 @@ const __sbPundle = {
   getModule: function(moduleId, callback) {
     return {
       id: moduleId,
+      invoked: false,
       callback: callback,
-      exports: this.defaultExport,
       parents: [],
     }
   },
@@ -45,8 +44,8 @@ const __sbPundle = {
     if (module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
       module.parents.push(fromModule)
     }
-    if (module.exports === this.defaultExport) {
-      module.exports = {}
+    if (!module.invoked) {
+      module.invoked = true
       module.callback.call(module.exports, module.id, '/', this.generateRequire(module.id), module, module.exports)
     }
     return module.exports

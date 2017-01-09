@@ -11,6 +11,8 @@ export type Config = {
 }
 
 export type ModuleNormal = {
+  id: string,
+  invoked: boolean,
   filePath: string,
   callback(__filename: string, __dirname: string, require: Function, module: Object, exports: Object): void,
   exports: Object,

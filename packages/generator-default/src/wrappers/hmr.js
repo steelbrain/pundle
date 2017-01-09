@@ -63,7 +63,6 @@ class __sbPundle_HMR {
 const __sbPundle = {
   cache: {},
   extensions: [],
-  defaultExport: {},
   resolutionMap: {},
   resolve: function(path) {
     return path
@@ -73,7 +72,8 @@ const __sbPundle = {
       id: moduleId,
       hot: new __sbPundle_HMR(),
       callback: callback,
-      exports: this.defaultExport,
+      invoked: false,
+      exports: {},
       parents: [],
     }
   },
@@ -100,8 +100,8 @@ const __sbPundle = {
     if (fromModule && module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
       module.parents.push(fromModule)
     }
-    if (module.exports === this.defaultExport) {
-      module.exports = {}
+    if (!module.invoked) {
+      module.invoked = true
       module.callback.call(module.exports, module.id, '/', this.generateRequire(module.id), module, module.exports)
     }
     return module.exports
@@ -224,6 +224,7 @@ const __sbPundle = {
       this.cache[file] = newModule
       newModule.parents = oldModule.parents
       try {
+        newModule.invoked = true
         newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(null), newModule, newModule.exports)
       } catch (error) {
         // NOTE: In case of error, copy last HMR info
