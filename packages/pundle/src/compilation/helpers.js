@@ -208,11 +208,13 @@ export async function processWatcherFileTree(
 
 export function getAllKnownExtensions(components: Set<ComponentEntry>): Array<string> {
   let toReturn = ['']
-  for (const entry of filterComponents(components, 'loader')) {
-    if (Array.isArray(entry.config.extensions)) {
-      toReturn = toReturn.concat(entry.config.extensions)
-    } else if (Array.isArray(entry.component.defaultConfig.extensions)) {
-      toReturn = toReturn.concat(entry.component.defaultConfig.extensions)
+  for (const entry of components) {
+    if (entry.component.$type === 'loader' || entry.component.$type === 'transformer') {
+      if (Array.isArray(entry.config.extensions)) {
+        toReturn = toReturn.concat(entry.config.extensions)
+      } else if (Array.isArray(entry.component.defaultConfig.extensions)) {
+        toReturn = toReturn.concat(entry.component.defaultConfig.extensions)
+      }
     }
   }
   return unique(toReturn)
