@@ -86,7 +86,6 @@ const __sbPundle = {
   },
   registerModule: function(moduleId, callback) {
     if (this.cache[moduleId]) {
-      this.cache[moduleId].invoked = false
       this.cache[moduleId].callback = callback
     } else {
       this.cache[moduleId] = this.getModule(moduleId, callback)
