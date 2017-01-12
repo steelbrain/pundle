@@ -37,6 +37,8 @@ export default createReporter(async function(config: Object, error: Error | File
       linesAbove: 4,
       linesBelow: 3,
     })
+  } else if (process.env.PUNDLE_DEBUG_REPORTS) {
+    stack = error.stack
   }
 
   let generatedText = `${generatedType} ${errorMessage}${stack ? `\n${stack}` : ''}`
