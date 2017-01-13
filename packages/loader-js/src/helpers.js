@@ -1,7 +1,6 @@
 /* @flow */
 
 import * as t from 'babel-types'
-import { VISITOR_KEYS } from 'babel-types'
 
 export function getName(obj: Object): string {
   if (typeof obj.name === 'string') {
