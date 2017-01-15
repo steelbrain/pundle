@@ -17,7 +17,9 @@ export default class Watcher extends EventEmitter {
     this.config = config
     this.chokidar = chokidar.watch([], {
       usePolling: config.usePolling,
+      ignoreInitial: true,
     })
+    this.chokidar.on('add', filePath => this.emit('change', filePath))
     this.chokidar.on('unlink', filePath => this.emit('unlink', filePath))
     this.chokidar.on('change', filePath => this.emit('change', filePath))
 
