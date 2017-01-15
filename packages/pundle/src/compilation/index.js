@@ -73,8 +73,34 @@ export default class Compilation {
     }
     return result
   }
-  async processTree(request: string, from: ?string, cached: boolean = true, files: Map<string, File>): Promise<Map<string, File>> {
-    await Helpers.processFileTree(this, files, request, from, cached)
+  // Notes:
+  // Lock as early as resolved to avoid duplicates
+  // Make sure to clear the null lock in case of any error
+  // Recurse asyncly until all resolves are taken care of
+  // Set resolved paths on all file#imports
+  async processTree(request: string, from: ?string = null, cached: boolean = true, files: Map<string, File>): Promise<Map<string, File>> {
+    const processFileTree = async (entry: Import) => {
+      const resolved = await this.resolve(entry.request, entry.from, cached)
+      if (files.has(resolved)) {
+        entry.resolved = resolved
+        return
+      }
+      let file
+      // $FlowIgnore: Temp
+      files.set(resolved, null)
+      try {
+        file = await this.processFile(resolved)
+      } catch (error) {
+        files.delete(resolved)
+        throw error
+      }
+      files.set(resolved, file)
+      await Promise.all(Array.from(file.imports).map(item =>
+        processFileTree(item, resolved)
+      ))
+      entry.resolved = resolved
+    }
+    await processFileTree({ id: 0, request, resolved: null, from })
     return files
   }
   // Order of execution:
@@ -86,17 +112,16 @@ export default class Compilation {
   // - We are executing Transformers before Loaders because imagine ES6 modules
   //   being transpiled with babel BEFORE giving to loader-js. If they are not
   //   transpiled before hand, they'll give a syntax error in loader
-  async processFile(request: string, from: ?string, cached: boolean = true): Promise<File> {
-    let resolved = request
-    if (!Path.isAbsolute(resolved)) {
-      resolved = await this.resolve(request, from, cached)
+  async processFile(filePath: string): Promise<File> {
+    if (!Path.isAbsolute(filePath)) {
+      throw new Error('compilation.processFile() expects path to be an absolute path')
     }
 
-    const source = await this.config.fileSystem.readFile(resolved)
+    const source = await this.config.fileSystem.readFile(filePath)
     const file = {
       source,
       imports: new Set(),
-      filePath: resolved,
+      filePath,
       contents: source,
       sourceMap: null,
     }
@@ -118,7 +143,7 @@ export default class Compilation {
       }
     }
     if (!loaderResult) {
-      throw new MessageIssue(`No loader configured in Pundle for '${resolved}'. Try adding pundle-loader-js (or another depending on filetype) with appropriate settings to your configuration`, 'error')
+      throw new MessageIssue(`No loader configured in Pundle for '${filePath}'. Try adding pundle-loader-js (or another depending on filetype) with appropriate settings to your configuration`, 'error')
     }
 
     // Plugin
@@ -167,6 +192,7 @@ export default class Compilation {
   // - Return a disposable, that's also attached to this Compilation instance
   //   and closes the file watcher
   // NOTE: Return value of this function has a special "queue" property
+  // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
   async watch(givenConfig: Object = {}): Promise<Disposable> {
     let queue = Promise.resolve()
     const files: Map<string, File> = new Map()
@@ -190,8 +216,6 @@ export default class Compilation {
         }
       }
     }, 10)
-    // The 10ms latency is for batch change operations to be compiled at once
-    // For example, git checkout another-branch changes a lot of files at once`
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)

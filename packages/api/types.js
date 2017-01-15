@@ -29,7 +29,7 @@ export type CallbackOrConfig<T> = T | {
 
 export type Import = {
   id: number,
-  from: string,
+  from: ?string,
   request: string,
   resolved: ?string,
 }

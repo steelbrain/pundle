@@ -102,27 +102,6 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
   return toReturn
 }
 
-// Notes:
-// Lock as early as resolved to avoid duplicates
-// Recurse asyncly until all resolves are taken care of
-// Set resolved paths on all file#imports
-export async function processFileTree(compilation: Compilation, files: Map<string, File>, path: string, from: ?string = null, cached: boolean = true): Promise<string> {
-  const resolved = await compilation.resolve(path, from, cached)
-  if (files.has(resolved)) {
-    return resolved
-  }
-  // $FlowIgnore: We are using an invalid-ish flow type on purpose, 'cause flow is dumb and doesn't understand that we *fix* these nulls two lines below
-  files.set(resolved, null)
-  const file = await compilation.processFile(resolved, from, cached)
-  files.set(resolved, file)
-  await Promise.all(Array.from(file.imports).map(entry =>
-    processFileTree(compilation, files, entry.request, resolved, cached).then(function(resolvedImport) {
-      entry.resolved = resolvedImport
-    })
-  ))
-  return resolved
-}
-
 // Spec:
 // - Exit with success if file already exists and force is not set
 // - If oldValue is null, then it means it's already being processed
@@ -145,8 +124,7 @@ export async function processWatcherFileTree(
   watcher: Watcher,
   files: Map<string, File>,
   filePath: string,
-  force: boolean,
-  from: ?string
+  force: boolean
 ): Promise<boolean> {
   if (files.has(filePath) && !force) {
     return true
@@ -163,7 +141,7 @@ export async function processWatcherFileTree(
   try {
     // $FlowIgnore: Allow null
     files.set(filePath, null)
-    file = await compilation.processFile(filePath, from)
+    file = await compilation.processFile(filePath)
     files.set(filePath, file)
     await Promise.all(Array.from(file.imports).map(entry => compilation.resolve(entry.request, filePath).then(resolved => {
       entry.resolved = resolved
