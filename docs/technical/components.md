@@ -49,7 +49,7 @@ module.exports = createLoader(function(config, file) {
   }
 
   return {
-    imports: new Set(),
+    imports: [],
     contents: `module.exports = ${JSON.stringify(parsed)}`,
     sourceMap: null,
     // Or:
@@ -111,7 +111,7 @@ const { getRelativeFilePath, createPlugin, MessageIssue } = require('pundle-api'
 
 module.exports = createPlugin(function(config, file) {
   const relativeFilePath = getRelativeFilePath(file.filePath, this.config.rootDirectory)
-  this.report(new MessageIssue(`File '${relativeFilePath}' has ${file.imports.size} imports`, 'info'))
+  this.report(new MessageIssue(`File '${relativeFilePath}' has ${file.imports.length} imports`, 'info'))
 }, {})
 ```
 
@@ -188,7 +188,7 @@ module.exports = createWatcher({
     if (error) {
       console.log('Error processing', filePath)
     } else {
-      console.log(`${filePath} has ${file.imports.size} imports`)
+      console.log(`${filePath} has ${file.imports.length} imports`)
     }
   },
   async ready(initialCompileStatus, files) {

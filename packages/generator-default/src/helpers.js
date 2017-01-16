@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import slash from 'slash'
 import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
 import type { File, Import } from 'pundle-api/types'
@@ -23,7 +24,7 @@ export function getFilePath(compilation: Object, config: Object, filePath: strin
       numericPaths.set(filePath, toReturn = `m-${nextNumericPath}`)
     }
   }
-  return toReturn
+  return slash(toReturn)
 }
 
 export async function normalizeEntry(compilation: Object, config: Object): Promise<Array<string>> {
