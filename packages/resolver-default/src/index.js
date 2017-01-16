@@ -135,6 +135,6 @@ export default createResolver(async function(config: Object, givenRequest: strin
   extensions: null,
   // ^ Set to any Array (even empty) to override use of all known extensions
   // NOTE: Extensions should not have a leading dot
-  packageMains: ['browser', 'browserify', 'webpack', 'main'],
+  packageMains: ['browser', 'browserify', 'webpack', 'module', 'main'],
   modulesDirectories: ['node_modules'],
 })
