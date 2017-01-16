@@ -1,6 +1,5 @@
 /* @flow */
 
-import FS from 'sb-fs'
 import Path from 'path'
 import debounce from 'sb-debounce'
 import difference from 'lodash.difference'
@@ -279,7 +278,13 @@ export default class Compilation {
       for (const file of files.values()) {
         for (let i = 0, length = file.imports.length; i < length; i++) {
           importEntry = file.imports[i]
-          if (!await FS.exists(importEntry.resolved)) {
+          let exists = false
+          try {
+            // $FlowIgnore: Imports at this point are always resolved
+            await this.config.fileSystem.stat(importEntry.resolved)
+            exists = true
+          } catch (_) { /* No Op */ }
+          if (exists) {
             queue = queue.then(() => processFile(file.filePath))
             // NOTE: if processFile() returns false, stop
             if (!await queue) {
