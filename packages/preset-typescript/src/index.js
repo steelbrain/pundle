@@ -19,7 +19,7 @@ export default [
     name: 'resolver',
     config: {
       extensions: ['ts', 'tsx'],
-      packageMains: ['browser', 'browserify', 'webpack', 'typescript:main', 'module', 'main'],
+      packageMains: ['browser', 'browserify', 'webpack', 'typescript:main', 'main'],
     },
     component: require.resolve('pundle-resolver-default'),
   },
