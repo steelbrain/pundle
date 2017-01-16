@@ -70,7 +70,7 @@ export function getImportResolutions(compilation: Object, config: Object, files:
 
   function mergeResolutions(entry: Import) {
     if (!entry.resolved) {
-      throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from}`, 'error')
+      throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from || 'Source root'}`, 'error')
     }
     const filePath = getFilePath(compilation, config, entry.resolved)
     if (resolutionMap[filePath]) {

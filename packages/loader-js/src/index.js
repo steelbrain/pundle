@@ -23,7 +23,7 @@ export default createLoader(function(config: Object, file: File) {
   if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
     return null
   }
-  const imports = new Set()
+  const imports: Array<string> = []
 
   let ast
   try {
@@ -57,7 +57,7 @@ export default createLoader(function(config: Object, file: File) {
     if (typeof node.value === 'string') {
       // StringLiteral
       const request = this.getImportRequest(node.value, file.filePath)
-      imports.add(request)
+      imports.push(request)
       // NOTE: Casting it to string is VERY important and required
       node.value = request.id.toString()
     }

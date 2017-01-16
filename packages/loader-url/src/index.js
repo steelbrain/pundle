@@ -11,7 +11,7 @@ export default createLoader(async function(config: Object, file: File) {
   const contents = await FS.readFile(file.filePath)
 
   return {
-    imports: new Set(),
+    imports: [],
     sourceMap: {
       version: 3,
       sources: [file.filePath],

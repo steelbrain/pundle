@@ -36,7 +36,7 @@ export type Import = {
 
 export type File = {
   source: string,
-  imports: Set<Import>,
+  imports: Array<Import>,
   filePath: string,
   // ^ The absolute path on file system
   contents: string,

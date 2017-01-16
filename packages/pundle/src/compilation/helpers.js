@@ -3,10 +3,7 @@
 import unique from 'lodash.uniq'
 import invariant from 'assert'
 import sourceMap from 'source-map'
-import difference from 'lodash.difference'
 import type { File } from 'pundle-api/types'
-import type Watcher from './watcher'
-import type Compilation from './'
 import type { ComponentEntry } from './types'
 import type { WatcherConfig } from '../../types'
 
@@ -100,88 +97,6 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
     : !! config.usePolling
 
   return toReturn
-}
-
-// Spec:
-// - Exit with success if file already exists and force is not set
-// - If oldValue is null, then it means it's already being processed
-//   Exit with success
-// - Try to:
-//   - Process the file
-//   - Resolve all imports and set their resolved values on the Set
-// - Exit with failure in case of error, while still triggering config.tick()
-//   with the error object, also revert the file state to last
-// - Trigger config.tick() without the error object in case of success
-// - Diff the new and old imports
-// - Watch new imports and unwatch old imports
-// - Try to:
-//   - Resolve all imports recursively
-//   - Return a array.every result of all the return values
-// - Exit with failure in case of error
-export async function processWatcherFileTree(
-  compilation: Compilation,
-  config: WatcherConfig,
-  watcher: Watcher,
-  files: Map<string, File>,
-  filePath: string,
-  force: boolean
-): Promise<boolean> {
-  if (files.has(filePath) && !force) {
-    return true
-  }
-  const oldValue = files.get(filePath)
-  if (oldValue === null) {
-    // We are returning even when forced in case of null value, 'cause it
-    // means it is already in progress
-    return true
-  }
-  // Reset contents on both being unable to resolve and error in processing
-  let file = null
-  let processError = null
-  try {
-    // $FlowIgnore: Allow null
-    files.set(filePath, null)
-    file = await compilation.processFile(filePath)
-    files.set(filePath, file)
-    await Promise.all(Array.from(file.imports).map(entry => compilation.resolve(entry.request, filePath).then(resolved => {
-      entry.resolved = resolved
-    })))
-  } catch (error) {
-    // $FlowIgnore: Allow null
-    files.set(filePath, oldValue)
-    processError = error
-    compilation.report(error)
-    return false
-  } finally {
-    for (const entry of filterComponents(compilation.components, 'watcher')) {
-      try {
-        await invokeComponent(this, entry, 'tick', [], filePath, processError, file)
-      } catch (error) {
-        compilation.report(error)
-      }
-    }
-  }
-
-  const oldImports = oldValue ? Array.from(oldValue.imports).map(e => e.resolved || '') : []
-  const newImports = Array.from(file.imports).map(e => e.resolved || '')
-  const addedImports = difference(newImports, oldImports)
-  const removedImports = difference(oldImports, newImports)
-  addedImports.forEach(function(entry) {
-    watcher.watch(entry)
-  })
-  removedImports.forEach(function(entry) {
-    watcher.unwatch(entry)
-  })
-
-  try {
-    const promises = await Promise.all(Array.from(file.imports).map((entry: Object) =>
-      processWatcherFileTree(compilation, config, watcher, files, entry.resolved, false, filePath)
-    ))
-    return promises.every(i => i)
-  } catch (compilationError) {
-    compilation.report(compilationError)
-    return false
-  }
 }
 
 // NOTE: The reason we only count in loaders and not transformers even though they could be useful

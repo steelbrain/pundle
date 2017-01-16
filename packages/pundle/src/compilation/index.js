@@ -1,7 +1,9 @@
 /* @flow */
 
+import FS from 'sb-fs'
 import Path from 'path'
 import debounce from 'sb-debounce'
+import difference from 'lodash.difference'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
@@ -95,9 +97,7 @@ export default class Compilation {
         throw error
       }
       files.set(resolved, file)
-      await Promise.all(Array.from(file.imports).map(item =>
-        processFileTree(item, resolved)
-      ))
+      await Promise.all(file.imports.map(item => processFileTree(item, resolved)))
       entry.resolved = resolved
     }
     await processFileTree({ id: 0, request, resolved: null, from })
@@ -120,7 +120,7 @@ export default class Compilation {
     const source = await this.config.fileSystem.readFile(filePath)
     const file = {
       source,
-      imports: new Set(),
+      imports: [],
       filePath,
       contents: source,
       sourceMap: null,
@@ -138,7 +138,7 @@ export default class Compilation {
       loaderResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
-        file.imports = new Set(Array.from(file.imports).concat(Array.from(loaderResult.imports)))
+        file.imports = file.imports.concat(loaderResult.imports)
         break
       }
     }
@@ -203,10 +203,67 @@ export default class Compilation {
       usePolling: config.usePolling,
     })
 
-    const processFile = (filePath, force = true, from = null) =>
-      Helpers.processWatcherFileTree(this, config, watcher, files, filePath, force, from)
+    const processFile = async (filePath, overwrite = true) => {
+      if (files.has(filePath) && !overwrite) {
+        return true
+      }
+      const oldValue = files.get(filePath)
+      if (oldValue === null) {
+        // We are returning even when forced in case of null value, 'cause it
+        // means it is already in progress
+        return true
+      }
+      // Reset contents on both being unable to resolve and error in processing
+      let file = null
+      let processError = null
+      try {
+        // $FlowIgnore: Temporarily allow null
+        files.set(filePath, null)
+        file = await this.processFile(filePath)
+        files.set(filePath, file)
+        await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
+          entry.resolved = resolved
+        })))
+      } catch (error) {
+        if (oldValue) {
+          files.set(filePath, oldValue)
+        } else {
+          files.delete(filePath)
+        }
+        processError = error
+        this.report(error)
+        return false
+      } finally {
+        for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+          try {
+            await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
+          } catch (error) {
+            this.report(error)
+          }
+        }
+      }
 
-    const triggerDebouncedCompile = debounce(async () => {
+      const oldImports = oldValue ? oldValue.imports : []
+      const newImports = file.imports
+      const addedImports = difference(newImports, oldImports)
+      const removedImports = difference(oldImports, newImports)
+      addedImports.forEach(function(entry) {
+        watcher.watch(entry.resolved)
+      })
+      removedImports.forEach(function(entry) {
+        watcher.unwatch(entry.resolved)
+      })
+
+      try {
+        const promises = await Promise.all(file.imports.map((entry: Object) => processFile(entry.resolved, false)))
+        return promises.every(i => i)
+      } catch (compilationError) {
+        this.report(compilationError)
+        return false
+      }
+    }
+
+    const triggerCompile = async () => {
       await queue
       for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
         try {
@@ -215,6 +272,23 @@ export default class Compilation {
           this.report(error)
         }
       }
+    }
+    const triggerDebouncedImportsCheck = debounce(async () => {
+      await queue
+      let importEntry
+      for (const file of files.values()) {
+        for (let i = 0, length = file.imports.length; i < length; i++) {
+          importEntry = file.imports[i]
+          if (!await FS.exists(importEntry.resolved)) {
+            queue = queue.then(() => processFile(file.filePath))
+            // NOTE: if processFile() returns false, stop
+            if (!await queue) {
+              break
+            }
+          }
+        }
+      }
+      await triggerCompile()
     }, 10)
 
     const promises = resolvedEntries.map(entry => processFile(entry))
@@ -228,15 +302,17 @@ export default class Compilation {
       }
     }
     if (successful) {
-      await triggerDebouncedCompile()
+      await triggerCompile()
     }
 
     watcher.on('change', (filePath) => {
-      queue = queue.then(() => processFile(filePath))
-      triggerDebouncedCompile()
+      // NOTE: Only trigger imports check if processFile() succeeds
+      queue = queue.then(() => processFile(filePath).then((status) => status && triggerDebouncedImportsCheck()))
     })
     watcher.on('unlink', (filePath) => {
       queue = queue.then(() => files.delete(filePath))
+      watcher.unwatch(filePath)
+      triggerDebouncedImportsCheck()
     })
 
     const disposable = new Disposable(() => {

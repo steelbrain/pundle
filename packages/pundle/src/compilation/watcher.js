@@ -1,5 +1,6 @@
 /* @flow */
 
+import invariant from 'assert'
 import chokidar from 'chokidar'
 import { EventEmitter } from 'events'
 import type { WatcherConfig } from '../../types'
@@ -28,6 +29,7 @@ export default class Watcher extends EventEmitter {
     })
   }
   watch(filePath: string): void {
+    invariant(typeof filePath === 'string', 'filePath must be string')
     const count = this.paths.get(filePath) || 0
     const newCount = count + 1
     this.paths.set(filePath, newCount)
@@ -37,6 +39,7 @@ export default class Watcher extends EventEmitter {
     }
   }
   unwatch(filePath: string): void {
+    invariant(typeof filePath === 'string', 'filePath must be string')
     const count = this.paths.get(filePath) || 0
     const newCount = count - 1
     if (newCount < 1) {

@@ -16,7 +16,7 @@ export default createLoader(function(config: Object, file: File) {
   }
 
   return {
-    imports: new Set(),
+    imports: [],
     sourceMap: {
       version: 3,
       sources: [file.filePath],
