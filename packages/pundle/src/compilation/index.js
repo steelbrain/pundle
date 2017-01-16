@@ -301,7 +301,7 @@ export default class Compilation {
 
     for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
       try {
-        await Helpers.invokeComponent(this, entry, 'ready', [], Array.from(files.values()))
+        await Helpers.invokeComponent(this, entry, 'ready', [], successful, Array.from(files.values()))
       } catch (error) {
         this.report(error)
       }
