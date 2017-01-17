@@ -2,7 +2,7 @@
 
 Pundle is the next generation Javascript module bundler. Pundle allows you to bundle your Javascript project for usage in web browsers, allowing you to use hundreds of thousands of npm packages directly in your project. Every part of Pundle is a configurable Component so you can swap them in and out as you like.
 
-Pundle has very predictable configurations, every configuration is isolated and enabling one option does not require setting another as well.
+Pundle has very predictable configurations, every configuration is isolated and enabling one option does not require setting another as well (You're welcome Webpack users).
 
 ## Setting it up
 

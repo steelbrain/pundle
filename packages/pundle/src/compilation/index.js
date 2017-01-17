@@ -249,6 +249,9 @@ export default class Compilation {
       removedImports.forEach(function(entry) {
         watcher.unwatch(entry.resolved)
       })
+      for (let i = 0, length = newImports.length; i < length; i++) {
+        watcher.enable(newImports[i].resolved || '')
+      }
 
       try {
         const promises = await Promise.all(file.imports.map((entry: Object) => processFile(entry.resolved, false)))
@@ -272,27 +275,39 @@ export default class Compilation {
     const triggerDebouncedCompile = debounce(triggerCompile, 10)
     const triggerDebouncedImportsCheck = debounce(async () => {
       await queue
-      let importEntry
+      let changed = false
       for (const file of files.values()) {
         for (let i = 0, length = file.imports.length; i < length; i++) {
-          importEntry = file.imports[i]
-          let exists = false
+          const entry = file.imports[i]
+          const oldResolved = entry.resolved
           try {
             // $FlowIgnore: Imports at this point are always resolved
-            await this.config.fileSystem.stat(importEntry.resolved)
-            exists = true
+            await this.config.fileSystem.stat(oldResolved)
+            continue
           } catch (_) { /* No Op */ }
-          if (!exists) {
-            queue = queue.then(() => processFile(file.filePath, true))
-            // NOTE: if processFile() returns false, stop
-            if (!await queue) {
-              break
-            }
+          watcher.unwatch(oldResolved)
+          try {
+            const resolved = await this.resolve(entry.request, file.filePath)
+            entry.resolved = resolved
+            watcher.enable(resolved)
+            watcher.watch(resolved)
+            queue = queue.then(() => processFile(resolved, false))
+          } catch (_) {
+            watcher.watch(oldResolved)
+            this.report(_)
+            break
           }
+          // If processing file failed
+          if (!await queue) {
+            break
+          }
+          changed = true
         }
       }
-      await triggerCompile()
-    }, 1000)
+      if (changed) {
+        await triggerCompile()
+      }
+    }, 10)
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
@@ -310,11 +325,13 @@ export default class Compilation {
 
     watcher.on('change', (filePath) => {
       // NOTE: Only trigger imports check if processFile() succeeds
-      queue = queue.then(() => processFile(filePath, true).then((status) => status && triggerDebouncedCompile()))
+      queue = queue
+        .then(() => processFile(filePath, true)
+        .then((status) => status && triggerDebouncedCompile()))
     })
     watcher.on('unlink', (filePath) => {
-      queue = queue.then(() => files.delete(filePath))
-      watcher.unwatch(filePath)
+      files.delete(filePath)
+      watcher.disable(filePath)
       triggerDebouncedImportsCheck()
     })
 
