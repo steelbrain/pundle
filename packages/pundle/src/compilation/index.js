@@ -272,6 +272,7 @@ export default class Compilation {
         }
       }
     }
+    const triggerDebouncedCompile = debounce(triggerCompile, 10)
     const triggerDebouncedImportsCheck = debounce(async () => {
       await queue
       let importEntry
@@ -284,8 +285,8 @@ export default class Compilation {
             await this.config.fileSystem.stat(importEntry.resolved)
             exists = true
           } catch (_) { /* No Op */ }
-          if (exists) {
-            queue = queue.then(() => processFile(file.filePath))
+          if (!exists) {
+            queue = queue.then(() => processFile(file.filePath, true))
             // NOTE: if processFile() returns false, stop
             if (!await queue) {
               break
@@ -294,7 +295,7 @@ export default class Compilation {
         }
       }
       await triggerCompile()
-    }, 10)
+    }, 1000)
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
@@ -312,7 +313,7 @@ export default class Compilation {
 
     watcher.on('change', (filePath) => {
       // NOTE: Only trigger imports check if processFile() succeeds
-      queue = queue.then(() => processFile(filePath).then((status) => status && triggerDebouncedImportsCheck()))
+      queue = queue.then(() => processFile(filePath, true).then((status) => status && triggerDebouncedCompile()))
     })
     watcher.on('unlink', (filePath) => {
       queue = queue.then(() => files.delete(filePath))
