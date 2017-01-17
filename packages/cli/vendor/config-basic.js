@@ -39,5 +39,7 @@ module.exports = {
   components: [
     // require.resolve('pundle-transformer-babel'),
     // ^ Uncomment to enable babel compilation of all js files (except node_modules)
+    // require.resolve('pundle-plugin-dedupe'),
+    // ^ Uncomment to reduce output sizes and speed up bundle
   ],
 }

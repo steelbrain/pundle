@@ -56,6 +56,7 @@ module.exports = {
     }],
   ],
   components: [
+    require.resolve('pundle-plugin-dedupe'),
     require.resolve('pundle-plugin-npm-installer'),
     [require.resolve('pundle-transformer-babel'), {
       extensions: ['jsx'],
