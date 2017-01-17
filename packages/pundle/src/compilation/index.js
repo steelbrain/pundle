@@ -3,6 +3,7 @@
 import Path from 'path'
 import debounce from 'sb-debounce'
 import difference from 'lodash.difference'
+import reporterCLI from 'pundle-reporter-cli'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, ComponentAny, Import } from 'pundle-api/types'
@@ -31,11 +32,7 @@ export default class Compilation {
       tried = true
     }
     if (!tried) {
-      if (report && (report.constructor.name === 'MessageIssue' || report.constructor.name === 'FileIssue')) {
-        console.log(`${report.severity}: ${report.message}`)
-      } else {
-        console.log(report)
-      }
+      await Helpers.invokeComponent(this, { component: reporterCLI, config: {} }, 'callback', [], report)
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {

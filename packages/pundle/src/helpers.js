@@ -5,10 +5,12 @@ import Path from 'path'
 import invariant from 'assert'
 import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
+import { fromStack as callsiteFromStack } from 'sb-callsite'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { PundleConfig, Loadable, Loaded } from '../types'
 
 const resolveModule = promisify(require('resolve'))
+const MODULE_NAME_REGEXP = /Cannot find module '(.*?)'/
 
 export async function resolve<T>(request: string, rootDirectory: string): Promise<T> {
   let resolved
@@ -21,8 +23,32 @@ export async function resolve<T>(request: string, rootDirectory: string): Promis
     error.duringResolution = true
     throw error
   }
-  // $FlowIgnore: This is how it works, loadables are dynamic requires
-  let mainModule = require(resolved)
+  let mainModule
+  try {
+    // $FlowIgnore: This is how it works, loadables are dynamic requires
+    mainModule = require(resolved)
+  } catch (error) {
+    // Show a fancy MessageIssue if it's the file we required or the file it requires
+    // Otherwise show a raw error message
+    if (error.code === 'MODULE_NOT_FOUND') {
+      let showFancyError = false
+      const stack = callsiteFromStack(error.stack)
+      for (let i = 0, length = stack.length; i < length; i++) {
+        const entry = stack[i]
+        if (Path.isAbsolute(entry.file)) {
+          showFancyError = entry.file === resolved || entry.file === __dirname
+          break
+        }
+      }
+      if (showFancyError) {
+        const chunks = MODULE_NAME_REGEXP.exec(error.message)
+        if (chunks && chunks.length) {
+          throw new MessageIssue(`Unable to load '${chunks[1]}' from root directory`)
+        }
+      }
+    }
+    throw error
+  }
   mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
   if (typeof mainModule === 'object' && mainModule) {
     return mainModule
