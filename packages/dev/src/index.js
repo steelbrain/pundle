@@ -7,7 +7,7 @@ import unique from 'lodash.uniq'
 import arrayDiff from 'lodash.difference'
 import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
-import { createWatcher, MessageIssue } from 'pundle-api'
+import { createWatcher, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
@@ -113,12 +113,23 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
           return
         }
       },
+      ready(_, initalStatus) {
+        if (initalStatus) {
+          this.report(new MessageIssue('Server initialized successfully', 'info'))
+        } else {
+          this.report(new MessageIssue('Server initialized with errors', 'info'))
+        }
+      },
       async compile(_: Object, totalFiles: Array<File>) {
         if (hmrEnabled && !firstCompile) {
           if (connections.size) {
-            pundle.compilation.report(new MessageIssue(`Sending HMR to ${connections.size} clients`, 'info'))
-            writeToConnections({ type: 'report-clear' })
             const changedFilePaths = unique(Array.from(filesChanged))
+            const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, this.config.rootDirectory))
+            const infoMessage = `Sending HMR to ${connections.size} clients of [ ${
+              relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
+            } ]`
+            pundle.compilation.report(new MessageIssue(infoMessage, 'info'))
+            writeToConnections({ type: 'report-clear' })
             const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
               entry: [],
               wrapper: 'none',
