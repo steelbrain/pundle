@@ -40,8 +40,8 @@ export default class Compilation {
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
     for (const entry of Helpers.filterComponents(this.components, 'resolver')) {
       const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
-      if (result) {
-        return result
+      if (result && result.resolved) {
+        return result.resolved
       }
       tried = true
     }

@@ -92,7 +92,7 @@ module.exports = createResolver(async function(config, request, from, cached) {
     : Path.dirname(from)
   const resolvedPath = Path.resolve(activeDirectory, request)
   if (await FS.exists(resolvedPath)) {
-    return resolvedPath
+    return { resolved: resolvedPath, sourceManifest: null, targetManifest: null }
   }
   return null
 }, {
