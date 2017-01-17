@@ -297,15 +297,15 @@ export default class Compilation {
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
 
+    if (successful) {
+      await triggerCompile()
+    }
     for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
       try {
         await Helpers.invokeComponent(this, entry, 'ready', [], successful, Array.from(files.values()))
       } catch (error) {
         this.report(error)
       }
-    }
-    if (successful) {
-      await triggerCompile()
     }
 
     watcher.on('change', (filePath) => {

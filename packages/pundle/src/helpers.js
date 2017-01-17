@@ -43,7 +43,7 @@ export async function resolve<T>(request: string, rootDirectory: string): Promis
       if (showFancyError) {
         const chunks = MODULE_NAME_REGEXP.exec(error.message)
         if (chunks && chunks.length) {
-          throw new MessageIssue(`Unable to load '${chunks[1]}' from root directory`)
+          throw new MessageIssue(`Unable to load '${chunks[1]}' from root directory. Make sure it's installed correctly`)
         }
       }
     }
