@@ -19,3 +19,7 @@ The lifecycle of events executed when `pundle.processTree(...)` or `pundle.compi
 The lifecycle of events executed when `pundle.generate(...)` is invoked are illustrated below. `pundle.compilation.generate(...)` has a similar life cycle except that it doesn't `processTree(...)` by itself, it **requires** all files to given to it.
 
 <img src="https://cloud.githubusercontent.com/assets/4278113/21469076/d534c1cc-c9ec-11e6-9714-be5ff2448f22.png" />
+
+---
+
+[Documentation Home](../)

@@ -36,3 +36,8 @@ components: [
 ## Writing Components
 
 Please refer to the [Components](../technical/components.md) Technical documentation for information about authoring components.
+
+
+---
+
+[Documentation Home](../) | [Configuration](configuration.md)

@@ -211,3 +211,7 @@ module.exports = createWatcher({
 - All of the life cycle callbacks can return Promises
 - Callbacks that have to process a file and return a sourceMap and new contents don't have to go through the trouble of merging the sourceMap with the old one. They can just return the new sourceMap, it's merged with the old one to create a multi-step-sourceMap automatically.
 - To better understand some of the parameters in components in examples above, have a look at `pundle-api/types.js`.
+
+---
+
+[Documentation Home](../)

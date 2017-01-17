@@ -37,3 +37,7 @@ The keys for configuration of the components are defined by presets, you should 
 ## Writing Presets
 
 Please refer to the [Presets](../technical/presets.md) Technical documentation for information about authoring presets.
+
+---
+
+[Documentation Home](../) | [Configuration](configuration.md)
