@@ -1,5 +1,6 @@
 /* @flow */
 
+import Path from 'path'
 import { createResolver, shouldProcess, MessageIssue } from 'pundle-api'
 import { getModuleName } from './helpers'
 import Installer from './installer'
@@ -14,7 +15,7 @@ import Installer from './installer'
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
 export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string) {
-  if (givenRequest.slice(0, 1) === '.') {
+  if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
     return null
   }
 

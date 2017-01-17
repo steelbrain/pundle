@@ -35,12 +35,15 @@ export default class Compilation {
       reporterCLI.callback(reporterCLI.defaultConfig, report)
     }
   }
-  async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
+  async resolve(request: string, from: ?string = null, cached: boolean = true, extraInfo: boolean = false): Promise<string> {
     let tried = false
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
     for (const entry of Helpers.filterComponents(this.components, 'resolver')) {
       const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
       if (result && result.resolved) {
+        if (extraInfo) {
+          return result
+        }
         return result.resolved
       }
       tried = true
