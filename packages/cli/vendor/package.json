@@ -1,6 +1,10 @@
 {
   "name": "my-app",
   "dependencies": {
-
+    "pundle-preset-default": "^2.0.0-beta8"
+  },
+  "scripts": {
+    "build": "pundle",
+    "dev": "pundle --dev"
   }
 }

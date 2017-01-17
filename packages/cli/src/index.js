@@ -120,7 +120,7 @@ command
           rootDirectory: options.serverRootDirectory || Path.resolve(options.rootDirectory, config.server.rootDirectory),
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
         }).then(function() {
-          console.log(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
+          Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
         })
       } else {
         promise = pundle.generate(null, {
@@ -131,11 +131,11 @@ command
           const outputFilePath = Path.resolve(outputDirectory, config.output.bundlePath)
           const outputSourceMapPath = Path.resolve(outputDirectory, config.output.sourceMapPath)
           FS.writeFileSync(outputFilePath, generated.contents)
-          console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
+          Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
           if (config.output.sourceMap && config.output.sourceMapPath !== 'inline') {
             const sourceMap = JSON.stringify(generated.sourceMap)
             FS.writeFileSync(outputSourceMapPath, sourceMap)
-            console.log(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
+            Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
           }
         })
       }

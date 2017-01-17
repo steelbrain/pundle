@@ -32,7 +32,7 @@ export default class Compilation {
       tried = true
     }
     if (!tried) {
-      await Helpers.invokeComponent(this, { component: reporterCLI, config: {} }, 'callback', [], report)
+      reporterCLI.callback(reporterCLI.defaultConfig, report)
     }
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
