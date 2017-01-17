@@ -1,8 +1,17 @@
 /* @flow */
 
 import Path from 'path'
+import chalk from 'chalk'
 import invariant from 'assert'
 import type { CLIConfig } from './types'
+
+export function colorsIfAppropriate(content: string): void {
+  if (chalk.supportsColor) {
+    console.log(content)
+  } else {
+    console.log(chalk.stripColor(content))
+  }
+}
 
 export function fillCLIConfig(config: Object): CLIConfig {
   const output = config.output || {}

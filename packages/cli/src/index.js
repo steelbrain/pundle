@@ -30,7 +30,7 @@ command
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
   .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', async function(options, givenType) {
     const configType = givenType === 'full' ? 'full' : 'basic'
-    console.log(`Using configuration type '${configType}'`)
+    Helpers.colorsIfAppropriate(chalk.cyan(`Using configuration type '${configType}'`))
 
     const vendorDirectory = Path.normalize(Path.join(__dirname, '..', 'vendor'))
     const successful = new Set()
@@ -77,6 +77,10 @@ command
       if (skippedFiles.length) {
         console.log('These files were skipped')
         console.log(skippedFiles.map(e => `- ${Path.relative(vendorDirectory, e)}`).join('\n'))
+      }
+
+      if (successful.has(Path.join(vendorDirectory, '.pundle.js'))) {
+        console.log('\nNOTE: Remember to install the presets that you use\nin your configuration file in your project')
       }
     }
   })
