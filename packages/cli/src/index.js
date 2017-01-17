@@ -8,6 +8,7 @@ import chalk from 'chalk'
 import command from 'sb-command'
 import fileSize from 'filesize'
 import difference from 'lodash.difference'
+import reporterCLI from 'pundle-reporter-cli'
 import { createServer } from 'pundle-dev'
 
 import manifestPundle from 'pundle/package.json'
@@ -144,7 +145,7 @@ command
       })
     }).catch(function(error) {
       process.exitCode = 1
-      console.log(error)
+      reporterCLI.callback(reporterCLI.defaultConfig, error)
     })
   })
   .parse(process.argv)

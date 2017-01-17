@@ -25,6 +25,7 @@
     "lodash.difference": "^4.5.0",
     "pundle": "^2.0.0-beta8",
     "pundle-dev": "^2.0.0-beta8",
+    "pundle-reporter-cli": "^2.0.0-beta8",
     "sb-command": "1.0.0",
     "sb-copy": "^1.0.1",
     "sb-fs": "^1.1.1"
