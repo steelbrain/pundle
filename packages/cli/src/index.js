@@ -15,7 +15,11 @@ import manifestPundleDev from 'pundle-dev/package.json'
 import manifestCLI from '../package.json'
 
 import * as Helpers from './helpers'
-require('process-bootstrap')('pundle', 'Pundle')
+
+process.title = 'pundle'
+process.on('uncaughtException', function(error) {
+  console.log(`Uncaught exception: ${error}`)
+})
 
 command
   .version(`Pundle v${manifestPundle.version} (CLI v${manifestCLI.version}) (Dev v${manifestPundleDev.version})`)
