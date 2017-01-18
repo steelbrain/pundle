@@ -324,7 +324,7 @@ export default class Compilation {
       if (changed) {
         triggerDebouncedCompile()
       }
-    }, 10)
+    }, 100)
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)
