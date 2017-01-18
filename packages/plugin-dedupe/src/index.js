@@ -2,7 +2,7 @@
 
 import Path from 'path'
 import semver from 'semver'
-import { createResolver } from 'pundle-api'
+import { createResolver, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import * as Helpers from './helpers'
 
 const memoryCache = new Map()
@@ -30,6 +30,8 @@ export default createResolver(async function(config: Object, givenRequest: strin
       } else if (!matched) {
         matched = entry
       }
+    } else if (process.env.DEBUG_PUNDLE_PLUGIN_DEDUPE) {
+      this.report(new MessageIssue(`${moduleName} v${entry.version} did not match ${cacheVersion} from ${getRelativeFilePath(fromFile, this.config.rootDirectory)}`, 'info'))
     }
     if (!matchedExact && entry.version === result.targetManifest.version) {
       matchedExact = true
