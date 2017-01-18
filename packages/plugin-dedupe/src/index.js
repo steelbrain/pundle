@@ -22,7 +22,6 @@ export default createResolver(async function(config: Object, givenRequest: strin
   // NOTE: if requestedVersion exists, use that, otherwise use targetManifest key to cache and then quit, caching will help for future resolves
   const cacheVersion = requestedVersion || result.targetManifest.version
   let matched = null
-  let matchedExact = false
   for (const entry of versions) {
     if (semver.satisfies(entry.version, cacheVersion)) {
       if (matched && semver.gt(entry.version, matched.version)) {
@@ -33,14 +32,9 @@ export default createResolver(async function(config: Object, givenRequest: strin
     } else if (process.env.DEBUG_PUNDLE_PLUGIN_DEDUPE) {
       this.report(new MessageIssue(`${moduleName} v${entry.version} did not match ${cacheVersion} from ${getRelativeFilePath(fromFile, this.config.rootDirectory)}`, 'info'))
     }
-    if (!matchedExact && entry.version === result.targetManifest.version) {
-      matchedExact = true
-    }
   }
   if (!matched) {
     matched = result.targetManifest
-  }
-  if (!matchedExact) {
     versions.add(matched)
   }
   const newResult = {
