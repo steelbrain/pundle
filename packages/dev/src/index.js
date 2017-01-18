@@ -135,7 +135,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
             sourceMap: config.sourceMap,
             sourceMapPath: 'inline',
             sourceNamespace: 'app',
-            sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
+            sourceMapNamespace: `hmr-${Date.now()}`,
           })
           const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
           writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
