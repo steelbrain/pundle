@@ -12,16 +12,20 @@ import type { PundleConfig, Loadable, Loaded } from '../types'
 const resolveModule = promisify(require('resolve'))
 const MODULE_NAME_REGEXP = /Cannot find module '(.*?)'/
 
+export function getResolveError(moduleName: string): Error {
+  const error = new Error(`Unable to resolve '${moduleName}' from root directory. Make sure it's installed correctly`)
+  error.code = 'MODULE_NOT_FOUND'
+  // $FlowIgnore: Custom property
+  error.duringResolution = true
+  return error
+}
+
 export async function resolve<T>(request: string, rootDirectory: string): Promise<T> {
   let resolved
   try {
     resolved = await resolveModule(request, { basedir: rootDirectory })
   } catch (_) {
-    const error = new Error(`Unable to resolve '${request}' from root directory. Make sure it's installed correctly`)
-    error.code = 'MODULE_NOT_FOUND'
-    // $FlowIgnore: Custom property
-    error.duringResolution = true
-    throw error
+    throw getResolveError(request)
   }
   let mainModule
   try {
@@ -43,7 +47,7 @@ export async function resolve<T>(request: string, rootDirectory: string): Promis
       if (showFancyError) {
         const chunks = MODULE_NAME_REGEXP.exec(error.message)
         if (chunks && chunks.length) {
-          throw new MessageIssue(`Unable to load '${chunks[1]}' from root directory. Make sure it's installed correctly`)
+          throw getResolveError(chunks[1])
         }
       }
     }
