@@ -121,27 +121,25 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
         }
       },
       async compile(_: Object, totalFiles: Array<File>) {
-        if (hmrEnabled && !firstCompile) {
-          if (connections.size) {
-            const changedFilePaths = unique(Array.from(filesChanged))
-            const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, this.config.rootDirectory))
-            const infoMessage = `Sending HMR to ${connections.size} clients of [ ${
-              relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
-            } ]`
-            pundle.compilation.report(new MessageIssue(infoMessage, 'info'))
-            writeToConnections({ type: 'report-clear' })
-            const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
-              entry: [],
-              wrapper: 'none',
-              sourceMap: config.sourceMap,
-              sourceMapPath: 'inline',
-              sourceNamespace: 'app',
-              sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
-            })
-            const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
-            writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
-            filesChanged.clear()
-          }
+        if (hmrEnabled && !firstCompile && connections.size && filesChanged.size) {
+          const changedFilePaths = unique(Array.from(filesChanged))
+          const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, this.config.rootDirectory))
+          const infoMessage = `Sending HMR to ${connections.size} clients of [ ${
+            relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
+          } ]`
+          pundle.compilation.report(new MessageIssue(infoMessage, 'info'))
+          writeToConnections({ type: 'report-clear' })
+          const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
+            entry: [],
+            wrapper: 'none',
+            sourceMap: config.sourceMap,
+            sourceMapPath: 'inline',
+            sourceNamespace: 'app',
+            sourceMapNamespace: `hmr-${Math.random().toString(36).slice(-6)}`,
+          })
+          const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
+          writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
+          filesChanged.clear()
         }
         firstCompile = false
         compiled = await pundle.generate(totalFiles, {
