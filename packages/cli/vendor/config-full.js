@@ -47,7 +47,7 @@ module.exports = {
     // ^ Default value is false, set to true to use polling based FS watching
   },
   presets: [
-    [require.resolve('pundle-preset-default'), {
+    ['pundle-preset-default', {
       generator: {
         // pathType: 'number'
         // ^ Default is "filePath", use number to hide file paths in production builds
@@ -56,9 +56,9 @@ module.exports = {
     }],
   ],
   components: [
-    require.resolve('pundle-plugin-dedupe'),
-    require.resolve('pundle-plugin-npm-installer'),
-    [require.resolve('pundle-transformer-babel'), {
+    'pundle-plugin-dedupe',
+    'pundle-plugin-npm-installer',
+    ['pundle-transformer-babel', {
       extensions: ['jsx'],
     }],
   ],

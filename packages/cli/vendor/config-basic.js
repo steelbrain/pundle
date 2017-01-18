@@ -28,7 +28,7 @@ module.exports = {
     redirectNotFoundToIndex: true,
   },
   presets: [
-    [require.resolve('pundle-preset-default'), {
+    ['pundle-preset-default', {
       generator: {
         // pathType: 'number'
         // ^ Default is "filePath", use number to hide file paths in production builds
@@ -37,9 +37,9 @@ module.exports = {
     }],
   ],
   components: [
-    // require.resolve('pundle-transformer-babel'),
+    // 'pundle-transformer-babel',
     // ^ Uncomment to enable babel compilation of all js files (except node_modules)
-    // require.resolve('pundle-plugin-dedupe'),
+    // 'pundle-plugin-dedupe',
     // ^ Uncomment to reduce output sizes and speed up bundle
   ],
 }

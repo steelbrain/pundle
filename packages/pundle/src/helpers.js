@@ -17,7 +17,7 @@ export async function resolve<T>(request: string, rootDirectory: string): Promis
   try {
     resolved = await resolveModule(request, { basedir: rootDirectory })
   } catch (_) {
-    const error = new Error(`Unable to resolve '${request}' from root directory`)
+    const error = new Error(`Unable to resolve '${request}' from root directory. Make sure it's installed correctly`)
     error.code = 'MODULE_NOT_FOUND'
     // $FlowIgnore: Custom property
     error.duringResolution = true
