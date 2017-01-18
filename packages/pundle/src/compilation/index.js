@@ -265,7 +265,10 @@ export default class Compilation {
       }
     }
 
+    let compiling = false
+    let recompile: boolean = false
     const triggerCompile = async () => {
+      compiling = true
       await queue
       for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
         try {
@@ -274,8 +277,19 @@ export default class Compilation {
           this.report(error)
         }
       }
+      compiling = false
+      if (recompile) {
+        recompile = false
+        triggerCompile()
+      }
     }
-    const triggerDebouncedCompile = debounce(triggerCompile, 10)
+    const triggerDebouncedCompile = debounce(function() {
+      if (compiling) {
+        recompile = true
+      } else {
+        triggerCompile()
+      }
+    }, 10)
     const triggerDebouncedImportsCheck = debounce(async () => {
       await queue
       let changed = false
@@ -308,7 +322,7 @@ export default class Compilation {
         }
       }
       if (changed) {
-        await triggerCompile()
+        triggerDebouncedCompile()
       }
     }, 10)
 
