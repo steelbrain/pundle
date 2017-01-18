@@ -18,6 +18,9 @@ import manifestCLI from '../package.json'
 import * as Helpers from './helpers'
 
 process.title = 'pundle'
+process.on('unhandledRejection', function (reason) {
+  console.log('unhandledRejection', reason)
+})
 process.on('uncaughtException', function(error) {
   console.log(`Uncaught exception: ${error}`)
 })
