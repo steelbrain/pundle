@@ -22,15 +22,24 @@ export default createResolver(async function(config: Object, givenRequest: strin
   // NOTE: if requestedVersion exists, use that, otherwise use targetManifest key to cache and then quit, caching will help for future resolves
   const cacheVersion = requestedVersion || result.targetManifest.version
   let matched = null
+  let matchedExact = false
   for (const entry of versions) {
     if (semver.satisfies(entry.version, cacheVersion)) {
-      matched = entry
-      break
+      if (matched && semver.gt(entry.version, matched.version)) {
+        matched = entry
+      } else if (!matched) {
+        matched = entry
+      }
+    }
+    if (!matchedExact && entry.version === result.targetManifest.version) {
+      matchedExact = true
     }
   }
   if (!matched) {
-    versions.add(result.targetManifest)
     matched = result.targetManifest
+  }
+  if (!matchedExact) {
+    versions.add(matched)
   }
   const newResult = {
     resolved: Path.join(matched.rootDirectory, Path.relative(result.targetManifest.rootDirectory, result.resolved)),
