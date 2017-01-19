@@ -1,6 +1,6 @@
 {
   "name": "pundle-api",
-  "version": "2.0.0-beta10",
+  "version": "2.0.0-beta11",
   "description": "Helpers to write components for Pundle",
   "main": "lib/index.js",
   "scripts": {
