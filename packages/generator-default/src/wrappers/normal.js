@@ -18,6 +18,7 @@ const __sbPundle = {
       id: moduleId,
       invoked: false,
       callback: callback,
+      exports: {},
       parents: [],
     }
   },
