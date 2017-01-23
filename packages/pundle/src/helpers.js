@@ -128,7 +128,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   } else if (typeof b.debug !== 'undefined') {
     compilation.debug = !!b.debug
   } else {
-    compilation.debug = !process.env.NODE_ENV !== 'production'
+    compilation.debug = process.env.NODE_ENV !== 'production'
   }
   compilation.entry = []
   if (!a.entry && !b.entry) {
