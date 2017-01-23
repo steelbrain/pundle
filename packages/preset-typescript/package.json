@@ -18,9 +18,9 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-loader-js": "^2.0.0-beta12",
-    "pundle-transformer-typescript": "^2.0.0-beta12",
-    "pundle-resolver-default": "^2.0.0-beta12"
+    "pundle-loader-js": "2.0.0-beta12",
+    "pundle-transformer-typescript": "2.0.0-beta12",
+    "pundle-resolver-default": "2.0.0-beta12"
   },
   "devDependencies": {}
 }

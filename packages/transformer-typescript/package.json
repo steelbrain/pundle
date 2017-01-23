@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "^2.0.0-beta12"
+    "pundle-api": "2.0.0-beta12"
   }
 }
