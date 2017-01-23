@@ -27,8 +27,8 @@ const SEVERITIES = {
 export default createReporter(async function(config: Object, error: Error | FileIssue | MessageIssue) {
   invariant(typeof error === 'object' && error, 'Error must be an object')
 
+  let errorMessage = error.message
   const severity = SEVERITIES[typeof error.severity === 'string' ? error.severity : 'error']
-  const errorMessage = error.message
   const generatedType = chalk.bold[severity.background][severity.color](severity.title)
   let stack = ''
   if (error.constructor.name === 'FileIssue') {
@@ -37,6 +37,9 @@ export default createReporter(async function(config: Object, error: Error | File
       linesAbove: 4,
       linesBelow: 3,
     })
+  } else if (error.constructor.name === 'SyntaxError') {
+    const lastLine = error.stack.split(/\n/).shift()
+    errorMessage += ` in ${lastLine}`
   } else if (process.env.PUNDLE_DEBUG_REPORTS) {
     stack = error.stack
   }
