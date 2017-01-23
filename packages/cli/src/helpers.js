@@ -51,7 +51,9 @@ export function fillCLIConfig(config: Object): CLIConfig {
     invariant(typeof server.bundlePath === 'string', 'config.server.bundlePath must be a string')
     toReturn.server.bundlePath = server.bundlePath
   } else toReturn.server.bundlePath = '/bundle.js'
-  toReturn.server.sourceMap = !!server.sourceMap
+  if (server.sourceMap) {
+    toReturn.server.sourceMap = !!server.sourceMap
+  } else toReturn.server.sourceMap = true
   if (server.sourceMapPath) {
     invariant(typeof server.sourceMapPath === 'string', 'config.server.sourceMapPath must be a string')
     toReturn.server.sourceMapPath = server.sourceMapPath
