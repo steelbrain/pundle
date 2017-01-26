@@ -28,9 +28,13 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     throw new Error('Cannot create two middlewares on one Pundle instance')
   }
 
-  let active = true
-  let compiled: { contents: string, sourceMap: Object, filePaths: Array<string> } = { contents: '', sourceMap: {}, filePaths: [] }
-  let firstCompile = true
+  const state = {
+    booted: false,
+    active: true,
+    changed: true,
+    compiled: { contents: '', sourceMap: {}, filePaths: [] },
+    compileQueue: Promise.resolve(),
+  }
   const config = Helpers.fillMiddlewareConfig(givenConfig)
   const hmrEnabled = config.hmrPath !== null
   const sourceMapEnabled = config.sourceMap && config.sourceMapPath !== 'none' && config.sourceMapPath !== 'inline'
@@ -39,36 +43,62 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   const oldHMRPath = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
   const oldHMRHost = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
 
-  const writeToConnections = (contents) => {
-    connections.forEach((connection) => connection.send(JSON.stringify(contents)))
-  }
+  let totalFiles
   let watcherSubscription
-  // The watcherInfo implementation below is useful because
-  // the watcher further below takes time to boot up, and we have to start
-  // server instantly. With the help of this, we can immediately start server
-  // while also waiting on the watcher
-  const watcherInfo = {
-    get queue() {
-      if (!watcherSubscription || firstCompile) {
-        return new Promise(function(resolve) {
-          setTimeout(function() {
-            resolve(watcherInfo.queue)
-          }, 100)
-        })
-      }
-      return watcherSubscription.queue
-    },
+  const bootupPromise = Helpers.deferPromise()
+
+  function writeToConnections(contents) {
+    connections.forEach(connection => connection.send(JSON.stringify(contents)))
+  }
+  async function compileContentsHMR() {
+    const changedFilePaths = unique(Array.from(filesChanged))
+    const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, pundle.compilation.config.rootDirectory))
+    const infoMessage = `Sending HMR to ${connections.size} clients of [ ${
+      relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
+    } ]`
+    pundle.compilation.report(new MessageIssue(infoMessage, 'info'))
+    writeToConnections({ type: 'report-clear' })
+    const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
+      entry: [],
+      wrapper: 'none',
+      sourceMap: config.sourceMap,
+      sourceMapPath: 'inline',
+      sourceNamespace: 'app',
+      sourceMapNamespace: `hmr-${Date.now()}`,
+    })
+    const newFiles = arrayDiff(generated.filePaths, state.compiled.filePaths)
+    writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
+    filesChanged.clear()
+  }
+  async function compileContentsAll() {
+    state.compiled = await pundle.generate(totalFiles, {
+      wrapper: 'hmr',
+      sourceMap: config.sourceMap,
+      sourceMapPath: config.sourceMapPath,
+      sourceNamespace: 'app',
+    })
+  }
+  async function compileContentsIfNecessary() {
+    if (state.changed) {
+      state.changed = false
+      state.compileQueue = state.compileQueue.then(() => compileContentsAll())
+    }
+    await state.compileQueue
   }
 
   expressApp.get(config.bundlePath, function(req, res, next) {
-    if (active) {
-      watcherInfo.queue.then(() => res.set('content-type', 'application/javascript').end(compiled.contents))
+    if (state.active) {
+      Promise.all([bootupPromise, watcherSubscription && watcherSubscription.queue])
+        .then(compileContentsIfNecessary)
+        .then(() => res.set('content-type', 'application/javascript').end(state.compiled.contents))
     } else next()
   })
   if (sourceMapEnabled) {
     expressApp.get(config.sourceMapPath, function(req, res, next) {
-      if (active) {
-        watcherInfo.queue.then(() => res.json(compiled.sourceMap))
+      if (state.active) {
+        Promise.all([bootupPromise, watcherSubscription && watcherSubscription.queue])
+          .then(compileContentsIfNecessary)
+          .then(() => res.set('content-type', 'application/json').end(JSON.stringify(state.compiled.sourceMap)))
       } else next()
     })
   }
@@ -77,7 +107,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   if (hmrEnabled) {
     wss = new Server({ server, path: config.hmrPath })
     wss.on('connection', function(connection) {
-      if (active) {
+      if (state.active) {
         connection.on('close', () => connections.delete(connection))
         connections.add(connection)
       }
@@ -88,7 +118,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
   pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
   const configSubscription = new Disposable(function() {
-    active = false
+    state.active = false
     const entryIndex = pundle.compilation.config.entry.indexOf(browserFile)
     if (entryIndex !== -1) {
       pundle.compilation.config.entry.splice(entryIndex, 1)
@@ -108,7 +138,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     createWatcher({
       tick(_: Object, filePath: string, error: ?Error) {
         debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
-        if (!error && filePath !== browserFile && !firstCompile) {
+        if (!error && filePath !== browserFile && state.booted) {
           filesChanged.add(filePath)
           return
         }
@@ -120,34 +150,16 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
           this.report(new MessageIssue('Server initialized with errors', 'info'))
         }
       },
-      async compile(_: Object, totalFiles: Array<File>) {
-        if (hmrEnabled && !firstCompile && connections.size && filesChanged.size) {
-          const changedFilePaths = unique(Array.from(filesChanged))
-          const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, this.config.rootDirectory))
-          const infoMessage = `Sending HMR to ${connections.size} clients of [ ${
-            relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
-          } ]`
-          pundle.compilation.report(new MessageIssue(infoMessage, 'info'))
-          writeToConnections({ type: 'report-clear' })
-          const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
-            entry: [],
-            wrapper: 'none',
-            sourceMap: config.sourceMap,
-            sourceMapPath: 'inline',
-            sourceNamespace: 'app',
-            sourceMapNamespace: `hmr-${Date.now()}`,
-          })
-          const newFiles = arrayDiff(generated.filePaths, compiled.filePaths)
-          writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
-          filesChanged.clear()
+      async compile(_: Object, givenTotalFiles: Array<File>) {
+        const oldBooted = state.booted
+
+        totalFiles = givenTotalFiles
+        state.booted = true
+        state.changed = true
+        bootupPromise.resolve()
+        if (hmrEnabled && oldBooted && connections.size && filesChanged.size) {
+          compileContentsHMR()
         }
-        firstCompile = false
-        compiled = await pundle.generate(totalFiles, {
-          wrapper: 'hmr',
-          sourceMap: config.sourceMap,
-          sourceMapPath: config.sourceMapPath,
-          sourceNamespace: 'app',
-        })
       },
     }),
   ])

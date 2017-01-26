@@ -3,6 +3,16 @@
 import invariant from 'assert'
 import type { MiddlewareConfig, ServerConfig } from '../types'
 
+export function deferPromise(): Object {
+  let reject
+  let resolve
+  const promise = new Promise(function(givenResolve, givenReject) {
+    reject = givenReject
+    resolve = givenResolve
+  })
+  return { reject, resolve, promise }
+}
+
 export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
   const toReturn = {}
 
