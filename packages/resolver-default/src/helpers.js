@@ -3,6 +3,7 @@
 import Path from 'path'
 import resolve from 'resolve'
 import memoize from 'sb-memoize'
+import fileSystem from 'pundle-fs'
 
 export const MODULE_SEPARATOR_REGEX = /\/|\\/
 
@@ -55,7 +56,7 @@ const findManifestCached = memoize(async function (givenFileDirectory: string, c
 
   const manifestPath = Path.join(fileDirectory, 'package.json')
   try {
-    await pundleConfig.fileSystem.stat(manifestPath)
+    await fileSystem.stat(manifestPath)
     return manifestPath
   } catch (_) { /* Ignore if not found */ }
 
@@ -83,7 +84,7 @@ const getManifestCached = memoize(async function(fileDirectory: string, config: 
   let manifest = {}
   const manifestPath = await findManifest(fileDirectory, config, cached, pundleConfig)
   if (manifestPath) {
-    manifest = JSON.parse(await pundleConfig.fileSystem.readFile(manifestPath))
+    manifest = JSON.parse(await fileSystem.readFile(manifestPath))
     manifest.rootDirectory = Path.dirname(manifestPath)
   }
   return manifest

@@ -3,7 +3,6 @@
 
 import Path from 'path'
 import invariant from 'assert'
-import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
 import { fromStack as callsiteFromStack } from 'sb-callsite'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
@@ -141,15 +140,6 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   if (b.entry) {
     invariant(typeof b.entry === 'string' || Array.isArray(b.entry), 'config.entry must be an Array or string')
     compilation.entry = compilation.entry.concat(b.entry)
-  }
-  compilation.fileSystem = Object.assign({}, PundleFS)
-  if (b.fileSystem) {
-    invariant(typeof b.fileSystem === 'object', 'config.fileSystem must be an Object')
-    Object.assign(compilation.fileSystem, b.fileSystem)
-  }
-  if (a.fileSystem) {
-    invariant(typeof a.fileSystem === 'object', 'config.fileSystem must be an Object')
-    Object.assign(compilation.fileSystem, a.fileSystem)
   }
   if (!a.rootDirectory && !b.rootDirectory) {
     throw new MessageIssue('config.rootDirectory must be a string')

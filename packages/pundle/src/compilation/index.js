@@ -2,6 +2,7 @@
 
 import Path from 'path'
 import debounce from 'sb-debounce'
+import fileSystem from 'pundle-fs'
 import difference from 'lodash.difference'
 import reporterCLI from 'pundle-reporter-cli'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
@@ -116,7 +117,7 @@ export default class Compilation {
       throw new Error('compilation.processFile() expects path to be an absolute path')
     }
 
-    const source = await this.config.fileSystem.readFile(filePath)
+    const source = await fileSystem.readFile(filePath)
     const file = {
       source,
       imports: [],
@@ -298,8 +299,7 @@ export default class Compilation {
           const entry = file.imports[i]
           const oldResolved = entry.resolved
           try {
-            // $FlowIgnore: Imports at this point are always resolved
-            await this.config.fileSystem.stat(oldResolved)
+            await fileSystem.stat(oldResolved)
             continue
           } catch (_) { /* No Op */ }
           watcher.unwatch(oldResolved)

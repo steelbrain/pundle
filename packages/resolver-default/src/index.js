@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import fileSystem from 'pundle-fs'
 import pundleBrowser from 'pundle-browser'
 import { createResolver } from 'pundle-api'
 import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly, promisedResolve } from './helpers'
@@ -88,14 +89,14 @@ export default createResolver(async function(config: Object, givenRequest: strin
     basedir: fromDirectory || this.config.rootDirectory,
     extensions: extensions.map(i => `.${i}`),
     readFile: (path, callback) => {
-      this.config.fileSystem.readFile(path).then(function(result) {
+      fileSystem.readFile(path).then(function(result) {
         callback(null, result)
       }, function(error) {
         callback(error, null)
       })
     },
     isFile: (path, callback) => {
-      this.config.fileSystem.stat(path).then(function(stats) {
+      fileSystem.stat(path).then(function(stats) {
         callback(null, stats.isFile())
       }, function() {
         callback(null, false)

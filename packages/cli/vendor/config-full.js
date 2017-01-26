@@ -1,6 +1,4 @@
 const path = require('path')
-const fileSystem = require('pundle-fs')
-// ^ You can replace it with a file-system of your choice
 
 module.exports = {
   // debug: true,
@@ -8,7 +6,6 @@ module.exports = {
   // "development", it's set to "production" otherwise
   // By default, it's true for dev mode and false for anything else
   entry: ['./index.js'],
-  fileSystem,
   rootDirectory: __dirname,
   // ^ The dir that everything including output paths, entries are relative of.
   // Also used by other packages like npm-installer to determine where to install

@@ -1,17 +1,10 @@
 /* @flow */
 
 import type { ComponentAny } from 'pundle-api/types'
-import type { Stats } from 'fs'
-
-export type FileSystem = {
-  stat: ((path: string) => Promise<Stats>),
-  readFile: ((filePath: string) => Promise<string>),
-}
 
 export type CompilationConfig = {
   debug: boolean,
   entry: Array<string>,
-  fileSystem: FileSystem,
   rootDirectory: string,
   replaceVariables: Object, // <string, Object>
 }

@@ -2,6 +2,7 @@
 
 import Path from 'path'
 import slash from 'slash'
+import fileSystem from 'pundle-fs'
 import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
 import type { File, Import } from 'pundle-api/types'
@@ -57,7 +58,7 @@ export async function getWrapperContents(compilation: Object, config: Object): P
   if (!Path.isAbsolute(wrapper)) {
     wrapper = await compilation.resolve(wrapper)
   }
-  const fileContents = await compilation.config.fileSystem.readFile(wrapper)
+  const fileContents = await fileSystem.readFile(wrapper)
   if (fileContents.slice(1, 11) === 'use strict') {
     // Trim off first line in case it starts with use strict, this is to allow
     // unsafe modules to work inside of Pundle
