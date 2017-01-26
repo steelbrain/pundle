@@ -7,9 +7,15 @@ import memoize from 'sb-memoize'
 export const MODULE_SEPARATOR_REGEX = /\/|\\/
 
 export function promisedResolve(request: string, options: Object): Promise<?string> {
-  return new Promise(function(resolvePromise) {
+  return new Promise(function(resolvePromise, rejectPromise) {
     resolve(request, options, function(error, path) {
-      resolvePromise(path || null)
+      if (error && (
+        (error.code && error.code !== 'MODULE_NOT_FOUND') || (error.message && error.message.indexOf('Cannot find module') === -1)
+      )) {
+        rejectPromise(error)
+      } else {
+        resolvePromise(path || null)
+      }
     })
   })
 }
