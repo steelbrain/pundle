@@ -17,5 +17,7 @@
     "url": "https://github.com/motion/pundle/issues"
   },
   "homepage": "https://github.com/motion/pundle#readme",
-  "dependencies": {}
+  "dependencies": {
+    "graceful-fs": "^4.1.11"
+  }
 }

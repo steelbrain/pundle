@@ -104,7 +104,7 @@ export function fillWatcherConfig(config: Object): WatcherConfig {
 // and it includes it's resolver because if the user decides to specify ext for the default preset one
 // it'll break and users won't know why. so it just increases predictability.
 export function getAllKnownExtensions(components: Set<ComponentEntry>): Array<string> {
-  let toReturn = ['']
+  let toReturn = []
   for (const entry of components) {
     if (entry.component.$type === 'loader') {
       if (Array.isArray(entry.config.extensions)) {

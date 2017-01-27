@@ -1,11 +1,11 @@
 /* @flow */
 
-import * as FS from 'fs'
+import { stat, readFile } from 'graceful-fs'
 
 export default {
-  stat(path: string): Promise<FS.Stats> {
+  stat(path: string): Promise<Object> {
     return new Promise(function(resolve, reject) {
-      FS.stat(path, function(error, stats) {
+      stat(path, function(error, stats) {
         if (error) {
           reject(error)
         } else {
@@ -14,9 +14,9 @@ export default {
       })
     })
   },
-  readFile(filePath: string): Promise<string> {
+  readFile(path: string): Promise<string> {
     return new Promise(function(resolve, reject) {
-      FS.readFile(filePath, 'utf8', function(error, contents) {
+      readFile(path, 'utf8', function(error, contents) {
         if (error) {
           reject(error)
         } else {
