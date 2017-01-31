@@ -12,6 +12,7 @@ const overlayStyle = {
   bottom: 0,
   width: '100vw',
   height: '100vh',
+  zIndex: Number.MAX_VALUE,
   backgroundColor: 'black',
   color: '#E8E8E8',
   fontFamily: 'Menlo, Consolas, monospace',
