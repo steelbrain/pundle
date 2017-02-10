@@ -133,7 +133,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   return {
     sourceManifest: manifest,
     targetManifest,
-    resolved,
+    filePath: resolved,
   }
 }, {
   alias: {},

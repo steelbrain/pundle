@@ -11,7 +11,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
     return null
   }
-  const result = await this.resolve(givenRequest, fromFile, cached, true)
+  const result = await this.resolveAdvanced(givenRequest, fromFile, cached)
   if (!result || !result.targetManifest || !result.targetManifest.version) {
     return null
   }
@@ -38,7 +38,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
     versions.add(matched)
   }
   const newResult = {
-    resolved: Path.join(matched.rootDirectory, Path.relative(result.targetManifest.rootDirectory, result.resolved)),
+    resolved: Path.join(matched.rootDirectory, Path.relative(result.targetManifest.rootDirectory, result.filePath)),
     sourceManifest: result.sourceManifest,
     targetManifest: matched,
   }

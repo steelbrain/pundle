@@ -34,6 +34,12 @@ export type Import = {
   resolved: ?string,
 }
 
+export type Resolved = {
+  sourceManifest: Object,
+  targetManifest: Object,
+  filePath: string,
+}
+
 export type File = {
   source: string,
   imports: Array<Import>,
@@ -49,7 +55,7 @@ export type Loader = Component<'loader', LoaderCallback>
 export type PluginCallback = ((config: Object, file: File) => Promise<void>)
 export type Plugin = Component<'plugin', PluginCallback>
 
-export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?string>)
+export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?Resolved>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
 export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<void>)

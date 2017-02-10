@@ -7,7 +7,7 @@ import difference from 'lodash.difference'
 import reporterCLI from 'pundle-reporter-cli'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import type { File, ComponentAny, Import } from 'pundle-api/types'
+import type { File, ComponentAny, Import, Resolved } from 'pundle-api/types'
 
 import Watcher from './watcher'
 import * as Helpers from './helpers'
@@ -36,26 +36,24 @@ export default class Compilation {
       reporterCLI.callback(reporterCLI.defaultConfig, report)
     }
   }
-  async resolve(request: string, from: ?string = null, cached: boolean = true, extraInfo: boolean = false): Promise<string> {
-    let tried = false
+  async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<Resolved> {
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
-    for (const entry of Helpers.filterComponents(this.components, 'resolver')) {
-      const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
-      if (result && result.resolved) {
-        if (extraInfo) {
-          return result
-        }
-        return result.resolved
-      }
-      tried = true
-    }
-    if (!tried) {
+    const filteredComponents = Helpers.filterComponents(this.components, 'resolver')
+    if (!filteredComponents.length) {
       throw new MessageIssue('No module resolver configured in Pundle. Try adding pundle-resolver-default to your configuration', 'error')
     }
-
+    for (const entry of filteredComponents) {
+      const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
+      if (result && result.filePath) {
+        return result
+      }
+    }
     const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
     error.code = 'MODULE_NOT_FOUND'
     throw error
+  }
+  async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
+    return (await this.resolveAdvanced(request, from, cached)).filePath
   }
   async generate(files: Array<File>, generateConfig: Object = {}): Promise<Object> {
     let result

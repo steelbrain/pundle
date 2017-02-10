@@ -7,12 +7,14 @@ import type { File } from 'pundle-api/types'
 import type { ComponentEntry } from './types'
 import type { WatcherConfig } from '../../types'
 
-export function *filterComponents(components: Set<ComponentEntry>, type: string): Generator<ComponentEntry, void, void> {
-  for (const entry of components) {
+export function filterComponents(components: Set<ComponentEntry>, type: string): Array<ComponentEntry> {
+  const filtered = []
+  components.forEach(function(entry) {
     if (entry.component.$type === type) {
-      yield entry
+      filtered.push(entry)
     }
-  }
+  })
+  return filtered
 }
 
 // Spec:
