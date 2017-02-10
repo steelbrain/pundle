@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "babel-code-frame": "^6.16.0",
+    "babel-code-frame": "^6.20.0",
     "pundle-api": "2.0.0-beta12"
   },
   "devDependencies": {}

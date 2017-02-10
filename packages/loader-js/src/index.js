@@ -30,19 +30,7 @@ export default createLoader(function(config: Object, file: File) {
     ast = parse(file.contents, {
       sourceType: 'module',
       sourceFilename: file.filePath,
-      plugins: [
-        'jsx',
-        'flow',
-        'doExpressions',
-        'objectRestSpread',
-        'decorators',
-        'classProperties',
-        'exportExtensions',
-        'asyncGenerators',
-        'functionBind',
-        'functionSent',
-        'dynamicImport',
-      ],
+      plugins: ['*'],
     })
   } catch (error) {
     const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, this.config.rootDirectory)}`
