@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
+    "babel-plugin-inline-import": "^2.0.4",
     "pundle-api": "2.0.0-beta12",
     "pundle-fs": "2.0.0-beta12",
     "slash": "^1.0.0",
