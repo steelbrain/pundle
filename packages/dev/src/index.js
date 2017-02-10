@@ -88,7 +88,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
 
   expressApp.get(config.bundlePath, function(req, res, next) {
     if (state.active) {
-      Promise.all([bootupPromise, watcherSubscription && watcherSubscription.queue])
+      Promise.all([bootupPromise.promise, watcherSubscription && watcherSubscription.queue])
         .then(compileContentsIfNecessary)
         .then(() => res.set('content-type', 'application/javascript').end(state.compiled.contents))
     } else next()
@@ -96,7 +96,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   if (sourceMapEnabled) {
     expressApp.get(config.sourceMapPath, function(req, res, next) {
       if (state.active) {
-        Promise.all([bootupPromise, watcherSubscription && watcherSubscription.queue])
+        Promise.all([bootupPromise.promise, watcherSubscription && watcherSubscription.queue])
           .then(compileContentsIfNecessary)
           .then(() => res.set('content-type', 'application/json').end(JSON.stringify(state.compiled.sourceMap)))
       } else next()
