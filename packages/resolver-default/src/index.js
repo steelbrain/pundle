@@ -83,7 +83,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
 
   // NOTE: Empty is our special property in pundle-browser
   if (isModuleOnly(request) && request !== 'empty' && pundleBrowser[request]) {
-    return { resolved: pundleBrowser[request], sourceManifest: manifest, targetManifest: null }
+    return { filePath: pundleBrowser[request], sourceManifest: manifest, targetManifest: null }
   }
   let resolved = await promisedResolve(request, {
     basedir: fromDirectory || this.config.rootDirectory,

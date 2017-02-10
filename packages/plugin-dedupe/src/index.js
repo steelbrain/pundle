@@ -38,7 +38,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
     versions.add(matched)
   }
   const newResult = {
-    resolved: Path.join(matched.rootDirectory, Path.relative(result.targetManifest.rootDirectory, result.filePath)),
+    filePath: Path.join(matched.rootDirectory, Path.relative(result.targetManifest.rootDirectory, result.filePath)),
     sourceManifest: result.sourceManifest,
     targetManifest: matched,
   }
