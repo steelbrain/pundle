@@ -210,8 +210,11 @@ export default class Compilation {
     })
 
     const processFile = async (filePath, overwrite = true) => {
+      if (files.has(filePath) && !overwrite) {
+        return true
+      }
       const oldValue = files.get(filePath)
-      if (oldValue === null && !overwrite) {
+      if (oldValue === null) {
         // We are returning even when forced in case of null value, 'cause it
         // means it is already in progress
         return true
