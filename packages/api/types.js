@@ -47,6 +47,8 @@ export type File = {
   // ^ The absolute path on file system
   contents: string,
   sourceMap: ?Object,
+  lastModified: number,
+  // ^ in seconds, not ms
 }
 
 export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<Import>, contents: string, sourceMap: ?Object }>)

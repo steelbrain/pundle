@@ -116,12 +116,14 @@ export default class Compilation {
     }
 
     const source = await fileSystem.readFile(filePath)
+    const sourceStat = await fileSystem.stat(filePath)
     const file = {
       source,
       imports: [],
       filePath,
       contents: source,
       sourceMap: null,
+      lastModified: sourceStat.mtime.getTime() / 1000,
     }
 
     // Transformer
