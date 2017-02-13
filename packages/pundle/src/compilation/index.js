@@ -157,6 +157,12 @@ export default class Compilation {
     const id = ++uniqueID
     return { id, request, resolved: null, from }
   }
+  setUniqueID(newUniqueID: number): void {
+    uniqueID = newUniqueID
+  }
+  getUniqueID(): number {
+    return uniqueID
+  }
   addComponent(component: ComponentAny, config: Object): void {
     if (!component || component.$apiVersion !== API_VERSION) {
       throw new Error('API version of component mismatches')
