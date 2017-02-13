@@ -199,14 +199,9 @@ export default class Compilation {
   //   and closes the file watcher
   // NOTE: Return value of this function has a special "queue" property
   // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
-  async watch(givenConfig: Object = {}, givenFiles: ?Map<string, File> = null): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
+  async watch(givenConfig: Object = {}): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
     let queue = Promise.resolve()
-    let files
-    if (givenFiles) {
-      files = givenFiles
-    } else {
-      files = new Map()
-    }
+    const files: Map<string, ?File> = new Map()
     const config = Helpers.fillWatcherConfig(givenConfig)
     const resolvedEntries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
 
@@ -215,11 +210,8 @@ export default class Compilation {
     })
 
     const processFile = async (filePath, overwrite = true) => {
-      if (files.has(filePath) && !overwrite) {
-        return true
-      }
       const oldValue = files.get(filePath)
-      if (oldValue === null) {
+      if (oldValue === null && !overwrite) {
         // We are returning even when forced in case of null value, 'cause it
         // means it is already in progress
         return true
@@ -228,7 +220,6 @@ export default class Compilation {
       let file = null
       let processError = null
       try {
-        // $FlowIgnore: Temporarily allow null
         files.set(filePath, null)
         file = await this.processFile(filePath)
         files.set(filePath, file)
@@ -306,6 +297,7 @@ export default class Compilation {
       await queue
       let changed = false
       for (const file of files.values()) {
+        if (!file) continue
         for (let i = 0, length = file.imports.length; i < length; i++) {
           const entry = file.imports[i]
           const oldResolved = entry.resolved
