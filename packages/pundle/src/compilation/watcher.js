@@ -2,7 +2,7 @@
 
 import invariant from 'assert'
 import chokidar from 'chokidar'
-import { EventEmitter } from 'events'
+import EventEmitter from 'events'
 import type { WatcherConfig } from '../../types'
 
 export default class Watcher extends EventEmitter {
