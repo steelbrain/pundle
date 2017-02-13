@@ -199,9 +199,14 @@ export default class Compilation {
   //   and closes the file watcher
   // NOTE: Return value of this function has a special "queue" property
   // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
-  async watch(givenConfig: Object = {}): Promise<Disposable> {
+  async watch(givenConfig: Object = {}, givenFiles: ?Map<string, File> = null): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
     let queue = Promise.resolve()
-    const files: Map<string, File> = new Map()
+    let files
+    if (givenFiles) {
+      files = givenFiles
+    } else {
+      files = new Map()
+    }
     const config = Helpers.fillWatcherConfig(givenConfig)
     const resolvedEntries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
 
@@ -363,6 +368,7 @@ export default class Compilation {
       watcher.dispose()
     })
     disposable.queue = queue
+    disposable.files = files
     this.subscriptions.add(disposable)
     return disposable
   }
