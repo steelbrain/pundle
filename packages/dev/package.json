@@ -25,6 +25,7 @@
     "pundle": "2.0.0-beta13",
     "pundle-api": "2.0.0-beta13",
     "pundle-reporter-cli": "2.0.0-beta13",
+    "sb-config-file": "^1.2.1",
     "sb-event-kit": "^3.0.0",
     "send": "^0.14.1",
     "ws": "^1.1.1"

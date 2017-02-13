@@ -48,7 +48,7 @@ export type File = {
   contents: string,
   sourceMap: ?Object,
   lastModified: number,
-  // ^ in seconds, not ms
+  // ^ in seconds not miliseconds aka Date.now()/1000
 }
 
 export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<Import>, contents: string, sourceMap: ?Object }>)

@@ -95,8 +95,8 @@ class Pundle {
 
     return Array.from(files.values())
   }
-  watch(config: Object = {}): Promise<Disposable> {
-    return this.compilation.watch(Object.assign({}, this.config.watcher, config))
+  watch(config: Object = {}, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
+    return this.compilation.watch(Object.assign({}, this.config.watcher, config), oldFiles)
   }
   dispose() {
     this.subscriptions.dispose()

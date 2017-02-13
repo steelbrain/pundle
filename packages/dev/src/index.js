@@ -5,6 +5,7 @@ import debug from 'debug'
 import express from 'express'
 import unique from 'lodash.uniq'
 import arrayDiff from 'lodash.difference'
+import ConfigFile from 'sb-config-file'
 import cliReporter from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { createWatcher, getRelativeFilePath, MessageIssue } from 'pundle-api'
@@ -35,13 +36,19 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     compiled: { contents: '', sourceMap: {}, filePaths: [] },
     compileQueue: Promise.resolve(),
   }
-  const config = Helpers.fillMiddlewareConfig(givenConfig)
-  const hmrEnabled = config.hmrPath !== null
-  const sourceMapEnabled = config.sourceMap && config.sourceMapPath !== 'none' && config.sourceMapPath !== 'inline'
+  const compilation = pundle.compilation
   const connections = new Set()
   const filesChanged = new Set()
-  const oldHMRPath = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
-  const oldHMRHost = pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
+  const config = Helpers.fillMiddlewareConfig(givenConfig)
+  const stateFile = new ConfigFile(Helpers.getStateFilePath(compilation.config.rootDirectory), {
+    directory: compilation.config.rootDirectory,
+    files: [],
+  }, { noPrettyPrint: true })
+
+  const hmrEnabled = config.hmrPath !== null
+  const oldHMRPath = compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  const oldHMRHost = compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
+  const sourceMapEnabled = config.sourceMap && config.sourceMapPath !== 'none' && config.sourceMapPath !== 'inline'
 
   let totalFiles
   let watcherSubscription
@@ -52,11 +59,11 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   }
   async function compileContentsHMR() {
     const changedFilePaths = unique(Array.from(filesChanged))
-    const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, pundle.compilation.config.rootDirectory))
+    const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, compilation.config.rootDirectory))
     const infoMessage = `Sending HMR to ${connections.size} clients of [ ${
       relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
     } ]`
-    pundle.compilation.report(new MessageIssue(infoMessage, 'info'))
+    compilation.report(new MessageIssue(infoMessage, 'info'))
     writeToConnections({ type: 'report-clear' })
     const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
       entry: [],
@@ -81,7 +88,9 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   async function compileContentsIfNecessary() {
     if (state.changed) {
       state.changed = false
-      state.compileQueue = state.compileQueue.then(() => compileContentsAll())
+      state.compileQueue = state.compileQueue.then(() => compileContentsAll()).then(function() {
+        stateFile.set('files', Array.from(totalFiles.values()))
+      })
     }
     await state.compileQueue
   }
@@ -114,17 +123,17 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     })
   }
 
-  pundle.compilation.config.entry.unshift(browserFile)
-  pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-  pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
+  compilation.config.entry.unshift(browserFile)
+  compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+  compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
   const configSubscription = new Disposable(function() {
     state.active = false
-    const entryIndex = pundle.compilation.config.entry.indexOf(browserFile)
+    const entryIndex = compilation.config.entry.indexOf(browserFile)
     if (entryIndex !== -1) {
-      pundle.compilation.config.entry.splice(entryIndex, 1)
+      compilation.config.entry.splice(entryIndex, 1)
     }
-    pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
-    pundle.compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
+    compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
+    compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
   })
 
   const componentSubscription = await pundle.loadComponents([
@@ -164,7 +173,13 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     }),
   ])
 
-  watcherSubscription = await pundle.watch()
+  const oldFiles = new Map()
+  stateFile.get('files').forEach(function(file) {
+    oldFiles.set(file.filePath, file)
+  })
+
+  watcherSubscription = await pundle.watch({}, oldFiles)
+  await compileContentsIfNecessary()
 
   return new Disposable(function() {
     if (wss) {

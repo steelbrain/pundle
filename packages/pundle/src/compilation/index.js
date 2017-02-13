@@ -199,8 +199,9 @@ export default class Compilation {
   //   and closes the file watcher
   // NOTE: Return value of this function has a special "queue" property
   // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
-  async watch(givenConfig: Object = {}): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
+  async watch(givenConfig: Object = {}, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
     let queue = Promise.resolve()
+    let skipProcessing = false
     const files: Map<string, ?File> = new Map()
     const config = Helpers.fillWatcherConfig(givenConfig)
     const resolvedEntries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
@@ -219,31 +220,45 @@ export default class Compilation {
         // means it is already in progress
         return true
       }
+
       // Reset contents on both being unable to resolve and error in processing
-      let file = null
+      let file: any = null
       let processError = null
-      try {
-        files.set(filePath, null)
-        file = await this.processFile(filePath)
-        files.set(filePath, file)
-        await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
-          entry.resolved = resolved
-        })))
-      } catch (error) {
-        if (oldValue) {
-          files.set(filePath, oldValue)
-        } else {
-          files.delete(filePath)
+
+      if (typeof oldValue === 'undefined' && lastState.has(filePath)) {
+        const fileStat = await fileSystem.stat(filePath)
+        const lastStateFile = lastState.get(filePath)
+        if (lastStateFile && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
+          skipProcessing = true
+          file = lastStateFile
+          files.set(filePath, file)
         }
-        processError = error
-        this.report(error)
-        return false
-      } finally {
-        for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
-          try {
-            await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
-          } catch (error) {
-            this.report(error)
+      }
+
+      if (!skipProcessing) {
+        try {
+          files.set(filePath, null)
+          file = await this.processFile(filePath)
+          files.set(filePath, file)
+          await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
+            entry.resolved = resolved
+          })))
+        } catch (error) {
+          if (oldValue) {
+            files.set(filePath, oldValue)
+          } else {
+            files.delete(filePath)
+          }
+          processError = error
+          this.report(error)
+          return false
+        } finally {
+          for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+            try {
+              await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
+            } catch (error) {
+              this.report(error)
+            }
           }
         }
       }
