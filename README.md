@@ -1,4 +1,4 @@
-![Pundle](https://raw.githubusercontent.com/motion/pundle/steelbrain/docs/pundle-words.png)
+![Pundle](https://raw.githubusercontent.com/motion/pundle/master/pundle-words.png)
 
 <p align="center">
   A bundler without compromise.
@@ -18,12 +18,7 @@ Pundle is a next generation module bundler. It's written with extensibility and 
 
 Pundle uses Mono-Repo architecture to manage npm packages, you can browse each module's individual documentation by visiting `packages/$NAME`.
 
-Here are some quick links for you
-
-- [Pundle](https://github.com/motion/pundle/blob/master/packages/pundle/README.md)
-- [Pundle Dev Server](https://github.com/motion/pundle/blob/master/packages/dev/README.md)
-- [TypeScript preset](https://github.com/motion/pundle/tree/master/packages/preset-typescript/README.md)
-- [NPM Installer Plugin](https://github.com/motion/pundle/blob/master/packages/plugin-npm-installer/README.md)
+There are WIP docs available in [`/docs`](https://github.com/motion/pundle/tree/master/docs) of this repo
 
 ## Setting up for development
 
