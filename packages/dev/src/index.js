@@ -177,6 +177,9 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   oldFilesArray.forEach(function(file) {
     oldFiles.set(file.filePath, file)
   })
+  if (oldFiles.size) {
+    compilation.report(new MessageIssue(`Restoring ${oldFiles.size} files from cache`, 'info'))
+  }
 
   watcherSubscription = await pundle.watch({}, oldFiles)
   await compileContentsIfNecessary()
