@@ -40,7 +40,6 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   const connections = new Set()
   const filesChanged = new Set()
   const config = Helpers.fillMiddlewareConfig(givenConfig)
-  let stateFile
 
   const hmrEnabled = config.hmrPath !== null
   const oldHMRPath = compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
@@ -85,7 +84,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   async function compileContentsIfNecessary() {
     if (state.changed) {
       state.changed = false
-      state.compileQueue = state.compileQueue.then(() => compileContentsAll()).then(() => stateFile.set('files', Array.from(totalFiles.values())))
+      state.compileQueue = state.compileQueue.then(() => compileContentsAll())
     }
     await state.compileQueue
   }
@@ -130,11 +129,11 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
     compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
     compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
   })
-  stateFile = await ConfigFile.get(Helpers.getStateFilePath(compilation.config.rootDirectory), {
+
+  const stateFile = await ConfigFile.get(Helpers.getStateFilePath(compilation.config.rootDirectory), {
     directory: compilation.config.rootDirectory,
     files: [],
   }, { prettyPrint: false, createIfNonExistent: true })
-
   const componentSubscription = await pundle.loadComponents([
     [cliReporter, {
       log(text, error) {
@@ -185,6 +184,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   await compileContentsIfNecessary()
 
   return new Disposable(function() {
+    stateFile.setSync('files', Array.from(totalFiles.values()))
     if (wss) {
       wss.close()
     }
