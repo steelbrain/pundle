@@ -11,7 +11,8 @@
     "compile": "npm run clean; lerna exec --concurrency 999 -- babel src --out-dir lib",
     "watch": "npm run compile -- --watch",
     "lint": "eslint .",
-    "publish": "npm run compile; lerna publish",
+    "publish": "npm run compile; lerna exec -- npm publish",
+    "publish-lerna": "npm run compile; lerna publish",
     "test": "lerna exec --concurrency 1 -- apm test"
   }
 }

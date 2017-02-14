@@ -2,6 +2,7 @@
 
 let overlay
 let numUpdate = 1
+let hadNetworkError = false
 const overlayStyle = {
   position: 'fixed',
   boxSizing: 'border-box',
@@ -11,6 +12,7 @@ const overlayStyle = {
   bottom: 0,
   width: '100vw',
   height: '100vh',
+  zIndex: Number.MAX_VALUE,
   backgroundColor: 'black',
   color: '#E8E8E8',
   fontFamily: 'Menlo, Consolas, monospace',
@@ -46,6 +48,7 @@ function openHMRConnection() {
   }, 2000)
   socket.addEventListener('open', function() {
     connectedOnce = true
+    hadNetworkError = false
     console.log('[HMR] Connected')
   })
   socket.addEventListener('close', function() {
@@ -54,6 +57,10 @@ function openHMRConnection() {
       console.log('[HMR] Disconnected')
       console.log('[HMR] Retrying in 2 seconds')
       setTimeout(openHMRConnection, 2000)
+    } else if (!hadNetworkError) {
+      console.log('[HMR] Server seems down. Retrying in 10 seconds')
+      hadNetworkError = true
+      setTimeout(openHMRConnection, 10000)
     } else {
       console.log('[HMR] Server seems down, giving up')
     }

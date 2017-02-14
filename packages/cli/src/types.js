@@ -5,6 +5,7 @@ export type CLIConfig = {
     bundlePath: string,
     sourceMap: boolean,
     sourceMapPath: string,
+    rootDirectory: string,
   },
   server: {
     port: number,

@@ -61,7 +61,6 @@ class __sbPundle_HMR {
 }
 
 const __sbPundle = {
-  defaultExport: {},
   cache: {},
   extensions: [],
   resolutionMap: {},
@@ -73,7 +72,8 @@ const __sbPundle = {
       id: moduleId,
       hot: new __sbPundle_HMR(),
       callback: callback,
-      exports: this.defaultExport,
+      invoked: false,
+      exports: {},
       parents: [],
     }
   },
@@ -100,8 +100,8 @@ const __sbPundle = {
     if (fromModule && module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
       module.parents.push(fromModule)
     }
-    if (module.exports === this.defaultExport) {
-      module.exports = {}
+    if (!module.invoked) {
+      module.invoked = true
       module.callback.call(module.exports, module.id, '/', this.generateRequire(module.id), module, module.exports)
     }
     return module.exports
@@ -132,7 +132,6 @@ const __sbPundle = {
     const input: Array<[string, string]> = []
     const added: Set<string> = new Set()
     const failed: Array<string> = []
-    const duplicates: Array<[string, string]> = []
     const directUpdates: Array<string> = []
 
     const iterate = (from: string, parents: Array<string>) => {
@@ -152,10 +151,6 @@ const __sbPundle = {
         }
 
         const parentModule = this.cache[parent]
-        if (added.has(`${from}-${parent}`) || added.has(`${parent}-${from}`)) {
-          duplicates.push([from, parent])
-          continue
-        }
         added.add(`${from}-${parent}`)
         input.push([parent, from])
         if (accepted === 'parent' && parentModule.parents.length) {
@@ -181,12 +176,6 @@ const __sbPundle = {
         iterate(file, updatedModule.parents)
       }
     }
-    if (duplicates.length) {
-      console.log('[HMR] Error: Update could not be applied because these modules require each other:\n' + duplicates.map(item => `  • ${item[0]} <--> ${item[0]}`).join('\n'))
-      const error: Object = new Error('Unable to apply HMR because some modules require their parents')
-      error.code = 'HMR_REBOOT_REQUIRED'
-      throw error
-    }
     if (failed.length) {
       console.log('[HMR] Error: Update could not be applied because these modules did not accept:\n' + failed.map(item => `  • ${item}`).join('\n'))
       const error: Object = new Error('Unable to apply HMR because some modules didnt accept it')
@@ -207,16 +196,24 @@ const __sbPundle = {
   hmrApply: function(givenFiles: Array<string>, newFiles: Array<string>) {
     const files = givenFiles.filter(file => !~newFiles.indexOf(file))
     const updateOrder = this.hmrGetOrder(files)
+    const hmrDebugging = __sbPundle.debugHMR
+    if (hmrDebugging) {
+      console.log('[HMR] Update order is', updateOrder)
+    }
     for (let i = 0, length = updateOrder.length; i < length; i++) {
       const file = updateOrder[i]
       const oldModule = this.cache[file]
       const newModule = this.getModule(oldModule.id, oldModule.callback)
+      if (hmrDebugging) {
+        console.log('[HMR] Updating', file)
+      }
       oldModule.hot.callbacks_dispose.forEach(function(callback) {
         callback(newModule.hot.data)
       })
       this.cache[file] = newModule
       newModule.parents = oldModule.parents
       try {
+        newModule.invoked = true
         newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(null), newModule, newModule.exports)
       } catch (error) {
         // NOTE: In case of error, copy last HMR info
@@ -231,6 +228,16 @@ const __sbPundle = {
       newModule.hot.callbacks_accept.forEach(function(callback) {
         callback()
       })
+    }
+  },
+  get debugHMR() {
+    return !!localStorage.getItem('__sbPundleDebugHMR')
+  },
+  set debugHMR(value) {
+    if (value) {
+      localStorage.setItem('__sbPundleDebugHMR', 'true')
+    } else {
+      localStorage.removeItem('__sbPundleDebugHMR')
     }
   },
 }

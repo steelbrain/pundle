@@ -6,7 +6,7 @@ import type { FileIssue, MessageIssue } from './src/issues'
 export type { FileIssue, MessageIssue } from './src/issues'
 
 export type ComponentRule = string | RegExp
-export type Loadable = {
+export type ComponentRules = {
   include?: ComponentRule | Array<ComponentRule>,
   exclude?: ComponentRule | Array<ComponentRule>,
   extensions?: Array<string>,
@@ -15,39 +15,41 @@ export type Loadable = {
 export type Component<T1, T2> = {
   $type: T1,
   $apiVersion: number,
-  activate(): void,
+  activate(config: Object): void,
   callback: T2,
-  dispose(): void,
+  dispose(config: Object): void,
   defaultConfig: Object,
 }
 
 export type CallbackOrConfig<T> = T | {
-  activate?: (() => void),
+  activate?: ((config: Object) => void),
   callback: T,
-  dispose?: (() => void),
-}
-export type ComponentCallbacks = {
-  activate?: (() => void),
-  dispose?: (() => void),
+  dispose?: ((config: Object) => void),
 }
 
 export type Import = {
   id: number,
-  from: string,
+  from: ?string,
   request: string,
   resolved: ?string,
 }
 
-export type File = {
-  source: string,
-  imports: Set<Import>,
+export type Resolved = {
+  sourceManifest: Object,
+  targetManifest: Object,
   filePath: string,
-  // ^ The abs path on file system
-  contents: string,
-  sourceMap: ?Object,
 }
 
-export type Simple = Component<'simple', any>
+export type File = {
+  source: string,
+  imports: Array<Import>,
+  filePath: string,
+  // ^ The absolute path on file system
+  contents: string,
+  sourceMap: ?Object,
+  lastModified: number,
+  // ^ in seconds not miliseconds aka Date.now()/1000
+}
 
 export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<Import>, contents: string, sourceMap: ?Object }>)
 export type Loader = Component<'loader', LoaderCallback>
@@ -55,7 +57,7 @@ export type Loader = Component<'loader', LoaderCallback>
 export type PluginCallback = ((config: Object, file: File) => Promise<void>)
 export type Plugin = Component<'plugin', PluginCallback>
 
-export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?string>)
+export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?Resolved>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
 export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<void>)
@@ -70,4 +72,20 @@ export type Transformer = Component<'transformer', TransformerCallback>
 export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?{ contents: string, sourceMap: ?Object }>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
-export type ComponentAny = Simple | Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer
+export type WatcherCallbacks = {
+  tick?: ((filePath: string, error: ?Error) => Promise<void> | void),
+  ready?: ((initialCompileStatus: boolean, totalFiles: Array<File>) => Promise<void> | void),
+  compile?: ((totalFiles: Array<File>) => Promise<void> | void),
+}
+export type Watcher = {
+  $type: 'watcher',
+  $apiVersion: number,
+  activate(config: Object): void,
+  tick(filePath: string, error: ?Error, file: ?File): Promise<void> | void,
+  ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
+  compile(totalFiles: Array<File>): Promise<void> | void,
+  dispose(config: Object): void,
+  defaultConfig: Object,
+}
+
+export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher

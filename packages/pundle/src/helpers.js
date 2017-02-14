@@ -3,32 +3,60 @@
 
 import Path from 'path'
 import invariant from 'assert'
-import PundleFS from 'pundle-fs'
 import promisify from 'sb-promisify'
-import { getRelativeFilePath } from 'pundle-api'
+import { fromStack as callsiteFromStack } from 'sb-callsite'
+import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { PundleConfig, Loadable, Loaded } from '../types'
 
 const resolveModule = promisify(require('resolve'))
+const MODULE_NAME_REGEXP = /Cannot find module '(.*?)'/
+
+export function getResolveError(moduleName: string): Error {
+  const error = new Error(`Unable to resolve '${moduleName}' from root directory. Make sure it's installed correctly`)
+  error.code = 'MODULE_NOT_FOUND'
+  // $FlowIgnore: Custom property
+  error.duringResolution = true
+  return error
+}
 
 export async function resolve<T>(request: string, rootDirectory: string): Promise<T> {
   let resolved
   try {
     resolved = await resolveModule(request, { basedir: rootDirectory })
   } catch (_) {
-    const error = new Error(`Unable to resolve '${request}' from root directory`)
-    // $FlowIgnore: Custom property
-    error.code = 'MODULE_NOT_FOUND'
-    // $FlowIgnore: Custom property
-    error.duringResolution = true
+    throw getResolveError(request)
+  }
+  let mainModule
+  try {
+    // $FlowIgnore: This is how it works, loadables are dynamic requires
+    mainModule = require(resolved)
+  } catch (error) {
+    // Show a fancy MessageIssue if it's the file we required or the file it requires
+    // Otherwise show a raw error message
+    if (error.code === 'MODULE_NOT_FOUND') {
+      let showFancyError = false
+      const stack = callsiteFromStack(error.stack)
+      for (let i = 0, length = stack.length; i < length; i++) {
+        const entry = stack[i]
+        if (Path.isAbsolute(entry.file)) {
+          showFancyError = entry.file === resolved || entry.file === __dirname
+          break
+        }
+      }
+      if (showFancyError) {
+        const chunks = MODULE_NAME_REGEXP.exec(error.message)
+        if (chunks && chunks.length) {
+          throw getResolveError(chunks[1])
+        }
+      }
+    }
     throw error
   }
-  // $FlowIgnore: This is how it works, loadables are dynamic requires
-  let mainModule = require(resolved)
   mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
   if (typeof mainModule === 'object' && mainModule) {
     return mainModule
   }
-  throw new Error(`Module '${request}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
+  throw new MessageIssue(`Module '${request}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
 }
 
 // NOTE:
@@ -55,7 +83,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
       b = configModule
     }
     if (!b) {
-      throw new Error(`Invalid export value of config file in '${rootDirectory}'`)
+      throw new MessageIssue(`Invalid export value of config file in '${rootDirectory}'`)
     }
   }
 
@@ -94,10 +122,16 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   }
 
   const compilation = {}
-  compilation.debug = !!(a.debug || b.debug)
+  if (typeof a.debug !== 'undefined') {
+    compilation.debug = !!a.debug
+  } else if (typeof b.debug !== 'undefined') {
+    compilation.debug = !!b.debug
+  } else {
+    compilation.debug = process.env.NODE_ENV !== 'production'
+  }
   compilation.entry = []
   if (!a.entry && !b.entry) {
-    throw new Error('config.entry should be an Array or string')
+    throw new MessageIssue('config.entry should be an Array or string')
   }
   if (a.entry) {
     invariant(typeof a.entry === 'string' || Array.isArray(a.entry), 'config.entry must be an Array or string')
@@ -107,17 +141,8 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
     invariant(typeof b.entry === 'string' || Array.isArray(b.entry), 'config.entry must be an Array or string')
     compilation.entry = compilation.entry.concat(b.entry)
   }
-  compilation.fileSystem = Object.assign({}, PundleFS)
-  if (b.fileSystem) {
-    invariant(typeof b.fileSystem === 'object', 'config.fileSystem must be an Object')
-    Object.assign(compilation.fileSystem, b.fileSystem)
-  }
-  if (a.fileSystem) {
-    invariant(typeof a.fileSystem === 'object', 'config.fileSystem must be an Object')
-    Object.assign(compilation.fileSystem, a.fileSystem)
-  }
   if (!a.rootDirectory && !b.rootDirectory) {
-    throw new Error('config.rootDirectory must be a string')
+    throw new MessageIssue('config.rootDirectory must be a string')
   }
   if (a.rootDirectory) {
     invariant(a.rootDirectory, 'config.rootDirectory must be a string')
@@ -157,7 +182,7 @@ export async function getLoadables<T>(loadables: Array<Loadable<T>>, rootDirecto
     }
     const resolved = typeof component === 'string' ? await resolve(component, rootDirectory) : component
     if (!resolved || typeof resolved.$type !== 'string') {
-      throw new Error('Unable to load invalid component')
+      throw new MessageIssue('Unable to load invalid component')
     }
     toReturn.push([resolved, config])
   }

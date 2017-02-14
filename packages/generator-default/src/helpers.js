@@ -1,6 +1,8 @@
 /* @flow */
 
 import Path from 'path'
+import slash from 'slash'
+import fileSystem from 'pundle-fs'
 import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
 import type { File, Import } from 'pundle-api/types'
@@ -23,7 +25,7 @@ export function getFilePath(compilation: Object, config: Object, filePath: strin
       numericPaths.set(filePath, toReturn = `m-${nextNumericPath}`)
     }
   }
-  return toReturn
+  return slash(toReturn)
 }
 
 export async function normalizeEntry(compilation: Object, config: Object): Promise<Array<string>> {
@@ -56,7 +58,7 @@ export async function getWrapperContents(compilation: Object, config: Object): P
   if (!Path.isAbsolute(wrapper)) {
     wrapper = await compilation.resolve(wrapper)
   }
-  const fileContents = await compilation.config.fileSystem.readFile(wrapper)
+  const fileContents = await fileSystem.readFile(wrapper)
   if (fileContents.slice(1, 11) === 'use strict') {
     // Trim off first line in case it starts with use strict, this is to allow
     // unsafe modules to work inside of Pundle
@@ -70,7 +72,7 @@ export function getImportResolutions(compilation: Object, config: Object, files:
 
   function mergeResolutions(entry: Import) {
     if (!entry.resolved) {
-      throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from}`, 'error')
+      throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from || 'Source root'}`, 'error')
     }
     const filePath = getFilePath(compilation, config, entry.resolved)
     if (resolutionMap[filePath]) {

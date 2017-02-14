@@ -54,6 +54,7 @@ class Pundle {
       throw new Error('Parameter 2 to loadPreset() must be an Object')
     }
 
+    // TODO: Resolve components relative of their preset path
     const loadables = preset.map(entry => {
       if (presetConfig[entry.name] === false) {
         // $FlowIgnore: We are filtering it later, dumb flow
@@ -94,45 +95,13 @@ class Pundle {
 
     return Array.from(files.values())
   }
-  watch(config: Object = {}): Promise<Disposable> {
-    return this.compilation.watch(Object.assign({}, config, this.config.watcher, {
-      tick: (filePath: string, error: ?Error) => {
-        const givenTick = config.tick
-        const defaultTick = this.config.watcher.tick
-        return Promise.all([
-          defaultTick ? defaultTick(filePath, error) : null,
-          givenTick ? givenTick(filePath, error) : null,
-        ])
-      },
-      update: (filePath: string, newImports: Array<string>, oldImports: Array<string>) => {
-        const givenUpdate = config.update
-        const defaultUpdate = this.config.watcher.update
-        return Promise.all([
-          givenUpdate ? givenUpdate(filePath, newImports, oldImports) : null,
-          defaultUpdate ? defaultUpdate(filePath, newImports, oldImports) : null,
-        ])
-      },
-      ready: (initialCompileStatus: boolean, totalFiles: Array<File>) => {
-        const givenReady = config.ready
-        const defaultReady = this.config.watcher.ready
-        return Promise.all([
-          givenReady ? givenReady(initialCompileStatus, totalFiles) : null,
-          defaultReady ? defaultReady(initialCompileStatus, totalFiles) : null,
-        ])
-      },
-      compile: (totalFiles: Array<File>) => {
-        const givenCompile = config.compile
-        const defaultCompile = this.config.watcher.compile
-        return Promise.all([
-          givenCompile ? givenCompile(totalFiles) : null,
-          defaultCompile ? defaultCompile(totalFiles) : null,
-        ])
-      },
-    }))
+  watch(config: Object = {}, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
+    return this.compilation.watch(Object.assign({}, this.config.watcher, config), oldFiles)
   }
   dispose() {
     this.subscriptions.dispose()
   }
+  // NOTE: Components are loaded before presets. This is important for order-sensitive components
   static async create(givenConfig: Object): Promise<Pundle> {
     invariant(typeof givenConfig === 'object' && givenConfig, 'Config must be an object')
     invariant(typeof givenConfig.rootDirectory === 'string', 'config.rootDirectory must be a string')

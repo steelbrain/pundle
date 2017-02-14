@@ -35,6 +35,5 @@ export default createTransformer(async function(config: Object, file: File) {
   typescriptPath: 'typescript',
   // ^ Path to resolve to get the typescript module
   config: {},
-  exclude: [/(node_modules|bower_components)/],
   extensions: ['ts', 'tsx'],
 })

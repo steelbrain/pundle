@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-babel",
-  "version": "2.0.0-beta3",
+  "version": "2.0.0-beta13",
   "description": "Babel transformer for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "^2.0.0-beta3"
+    "pundle-api": "2.0.0-beta13"
   },
   "devDependencies": {}
 }

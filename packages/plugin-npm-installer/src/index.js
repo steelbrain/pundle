@@ -1,5 +1,6 @@
 /* @flow */
 
+import Path from 'path'
 import { createResolver, shouldProcess, MessageIssue } from 'pundle-api'
 import { getModuleName } from './helpers'
 import Installer from './installer'
@@ -14,7 +15,7 @@ import Installer from './installer'
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
 export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string) {
-  if (givenRequest.slice(0, 1) === '.') {
+  if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
     return null
   }
 
@@ -30,6 +31,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
     await this.resolve(`${moduleName}/package.json`, fromFile)
     return null
   } catch (_) { /* No Op */ }
+  this.report(new MessageIssue(`Installing '${moduleName}' in ${this.config.rootDirectory}`, 'info'))
   config.beforeInstall(moduleName)
   let error = null
   try {
@@ -39,9 +41,9 @@ export default createResolver(async function(config: Object, givenRequest: strin
   }
   config.afterInstall(moduleName, error)
   if (error) {
-    this.report(new MessageIssue(`Failed to install '${moduleName}' in '${this.config.rootDirectory}'`, 'error'))
+    this.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
   } else {
-    this.report(new MessageIssue(`Installed '${moduleName}' in '${this.config.rootDirectory}'`, 'info'))
+    this.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
   }
   return await this.resolve(givenRequest, fromFile, false)
 }, {

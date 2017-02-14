@@ -1,9 +1,17 @@
 /* @flow */
 
-import FS from 'fs'
 import Path from 'path'
+import chalk from 'chalk'
 import invariant from 'assert'
 import type { CLIConfig } from './types'
+
+export function colorsIfAppropriate(content: string): void {
+  if (chalk.supportsColor) {
+    console.log(content)
+  } else {
+    console.log(chalk.stripColor(content))
+  }
+}
 
 export function fillCLIConfig(config: Object): CLIConfig {
   const output = config.output || {}
@@ -21,7 +29,11 @@ export function fillCLIConfig(config: Object): CLIConfig {
   if (output.sourceMapPath) {
     invariant(typeof output.sourceMapPath === 'string', 'config.output.sourceMapPath must be a string')
     toReturn.output.sourceMapPath = output.sourceMapPath
-  } else toReturn.output.sourceMapPath = 'bundle.js.map'
+  } else toReturn.output.sourceMapPath = `${toReturn.output.bundlePath}.map`
+  if (output.rootDirectory) {
+    invariant(typeof output.rootDirectory === 'string', 'output.rootDirectory must be a string')
+    toReturn.output.rootDirectory = output.rootDirectory
+  } else toReturn.output.rootDirectory = '.'
 
   if (server.port) {
     invariant(typeof server.port === 'number' && Number.isFinite(server.port), 'config.server.port must be a valid number')
@@ -39,15 +51,17 @@ export function fillCLIConfig(config: Object): CLIConfig {
     invariant(typeof server.bundlePath === 'string', 'config.server.bundlePath must be a string')
     toReturn.server.bundlePath = server.bundlePath
   } else toReturn.server.bundlePath = '/bundle.js'
-  toReturn.server.sourceMap = !!server.sourceMap
+  if (server.sourceMap) {
+    toReturn.server.sourceMap = !!server.sourceMap
+  } else toReturn.server.sourceMap = true
+  if (server.sourceMapPath) {
+    invariant(typeof server.sourceMapPath === 'string', 'config.server.sourceMapPath must be a string')
+    toReturn.server.sourceMapPath = server.sourceMapPath
+  } else toReturn.server.sourceMapPath = `${toReturn.server.bundlePath}.map`
   if (server.rootDirectory) {
     invariant(typeof server.rootDirectory === 'string', 'config.server.sourceMapPath must be a string')
     toReturn.server.rootDirectory = server.rootDirectory
   } else toReturn.server.rootDirectory = Path.dirname(toReturn.output.bundlePath)
-  if (server.sourceMapPath) {
-    invariant(typeof server.sourceMapPath === 'string', 'config.server.sourceMapPath must be a string')
-    toReturn.server.sourceMapPath = server.sourceMapPath
-  } else toReturn.server.sourceMapPath = '/bundle.js.map'
   if (typeof server.redirectNotFoundToIndex !== 'undefined') {
     toReturn.server.redirectNotFoundToIndex = !!server.redirectNotFoundToIndex
   } else toReturn.server.redirectNotFoundToIndex = true
@@ -55,19 +69,4 @@ export function fillCLIConfig(config: Object): CLIConfig {
   toReturn.server.hmrReports = typeof server.hmrReports === 'undefined' ? true : !!server.hmrReports
 
   return toReturn
-}
-
-export function copyFiles(sourceRoot: string, destRoot: string, files: Array<[string, string]>): void {
-  for (let i = 0, length = files.length; i < length; i++) {
-    const file = files[i]
-    const fileSource = Path.isAbsolute(file[0]) ? file[0] : Path.join(sourceRoot, file[0])
-    const fileDest = Path.isAbsolute(file[1]) ? file[1] : Path.join(destRoot, file[1])
-    try {
-      FS.statSync(fileDest)
-      console.log(`Skipping ${file[1]} because it already exists`)
-    } catch (_) {
-      FS.writeFileSync(fileDest, FS.readFileSync(fileSource))
-      console.log(`Copying default ${file[1]}`)
-    }
-  }
 }

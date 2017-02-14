@@ -23,8 +23,8 @@ import * as Helpers from './helpers'
 // - Push sourceMap stringified or it's path (depending on config) (if enabled)
 // - Return all chunks joined, and sourceMap (if enabled)
 
-export default createGenerator(async function(givenConfig: Object, files: Array<File>, givenRuntimeConfig: Object) {
-  const config = Object.assign({}, givenConfig, givenRuntimeConfig)
+export default createGenerator(async function(config: Object, givenFiles: Array<File>) {
+  const files = givenFiles.slice()
   const entry = await Helpers.normalizeEntry(this, config)
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
@@ -33,8 +33,11 @@ export default createGenerator(async function(givenConfig: Object, files: Array<
     skipValidation: true,
   })
   const filePaths = []
-  // NOTE: I don't know why we need a +1, but adding it works
+  // NOTE: I don't know why we need a +1, but adding it makes things work
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
+
+  // Sort the files so git diff and others don't always have random output
+  files.sort((a, b) => a.filePath.localeCompare(b.filePath))
 
   for (let i = 0, length = files.length; i < length; i++) {
     const file = files[i]

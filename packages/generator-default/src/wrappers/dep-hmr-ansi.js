@@ -69,7 +69,7 @@
       var ot = _openTags[seq]
       if (ot) {
         // If current sequence has been opened, close it.
-        if (!!~ansiCodes.indexOf(seq)) { // eslint-disable-line no-extra-boolean-cast
+        if (!!~ansiCodes.indexOf(seq)) {
           ansiCodes.pop()
           return '</span>'
         }

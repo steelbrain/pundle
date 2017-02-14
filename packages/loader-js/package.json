@@ -1,6 +1,6 @@
 {
   "name": "pundle-loader-js",
-  "version": "2.0.0-beta3",
+  "version": "2.0.0-beta13",
   "description": "Javascript loader for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -19,9 +19,10 @@
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
     "babel-generator": "^6.19.0",
+    "babel-traverse": "^6.21.0",
     "babel-types": "^6.19.0",
     "babylon": "6.13.1",
-    "pundle-api": "^2.0.0-beta3"
+    "pundle-api": "2.0.0-beta13"
   },
   "devDependencies": {}
 }

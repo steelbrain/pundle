@@ -5,9 +5,7 @@ import { version, makePromisedLock } from './helpers'
 import type {
   Component,
   CallbackOrConfig,
-  ComponentCallbacks,
 
-  Simple,
   Loader,
   LoaderCallback,
   Plugin,
@@ -22,12 +20,16 @@ import type {
   TransformerCallback,
   PostTransformer,
   PostTransformerCallback,
+  Watcher,
+  WatcherCallbacks,
 } from '../types'
+
+const noOp: any = function() { /* No Op */ }
 
 function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, type: T1): Component<T1, T2> {
   let callback
-  let activate = function() { /* No Op */ }
-  let dispose = function() { /* No Op */ }
+  let activate = noOp
+  let dispose = noOp
   if (typeof config === 'function') {
     invariant(typeof config === 'function', 'Parameter 1 must be a function')
     callback = config
@@ -40,10 +42,7 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
       invariant(typeof config.dispose === 'function', 'config.dispose must be a function')
       dispose = config.dispose
     }
-    // NOTE: Simple components have no callbacks
-    if (type !== 'simple') {
-      invariant(config.callback === 'function', 'config.callback must be a function')
-    }
+    invariant(config.callback === 'function', 'config.callback must be a function')
     callback = config.callback
   } else {
     throw new Error('Parameter 1 must be a function or config object')
@@ -58,10 +57,6 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
     dispose,
     defaultConfig,
   }
-}
-
-export function createSimple(options: ComponentCallbacks): Simple {
-  return create({ activate: options.activate, callback() {}, dispose: options.dispose }, {}, 'simple')
 }
 
 export function createLoader(options: CallbackOrConfig<LoaderCallback>, defaultConfig: Object = {}): Loader {
@@ -105,4 +100,56 @@ export function createTransformer(options: CallbackOrConfig<TransformerCallback>
 
 export function createPostTransformer(options: CallbackOrConfig<PostTransformerCallback>, defaultConfig: Object = {}): PostTransformer {
   return create(options, defaultConfig, 'post-transformer')
+}
+
+export function createWatcher(callbacks: WatcherCallbacks, defaultConfig: Object = {}): Watcher {
+  let anyCallbackGiven = false
+  let activate = noOp
+  let tick = noOp
+  let ready = noOp
+  let compile = noOp
+  let dispose = noOp
+
+  invariant(typeof callbacks === 'object' && callbacks, 'Parameter 1 to createWatcher() must be an object')
+
+  if (callbacks.activate) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.activate === 'function', 'callbacks.activate() must be a function')
+    activate = callbacks.activate
+  }
+  if (callbacks.tick) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.tick === 'function', 'callbacks.tick() must be a function')
+    tick = callbacks.tick
+  }
+  if (callbacks.ready) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.ready === 'function', 'callbacks.ready() must be a function')
+    ready = callbacks.ready
+  }
+  if (callbacks.compile) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.compile === 'function', 'callbacks.compile() must be a function')
+    compile = callbacks.compile
+  }
+  if (callbacks.dispose) {
+    anyCallbackGiven = true
+    invariant(typeof callbacks.dispose === 'function', 'callbacks.dispose() must be a function')
+    dispose = callbacks.dispose
+  }
+
+  if (!anyCallbackGiven) {
+    throw new Error('createWatcher() expects at least one valid callback')
+  }
+
+  return {
+    $type: 'watcher',
+    $apiVersion: version,
+    activate,
+    tick,
+    ready,
+    compile,
+    dispose,
+    defaultConfig,
+  }
 }

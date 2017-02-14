@@ -1,20 +1,42 @@
 #!/usr/bin/env node
 /* @flow */
 
-import FS from 'fs'
+import FS from 'sb-fs'
 import Path from 'path'
+import copy from 'sb-copy'
 import chalk from 'chalk'
-import Pundle from 'pundle'
 import command from 'sb-command'
 import fileSize from 'filesize'
+import difference from 'lodash.difference'
+import reporterCLI from 'pundle-reporter-cli'
 import { createServer } from 'pundle-dev'
+import { CompositeDisposable } from 'sb-event-kit'
 
 import manifestPundle from 'pundle/package.json'
 import manifestPundleDev from 'pundle-dev/package.json'
 import manifestCLI from '../package.json'
 
 import * as Helpers from './helpers'
-require('process-bootstrap')('pundle', 'Pundle')
+
+const subscriptions = new CompositeDisposable()
+let pundleIsAlive = true
+function killPundle() {
+  if (pundleIsAlive) {
+    pundleIsAlive = false
+    subscriptions.dispose()
+  }
+  process.exit()
+}
+
+process.title = 'pundle'
+process.on('unhandledRejection', function (reason) {
+  console.log('unhandledRejection', reason)
+})
+process.on('uncaughtException', function(error) {
+  console.log(`Uncaught exception: ${error}`)
+})
+process.on('SIGINT', killPundle)
+process.on('exit', killPundle)
 
 command
   .version(`Pundle v${manifestPundle.version} (CLI v${manifestCLI.version}) (Dev v${manifestPundleDev.version})`)
@@ -23,12 +45,61 @@ command
   .option('-d, --dev', 'Enable dev http server', false)
   .option('-p, --port <port>', 'Port for dev server to listen on')
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
-  .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', function(options, givenType) {
+  .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', async function(options, givenType) {
     const configType = givenType === 'full' ? 'full' : 'basic'
-    console.log(`Initializing with ${configType} configuration`)
-    Helpers.copyFiles(Path.normalize(Path.join(__dirname, '..', 'vendor')), options.rootDirectory, [
-      [`config-${configType}.js`, options.configFileName],
-    ])
+    Helpers.colorsIfAppropriate(chalk.cyan(`Using configuration type '${configType}'`))
+
+    const vendorDirectory = Path.normalize(Path.join(__dirname, '..', 'vendor'))
+    const successful = new Set()
+    const everything = new Set()
+
+    try {
+      const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
+      const configTarget = Path.resolve(options.rootDirectory, options.configFileName)
+      if (!await FS.exists(configTarget)) {
+        successful.add(Path.join(vendorDirectory, options.configFileName))
+        await FS.writeFile(configTarget, await FS.readFile(configSource))
+      }
+
+      await copy(vendorDirectory, options.rootDirectory, {
+        dotFiles: false,
+        overwrite: false,
+        failIfExists: false,
+        filter(source) {
+          const basename = Path.basename(source)
+          if (basename === 'config-basic.js' || basename === 'config-full.js') {
+            return false
+          }
+          if (FS.statSync(source).isFile()) {
+            everything.add(source)
+          }
+          return true
+        },
+        tickCallback(source) {
+          if (FS.statSync(source).isFile()) {
+            successful.add(source)
+          }
+        },
+      })
+    } catch (error) {
+      console.log(error)
+      process.exitCode = 1
+    } finally {
+      if (successful.size) {
+        console.log('These files were successfully copied into the project')
+        console.log(Array.from(successful).map(e => `- ${Path.relative(vendorDirectory, e)}`).join('\n'))
+      }
+
+      const skippedFiles = difference(Array.from(everything), Array.from(successful))
+      if (skippedFiles.length) {
+        console.log('These files were skipped')
+        console.log(skippedFiles.map(e => `- ${Path.relative(vendorDirectory, e)}`).join('\n'))
+      }
+
+      if (successful.has(Path.join(vendorDirectory, '.pundle.js'))) {
+        console.log('\nNOTE: Remember to install the presets that you use\nin your configuration file in your project')
+      }
+    }
   })
   .default(function(options, ...commands) {
     if (commands.length !== 0) {
@@ -41,16 +112,21 @@ command
       console.error('Cannot find Pundle configuration file')
       process.exit(1)
     }
+    process.env.NODE_ENV = options.dev ? 'development' : 'production'
+    // eslint-disable-next-line global-require
+    const Pundle = require('pundle')
 
     Pundle.create({
       rootDirectory: options.rootDirectory,
       configFileName: options.configFileName,
     }).then(function(pundle) {
+      let promise
       const config = Helpers.fillCLIConfig(pundle.config)
-      process.env.NODE_ENV = options.dev ? 'development' : 'production'
+
+      subscriptions.add(pundle)
       if (options.dev) {
         const serverPort = options.port || config.server.port
-        return createServer(pundle, {
+        promise = createServer(pundle, {
           port: serverPort,
           hmrPath: config.server.hmrPath,
           hmrHost: config.server.hmrHost,
@@ -58,27 +134,36 @@ command
           sourceMap: config.server.sourceMap,
           sourceMapPath: config.server.sourceMapPath,
           bundlePath: config.server.bundlePath,
-          rootDirectory: options.rootDirectory || Path.resolve(options.serverRootDirectory, config.server.rootDirectory),
+          rootDirectory: options.serverRootDirectory || Path.resolve(options.rootDirectory, config.server.rootDirectory),
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
-        }).then(function() {
-          console.log(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
+        }).then(function(subscription) {
+          subscriptions.add(subscription)
+          Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
+        })
+      } else {
+        promise = pundle.generate(null, {
+          sourceMap: config.output.sourceMap,
+          sourceMapPath: config.output.sourceMapPath,
+        }).then(async function(generated) {
+          const outputDirectory = Path.resolve(pundle.config.compilation.rootDirectory, config.output.rootDirectory)
+          const outputFilePath = Path.resolve(outputDirectory, config.output.bundlePath)
+          const outputSourceMapPath = Path.resolve(outputDirectory, config.output.sourceMapPath)
+          FS.writeFileSync(outputFilePath, generated.contents)
+          Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
+          if (config.output.sourceMap && config.output.sourceMapPath !== 'inline') {
+            const sourceMap = JSON.stringify(generated.sourceMap)
+            FS.writeFileSync(outputSourceMapPath, sourceMap)
+            Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
+          }
         })
       }
-      return pundle.generate(null, {
-        sourceMapPath: config.output.sourceMapPath,
-      }).then(async function(generated) {
-        const outputFilePath = Path.join(pundle.config.compilation.rootDirectory, config.output.bundlePath)
-        const outputSourceMapPath = Path.join(pundle.config.compilation.rootDirectory, config.output.sourceMapPath)
-        FS.writeFileSync(outputFilePath, generated.contents)
-        console.log(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
-        if (config.sourceMap && config.output.sourceMapPath !== 'inline') {
-          const sourceMap = JSON.stringify(generated.sourceMap)
-          FS.writeFileSync(outputSourceMapPath, sourceMap)
-          console.log(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
-        }
+      return promise.catch(function(error) {
+        process.exitCode = 1
+        pundle.compilation.report(error)
       })
     }).catch(function(error) {
-      console.log('Error', error.message)
+      process.exitCode = 1
+      reporterCLI.callback(reporterCLI.defaultConfig, error)
     })
   })
   .parse(process.argv)

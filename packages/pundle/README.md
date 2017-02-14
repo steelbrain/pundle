@@ -102,7 +102,6 @@ type WatcherConfig = {
 type PundleConfig = {
   entry: Array<string> | string,
   pathType?: 'number' | 'filePath',
-  fileSystem?: FileSystem,
   rootDirectory: string,
   replaceVariables?: Object,
   moduleDirectories?: Array<string>,

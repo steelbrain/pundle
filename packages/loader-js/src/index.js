@@ -1,11 +1,12 @@
 /* @flow */
 
-import generate from 'babel-generator'
 import { parse } from 'babylon'
+import traverse from 'babel-traverse'
+import generate from 'babel-generator'
 import { createLoader, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 
-import { traverse, getName, getParsedReplacement } from './helpers'
+import { getName, getParsedReplacement } from './helpers'
 
 const RESOLVE_NAMES = new Set([
   'require',
@@ -13,13 +14,16 @@ const RESOLVE_NAMES = new Set([
   'module.hot.accept',
   'module.hot.decline',
 ])
-const NODE_TYPES_TO_PROCESS = new Set(['CallExpression', 'ImportDeclaration', 'MemberExpression', 'Identifier'])
+const RESOLVE_NAMES_SENSITIVE = new Set([
+  'require',
+  'require.resolve',
+])
 
 export default createLoader(function(config: Object, file: File) {
   if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
     return null
   }
-  const imports = new Set()
+  const imports: Array<string> = []
 
   let ast
   try {
@@ -49,45 +53,41 @@ export default createLoader(function(config: Object, file: File) {
     }
   }
 
-  const updateNode = (node, filePath) => {
+  const processResolve = node => {
     if (typeof node.value === 'string') {
       // StringLiteral
-      const request = this.getImportRequest(filePath, file.filePath)
-      imports.add(request)
+      const request = this.getImportRequest(node.value, file.filePath)
+      imports.push(request)
       // NOTE: Casting it to string is VERY important and required
       node.value = request.id.toString()
     }
   }
-
-  traverse(ast, node => {
-    if (!node || !NODE_TYPES_TO_PROCESS.has(node.type)) {
-      return false
+  const processReplaceable = path => {
+    const name = getName(path.node)
+    if ({}.hasOwnProperty.call(this.config.replaceVariables, name)) {
+      path.replaceWith(getParsedReplacement(this.config.replaceVariables[name]))
     }
-
-    let name
-    if (node.type === 'CallExpression') {
-      name = getName(node.callee)
-      const parameter = node.arguments && node.arguments[0]
-      if (RESOLVE_NAMES.has(name) && parameter) {
-        if (parameter.value) {
-          // StringLiteral
-          updateNode(parameter, parameter.value)
-        } else if (parameter.elements) {
-          // ArrayExpression
-          parameter.elements.forEach(element => updateNode(element, element.value))
-        }
+  }
+  traverse(ast, {
+    ImportDeclaration(path) {
+      processResolve(path.node.source)
+    },
+    CallExpression(path) {
+      const name = getName(path.node.callee)
+      if (!RESOLVE_NAMES.has(name)) {
+        return
       }
-    }
-    if (node.type === 'ImportDeclaration') {
-      updateNode(node.source, node.source.value)
-    }
-    if (node.type === 'MemberExpression' || node.type === 'Identifier') {
-      name = getName(node)
-      if ({}.hasOwnProperty.call(this.config.replaceVariables, name)) {
-        return getParsedReplacement(this.config.replaceVariables[name])
+      const parameter = path.node.arguments && path.node.arguments[0]
+      if (!parameter || typeof parameter.value !== 'string') {
+        return
       }
-    }
-    return false
+      if (RESOLVE_NAMES_SENSITIVE.has(name) && path.scope.hasBinding('require')) {
+        return
+      }
+      processResolve(parameter)
+    },
+    Identifier: processReplaceable,
+    MemberExpression: processReplaceable,
   })
 
   const compiled = generate(ast, {

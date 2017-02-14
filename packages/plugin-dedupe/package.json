@@ -1,0 +1,24 @@
+{
+  "name": "pundle-plugin-dedupe",
+  "version": "2.0.0-beta13",
+  "description": "Dedupe plugin for Plugin",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/motion/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/motion/pundle/issues"
+  },
+  "homepage": "https://github.com/motion/pundle#readme",
+  "dependencies": {
+    "pundle-api": "2.0.0-beta13",
+    "semver": "^5.3.0"
+  }
+}

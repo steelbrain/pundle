@@ -1,7 +1,36 @@
 /* @flow */
 
+import OS from 'os'
+import FS from 'fs'
+import Path from 'path'
+import crypto from 'crypto'
 import invariant from 'assert'
 import type { MiddlewareConfig, ServerConfig } from '../types'
+
+export function deferPromise(): Object {
+  let reject
+  let resolve
+  const promise = new Promise(function(givenResolve, givenReject) {
+    reject = givenReject
+    resolve = givenResolve
+  })
+  return { reject, resolve, promise }
+}
+
+export function getStateFilePath(directory: string): string {
+  const stateDirectory = Path.join(OS.homedir(), '.pundle')
+  try {
+    FS.statSync(stateDirectory)
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      FS.mkdirSync(stateDirectory)
+    } else throw error
+  }
+
+  const inputHash = crypto.createHash('sha1').update(directory).digest('hex')
+  const statePath = Path.join(stateDirectory, `${inputHash}.json`)
+  return statePath
+}
 
 export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
   const toReturn = {}
@@ -26,7 +55,7 @@ export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
   if (config.sourceMapPath) {
     invariant(typeof config.sourceMapPath === 'string', 'config.sourceMapPath must be a string')
     toReturn.sourceMapPath = config.sourceMapPath
-  } else toReturn.sourceMapPath = '/bundle.js.map'
+  } else toReturn.sourceMapPath = `${toReturn.bundlePath}.map`
 
   toReturn.hmrReports = typeof config.hmrReports === 'undefined' ? true : !!config.hmrReports
 

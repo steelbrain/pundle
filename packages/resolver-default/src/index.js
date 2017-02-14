@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import fileSystem from 'pundle-fs'
 import pundleBrowser from 'pundle-browser'
 import { createResolver } from 'pundle-api'
 import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly, promisedResolve } from './helpers'
@@ -8,7 +9,7 @@ import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly, p
 // Spec:
 // Browser field first
 // Config aliases later
-function resolveAlias(request: string, alias: Object, manifest: Object, packageMains: Array<string>): string {
+function resolveInManifestAndAlias(request: string, alias: Object, manifest: Object, packageMains: Array<string>): string {
   let chunks
   const isDirectory = request.slice(-1) === '/'
 
@@ -19,6 +20,7 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
   }
   let moduleName = chunks[0]
 
+  // Process the object fields first { browser: { './index.js': './something.js' } }
   for (const packageMain of packageMains) {
     const value = typeof manifest[packageMain] === 'object' ? manifest[packageMain][moduleName] : undefined
     if (typeof value === 'boolean' && value === false) {
@@ -30,14 +32,6 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
     } else if (typeof value === 'string') {
       moduleName = value
       break
-    }
-    const manifestInfo = manifest[packageMain]
-    // Ignore string type packageMains because this is outgoing resolution
-    if (manifestInfo && typeof manifestInfo === 'object') {
-      if (manifestInfo[moduleName]) {
-        moduleName = manifestInfo[moduleName]
-        break
-      }
     }
   }
 
@@ -71,11 +65,11 @@ function resolveAlias(request: string, alias: Object, manifest: Object, packageM
 // If module was whole, resolve it with target browser field
 // If module was relative, resolve it with source browser field
 
-// eslint-disable-next-line no-unused-vars
 export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string, cached: boolean) {
   let request = givenRequest
   let fromDirectory = ''
   const manifest = { rootDirectory: this.config.rootDirectory }
+  const extensions = config.extensions || config.knownExtensions
   const targetManifest = {}
 
   if (fromFile) {
@@ -84,25 +78,25 @@ export default createResolver(async function(config: Object, givenRequest: strin
   }
 
   if (isModuleRequested(request)) {
-    request = resolveAlias(request, config.alias, manifest, config.packageMains)
+    request = resolveInManifestAndAlias(request, config.alias, manifest, config.packageMains)
   }
 
   // NOTE: Empty is our special property in pundle-browser
   if (isModuleOnly(request) && request !== 'empty' && pundleBrowser[request]) {
-    return pundleBrowser[request]
+    return { filePath: pundleBrowser[request], sourceManifest: manifest, targetManifest: null }
   }
   let resolved = await promisedResolve(request, {
     basedir: fromDirectory || this.config.rootDirectory,
-    extensions: (config.extensions || config.knownExtensions).map(i => `.${i}`),
+    extensions: extensions.map(i => `.${i}`),
     readFile: (path, callback) => {
-      this.config.fileSystem.readFile(path).then(function(result) {
+      fileSystem.readFile(path).then(function(result) {
         callback(null, result)
       }, function(error) {
         callback(error, null)
       })
     },
     isFile: (path, callback) => {
-      this.config.fileSystem.stat(path).then(function(stats) {
+      fileSystem.stat(path).then(function(stats) {
         callback(null, stats.isFile())
       }, function() {
         callback(null, false)
@@ -126,22 +120,26 @@ export default createResolver(async function(config: Object, givenRequest: strin
     moduleDirectory: config.moduleDirectory,
   })
   if (!resolved) {
-    return resolved
+    return null
   }
 
   const manifestToUse = isModuleRequested(request) ? targetManifest : manifest
   const relative = Path.relative(manifestToUse.rootDirectory, resolved)
   if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
-    resolved = resolveAlias(`./${relative}`, {}, manifestToUse, config.packageMains)
+    resolved = resolveInManifestAndAlias(`./${relative}`, {}, manifestToUse, config.packageMains)
     resolved = Path.resolve(manifestToUse.rootDirectory, resolved)
   }
 
-  return resolved
+  return {
+    sourceManifest: manifest,
+    targetManifest,
+    filePath: resolved,
+  }
 }, {
   alias: {},
   extensions: null,
-  // ^ Set to any non-null value to override "knownExtensions"
-  // NOTE: Extensions should not have leading dot
+  // ^ Set to any Array (even empty) to override use of all known extensions
+  // NOTE: Extensions should not have a leading dot
   packageMains: ['browser', 'browserify', 'webpack', 'main'],
   modulesDirectories: ['node_modules'],
 })
