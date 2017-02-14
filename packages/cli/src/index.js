@@ -10,12 +10,23 @@ import fileSize from 'filesize'
 import difference from 'lodash.difference'
 import reporterCLI from 'pundle-reporter-cli'
 import { createServer } from 'pundle-dev'
+import { CompositeDisposable } from 'sb-event-kit'
 
 import manifestPundle from 'pundle/package.json'
 import manifestPundleDev from 'pundle-dev/package.json'
 import manifestCLI from '../package.json'
 
 import * as Helpers from './helpers'
+
+const subscriptions = new CompositeDisposable()
+let pundleIsAlive = true
+function killPundle() {
+  if (pundleIsAlive) {
+    pundleIsAlive = false
+    subscriptions.dispose()
+  }
+  process.exit()
+}
 
 process.title = 'pundle'
 process.on('unhandledRejection', function (reason) {
@@ -24,6 +35,8 @@ process.on('unhandledRejection', function (reason) {
 process.on('uncaughtException', function(error) {
   console.log(`Uncaught exception: ${error}`)
 })
+process.on('SIGINT', killPundle)
+process.on('exit', killPundle)
 
 command
   .version(`Pundle v${manifestPundle.version} (CLI v${manifestCLI.version}) (Dev v${manifestPundleDev.version})`)
@@ -110,6 +123,7 @@ command
       let promise
       const config = Helpers.fillCLIConfig(pundle.config)
 
+      subscriptions.add(pundle)
       if (options.dev) {
         const serverPort = options.port || config.server.port
         promise = createServer(pundle, {
@@ -122,7 +136,8 @@ command
           bundlePath: config.server.bundlePath,
           rootDirectory: options.serverRootDirectory || Path.resolve(options.rootDirectory, config.server.rootDirectory),
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
-        }).then(function() {
+        }).then(function(subscription) {
+          subscriptions.add(subscription)
           Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
         })
       } else {

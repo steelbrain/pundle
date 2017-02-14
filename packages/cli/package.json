@@ -28,6 +28,7 @@
     "pundle-reporter-cli": "2.0.0-beta13",
     "sb-command": "1.0.0",
     "sb-copy": "^1.0.1",
+    "sb-event-kit": "^3.0.0",
     "sb-fs": "^1.1.1"
   }
 }

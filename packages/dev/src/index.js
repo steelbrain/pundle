@@ -184,7 +184,7 @@ export async function attachMiddleware(pundle: Object, givenConfig: Object = {},
   await compileContentsIfNecessary()
 
   return new Disposable(function() {
-    stateFile.setSync('files', Array.from(totalFiles.values()))
+    stateFile.setSync('files', Array.from(totalFiles))
     if (wss) {
       wss.close()
     }
