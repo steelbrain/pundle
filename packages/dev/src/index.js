@@ -51,7 +51,7 @@ class Server {
     const oldFiles: Map<string, File> = new Map()
     const bootPromise = Helpers.deferPromise()
 
-    this.enqueue(bootPromise.promise)
+    this.enqueue(() => bootPromise.promise)
     if (this.config.useCache) {
       const rootDirectory = this.pundle.compilation.config.rootDirectory
       this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
@@ -101,7 +101,7 @@ class Server {
       server.close()
     })
     const watcherSubscription = await this.pundle.watch({}, oldFiles)
-    this.enqueue(watcherSubscription.queue)
+    this.enqueue(() => watcherSubscription.queue)
     this.subscriptions.add(watcherSubscription)
   }
   async attachComponents(bootPromise: Object): Promise<void> {
@@ -114,7 +114,7 @@ class Server {
         },
       }],
       createWatcher({
-        tick(_: Object, filePath: string, error: ?Error) {
+        tick: (_: Object, filePath: string, error: ?Error) => {
           debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
           if (!error && filePath !== Helpers.browserFile && this.state.booted) {
             this.filesChanged.add(filePath)
@@ -166,10 +166,7 @@ class Server {
     this.filesChanged.clear()
   }
   async generateIfNecessary() {
-    if (this.state.modified) {
-      this.state.modified = false
-      this.enqueue(() => this.generate())
-    }
+    this.enqueue(() => this.state.modified && this.generate())
     await this.state.queue
   }
   report(contents: string, severity: 'info' | 'error' | 'warning' = 'info') {
