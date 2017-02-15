@@ -33,7 +33,6 @@
     "pundle-fs": "2.0.0-beta14",
     "pundle-reporter-cli": "2.0.0-beta14",
     "resolve": "^1.1.7",
-    "sb-callsite": "^1.1.2",
     "sb-debounce": "^1.0.2",
     "sb-event-kit": "^3.0.0",
     "sb-promisify": "^2.0.1",

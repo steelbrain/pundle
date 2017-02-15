@@ -26,6 +26,7 @@ module.exports = {
     sourceMapPath: '/bundle.js.map',
     rootDirectory: path.join(__dirname, 'static'),
     redirectNotFoundToIndex: true,
+    // ^ Setting this to true makes it redirect all 404 requests to index
   },
   presets: [
     ['pundle-preset-default', {

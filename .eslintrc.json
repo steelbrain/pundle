@@ -2,6 +2,7 @@
   "root": true,
   "extends": "steelbrain",
   "rules": {
+    "global-require": "off",
     "no-param-reassign": 0,
     "no-duplicate-imports": 0,
     "import/no-duplicates": 0,

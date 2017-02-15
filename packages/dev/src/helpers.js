@@ -1,11 +1,87 @@
 /* @flow */
 
 import OS from 'os'
-import FS from 'fs'
+import FS from 'sb-fs'
 import Path from 'path'
-import crypto from 'crypto'
+import Crypto from 'crypto'
 import invariant from 'assert'
-import type { MiddlewareConfig, ServerConfig } from '../types'
+import type Compilation from 'pundle/src/compilation'
+
+import type { ServerConfig, ServerConfigInput } from '../types'
+
+export const browserFile = require.resolve('./browser')
+export function fillConfig(given: ServerConfigInput): ServerConfig {
+  const config = {}
+
+  if (given.hmrHost) {
+    invariant(typeof given.hmrHost === 'string', 'config.hmrHost must be a string')
+    config.hmrHost = given.hmrHost
+  } else config.hmrHost = null
+  if (given.hmrPath) {
+    invariant(typeof given.hmrPath === 'string', 'config.hmrPath must be a string')
+    config.hmrPath = given.hmrPath
+  } else config.hmrHost = '__sb_pundle_hmr'
+  if (typeof given.useCache !== 'undefined') {
+    config.useCache = !!given.useCache
+  } else config.useCache = true
+  if (typeof given.hmrReports !== 'undefined') {
+    config.hmrReports = !!given.hmrReports
+  } else config.hmrReports = true
+  if (given.bundlePath) {
+    invariant(typeof given.bundlePath === 'string', 'config.bundlePath must be a string')
+    config.bundlePath = given.bundlePath
+  } else config.bundlePath = '/bundle.js'
+  if (typeof given.sourceMap !== 'undefined') {
+    config.sourceMap = !!given.sourceMap
+  } else config.sourceMap = true
+  if (given.sourceMapPath) {
+    invariant(typeof given.sourceMapPath === 'string', 'config.sourceMapPath must be a string')
+    config.sourceMapPath = given.sourceMapPath
+  } else config.sourceMapPath = `${config.bundlePath}.map`
+
+  invariant(given.port && typeof given.port === 'number', 'config.port must be a valid number')
+  invariant(given.rootDirectory && typeof given.rootDirectory === 'string', 'config.rootDirectory must be a valid string')
+  config.port = given.port
+  config.rootDirectory = given.rootDirectory
+  config.redirectNotFoundToIndex = !!given.redirectNotFoundToIndex
+
+  return config
+}
+
+export async function getCacheFilePath(directory: string): Promise<string> {
+  const stateDirectory = Path.join(OS.homedir(), '.pundle')
+  try {
+    await FS.stat(stateDirectory)
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      await FS.mkdir(stateDirectory)
+    } else throw error
+  }
+
+  const inputHash = Crypto.createHash('sha1').update(directory).digest('hex')
+  return Path.join(stateDirectory, `${inputHash}.json`)
+}
+
+export function isCompilationRegistered(compilation: Compilation): boolean {
+  return compilation.config.entry.indexOf(browserFile) !== -1 ||
+         compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH ||
+         compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+}
+
+export function registerCompilation(compilation: Compilation, config: ServerConfig): void {
+  compilation.config.entry.unshift(browserFile)
+  compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+  compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
+}
+
+export function unregisterCompilation(compilation: Compilation): void {
+  delete compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  delete compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
+  const browserFileIndex = compilation.config.entry.indexOf(browserFile)
+  if (browserFileIndex !== -1) {
+    compilation.config.entry.splice(browserFileIndex, 1)
+  }
+}
 
 export function deferPromise(): Object {
   let reject
@@ -17,59 +93,13 @@ export function deferPromise(): Object {
   return { reject, resolve, promise }
 }
 
-export function getStateFilePath(directory: string): string {
-  const stateDirectory = Path.join(OS.homedir(), '.pundle')
+export function getWssServer(): Function {
   try {
-    FS.statSync(stateDirectory)
+    return require('uws').Server
   } catch (error) {
-    if (error.code === 'ENOENT') {
-      FS.mkdirSync(stateDirectory)
-    } else throw error
+    if (error.code !== 'MODULE_NOT_FOUND') {
+      throw error
+    }
+    return require('ws').Server
   }
-
-  const inputHash = crypto.createHash('sha1').update(directory).digest('hex')
-  const statePath = Path.join(stateDirectory, `${inputHash}.json`)
-  return statePath
-}
-
-export function fillMiddlewareConfig(config: Object): MiddlewareConfig {
-  const toReturn = {}
-
-  if (typeof config.hmrPath !== 'undefined') {
-    if (config.hmrPath) {
-      invariant(typeof config.hmrPath === 'string', 'config.hmrPath must be a string or null')
-      toReturn.hmrPath = config.hmrPath
-    } else toReturn.hmrPath = null
-  } else toReturn.hmrPath = '/__sb_pundle_hmr'
-  if (config.hmrHost) {
-    invariant(typeof config.hmrHost === 'string', 'config.hmrHost must be a string')
-    toReturn.hmrHost = config.hmrHost
-  } else toReturn.hmrHost = ''
-  if (config.bundlePath) {
-    invariant(typeof config.bundlePath === 'string', 'config.bundlePath must be a string')
-    toReturn.bundlePath = config.bundlePath
-  } else toReturn.bundlePath = '/bundle.js'
-  if (typeof config.sourceMap !== 'undefined') {
-    toReturn.sourceMap = !!config.sourceMap
-  } else toReturn.sourceMap = true
-  if (config.sourceMapPath) {
-    invariant(typeof config.sourceMapPath === 'string', 'config.sourceMapPath must be a string')
-    toReturn.sourceMapPath = config.sourceMapPath
-  } else toReturn.sourceMapPath = `${toReturn.bundlePath}.map`
-
-  toReturn.hmrReports = typeof config.hmrReports === 'undefined' ? true : !!config.hmrReports
-
-  return toReturn
-}
-
-export function fillServerConfig(config: Object): ServerConfig {
-  const toReturn = {}
-
-  invariant(typeof config.port === 'number' && Number.isFinite(config.port), 'config.port must be a valid number')
-  invariant(typeof config.rootDirectory === 'string' && config.rootDirectory, 'config.rootDirectory must be a string')
-  toReturn.port = config.port
-  toReturn.rootDirectory = config.rootDirectory
-  toReturn.redirectNotFoundToIndex = !!config.redirectNotFoundToIndex
-
-  return toReturn
 }

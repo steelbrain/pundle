@@ -1,228 +1,193 @@
 /* @flow */
 
 import send from 'send'
-import debug from 'debug'
-import express from 'express'
 import unique from 'lodash.uniq'
+import express from 'express'
 import arrayDiff from 'lodash.difference'
 import ConfigFile from 'sb-config-file'
-import cliReporter from 'pundle-reporter-cli'
-import { Disposable } from 'sb-event-kit'
-import { createWatcher, getRelativeFilePath, MessageIssue } from 'pundle-api'
+import { CompositeDisposable } from 'sb-event-kit'
+import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
+import type Pundle from 'pundle/src'
 import type { File } from 'pundle-api/types'
+
 import * as Helpers from './helpers'
+import type { ServerConfig, ServerState, ServerConfigInput } from '../types'
 
-const debugTick = debug('PUNDLE:DEV:TICK')
-let Server
-try {
-  // eslint-disable-next-line global-require
-  Server = require('uws').Server
-} catch (_) {
-  // eslint-disable-next-line global-require
-  Server = require('ws').Server
-}
+const WssServer = Helpers.getWssServer()
+const debugTick = require('debug')('PUNDLE:DEV:TICK')
+const cliReporter: Object = require('pundle-reporter-cli')
 
-const browserFile = require.resolve('./browser')
-// NOTE: HMR server will not be created unless server is provided
-export async function attachMiddleware(pundle: Object, givenConfig: Object = {}, expressApp: Object, server: Object): Disposable {
-  if (pundle.compilation.config.entry.indexOf(browserFile) !== -1) {
-    throw new Error('Cannot create two middlewares on one Pundle instance')
+class Server {
+  state: ServerState;
+  cache: ConfigFile;
+  config: ServerConfig;
+  pundle: Pundle;
+  connections: Set<Object>;
+  filesChanged: Set<string>;
+  subscriptions: CompositeDisposable;
+  constructor(pundle: Pundle, config: ServerConfigInput) {
+    if (Helpers.isCompilationRegistered(pundle.compilation)) {
+      throw new Error('Cannot create two middlewares on one Pundle instance')
+    }
+
+    this.state = {
+      files: [],
+      queue: Promise.resolve(),
+      booted: false,
+      modified: false,
+      activated: false,
+      generated: { contents: '', sourceMap: {}, filePaths: [] },
+    }
+    this.pundle = pundle
+    this.config = Helpers.fillConfig(config)
+    this.connections = new Set()
+    this.filesChanged = new Set()
+    this.subscriptions = new CompositeDisposable()
+
+    Helpers.registerCompilation(pundle.compilation, this.config)
   }
+  async activate() {
+    const app = express()
+    const oldFiles: Map<string, File> = new Map()
+    const bootPromise = Helpers.deferPromise()
 
-  const state = {
-    booted: false,
-    active: true,
-    changed: true,
-    compiled: { contents: '', sourceMap: {}, filePaths: [] },
-    compileQueue: Promise.resolve(),
+    this.enqueue(() => bootPromise.promise)
+    if (this.config.useCache) {
+      const rootDirectory = this.pundle.compilation.config.rootDirectory
+      this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
+        directory: rootDirectory,
+        files: [],
+      }, {
+        prettyPrint: false,
+        createIfNonExistent: true,
+      })
+      const oldFilesArray = await this.cache.get('files')
+      oldFilesArray.forEach(function(file) {
+        oldFiles.set(file.filePath, file)
+      })
+    }
+    if (oldFiles.size) {
+      this.report(`Restoring ${oldFiles.size} files from cache`)
+    }
+
+    app.get(this.config.bundlePath, (req, res) => {
+      this.generateIfNecessary().then(() => res.set('content-type', 'application/javascript').end(this.state.generated.contents))
+    })
+    if (this.config.sourceMap && this.config.sourceMapPath !== 'inline') {
+      app.get(this.config.sourceMapPath, (req, res) => {
+        this.generateIfNecessary().then(() => res.set('content-type', 'application/javascript').end(JSON.stringify(this.state.generated.sourceMap)))
+      })
+    }
+    app.use('/', express.static(this.config.rootDirectory))
+    if (this.config.redirectNotFoundToIndex) {
+      app.use((req, res, next) => {
+        if (req.url !== '/index.html' && req.baseUrl !== '/index.html') {
+          req.baseUrl = req.url = '/index.html'
+          send(req, req.baseUrl, { root: this.config.rootDirectory, index: 'index.html' }).on('error', next).on('directory', next).pipe(res)
+        } else next()
+      })
+    }
+    await this.attachComponents(bootPromise)
+
+    const server = app.listen(this.config.port)
+    if (this.config.hmrPath) {
+      const wss = new WssServer({ server, path: this.config.hmrPath })
+      wss.on('connection', (connection) => {
+        connection.on('close', () => this.connections.delete(connection))
+        this.connections.add(connection)
+      })
+    }
+    this.subscriptions.add(function() {
+      server.close()
+    })
+    const watcherSubscription = await this.pundle.watch({}, oldFiles)
+    this.enqueue(() => watcherSubscription.queue)
+    this.subscriptions.add(watcherSubscription)
   }
-  const compilation = pundle.compilation
-  const connections = new Set()
-  const filesChanged = new Set()
-  const config = Helpers.fillMiddlewareConfig(givenConfig)
-
-  const hmrEnabled = config.hmrPath !== null
-  const oldHMRPath = compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
-  const oldHMRHost = compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
-  const sourceMapEnabled = config.sourceMap && config.sourceMapPath !== 'none' && config.sourceMapPath !== 'inline'
-
-  let totalFiles
-  let watcherSubscription
-  const bootupPromise = Helpers.deferPromise()
-
-  function writeToConnections(contents) {
-    connections.forEach(connection => connection.send(JSON.stringify(contents)))
+  async attachComponents(bootPromise: Object): Promise<void> {
+    this.subscriptions.add(await this.pundle.loadComponents([
+      [cliReporter, {
+        log: (text, error) => {
+          if (this.config.hmrReports && error.severity && error.severity !== 'info') {
+            this.writeToConnections({ type: 'report', text, severity: error.severity || 'error' })
+          }
+        },
+      }],
+      createWatcher({
+        tick: (_: Object, filePath: string, error: ?Error) => {
+          debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
+          if (!error && filePath !== Helpers.browserFile && this.state.booted) {
+            this.filesChanged.add(filePath)
+          }
+        },
+        ready: (_, initalStatus) => {
+          this.report(`Server initialized ${initalStatus ? 'successfully' : 'with errors'}`)
+        },
+        compile: async (_: Object, files: Array<File>) => {
+          bootPromise.resolve()
+          this.state.files = files
+          this.state.booted = true
+          this.state.modified = true
+          if (this.connections.size && this.filesChanged.size) {
+            console.log('compile contents hmr')
+          }
+        },
+      }),
+    ]))
   }
-  async function compileContentsHMR() {
-    const changedFilePaths = unique(Array.from(filesChanged))
-    const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, compilation.config.rootDirectory))
-    const infoMessage = `Sending HMR to ${connections.size} clients of [ ${
+  async generate() {
+    this.state.modified = false
+    this.state.generated = await this.pundle.generate(this.state.files, {
+      wrapper: 'hmr',
+      sourceMap: this.config.sourceMap,
+      sourceMapPath: this.config.sourceMapPath,
+      sourceNamespace: 'app',
+    })
+  }
+  async generateForHMR() {
+    const rootDirectory = this.pundle.compilation.config.rootDirectory
+    const changedFilePaths = unique(Array.from(this.filesChanged))
+
+    const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, rootDirectory))
+    this.report(`Sending HMR to ${this.connections.size} clients of [ ${
       relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
-    } ]`
-    compilation.report(new MessageIssue(infoMessage, 'info'))
-    writeToConnections({ type: 'report-clear' })
-    const generated = await pundle.generate(totalFiles.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
+    } ]`)
+    this.writeToConnections({ type: 'report-clear' })
+    const generated = await this.pundle.generate(this.state.files.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
       entry: [],
       wrapper: 'none',
-      sourceMap: config.sourceMap,
+      sourceMap: this.config.sourceMap,
       sourceMapPath: 'inline',
       sourceNamespace: 'app',
       sourceMapNamespace: `hmr-${Date.now()}`,
     })
-    const newFiles = arrayDiff(generated.filePaths, state.compiled.filePaths)
-    writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
-    filesChanged.clear()
+    const newFiles = arrayDiff(generated.filePaths, this.state.generated.filePaths)
+    this.writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
+    this.filesChanged.clear()
   }
-  async function compileContentsAll() {
-    state.compiled = await pundle.generate(totalFiles, {
-      wrapper: 'hmr',
-      sourceMap: config.sourceMap,
-      sourceMapPath: config.sourceMapPath,
-      sourceNamespace: 'app',
-    })
+  async generateIfNecessary() {
+    this.enqueue(() => this.state.modified && this.generate())
+    await this.state.queue
   }
-  async function compileContentsIfNecessary() {
-    if (state.changed) {
-      state.changed = false
-      state.compileQueue = state.compileQueue.then(() => compileContentsAll())
-    }
-    await state.compileQueue
+  report(contents: string, severity: 'info' | 'error' | 'warning' = 'info') {
+    this.pundle.compilation.report(new MessageIssue(contents, severity))
   }
-
-  expressApp.get(config.bundlePath, function(req, res, next) {
-    if (state.active) {
-      Promise.all([bootupPromise.promise, watcherSubscription && watcherSubscription.queue])
-        .then(compileContentsIfNecessary)
-        .then(() => res.set('content-type', 'application/javascript').end(state.compiled.contents))
-    } else next()
-  })
-  if (sourceMapEnabled) {
-    expressApp.get(config.sourceMapPath, function(req, res, next) {
-      if (state.active) {
-        Promise.all([bootupPromise.promise, watcherSubscription && watcherSubscription.queue])
-          .then(compileContentsIfNecessary)
-          .then(() => res.set('content-type', 'application/json').end(JSON.stringify(state.compiled.sourceMap)))
-      } else next()
-    })
+  enqueue(callback: Function): void {
+    this.state.queue = this.state.queue.then(() => callback()).catch(e => this.pundle.compilation.report(e))
   }
-
-  let wss
-  if (hmrEnabled) {
-    wss = new Server({ server, path: config.hmrPath })
-    wss.on('connection', function(connection) {
-      if (state.active) {
-        connection.on('close', () => connections.delete(connection))
-        connections.add(connection)
+  writeToConnections(contents: Object): void {
+    const stringifiedContents = JSON.stringify(contents)
+    this.connections.forEach(connection => connection.send(stringifiedContents))
+  }
+  dispose() {
+    if (!this.subscriptions.disposed) {
+      Helpers.unregisterCompilation(this.pundle.compilation)
+      if (this.cache) {
+        this.cache.setSync('files', this.state.files)
       }
-    })
-  }
-
-  compilation.config.entry.unshift(browserFile)
-  compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-  compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
-  const configSubscription = new Disposable(function() {
-    state.active = false
-    const entryIndex = compilation.config.entry.indexOf(browserFile)
-    if (entryIndex !== -1) {
-      compilation.config.entry.splice(entryIndex, 1)
     }
-    compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = oldHMRPath
-    compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = oldHMRHost
-  })
-
-  const stateFile = await ConfigFile.get(Helpers.getStateFilePath(compilation.config.rootDirectory), {
-    directory: compilation.config.rootDirectory,
-    files: [],
-  }, { prettyPrint: false, createIfNonExistent: true })
-  const componentSubscription = await pundle.loadComponents([
-    [cliReporter, {
-      log(text, error) {
-        if (config.hmrReports && error.severity && error.severity !== 'info') {
-          writeToConnections({ type: 'report', text, severity: error.severity || 'error' })
-        }
-      },
-    }],
-    createWatcher({
-      tick(_: Object, filePath: string, error: ?Error) {
-        debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
-        if (!error && filePath !== browserFile && state.booted) {
-          filesChanged.add(filePath)
-          return
-        }
-      },
-      ready(_, initalStatus) {
-        if (initalStatus) {
-          this.report(new MessageIssue('Server initialized successfully', 'info'))
-        } else {
-          this.report(new MessageIssue('Server initialized with errors', 'info'))
-        }
-      },
-      async compile(_: Object, givenTotalFiles: Array<File>) {
-        const oldBooted = state.booted
-
-        totalFiles = givenTotalFiles
-        state.booted = true
-        state.changed = true
-        bootupPromise.resolve()
-        if (hmrEnabled && oldBooted && connections.size && filesChanged.size) {
-          compileContentsHMR()
-        }
-      },
-    }),
-  ])
-
-  const oldFiles = new Map()
-  const oldFilesArray = await stateFile.get('files')
-  oldFilesArray.forEach(function(file) {
-    oldFiles.set(file.filePath, file)
-  })
-  if (oldFiles.size) {
-    compilation.report(new MessageIssue(`Restoring ${oldFiles.size} files from cache`, 'info'))
+    this.subscriptions.dispose()
   }
-
-  watcherSubscription = await pundle.watch({}, oldFiles)
-  await compileContentsIfNecessary()
-
-  return new Disposable(function() {
-    stateFile.setSync('files', Array.from(totalFiles))
-    if (wss) {
-      wss.close()
-    }
-    configSubscription.dispose()
-    watcherSubscription.dispose()
-    componentSubscription.dispose()
-  })
 }
 
-// NOTE: Make SURE to setup the static handler AFTER middleware is invoked and
-//       that the middleware doesn't await before registering the route
-// NOTE: Also accepts all of middleware options
-// NOTE: The return value has a `server` and `app` property that references express instance and server instance
-export async function createServer(pundle: Object, givenConfig: Object): Promise<Disposable> {
-  const app = express()
-  const config = Helpers.fillServerConfig(givenConfig)
-
-  const server = app.listen(config.port)
-  const middlewarePromise = attachMiddleware(pundle, givenConfig, app, server)
-  app.use('/', express.static(config.rootDirectory))
-  if (config.redirectNotFoundToIndex) {
-    app.use(function(req, res, next) {
-      if (req.url !== '/index.html' && req.baseUrl !== '/index.html') {
-        req.baseUrl = req.url = '/index.html'
-        send(req, req.baseUrl, { root: config.rootDirectory, index: 'index.html' })
-          .on('error', next)
-          .on('directory', next)
-          .pipe(res)
-      } else next()
-    })
-  }
-  const subscription = await middlewarePromise
-  const disposable = new Disposable(function() {
-    server.close()
-    subscription.dispose()
-  })
-
-  disposable.app = app
-  disposable.server = server
-  return disposable
-}
+module.exports = Server

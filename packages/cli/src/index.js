@@ -9,7 +9,7 @@ import command from 'sb-command'
 import fileSize from 'filesize'
 import difference from 'lodash.difference'
 import reporterCLI from 'pundle-reporter-cli'
-import { createServer } from 'pundle-dev'
+import PundleDevServer from 'pundle-dev'
 import { CompositeDisposable } from 'sb-event-kit'
 
 import manifestPundle from 'pundle/package.json'
@@ -45,6 +45,8 @@ command
   .option('-d, --dev', 'Enable dev http server', false)
   .option('-p, --port <port>', 'Port for dev server to listen on')
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
+  .option('--disable-cache', 'Disable use of dev server cache', false)
+  .option('--debug', 'Enable stack traces of errors, useful for debugging', false)
   .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', async function(options, givenType) {
     const configType = givenType === 'full' ? 'full' : 'basic'
     Helpers.colorsIfAppropriate(chalk.cyan(`Using configuration type '${configType}'`))
@@ -52,6 +54,10 @@ command
     const vendorDirectory = Path.normalize(Path.join(__dirname, '..', 'vendor'))
     const successful = new Set()
     const everything = new Set()
+
+    if (options.debug) {
+      process.env.PUNDLE_DEBUG_REPORTS = '1'
+    }
 
     try {
       const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
@@ -102,6 +108,10 @@ command
     }
   })
   .default(function(options, ...commands) {
+    if (options.debug) {
+      process.env.PUNDLE_DEBUG_REPORTS = '1'
+    }
+
     if (commands.length !== 0) {
       command.showHelp()
       process.exit(0)
@@ -113,7 +123,6 @@ command
       process.exit(1)
     }
     process.env.NODE_ENV = options.dev ? 'development' : 'production'
-    // eslint-disable-next-line global-require
     const Pundle = require('pundle')
 
     Pundle.create({
@@ -126,18 +135,20 @@ command
       subscriptions.add(pundle)
       if (options.dev) {
         const serverPort = options.port || config.server.port
-        promise = createServer(pundle, {
+        const devServer = new PundleDevServer(pundle, {
           port: serverPort,
           hmrPath: config.server.hmrPath,
           hmrHost: config.server.hmrHost,
+          useCache: !options.disableCache,
           hmrReports: config.server.hmrReports,
           sourceMap: config.server.sourceMap,
           sourceMapPath: config.server.sourceMapPath,
           bundlePath: config.server.bundlePath,
           rootDirectory: options.serverRootDirectory || Path.resolve(options.rootDirectory, config.server.rootDirectory),
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
-        }).then(function(subscription) {
-          subscriptions.add(subscription)
+        })
+        subscriptions.add(devServer)
+        promise = devServer.activate().then(function() {
           Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
         })
       } else {

@@ -33,11 +33,14 @@ module.exports = {
     // hmrReports: false,
     // ^ Defaults to true, shows cli reports in browser if enabled
     bundlePath: '/bundle.js',
+    // useCache: false,
+    // ^ Defaults to true, controls dev server boot from cache
     // sourceMap: true,
     // ^ Only specify it if it's different from output.sourceMap
     sourceMapPath: '/bundle.js.map',
     rootDirectory: path.join(__dirname, 'static'),
     redirectNotFoundToIndex: true,
+    // ^ Setting this to true makes it redirect all 404 requests to index
   },
   watcher: {
     usePolling: true,

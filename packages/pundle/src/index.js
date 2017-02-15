@@ -2,12 +2,12 @@
 
 import invariant from 'assert'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import type { File, ComponentAny } from 'pundle-api/types'
+import type { File } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
 import Compilation from './compilation'
-import type { PundleConfig, Preset, Loadable } from '../types'
+import type { PundleConfig, Loadable } from '../types'
 
 const UNIQUE_SIGNATURE_OBJ = {}
 
@@ -30,7 +30,7 @@ class Pundle {
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.compilation)
   }
-  async loadComponents(givenComponents: Array<Loadable<ComponentAny>>): Promise<CompositeDisposable> {
+  async loadComponents(givenComponents: Array<Loadable>): Promise<CompositeDisposable> {
     if (!Array.isArray(givenComponents)) {
       throw new Error('Parameter 1 to loadComponents() must be an Array')
     }
@@ -42,10 +42,10 @@ class Pundle {
   // Notes:
   // - False in a preset config for a component means ignore it
   // - Component config given takes presedence over preset component config
-  async loadPreset(givenPreset: Preset | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
+  async loadPreset(givenPreset: Object | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
     let preset = givenPreset
     if (typeof preset === 'string') {
-      preset = await Helpers.resolve(preset, this.config.compilation.rootDirectory)
+      preset = await Helpers.load(preset, this.config.compilation.rootDirectory)
     }
     if (!Array.isArray(preset)) {
       throw new Error('Invalid preset value/export. It must be an Array')
@@ -57,10 +57,8 @@ class Pundle {
     // TODO: Resolve components relative of their preset path
     const loadables = preset.map(entry => {
       if (presetConfig[entry.name] === false) {
-        // $FlowIgnore: We are filtering it later, dumb flow
         return false
       }
-      // $FlowIgnore: Types too complex for flow
       return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
     }).filter(i => i)
     const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)
@@ -78,7 +76,7 @@ class Pundle {
   // - Share files cache between tree resolutions to avoid duplicates
   async processTree(givenRequest: ?string = null, givenFrom: ?string = null, cached: boolean = true): Promise<Array<File>> {
     let requests
-    const files: Map<string, File> = new Map()
+    const files: Map<string, ?File> = new Map()
     if (!givenRequest) {
       requests = this.config.compilation.entry
     } else if (typeof givenRequest === 'string') {
@@ -93,7 +91,8 @@ class Pundle {
       this.compilation.processTree(request, givenFrom, cached, files)
     ))
 
-    return Array.from(files.values())
+    const filteredFiles: Array<any> = Array.from(files.values())
+    return filteredFiles
   }
   watch(config: Object = {}, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
     return this.compilation.watch(Object.assign({}, this.config.watcher, config), oldFiles)
