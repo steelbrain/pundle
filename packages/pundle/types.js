@@ -1,7 +1,5 @@
 /* @flow */
 
-import type { ComponentAny } from 'pundle-api/types'
-
 export type CompilationConfig = {
   debug: boolean,
   entry: Array<string>,
@@ -15,14 +13,14 @@ export type WatcherConfig = {
 
 export type Preset = Array<{ component: string | Object, config: Object, name: string }>
 // NOTE: Direct T also is accepted but it confuses the hell out of flow so not writing it here
-export type Loadable<T> = string | [string, Object] | [T, Object]
-export type Loaded<T> = [T, Object]
+export type Loaded = [Object, Object]
+export type Loadable = string | [string, Object] | [Object, Object]
 
 // NOTE: This is the config after transformation, not what Pundle accepts
 export type PundleConfig = {
   watcher: Object,
-  presets: Array<Loadable<Preset>>,
-  components: Array<Loadable<ComponentAny>>,
+  presets: Array<Loadable>,
+  components: Array<Loadable>,
   compilation: CompilationConfig,
 }
 
@@ -44,8 +42,8 @@ export type PublicPundleConfig = CompilationConfig & {
     redirectNotFoundToIndex?: boolean,
   },
   watcher?: WatcherConfig,
-  presets?: Array<Loadable<Preset>>,
-  components?: Array<Loadable<ComponentAny>>,
+  presets?: Array<Loadable>,
+  components?: Array<Loadable>,
   configFileName?: string,
   enableConfigFile: boolean,
 }

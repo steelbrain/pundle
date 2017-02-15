@@ -30,7 +30,7 @@ class Pundle {
     this.subscriptions.add(this.emitter)
     this.subscriptions.add(this.compilation)
   }
-  async loadComponents(givenComponents: Array<Loadable<ComponentAny>>): Promise<CompositeDisposable> {
+  async loadComponents(givenComponents: Array<Loadable>): Promise<CompositeDisposable> {
     if (!Array.isArray(givenComponents)) {
       throw new Error('Parameter 1 to loadComponents() must be an Array')
     }
@@ -42,7 +42,7 @@ class Pundle {
   // Notes:
   // - False in a preset config for a component means ignore it
   // - Component config given takes presedence over preset component config
-  async loadPreset(givenPreset: Preset | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
+  async loadPreset(givenPreset: Object | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
     let preset = givenPreset
     if (typeof preset === 'string') {
       preset = await Helpers.resolve(preset, this.config.compilation.rootDirectory)
@@ -57,10 +57,8 @@ class Pundle {
     // TODO: Resolve components relative of their preset path
     const loadables = preset.map(entry => {
       if (presetConfig[entry.name] === false) {
-        // $FlowIgnore: We are filtering it later, dumb flow
         return false
       }
-      // $FlowIgnore: Types too complex for flow
       return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
     }).filter(i => i)
     const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)

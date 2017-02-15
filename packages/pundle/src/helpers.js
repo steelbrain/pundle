@@ -168,7 +168,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   return config
 }
 
-export async function getLoadables<T>(loadables: Array<Loadable<T>>, rootDirectory: string): Promise<Array<Loaded<T>>> {
+export async function getLoadables(loadables: Array<Loadable>, rootDirectory: string): Promise<Array<Loaded>> {
   const toReturn = []
   for (let i = 0, length = loadables.length; i < length; i++) {
     const entry = loadables[i]
