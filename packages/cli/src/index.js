@@ -46,6 +46,7 @@ command
   .option('-p, --port <port>', 'Port for dev server to listen on')
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
   .option('--disable-cache', 'Disable use of dev server cache', false)
+  .option('--debug', 'Enable stack traces of errors, useful for debugging', false)
   .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', async function(options, givenType) {
     const configType = givenType === 'full' ? 'full' : 'basic'
     Helpers.colorsIfAppropriate(chalk.cyan(`Using configuration type '${configType}'`))
@@ -53,6 +54,10 @@ command
     const vendorDirectory = Path.normalize(Path.join(__dirname, '..', 'vendor'))
     const successful = new Set()
     const everything = new Set()
+
+    if (options.debug) {
+      process.env.PUNDLE_DEBUG_REPORTS = '1'
+    }
 
     try {
       const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
