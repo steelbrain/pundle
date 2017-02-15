@@ -108,6 +108,10 @@ command
     }
   })
   .default(function(options, ...commands) {
+    if (options.debug) {
+      process.env.PUNDLE_DEBUG_REPORTS = '1'
+    }
+
     if (commands.length !== 0) {
       command.showHelp()
       process.exit(0)
@@ -144,7 +148,7 @@ command
           rootDirectory: options.serverRootDirectory || Path.resolve(options.rootDirectory, config.server.rootDirectory),
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
         })
-        this.subscriptions.add(devServer)
+        subscriptions.add(devServer)
         promise = devServer.activate().then(function() {
           Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
         })
