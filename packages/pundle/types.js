@@ -12,7 +12,6 @@ export type WatcherConfig = {
 }
 
 export type Preset = Array<{ component: string | Object, config: Object, name: string }>
-// NOTE: Direct T also is accepted but it confuses the hell out of flow so not writing it here
 export type Loaded = [Object, Object]
 export type Loadable = string | [string, Object] | [Object, Object]
 

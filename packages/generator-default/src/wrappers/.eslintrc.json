@@ -4,7 +4,6 @@
     "no-eval": "off",
     "camelcase": "off",
     "guard-for-in": "off",
-    "global-require": "off",
     "no-unused-vars": "off",
     "object-shorthand": ["error", "never"],
     "no-use-before-define": "off",

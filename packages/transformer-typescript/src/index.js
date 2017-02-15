@@ -19,7 +19,7 @@ export default createTransformer(async function(config: Object, file: File) {
   // NOTE: Docs at
   // https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
   // $FlowIgnore: Flow doesn't like dynamic requires
-  const typescript = require(typescriptPath) // eslint-disable-line global-require
+  const typescript = require(typescriptPath)
   const processed = typescript.transpileModule(
     file.contents,
     Object.assign({}, config.config)

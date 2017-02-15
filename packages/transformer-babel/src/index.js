@@ -16,7 +16,7 @@ export default createTransformer(async function(config: Object, file: File) {
   }
 
   // $FlowIgnore: Flow doesn't like dynamic requires
-  const babel = require(babelPath) // eslint-disable-line global-require
+  const babel = require(babelPath)
 
   let processed
   try {

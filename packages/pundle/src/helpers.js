@@ -1,5 +1,5 @@
 /* @flow */
-/* eslint-disable global-require, no-underscore-dangle */
+/* eslint-disable no-underscore-dangle */
 
 import FS from 'pundle-fs'
 import Path from 'path'

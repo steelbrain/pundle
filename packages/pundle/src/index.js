@@ -76,7 +76,7 @@ class Pundle {
   // - Share files cache between tree resolutions to avoid duplicates
   async processTree(givenRequest: ?string = null, givenFrom: ?string = null, cached: boolean = true): Promise<Array<File>> {
     let requests
-    const files: Map<string, File> = new Map()
+    const files: Map<string, ?File> = new Map()
     if (!givenRequest) {
       requests = this.config.compilation.entry
     } else if (typeof givenRequest === 'string') {
@@ -91,7 +91,8 @@ class Pundle {
       this.compilation.processTree(request, givenFrom, cached, files)
     ))
 
-    return Array.from(files.values())
+    const filteredFiles: Array<any> = Array.from(files.values())
+    return filteredFiles
   }
   watch(config: Object = {}, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
     return this.compilation.watch(Object.assign({}, this.config.watcher, config), oldFiles)

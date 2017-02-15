@@ -95,13 +95,11 @@ export function deferPromise(): Object {
 
 export function getWssServer(): Function {
   try {
-    // eslint-disable-next-line global-require
     return require('uws').Server
   } catch (error) {
     if (error.code !== 'MODULE_NOT_FOUND') {
       throw error
     }
-    // eslint-disable-next-line global-require
     return require('ws').Server
   }
 }

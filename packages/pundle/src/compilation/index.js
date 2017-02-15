@@ -78,7 +78,7 @@ export default class Compilation {
   // Make sure to clear the null lock in case of any error
   // Recurse asyncly until all resolves are taken care of
   // Set resolved paths on all file#imports
-  async processTree(request: string, from: ?string = null, cached: boolean = true, files: Map<string, File>): Promise<Map<string, File>> {
+  async processTree(request: string, from: ?string = null, cached: boolean = true, files: Map<string, ?File>): Promise<Map<string, ?File>> {
     const processFileTree = async (entry: Import) => {
       const resolved = await this.resolve(entry.request, entry.from, cached)
       if (files.has(resolved)) {
@@ -86,7 +86,6 @@ export default class Compilation {
         return
       }
       let file
-      // $FlowIgnore: Temp
       files.set(resolved, null)
       try {
         file = await this.processFile(resolved)

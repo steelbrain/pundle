@@ -123,7 +123,6 @@ command
       process.exit(1)
     }
     process.env.NODE_ENV = options.dev ? 'development' : 'production'
-    // eslint-disable-next-line global-require
     const Pundle = require('pundle')
 
     Pundle.create({

@@ -11,7 +11,7 @@ export default createPostTransformer(async function(config: Object, contents: st
   }
 
   // $FlowIgnore: Flow doesn't like dynamic requires
-  const uglify = require(uglifyPath) // eslint-disable-line global-require
+  const uglify = require(uglifyPath)
 
   const processed = uglify.minify(contents, Object.assign({}, config.config, {
     fromString: true,
