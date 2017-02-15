@@ -9,7 +9,7 @@ import command from 'sb-command'
 import fileSize from 'filesize'
 import difference from 'lodash.difference'
 import reporterCLI from 'pundle-reporter-cli'
-import { createServer } from 'pundle-dev'
+import PundleDevServer from 'pundle-dev'
 import { CompositeDisposable } from 'sb-event-kit'
 
 import manifestPundle from 'pundle/package.json'
@@ -126,7 +126,7 @@ command
       subscriptions.add(pundle)
       if (options.dev) {
         const serverPort = options.port || config.server.port
-        promise = createServer(pundle, {
+        const devServer = new PundleDevServer(pundle, {
           port: serverPort,
           hmrPath: config.server.hmrPath,
           hmrHost: config.server.hmrHost,
@@ -136,8 +136,9 @@ command
           bundlePath: config.server.bundlePath,
           rootDirectory: options.serverRootDirectory || Path.resolve(options.rootDirectory, config.server.rootDirectory),
           redirectNotFoundToIndex: config.server.redirectNotFoundToIndex,
-        }).then(function(subscription) {
-          subscriptions.add(subscription)
+        })
+        this.subscriptions.add(devServer)
+        promise = devServer.activate().then(function() {
           Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
         })
       } else {
