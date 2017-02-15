@@ -45,6 +45,7 @@ command
   .option('-d, --dev', 'Enable dev http server', false)
   .option('-p, --port <port>', 'Port for dev server to listen on')
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
+  .option('--disable-cache', 'Disable use of dev server cache', false)
   .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', async function(options, givenType) {
     const configType = givenType === 'full' ? 'full' : 'basic'
     Helpers.colorsIfAppropriate(chalk.cyan(`Using configuration type '${configType}'`))
@@ -130,6 +131,7 @@ command
           port: serverPort,
           hmrPath: config.server.hmrPath,
           hmrHost: config.server.hmrHost,
+          useCache: !options.disableCache,
           hmrReports: config.server.hmrReports,
           sourceMap: config.server.sourceMap,
           sourceMapPath: config.server.sourceMapPath,
