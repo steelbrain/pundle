@@ -9,7 +9,7 @@ import type Compilation from 'pundle/src/compilation'
 
 import type { ServerConfig, ServerConfigInput } from '../types'
 
-export const browserFile = require.resolve('../browser')
+export const browserFile = require.resolve('./browser')
 export function fillConfig(given: ServerConfigInput): ServerConfig {
   const config = {}
 
