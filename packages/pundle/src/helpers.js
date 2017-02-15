@@ -1,63 +1,65 @@
 /* @flow */
 /* eslint-disable global-require, no-underscore-dangle */
 
+import FS from 'pundle-fs'
 import Path from 'path'
 import invariant from 'assert'
 import promisify from 'sb-promisify'
-import { fromStack as callsiteFromStack } from 'sb-callsite'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { PundleConfig, Loadable, Loaded } from '../types'
 
-const resolveModule = promisify(require('resolve'))
-const MODULE_NAME_REGEXP = /Cannot find module '(.*?)'/
-
-export function getResolveError(moduleName: string): Error {
-  const error = new Error(`Unable to resolve '${moduleName}' from root directory. Make sure it's installed correctly`)
+const resolve = promisify(require('resolve'))
+function getResolveError(request: string): Error {
+  const error = new Error(`Unable to resolve '${request}' from root directory. Make sure it's installed correctly`)
   error.code = 'MODULE_NOT_FOUND'
-  // $FlowIgnore: Custom property
-  error.duringResolution = true
   return error
 }
 
-export async function resolve<T>(request: string, rootDirectory: string): Promise<T> {
+export async function load(request: string | Object, rootDirectory: string): Promise<Object> {
   let resolved
-  try {
-    resolved = await resolveModule(request, { basedir: rootDirectory })
-  } catch (_) {
-    throw getResolveError(request)
-  }
   let mainModule
-  try {
-    // $FlowIgnore: This is how it works, loadables are dynamic requires
-    mainModule = require(resolved)
-  } catch (error) {
-    // Show a fancy MessageIssue if it's the file we required or the file it requires
-    // Otherwise show a raw error message
-    if (error.code === 'MODULE_NOT_FOUND') {
-      let showFancyError = false
-      const stack = callsiteFromStack(error.stack)
-      for (let i = 0, length = stack.length; i < length; i++) {
-        const entry = stack[i]
-        if (Path.isAbsolute(entry.file)) {
-          showFancyError = entry.file === resolved || entry.file === __dirname
-          break
-        }
+  if (typeof request === 'string') {
+    try {
+      resolved = await resolve(request, { basedir: rootDirectory })
+    } catch (error) {
+      if (error.message.startsWith('Cannot find module')) {
+        throw getResolveError(request)
       }
-      if (showFancyError) {
-        const chunks = MODULE_NAME_REGEXP.exec(error.message)
-        if (chunks && chunks.length) {
-          throw getResolveError(chunks[1])
-        }
-      }
+      throw error
     }
-    throw error
+    // $FlowIgnore: We have to. sorry.
+    mainModule = require(resolved)
+  } else mainModule = request
+  if (mainModule && mainModule.__esModule) {
+    mainModule = mainModule.default
   }
-  mainModule = mainModule && mainModule.__esModule ? mainModule.default : mainModule
-  if (typeof mainModule === 'object' && mainModule) {
+  if ((typeof mainModule === 'object' && mainModule) || typeof request === 'object') {
     return mainModule
   }
-  throw new MessageIssue(`Module '${request}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
+  throw new MessageIssue(`Module '${request.toString()}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
 }
+
+export async function getLoadables(loadables: Array<Loadable>, rootDirectory: string): Promise<Array<Loaded>> {
+  const toReturn = []
+  for (let i = 0, length = loadables.length; i < length; i++) {
+    const entry = loadables[i]
+
+    let config = {}
+    let component
+    if (Array.isArray(entry)) {
+      [component, config] = entry
+    } else {
+      component = entry
+    }
+    const resolved = await load(component, rootDirectory)
+    if (!resolved || typeof resolved.$type !== 'string') {
+      throw new MessageIssue('Unable to load invalid component')
+    }
+    toReturn.push([resolved, config])
+  }
+  return toReturn
+}
+
 
 // NOTE:
 // In all configs but rootDirectory, given config takes precendece
@@ -69,21 +71,24 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
     throw new Error('Config must be an object')
   }
   if (typeof a.enableConfigFile === 'undefined' || a.enableConfigFile) {
-    let configModule
+    let loadFileConfig = false
+    const configPath = Path.join(rootDirectory, a.configFileName || '.pundle.js')
+
     try {
-      configModule = await resolve(Path.join(rootDirectory, a.configFileName || '.pundle.js'), rootDirectory)
-    } catch (error) {
-      if (!error.duringResolution) {
-        throw error
+      await FS.stat(configPath)
+      loadFileConfig = true
+    } catch (_) { /* No Op */ }
+
+    if (loadFileConfig) {
+      const configModule = await load(configPath, rootDirectory)
+      if (typeof configModule === 'function') {
+        b = await configModule()
+      } else if (typeof configModule === 'object' && configModule) {
+        b = configModule
       }
-    }
-    if (typeof configModule === 'function') {
-      b = await configModule()
-    } else if (typeof configModule === 'object') {
-      b = configModule
-    }
-    if (!b) {
-      throw new MessageIssue(`Invalid export value of config file in '${rootDirectory}'`)
+      if (!b) {
+        throw new MessageIssue(`Invalid export value of config file in '${rootDirectory}'`)
+      }
     }
   }
 
@@ -166,25 +171,4 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
 
   config.compilation = compilation
   return config
-}
-
-export async function getLoadables(loadables: Array<Loadable>, rootDirectory: string): Promise<Array<Loaded>> {
-  const toReturn = []
-  for (let i = 0, length = loadables.length; i < length; i++) {
-    const entry = loadables[i]
-
-    let config = {}
-    let component
-    if (Array.isArray(entry)) {
-      [component, config] = entry
-    } else {
-      component = entry
-    }
-    const resolved = typeof component === 'string' ? await resolve(component, rootDirectory) : component
-    if (!resolved || typeof resolved.$type !== 'string') {
-      throw new MessageIssue('Unable to load invalid component')
-    }
-    toReturn.push([resolved, config])
-  }
-  return toReturn
 }

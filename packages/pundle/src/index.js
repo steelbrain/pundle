@@ -2,12 +2,12 @@
 
 import invariant from 'assert'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import type { File, ComponentAny } from 'pundle-api/types'
+import type { File } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
 import Compilation from './compilation'
-import type { PundleConfig, Preset, Loadable } from '../types'
+import type { PundleConfig, Loadable } from '../types'
 
 const UNIQUE_SIGNATURE_OBJ = {}
 
@@ -45,7 +45,7 @@ class Pundle {
   async loadPreset(givenPreset: Object | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
     let preset = givenPreset
     if (typeof preset === 'string') {
-      preset = await Helpers.resolve(preset, this.config.compilation.rootDirectory)
+      preset = await Helpers.load(preset, this.config.compilation.rootDirectory)
     }
     if (!Array.isArray(preset)) {
       throw new Error('Invalid preset value/export. It must be an Array')
