@@ -200,8 +200,7 @@ const __sbPundle = {
     if (hmrDebugging) {
       console.log('[HMR] Update order is', updateOrder)
     }
-    for (let i = 0, length = updateOrder.length; i < length; i++) {
-      const file = updateOrder[i]
+    updateOrder.forEach((file) => {
       const oldModule = this.cache[file]
       const newModule = this.getModule(oldModule.id, oldModule.callback)
       if (hmrDebugging) {
@@ -228,7 +227,7 @@ const __sbPundle = {
       newModule.hot.callbacks_accept.forEach(function(callback) {
         callback()
       })
-    }
+    })
   },
   get debugHMR() {
     return !!localStorage.getItem('__sbPundleDebugHMR')
