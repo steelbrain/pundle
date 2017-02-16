@@ -129,7 +129,7 @@ class Server {
           this.state.booted = true
           this.state.modified = true
           if (this.connections.size && this.filesChanged.size) {
-            console.log('compile contents hmr')
+            await this.generateForHMR()
           }
         },
       }),
