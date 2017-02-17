@@ -200,7 +200,6 @@ export default class Compilation {
   // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
   async watch(givenConfig: Object = {}, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
     let queue = Promise.resolve()
-    let skipProcessing = false
     const files: Map<string, ?File> = new Map()
     const config = Helpers.fillWatcherConfig(givenConfig)
     const resolvedEntries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
@@ -228,13 +227,12 @@ export default class Compilation {
         const fileStat = await fileSystem.stat(filePath)
         const lastStateFile = lastState.get(filePath)
         if (lastStateFile && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
-          skipProcessing = true
           file = lastStateFile
           files.set(filePath, file)
         }
       }
 
-      if (!skipProcessing) {
+      if (!file) {
         try {
           files.set(filePath, null)
           file = await this.processFile(filePath)
