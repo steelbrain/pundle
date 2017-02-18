@@ -1,6 +1,6 @@
 {
   "name": "pundle",
-  "version": "2.0.0-beta14",
+  "version": "2.0.0-beta15",
   "description": "Creating peaceful bundles for everyone",
   "main": "lib/index.js",
   "scripts": {
@@ -28,10 +28,10 @@
     "lodash.difference": "^4.5.0",
     "lodash.invert": "^4.1.1",
     "lodash.uniq": "^4.5.0",
-    "pundle-api": "2.0.0-beta14",
-    "pundle-browser": "2.0.0-beta14",
-    "pundle-fs": "2.0.0-beta14",
-    "pundle-reporter-cli": "2.0.0-beta14",
+    "pundle-api": "2.0.0-beta15",
+    "pundle-browser": "2.0.0-beta15",
+    "pundle-fs": "2.0.0-beta15",
+    "pundle-reporter-cli": "2.0.0-beta15",
     "resolve": "^1.1.7",
     "sb-debounce": "^1.0.2",
     "sb-event-kit": "^3.0.0",

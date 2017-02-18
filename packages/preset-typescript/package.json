@@ -1,6 +1,6 @@
 {
   "name": "pundle-preset-typescript",
-  "version": "2.0.0-beta14",
+  "version": "2.0.0-beta15",
   "description": "Typescript preset for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -18,9 +18,9 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-loader-js": "2.0.0-beta14",
-    "pundle-transformer-typescript": "2.0.0-beta14",
-    "pundle-resolver-default": "2.0.0-beta14"
+    "pundle-loader-js": "2.0.0-beta15",
+    "pundle-transformer-typescript": "2.0.0-beta15",
+    "pundle-resolver-default": "2.0.0-beta15"
   },
   "devDependencies": {}
 }

@@ -1,6 +1,6 @@
 {
   "name": "pundle-generator-default",
-  "version": "2.0.0-beta14",
+  "version": "2.0.0-beta15",
   "description": "Default output generator for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -19,8 +19,8 @@
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
     "babel-plugin-inline-import": "2.0.4",
-    "pundle-api": "2.0.0-beta14",
-    "pundle-fs": "2.0.0-beta14",
+    "pundle-api": "2.0.0-beta15",
+    "pundle-fs": "2.0.0-beta15",
     "slash": "^1.0.0",
     "source-map": "^0.5.6",
     "source-map-to-comment": "^1.1.0"
