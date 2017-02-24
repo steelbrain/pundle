@@ -1,7 +1,9 @@
-![Pundle](https://raw.githubusercontent.com/motion/pundle/master/pundle-words.png)
+<p align="center">
+  <img height="100px" src="https://raw.githubusercontent.com/motion/pundle/master/pundle-words.png">
+</p>
 
 <p align="center">
-  A bundler without compromise.
+  modern javascript bundler
 </p>
 
 <p align="center">
@@ -12,15 +14,31 @@
   </a>
 </p>
 
-Pundle is a next generation module bundler. It's written with extensibility and performance in mind and out performs any other bundler out there.
+Pundle is a next generation module bundler. It's written with extensibility and performance in mind.
 
 ## Documentation
 
-Pundle uses Mono-Repo architecture to manage npm packages, you can browse each module's individual documentation by visiting `packages/$NAME`.
+Welcome to the official documentation of Pundle, the peaceful module bundler of the 21st century.
 
-There are WIP docs available in [`/docs`](https://github.com/motion/pundle/tree/master/docs) of this repo
+### Introduction
 
-## Setting up for development
+This section contains the resources you need to get started with Pundle and to better understand how it all connects together.
+
+- [Getting Started](./docs/introduction/getting-started.md)
+- [Configuration](./docs/introduction/configuration.md)
+- [CLI Usage](./docs/introduction/cli-usage.md)
+- [Components](./docs/introduction/components.md) (the building blocks)
+- [Presets](./docs/introduction/presets.md)
+
+### Technical Introduction
+
+This section contains the resources that help you write your own Components and Presets so you can get the most out of Pundle.
+
+- [Life cycles](./docs/technical/lifecycles.md)
+- [Components](./docs/technical/components.md)
+- [Presets](./docs/technical/presets.md)
+
+## Contributing
 
 Clone the repo and run these two commands for initial setup
 
