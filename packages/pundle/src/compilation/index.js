@@ -224,38 +224,44 @@ export default class Compilation {
       let processError = null
 
       if (typeof oldValue === 'undefined' && lastState.has(filePath)) {
-        const fileStat = await fileSystem.stat(filePath)
+        files.set(filePath, null)
+        // ^ Lock the cache early to avoid double-processing because we await below
+        let fileStat
+        try {
+          fileStat = await fileSystem.stat(filePath)
+        } catch (_) {
+          // The file could no longer exist since the cache was built
+        }
         const lastStateFile = lastState.get(filePath)
-        if (lastStateFile && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
+        if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
           file = lastStateFile
-          files.set(filePath, file)
         }
       }
 
-      if (!file) {
-        try {
+      try {
+        if (!file) {
           files.set(filePath, null)
           file = await this.processFile(filePath)
-          files.set(filePath, file)
-          await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
-            entry.resolved = resolved
-          })))
-        } catch (error) {
-          if (oldValue) {
-            files.set(filePath, oldValue)
-          } else {
-            files.delete(filePath)
-          }
-          processError = error
-          this.report(error)
-          return false
-        } finally {
-          for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
-            try {
-              await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
-            } catch (error) {
-              this.report(error)
-            }
+        }
+        files.set(filePath, file)
+        await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
+          entry.resolved = resolved
+        })))
+      } catch (error) {
+        if (oldValue) {
+          files.set(filePath, oldValue)
+        } else {
+          files.delete(filePath)
+        }
+        processError = error
+        this.report(error)
+        return false
+      } finally {
+        for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+          try {
+            await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
+          } catch (error) {
+            this.report(error)
           }
         }
       }
