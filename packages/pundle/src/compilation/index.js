@@ -235,34 +235,33 @@ export default class Compilation {
         const lastStateFile = lastState.get(filePath)
         if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
           file = lastStateFile
-          files.set(filePath, file)
         }
       }
 
-      if (!file) {
-        try {
+      try {
+        if (!file) {
           files.set(filePath, null)
           file = await this.processFile(filePath)
-          files.set(filePath, file)
-          await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
-            entry.resolved = resolved
-          })))
-        } catch (error) {
-          if (oldValue) {
-            files.set(filePath, oldValue)
-          } else {
-            files.delete(filePath)
-          }
-          processError = error
-          this.report(error)
-          return false
-        } finally {
-          for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
-            try {
-              await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
-            } catch (error) {
-              this.report(error)
-            }
+        }
+        files.set(filePath, file)
+        await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
+          entry.resolved = resolved
+        })))
+      } catch (error) {
+        if (oldValue) {
+          files.set(filePath, oldValue)
+        } else {
+          files.delete(filePath)
+        }
+        processError = error
+        this.report(error)
+        return false
+      } finally {
+        for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+          try {
+            await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
+          } catch (error) {
+            this.report(error)
           }
         }
       }
