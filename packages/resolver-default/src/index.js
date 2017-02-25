@@ -31,6 +31,10 @@ function resolveInManifestAndAlias(request: string, alias: Object, manifest: Obj
       }
     } else if (typeof value === 'string') {
       moduleName = value
+      if (moduleName.slice(0, 1) === '.') {
+        // The new ./something value is relative to the package root
+        moduleName = Path.resolve(manifest.rootDirectory, moduleName)
+      }
       break
     }
   }
