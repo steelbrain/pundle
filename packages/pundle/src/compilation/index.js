@@ -224,9 +224,16 @@ export default class Compilation {
       let processError = null
 
       if (typeof oldValue === 'undefined' && lastState.has(filePath)) {
-        const fileStat = await fileSystem.stat(filePath)
+        files.set(filePath, null)
+        // ^ Lock the cache early to avoid double-processing because we await below
+        let fileStat
+        try {
+          fileStat = await fileSystem.stat(filePath)
+        } catch (_) {
+          // The file could no longer exist since the cache was built
+        }
         const lastStateFile = lastState.get(filePath)
-        if (lastStateFile && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
+        if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
           file = lastStateFile
           files.set(filePath, file)
         }
