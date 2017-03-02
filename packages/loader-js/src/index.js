@@ -6,7 +6,7 @@ import generate from 'babel-generator'
 import { createLoader, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
 import type { File, FileImport, FileChunk, LoaderResult } from 'pundle-api/types'
 
-import { getName, getParsedReplacement } from './helpers'
+import * as Helpers from './helpers'
 
 const RESOLVE_NAMES = new Set([
   'require',
@@ -36,19 +36,7 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
     ast = parse(file.contents, {
       sourceType: 'module',
       sourceFilename: file.filePath,
-      plugins: [
-        'jsx',
-        'flow',
-        'doExpressions',
-        'objectRestSpread',
-        'decorators',
-        'classProperties',
-        'exportExtensions',
-        'asyncGenerators',
-        'functionBind',
-        'functionSent',
-        'dynamicImport',
-      ],
+      plugins: ['jsx', 'flow', '*'],
     })
   } catch (error) {
     const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, this.config.rootDirectory)}`
@@ -65,38 +53,10 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
     node.value = request.id.toString()
     // NOTE: ^ Casting it to string is VERY VERY important, it breaks everything otherwise
   }
-  const processSplit = path => {
-    const [nodeEntry, nodeCallback, nodeName] = path.node.arguments
-
-    const chunk = {
-      name: nodeName ? nodeName.value : this.getNextUniqueID().toString(),
-      entry: [],
-      imports: [],
-    }
-    nodeEntry.elements.forEach(element => {
-      const request = this.getImportRequest(element.value, file.filePath)
-      chunk.entry.push(request)
-      element.value = request.id.toString()
-    })
-    if (nodeCallback && nodeCallback.params.length) {
-      const nodeCallbackParam = nodeCallback.params[0]
-      path.scope.traverse(nodeCallback, {
-        CallExpression: ({ node, scope }) => {
-          if (node.callee.name === nodeCallbackParam.name && !scope.getBinding(nodeCallbackParam.name)) {
-            const request = this.getImportRequest(node.arguments[0].value, file.filePath)
-            chunk.imports.push(request)
-            node.arguments[0].value = request.id.toString()
-          }
-        },
-      })
-    }
-
-    chunks.push(chunk)
-  }
   const processReplaceable = path => {
-    const name = getName(path.node)
+    const name = Helpers.getName(path.node)
     if ({}.hasOwnProperty.call(this.config.replaceVariables, name)) {
-      path.replaceWith(getParsedReplacement(this.config.replaceVariables[name]))
+      path.replaceWith(Helpers.getParsedReplacement(this.config.replaceVariables[name]))
     }
   }
   traverse(ast, {
@@ -104,7 +64,7 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
       processResolve(path.node.source)
     },
     CallExpression(path) {
-      const name = getName(path.node.callee)
+      const name = Helpers.getName(path.node.callee)
       if (!RESOLVE_NAMES.has(name)) {
         return
       }
@@ -116,7 +76,7 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
         return
       }
       if (RESOLVE_NAMES_CHUNK.has(name)) {
-        processSplit(path)
+        Helpers.processSplit.call(this, file, chunks, path)
       } else {
         processResolve(parameter)
       }
