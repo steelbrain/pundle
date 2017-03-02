@@ -39,7 +39,6 @@ export type FileChunk = {
   imports: Array<FileImport>,
 }
 
-// TODO: Merge chunks with the same name
 export type File = {
   source: string,
   chunks: Array<FileChunk>,

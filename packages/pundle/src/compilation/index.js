@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import uniqBy from 'lodash.uniqby'
 import debounce from 'sb-debounce'
 import fileSystem from 'sb-fs'
 import difference from 'lodash.difference'
@@ -92,6 +93,7 @@ export default class Compilation {
       loaderResult = await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
+        file.chunks = file.chunks.concat(loaderResult.chunks)
         file.imports = file.imports.concat(loaderResult.imports)
         break
       }
@@ -104,6 +106,27 @@ export default class Compilation {
     for (const entry of Helpers.filterComponents(this.context.components, 'plugin')) {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
     }
+
+    // Merge chunks with the same name
+    const chunksMap = new Map()
+    file.chunks.forEach(function(chunk) {
+      const oldValue = chunksMap.get(chunk.name)
+      if (oldValue) {
+        oldValue.entry = oldValue.entry.concat(chunk.entry)
+        oldValue.imports = oldValue.imports.concat(chunk.imports)
+      } else {
+        chunksMap.set(chunk.name, chunk)
+      }
+    })
+    file.chunks = Array.from(chunksMap.values())
+
+    // Dedupe imports and entries in chunks
+    file.chunks.forEach(function(chunk) {
+      chunk.entry = uniqBy(chunk.entry, 'request')
+      chunk.imports = uniqBy(chunk.imports, 'request')
+    })
+    // Dedupe imports in file
+    file.imports = uniqBy(file.imports, 'request')
 
     return file
   }

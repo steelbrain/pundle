@@ -60,16 +60,16 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
     }
   }
   traverse(ast, {
-    ImportDeclaration(path) {
+    ImportDeclaration: (path) => {
       processResolve(path.node.source)
     },
-    CallExpression(path) {
+    CallExpression: (path) => {
       const name = Helpers.getName(path.node.callee)
       if (!RESOLVE_NAMES.has(name)) {
         return
       }
       const parameter = path.node.arguments && path.node.arguments[0]
-      if (!parameter || parameter.type !== (name === 'require.ensure' ? 'ArrayExpression' : 'StringLiteral')) {
+      if (!parameter || parameter.type !== (RESOLVE_NAMES_CHUNK.has(name) ? 'ArrayExpression' : 'StringLiteral')) {
         return
       }
       if (RESOLVE_NAMES_SENSITIVE.has(name) && path.scope.hasBinding('require')) {
