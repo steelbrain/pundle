@@ -5,13 +5,14 @@ import slash from 'slash'
 import fileSystem from 'sb-fs'
 import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
-import type { File, FileImport } from 'pundle-api/types'
+import type { Chunk, FileImport } from 'pundle-api/types'
 
 export const LINE_BREAK = /\r\n|\n|\r/
 export function getLinesCount(text: string): number {
   return text.split(LINE_BREAK).length
 }
 
+// TODO: Persist these numeric paths when resuming from cache
 let nextNumericPath = 1
 export const numericPaths: Map<string, string> = new Map()
 export function getFilePath(compilation: Object, config: Object, filePath: string): string {
@@ -51,23 +52,28 @@ export async function getWrapperContents(compilation: Object, config: Object): P
   return fileContents
 }
 
-export function getImportResolutions(compilation: Object, config: Object, files: Array<File>) : Object {
+export function getImportResolutions(compilation: Object, chunk: Chunk, config: Object) : Object {
   const resolutionMap = {}
 
-  function mergeResolutions(entry: FileImport) {
+  function mergeResolutions(entry: FileImport, chunkId: number) {
     if (!entry.resolved) {
       throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from || 'Source root'}`, 'error')
     }
     const filePath = getFilePath(compilation, config, entry.resolved)
     if (resolutionMap[filePath]) {
-      resolutionMap[filePath].push(entry.id)
+      resolutionMap[filePath].push({ module: entry.id, chunk: chunkId })
     } else {
-      resolutionMap[filePath] = [entry.id]
+      resolutionMap[filePath] = [{ module: entry.id, chunk: chunkId }]
     }
   }
 
-  for (let i = 0, length = files.length; i < length; i++) {
-    files[i].imports.forEach(mergeResolutions)
+  chunk.files.forEach(function(file) {
+    file.imports.forEach(entry => mergeResolutions(entry, chunk.id))
+  })
+  if (config.chunkMappings) {
+    config.chunkMappings.external.forEach(mapping =>
+      mergeResolutions({ id: mapping.module, resolved: mapping.filePath, from: null, request: mapping.filePath }, mapping.chunk)
+    )
   }
   return resolutionMap
 }

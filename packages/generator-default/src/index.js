@@ -25,7 +25,6 @@ import * as Helpers from './helpers'
 // - Return all chunks joined, and sourceMap (if enabled)
 
 export default createGenerator(async function(config: Object, chunk: Chunk): Promise<GeneratorResult> {
-  const files = chunk.files
   const entries = chunk.getEntry()
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
@@ -36,7 +35,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   // NOTE: I don't know why we need a +1, but adding it makes things work
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
-  for (const file of files.values()) {
+  for (const file of chunk.files.values()) {
     const publicPath = Helpers.getFilePath(this, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
     chunks.push(fileContents)
@@ -50,8 +49,9 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
     }
   }
 
-  // const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
-  // chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
+  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(Helpers.getImportResolutions(this, chunk, config))})`)
+
+  // TODO: If entries are external deps, wrap this in a require.ensure block
   for (let i = 0, length = entries.length; i < length; i++) {
     invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
     chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entries[i].resolved)}')`)
@@ -70,13 +70,14 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   return {
     contents: chunks.join('\n'),
     sourceMap,
-    filesGenerated: Array.from(files.keys()),
+    filesGenerated: Array.from(chunk.files.keys()),
   }
 }, {
   entry: null,
   wrapper: 'normal',
   pathType: 'filePath',
   sourceMap: false,
+  chunkMappings: null,
   sourceMapPath: null,
   sourceNamespace: 'app',
   sourceMapNamespace: 'app',

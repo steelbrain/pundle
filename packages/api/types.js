@@ -63,11 +63,12 @@ export type Chunk = {
   deleteFile(filePath: string): void;
 }
 
-export type ChunkMapping = {
+export type ChunkMappings = {
   id: number,
   external: Array<{
     chunk: number,
-    module: number
+    module: number,
+    filePath: string,
   }>,
 }
 
