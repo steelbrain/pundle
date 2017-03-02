@@ -55,13 +55,20 @@ export type Chunk = {
   id: number;
   files: Map<string, File>;
   entry: Array<FileImport>;
-  imports: Set<FileImport>;
   getId(): number;
   getEntry(): Array<FileImport>;
   getFiles(): Array<File>;
   hasFile(filePath: string): boolean;
   addFile(filePath: string, file: File): void;
   deleteFile(filePath: string): void;
+}
+
+export type ChunkMapping = {
+  id: number,
+  external: Array<{
+    chunk: number,
+    module: number
+  }>,
 }
 
 export type LoaderResult = {
@@ -89,7 +96,11 @@ export type ReporterResult = void
 export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<ReporterResult>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
-export type GeneratorResult = { contents: string, sourceMap: Object, filePaths: Array<string> }
+export type GeneratorResult = {
+  contents: string,
+  sourceMap: Object,
+  filesGenerated: Array<string>,
+}
 export type GeneratorCallback = ((config: Object, files: Chunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 

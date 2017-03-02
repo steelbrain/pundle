@@ -1,9 +1,7 @@
 /* @flow */
 
 import type { ComponentAny } from 'pundle-api/types'
-import type Chunk from './src/chunk'
 
-export type { Chunk }
 export type ComponentEntry = {
   config: Object,
   component: ComponentAny,

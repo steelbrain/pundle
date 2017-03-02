@@ -34,6 +34,7 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Chu
   })
 
   chunks.unshift(this.getChunk({
+    id: this.getNextUniqueID(),
     entry: entries,
     imports: [],
   }, files, { allFiles: true }))

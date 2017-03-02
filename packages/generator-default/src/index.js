@@ -25,7 +25,7 @@ import * as Helpers from './helpers'
 // - Return all chunks joined, and sourceMap (if enabled)
 
 export default createGenerator(async function(config: Object, chunk: Chunk): Promise<GeneratorResult> {
-  const files = chunk.getFiles()
+  const files = chunk.files
   const entries = chunk.getEntry()
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
@@ -36,24 +36,22 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   // NOTE: I don't know why we need a +1, but adding it makes things work
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
-  // Sort the files so git diff and others don't always have random output
-  files.sort((a, b) => a.filePath.localeCompare(b.filePath))
-
-  for (let i = 0, length = files.length; i < length; i++) {
-    const file = files[i]
+  for (const file of files.values()) {
     const publicPath = Helpers.getFilePath(this, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
     chunks.push(fileContents)
     const fileSourceMap = file.sourceMap
-    if (config.sourceMap && fileSourceMap) {
-      const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
-      Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.source, linesCount)
+    if (config.sourceMap) {
+      if (fileSourceMap) {
+        const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
+        Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.source, linesCount)
+      }
+      linesCount += Helpers.getLinesCount(fileContents)
     }
-    linesCount += Helpers.getLinesCount(fileContents)
   }
 
-  const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
-  chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
+  // const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
+  // chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
   for (let i = 0, length = entries.length; i < length; i++) {
     invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
     chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entries[i].resolved)}')`)
@@ -72,7 +70,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   return {
     contents: chunks.join('\n'),
     sourceMap,
-    filePaths: files.map(i => i.filePath),
+    filesGenerated: Array.from(files.keys()),
   }
 }, {
   entry: null,

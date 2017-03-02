@@ -3,7 +3,7 @@
 import reporterCli from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { File, FileChunk, ComponentAny, FileImport, ResolverResult } from 'pundle-api/types'
+import type { File, FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
 
 import Chunk from '../chunk'
 import * as Helpers from './helpers'
@@ -53,12 +53,17 @@ export default class Context {
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     return (await this.resolveAdvanced(request, from, cached)).filePath
   }
-  async generate(chunks: Array<Chunk>, generateConfig: Object = {}): Promise<Array<Object>> {
+  async generate(given: Array<Chunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult>> {
+    const chunks: Array<Object> = given.slice()
+    const mappings = Helpers.getChunksMappings(chunks)
     const results = []
-    for (const chunk of chunks) {
+
+    for (let i = 0, length = chunks.length; i < length; i++) {
+      const chunk: Chunk = chunks[i]
+      const chunkMappings = mappings[i]
       let result
       for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-        result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], chunk)
+        result = await Helpers.invokeComponent(this, entry, 'callback', [{ chunkMappings }, generateConfig], chunk)
         if (result) {
           break
         }
