@@ -15,11 +15,13 @@ const RESOLVE_NAMES = new Set([
   'module.hot.accept',
   'module.hot.decline',
 ])
+const RESOLVE_NAMES_CHUNK = new Set([
+  'require.ensure',
+])
 const RESOLVE_NAMES_SENSITIVE = new Set([
   'require',
   'require.resolve',
 ])
-const UNIQUE_CHUNK_KEY = '__$sb_pundle_context_chunk'
 
 export default createLoader(function(config: Object, file: File): ?LoaderResult {
   if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
@@ -57,24 +59,37 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
     }
   }
 
-  const processSplit = node => {
-    const chunkName = node.arguments[2] && node.arguments[2].type === 'StringLiteral' ? node.arguments[2].value : this.getNextUniqueID().toString()
-    const entryPoints = node.arguments[0].elements.map(arg => arg.value)
-    const chunk = chunks.filter(c => c.name === chunkName)[0] || {
-      name: chunkName,
-      entry: entryPoints,
-      imports: [],
-    }
-    node[UNIQUE_CHUNK_KEY] = chunk
-    if (chunks.indexOf(chunk) === -1) {
-      chunks.push(chunk)
-    }
-  }
   const processResolve = node => {
     const request = this.getImportRequest(node.value, file.filePath)
     imports.push(request)
     node.value = request.id.toString()
     // NOTE: ^ Casting it to string is VERY VERY important, it breaks everything otherwise
+  }
+  const processSplit = path => {
+    const chunkName = path.node.arguments[2] && path.node.arguments[2].type === 'StringLiteral' ? path.node.arguments[2].value : this.getNextUniqueID().toString()
+    const chunk = {
+      name: chunkName,
+      entry: [],
+      imports: [],
+    }
+    path.node.arguments[0].elements.forEach(element => {
+      const request = this.getImportRequest(element.value, file.filePath)
+      chunk.entry.push(request)
+      element.value = request.id.toString()
+    })
+    if (path.node.arguments[1] && path.node.arguments[1].type === 'FunctionExpression' && path.node.arguments[1].params.length) {
+      path.scope.traverse(path.node.arguments[1], {
+        CallExpression: (newPath) => {
+          if (newPath.node.callee.name === path.node.arguments[1].params[0].name) {
+            const request = this.getImportRequest(newPath.node.arguments[0].value, file.filePath)
+            chunk.imports.push(request)
+            newPath.node.arguments[0].value = request.id.toString()
+          }
+        },
+      })
+    }
+
+    chunks.push(chunk)
   }
   const processReplaceable = path => {
     const name = getName(path.node)
@@ -98,17 +113,10 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
       if (RESOLVE_NAMES_SENSITIVE.has(name) && path.scope.hasBinding('require')) {
         return
       }
-      if (name === 'require.ensure') {
-        processSplit(path.node)
+      if (RESOLVE_NAMES_CHUNK.has(name)) {
+        processSplit(path)
       } else {
-        const chunk: ?FileChunk = path.findParent(parentPath => parentPath.node[UNIQUE_CHUNK_KEY])
-        if (chunk) {
-          const request = this.getImportRequest(parameter.value, file.filePath)
-          chunk.imports.push(request)
-          parameter.value = request.id.toString()
-        } else {
-          processResolve(parameter)
-        }
+        processResolve(parameter)
       }
     },
     Identifier: processReplaceable,
