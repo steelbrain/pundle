@@ -83,16 +83,6 @@ export function unregisterCompilation(context: Context): void {
   }
 }
 
-export function deferPromise(): Object {
-  let reject
-  let resolve
-  const promise = new Promise(function(givenResolve, givenReject) {
-    reject = givenReject
-    resolve = givenResolve
-  })
-  return { reject, resolve, promise }
-}
-
 export function getWssServer(): Function {
   try {
     return require('uws').Server

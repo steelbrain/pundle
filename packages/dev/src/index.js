@@ -5,6 +5,7 @@ import unique from 'lodash.uniq'
 import express from 'express'
 import arrayDiff from 'lodash.difference'
 import ConfigFile from 'sb-config-file'
+import promiseDefer from 'promise.defer'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
 import type Pundle from 'pundle/src'
@@ -49,7 +50,7 @@ class Server {
   async activate() {
     const app = express()
     const oldFiles: Map<string, File> = new Map()
-    const bootPromise = Helpers.deferPromise()
+    const bootPromise = promiseDefer()
 
     this.enqueue(() => bootPromise.promise)
     if (this.config.useCache) {
