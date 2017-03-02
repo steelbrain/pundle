@@ -1,7 +1,7 @@
 /* @flow */
 /* eslint-disable no-underscore-dangle */
 
-import FS from 'pundle-fs'
+import FS from 'sb-fs'
 import Path from 'path'
 import invariant from 'assert'
 import promisify from 'sb-promisify'

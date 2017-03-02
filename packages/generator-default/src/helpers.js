@@ -2,7 +2,7 @@
 
 import Path from 'path'
 import slash from 'slash'
-import fileSystem from 'pundle-fs'
+import fileSystem from 'sb-fs'
 import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
 import type { File, Import } from 'pundle-api/types'

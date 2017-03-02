@@ -2,7 +2,7 @@
 
 import Path from 'path'
 import debounce from 'sb-debounce'
-import fileSystem from 'pundle-fs'
+import fileSystem from 'sb-fs'
 import difference from 'lodash.difference'
 import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'

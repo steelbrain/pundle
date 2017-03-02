@@ -3,7 +3,7 @@
 import Path from 'path'
 import resolve from 'resolve'
 import memoize from 'sb-memoize'
-import fileSystem from 'pundle-fs'
+import fileSystem from 'sb-fs'
 
 export const MODULE_SEPARATOR_REGEX = /\/|\\/
 
