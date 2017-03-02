@@ -6,11 +6,13 @@ export default class Chunk {
   id: number;
   files: Map<string, File>;
   entry: Array<FileImport>;
+  imports: Array<FileImport>;
 
-  constructor(id: number, entry: Array<FileImport>, files: Map<string, File>) {
-    this.id = id
+  constructor(fileChunk: FileChunk, files: Map<string, File>) {
+    this.id = fileChunk.id
     this.files = files
-    this.entry = entry
+    this.entry = fileChunk.entry
+    this.imports = fileChunk.imports
   }
   getId(): number {
     return this.id
@@ -29,6 +31,13 @@ export default class Chunk {
   }
   deleteFile(filePath: string): void {
     this.files.delete(filePath)
+  }
+  serialize(): FileChunk {
+    return {
+      id: this.id,
+      entry: this.entry,
+      imports: this.imports,
+    }
   }
   static get(fileChunk: FileChunk, files: Map<string, File>, chunkOptions: Object = {}): Chunk {
     let chunkFiles = new Map()
@@ -56,6 +65,6 @@ export default class Chunk {
       fileChunk.imports.forEach(entry => iterate(entry))
     }
 
-    return new Chunk(fileChunk.id, fileChunk.entry, chunkFiles)
+    return new Chunk(fileChunk, chunkFiles)
   }
 }

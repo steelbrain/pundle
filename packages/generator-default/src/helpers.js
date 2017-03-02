@@ -3,9 +3,8 @@
 import Path from 'path'
 import slash from 'slash'
 import fileSystem from 'sb-fs'
-import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
-import type { Chunk, FileImport } from 'pundle-api/types'
+import type { Chunk } from 'pundle-api/types'
 
 export const LINE_BREAK = /\r\n|\n|\r/
 export function getLinesCount(text: string): number {
@@ -52,29 +51,33 @@ export async function getWrapperContents(compilation: Object, config: Object): P
   return fileContents
 }
 
-export function getImportResolutions(compilation: Object, chunk: Chunk, config: Object) : Object {
+export function getImportResolutions(compilation: Object, chunk: Chunk, config: Object, chunksProcessed: Set<number> = new Set()) : Object {
   const resolutionMap = {}
 
-  function mergeResolutions(entry: FileImport, chunkId: number) {
-    if (!entry.resolved) {
-      throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from || 'Source root'}`, 'error')
-    }
-    const filePath = getFilePath(compilation, config, entry.resolved)
+  function mergeResolutions(resolved: string, id: number, chunkId: number) {
+    const filePath = getFilePath(compilation, config, resolved)
     if (resolutionMap[filePath]) {
-      resolutionMap[filePath].push({ module: entry.id, chunk: chunkId })
+      resolutionMap[filePath].push(`${id}:${chunkId}`)
     } else {
-      resolutionMap[filePath] = [{ module: entry.id, chunk: chunkId }]
+      resolutionMap[filePath] = [`${id}:${chunkId}`]
     }
   }
 
   chunk.files.forEach(function(file) {
-    file.imports.forEach(entry => mergeResolutions(entry, chunk.id))
+    // $FlowIgnore: For God's sake, import::resolved is a string here
+    file.imports.forEach(entry => mergeResolutions(entry.resolved, entry.id, chunk.id))
+    file.chunks.forEach(function(childChunk) {
+      if (chunksProcessed.has(childChunk.id)) {
+        return
+      }
+      chunksProcessed.add(childChunk.id)
+      // $FlowIgnore: For God's sake, import::resolved is a string here
+      childChunk.imports.forEach(entry => mergeResolutions(entry.resolved, entry.id, childChunk.id))
+    })
   })
-  if (config.chunkMappings) {
-    config.chunkMappings.forEach(mapping =>
-      mergeResolutions({ id: mapping.module, resolved: mapping.filePath, from: null, request: mapping.filePath }, mapping.chunk)
-    )
-  }
+  config.chunkMappings.forEach(mapping =>
+    mergeResolutions(mapping.filePath, mapping.module, mapping.chunk)
+  )
   return resolutionMap
 }
 

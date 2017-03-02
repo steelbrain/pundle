@@ -61,6 +61,7 @@ export type Chunk = {
   hasFile(filePath: string): boolean;
   addFile(filePath: string, file: File): void;
   deleteFile(filePath: string): void;
+  serialize(): FileChunk;
 }
 
 export type ChunkMappings = Array<{
@@ -95,6 +96,7 @@ export type ReporterCallback = ((config: Object, error: Error | FileIssue | Mess
 export type Reporter = Component<'reporter', ReporterCallback>
 
 export type GeneratorResult = {
+  id: string,
   contents: string,
   sourceMap: Object,
   filesGenerated: Array<string>,

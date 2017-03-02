@@ -21,6 +21,7 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Chu
   files.forEach(function(file: File) {
     chunks.forEach(function(chunk) {
       chunk.deleteFile(file.filePath)
+      file.chunks.push(chunk.serialize())
     })
   })
 

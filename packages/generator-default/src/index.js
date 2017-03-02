@@ -51,7 +51,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
 
   chunks.push(`__sbPundle.registerMappings(${JSON.stringify(Helpers.getImportResolutions(this, chunk, config))})`)
 
-  const externalEntries = config.chunkMappings && entries.filter(entry => config.chunkMappings.find(mapping => (mapping.module === entry.id)))
+  const externalEntries = entries.filter(entry => config.chunkMappings.find(mapping => (mapping.module === entry.id)))
   if (externalEntries.length) {
     chunks.push(`__sbPundle.require.ensure(${JSON.stringify(externalEntries.map(i => i.id.toString()))}, function() {`)
   }
@@ -74,6 +74,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   }
 
   return {
+    id: chunk.id.toString(),
     contents: chunks.join('\n'),
     sourceMap,
     filesGenerated: Array.from(chunk.files.keys()),
@@ -83,7 +84,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   wrapper: 'normal',
   pathType: 'filePath',
   sourceMap: false,
-  chunkMappings: null,
+  chunkMappings: [],
   sourceMapPath: null,
   sourceNamespace: 'app',
   sourceMapNamespace: 'app',
