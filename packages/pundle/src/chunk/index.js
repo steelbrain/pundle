@@ -10,7 +10,7 @@ export default class Chunk {
   filesState: Map<string, File>;
   filesLocked: Set<string>;
 
-  constructor(name: string, entry: Array<string>, parent: ?Chunk = null) {
+  constructor(name: string, entry: Array<string>, parent: ?Chunk) {
     this.name = name
     this.entry = entry
     this.parent = parent

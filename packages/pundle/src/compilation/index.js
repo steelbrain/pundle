@@ -8,6 +8,7 @@ import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, Import } from 'pundle-api/types'
 
+import Chunk from '../chunk'
 import Watcher from './watcher'
 import { fillWatcherConfig } from './helpers'
 import * as Helpers from '../context/helpers'
@@ -20,6 +21,11 @@ export default class Compilation {
   constructor(context: Context) {
     this.context = context
     this.subscriptions = new CompositeDisposable()
+  }
+  // NOTE:
+  // While we could create a new chunk in this file directly, this is to allow API consumers to create chunks
+  getChunk(name: string, entry: Array<string>, parent: ?Chunk): Chunk {
+    return new Chunk(name, entry, parent)
   }
   // Notes:
   // Lock as early as resolved to avoid duplicates
