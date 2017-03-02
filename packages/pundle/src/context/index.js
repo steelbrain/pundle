@@ -3,10 +3,10 @@
 import reporterCli from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { File, ComponentAny, FileImport, ResolverResult } from 'pundle-api/types'
+import type { ComponentAny, FileImport, ResolverResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
-import type { ComponentEntry, PundleConfig } from '../../types'
+import type { Chunk, ComponentEntry, PundleConfig } from '../../types'
 
 let uniqueID = 0
 
@@ -47,23 +47,28 @@ export default class Context {
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     return (await this.resolveAdvanced(request, from, cached)).filePath
   }
-  async generate(files: Array<File>, generateConfig: Object = {}): Promise<Object> {
-    let result
-    for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-      result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], files)
-      if (result) {
-        break
+  async generate(chunks: Array<Chunk>, generateConfig: Object = {}): Promise<Array<Object>> {
+    const results = []
+    for (const chunk of chunks) {
+      let result
+      for (const entry of Helpers.filterComponents(this.components, 'generator')) {
+        result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], chunk)
+        if (result) {
+          break
+        }
       }
+      if (!result) {
+        throw new MessageIssue('No generator returned generated contents. Try adding pundle-generator-default to your configuration', 'error')
+      }
+      // Post-Transformer
+      for (const entry of Helpers.filterComponents(this.components, 'post-transformer')) {
+        const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
+        Helpers.mergeResult(result, postTransformerResults)
+      }
+      results.push(result)
     }
-    if (!result) {
-      throw new MessageIssue('No generator returned generated contents. Try adding pundle-generator-default to your configuration', 'error')
-    }
-    // Post-Transformer
-    for (const entry of Helpers.filterComponents(this.components, 'post-transformer')) {
-      const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
-      Helpers.mergeResult(result, postTransformerResults)
-    }
-    return result
+
+    return results
   }
   setUniqueID(newUniqueID: number): void {
     uniqueID = newUniqueID

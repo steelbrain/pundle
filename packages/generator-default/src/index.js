@@ -4,7 +4,7 @@ import Path from 'path'
 import sourceMapToComment from 'source-map-to-comment'
 import { createGenerator } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
-import type { File } from 'pundle-api/types'
+import type { Chunk } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 // Spec:
@@ -23,9 +23,9 @@ import * as Helpers from './helpers'
 // - Push sourceMap stringified or it's path (depending on config) (if enabled)
 // - Return all chunks joined, and sourceMap (if enabled)
 
-export default createGenerator(async function(config: Object, givenFiles: Array<File>) {
-  const files = givenFiles.slice()
-  const entry = await Helpers.normalizeEntry(this, config)
+export default createGenerator(async function(config: Object, chunk: Chunk) {
+  const files = chunk.getFiles()
+  const entry = chunk.getEntry()
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
   const chunks = [';(function() {', wrapperContents]
@@ -55,8 +55,8 @@ export default createGenerator(async function(config: Object, givenFiles: Array<
 
   const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
   chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
-  for (let i = 0, length = entry.length; i < length; i++) {
-    chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entry[i])}')`)
+  if (entry && entry.resolved) {
+    chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entry.resolved)}')`)
   }
   chunks.push('})();\n')
 

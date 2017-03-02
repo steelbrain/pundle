@@ -28,22 +28,6 @@ export function getFilePath(compilation: Object, config: Object, filePath: strin
   return slash(toReturn)
 }
 
-export async function normalizeEntry(compilation: Object, config: Object): Promise<Array<string>> {
-  let entry = config.entry
-  if (!Array.isArray(entry)) {
-    entry = compilation.config.entry
-  }
-  entry = entry.slice()
-
-  for (let i = 0, length = entry.length; i < length; i++) {
-    const item = entry[i]
-    if (!Path.isAbsolute(item)) {
-      entry[i] = await compilation.resolve(item)
-    }
-  }
-
-  return entry
-}
 export const wrapperHMR = require.resolve('./wrappers/hmr')
 export const wrapperNormal = require.resolve('./wrappers/normal')
 export async function getWrapperContents(compilation: Object, config: Object): Promise<string> {

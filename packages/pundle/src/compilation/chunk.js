@@ -14,6 +14,9 @@ export default class Chunk {
     this.entry = entry
     this.imports = new Set(imports)
   }
+  getEntry(): ?FileImport {
+    return this.entry
+  }
   getFiles(): Array<File> {
     return Array.from(this.files.values())
   }

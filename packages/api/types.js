@@ -51,6 +51,15 @@ export type File = {
   // ^ in seconds not miliseconds aka Date.now()/1000
 }
 
+export type Chunk = {
+  getFiles(): Array<File>;
+  hasFile(filePath: string): boolean;
+  addFile(filePath: string, file: File): void;
+  deleteFile(filePath: string): void;
+  getImports(): Array<FileImport>;
+  getEntry(): ?FileImport;
+}
+
 export type LoaderResult = {
   chunks: Array<FileChunk>,
   imports: Array<FileImport>,
@@ -78,7 +87,7 @@ export type Reporter = Component<'reporter', ReporterCallback>
 
 // TODO: Type this properly
 export type GeneratorResult = Object
-export type GeneratorCallback = ((config: Object, files: Array<File>, runtimeConfig: Object) => Promise<?GeneratorResult>)
+export type GeneratorCallback = ((config: Object, files: Chunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 
 export type TransformerResult = {
