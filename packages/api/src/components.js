@@ -20,6 +20,8 @@ import type {
   TransformerCallback,
   PostTransformer,
   PostTransformerCallback,
+  ChunkTransformer,
+  ChunkTransformerCallback,
   Watcher,
   WatcherCallbacks,
 } from '../types'
@@ -100,6 +102,10 @@ export function createTransformer(options: CallbackOrConfig<TransformerCallback>
 
 export function createPostTransformer(options: CallbackOrConfig<PostTransformerCallback>, defaultConfig: Object = {}): PostTransformer {
   return create(options, defaultConfig, 'post-transformer')
+}
+
+export function createChunkTransformer(options: CallbackOrConfig<ChunkTransformerCallback>, defaultConfig: Object = {}): ChunkTransformer {
+  return create(options, defaultConfig, 'chunk-transformer')
 }
 
 export function createWatcher(callbacks: WatcherCallbacks, defaultConfig: Object = {}): Watcher {

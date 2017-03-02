@@ -114,7 +114,10 @@ export default class Compilation {
 
     await Promise.all(fileChunks.map(chunk => chunk.entry && processFileTree(chunk.entry)))
     const chunks = fileChunks.map(chunk => this.getChunk(chunk, files))
-    // TODO: Invoke chunk transformer here
+
+    for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
+      await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
+    }
 
     return chunks
   }

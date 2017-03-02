@@ -102,7 +102,9 @@ export type PostTransformerResult = {
 export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?PostTransformerResult>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
-// TODO: ChunkTransformer component
+export type ChunkTransformerResult = void
+export type ChunkTransformerCallback = ((config: Object, chunks: Array<Chunk>) => Promise<?ChunkTransformerResult>)
+export type ChunkTransformer = Component<'chunk-transformer', ChunkTransformerCallback>
 
 export type WatcherCallbacks = {
   tick?: ((filePath: string, error: ?Error) => Promise<void> | void),
@@ -120,4 +122,4 @@ export type Watcher = {
   defaultConfig: Object,
 }
 
-export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher
+export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher | ChunkTransformer
