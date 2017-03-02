@@ -4,7 +4,7 @@ import Path from 'path'
 import sourceMapToComment from 'source-map-to-comment'
 import { createGenerator } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
-import type { Chunk } from 'pundle-api/types'
+import type { Chunk, GeneratorResult } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 // Spec:
@@ -23,7 +23,7 @@ import * as Helpers from './helpers'
 // - Push sourceMap stringified or it's path (depending on config) (if enabled)
 // - Return all chunks joined, and sourceMap (if enabled)
 
-export default createGenerator(async function(config: Object, chunk: Chunk) {
+export default createGenerator(async function(config: Object, chunk: Chunk): Promise<GeneratorResult> {
   const files = chunk.getFiles()
   const entry = chunk.getEntry()
   const wrapperContents = await Helpers.getWrapperContents(this, config)
@@ -32,7 +32,6 @@ export default createGenerator(async function(config: Object, chunk: Chunk) {
   const chunksMap = new SourceMapGenerator({
     skipValidation: true,
   })
-  const filePaths = []
   // NOTE: I don't know why we need a +1, but adding it makes things work
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
@@ -44,7 +43,6 @@ export default createGenerator(async function(config: Object, chunk: Chunk) {
     const publicPath = Helpers.getFilePath(this, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
     chunks.push(fileContents)
-    filePaths.push(publicPath)
     const fileSourceMap = file.sourceMap
     if (config.sourceMap && fileSourceMap) {
       const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
@@ -60,9 +58,8 @@ export default createGenerator(async function(config: Object, chunk: Chunk) {
   }
   chunks.push('})();\n')
 
-  let sourceMap = null
+  const sourceMap = chunksMap.toJSON()
   if (config.sourceMap) {
-    sourceMap = chunksMap.toJSON()
     if (config.sourceMapPath === 'inline') {
       chunks.push(sourceMapToComment(sourceMap))
     } else if (config.sourceMapPath) {
@@ -71,9 +68,10 @@ export default createGenerator(async function(config: Object, chunk: Chunk) {
   }
 
   return {
+    name: chunk.getName(),
     contents: chunks.join('\n'),
     sourceMap,
-    filePaths,
+    filePaths: files.map(i => i.filePath),
   }
 }, {
   entry: null,
