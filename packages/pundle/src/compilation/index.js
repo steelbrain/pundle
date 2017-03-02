@@ -1,7 +1,6 @@
 /* @flow */
 
 import Path from 'path'
-import uniqBy from 'lodash.uniqby'
 import debounce from 'sb-debounce'
 import fileSystem from 'sb-fs'
 import difference from 'lodash.difference'
@@ -9,7 +8,7 @@ import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, FileChunk, FileImport } from 'pundle-api/types'
 
-import Chunk from '../chunk'
+import Chunk from './chunk'
 import Watcher from './watcher'
 import * as Helpers from '../context/helpers'
 import type Context from '../context'
@@ -24,8 +23,8 @@ export default class Compilation {
   }
   // NOTE:
   // While we could create a new chunk in this file directly, this is to allow API consumers to create chunks
-  getChunk(name: string, entry: Array<string>, parent: ?Chunk): Chunk {
-    return new Chunk(name, entry, parent)
+  getChunk(fileChunk: FileChunk, files: Map<string, ?File>): Chunk {
+    return Chunk.get(fileChunk, files)
   }
   // Order of execution:
   // - Transformer (all)
@@ -36,6 +35,8 @@ export default class Compilation {
   // - We are executing Transformers before Loaders because imagine ES6 modules
   //   being transpiled with babel BEFORE giving to loader-js. If they are not
   //   transpiled before hand, they'll give a syntax error in loader
+  // - We are not deduping imports because regardless of request, each import
+  //   has a unique ID and we have to add mapping for that. So we need them all
   async processFile(filePath: string): Promise<File> {
     if (!Path.isAbsolute(filePath)) {
       throw new Error('compilation.processFile() expects path to be an absolute path')
@@ -79,31 +80,12 @@ export default class Compilation {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
     }
 
-    // Merge chunks with the same name
-    const chunksMap = new Map()
-    file.chunks.forEach(function(chunk) {
-      const oldValue = chunksMap.get(chunk.name)
-      if (oldValue) {
-        oldValue.imports = oldValue.imports.concat(chunk.imports)
-      } else {
-        chunksMap.set(chunk.name, chunk)
-      }
-    })
-    file.chunks = Array.from(chunksMap.values())
-
-    // Dedupe imports in chunks
-    file.chunks.forEach(function(chunk) {
-      chunk.imports = uniqBy(chunk.imports, 'request')
-    })
-    // Dedupe imports in file
-    file.imports = uniqBy(file.imports, 'request')
-
     return file
   }
   // TODO: Maybe use cache in build too?
-  async build(cached: boolean): Promise<Array<FileChunk>> {
+  async build(cached: boolean): Promise<Array<Chunk>> {
     const files: Map<string, ?File> = new Map()
-    let chunks: Array<FileChunk> = this.context.config.entry.map(request => ({
+    let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
       name: this.context.getNextUniqueID().toString(),
       entry: this.context.getImportRequest(request),
       imports: [],
@@ -127,12 +109,12 @@ export default class Compilation {
       await Promise.all(file.imports.map(item => processFileTree(item, resolved)))
       await Promise.all(file.chunks.map(item => Promise.all(item.imports.map(importEntry => processFileTree(importEntry)))))
       entry.resolved = resolved
-      chunks = chunks.concat(file.chunks)
+      fileChunks = fileChunks.concat(file.chunks)
     }
 
-    await Promise.all(chunks.map(chunk => chunk.entry && processFileTree(chunk.entry)))
+    await Promise.all(fileChunks.map(chunk => chunk.entry && processFileTree(chunk.entry)))
+    const chunks = fileChunks.map(chunk => this.getChunk(chunk, files))
     // TODO: Invoke chunk transformer here
-    console.log(chunks, files)
 
     return chunks
   }
