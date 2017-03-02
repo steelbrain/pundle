@@ -75,14 +75,14 @@ export default class Compilation {
 
     // Transformer
     for (const entry of Helpers.filterComponents(this.context.components, 'transformer')) {
-      const transformerResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
+      const transformerResult = await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
       Helpers.mergeResult(file, transformerResult)
     }
 
     // Loader
     let loaderResult
     for (const entry of Helpers.filterComponents(this.context.components, 'loader')) {
-      loaderResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
+      loaderResult = await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
         file.imports = file.imports.concat(loaderResult.imports)
@@ -95,7 +95,7 @@ export default class Compilation {
 
     // Plugin
     for (const entry of Helpers.filterComponents(this.context.components, 'plugin')) {
-      await Helpers.invokeComponent(this, entry, 'callback', [], file)
+      await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
     }
 
     return file
@@ -177,7 +177,7 @@ export default class Compilation {
       } finally {
         for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
           try {
-            await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
+            await Helpers.invokeComponent(this.context, entry, 'tick', [], filePath, processError, file)
           } catch (error) {
             this.context.report(error)
           }
@@ -214,7 +214,7 @@ export default class Compilation {
       await queue
       for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
         try {
-          await Helpers.invokeComponent(this, entry, 'compile', [], Array.from(files.values()))
+          await Helpers.invokeComponent(this.context, entry, 'compile', [], Array.from(files.values()))
         } catch (error) {
           this.context.report(error)
         }
@@ -276,7 +276,7 @@ export default class Compilation {
     }
     for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
       try {
-        await Helpers.invokeComponent(this, entry, 'ready', [], successful, Array.from(files.values()))
+        await Helpers.invokeComponent(this.context, entry, 'ready', [], successful, Array.from(files.values()))
       } catch (error) {
         this.context.report(error)
       }
