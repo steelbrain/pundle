@@ -35,10 +35,6 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Chu
 
   chunks.unshift(this.getChunk({
     entry: entries,
-    imports: Array.from(files.values()).map(file => {
-      const request = this.getImportRequest(file.filePath)
-      request.resolved = file.filePath
-      return request
-    }),
-  }, files))
+    imports: [],
+  }, files, { allFiles: true }))
 })

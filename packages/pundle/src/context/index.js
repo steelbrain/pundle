@@ -21,8 +21,8 @@ export default class Context {
   }
   // NOTE:
   // While we could create a new chunk in this file directly, this is to allow API consumers to create chunks
-  getChunk(fileChunk: FileChunk, files: Map<string, ?File>): Chunk {
-    return Chunk.get(fileChunk, files)
+  getChunk(fileChunk: FileChunk, files: Map<string, File>, chunkOptions: Object = {}): Chunk {
+    return Chunk.get(fileChunk, files, chunkOptions)
   }
   async report(report: Object): Promise<void> {
     let tried = false

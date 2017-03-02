@@ -54,12 +54,11 @@ export type Chunk = {
   files: Map<string, File>;
   entry: Array<FileImport>;
   imports: Set<FileImport>;
+  getEntry(): Array<FileImport>;
   getFiles(): Array<File>;
   hasFile(filePath: string): boolean;
   addFile(filePath: string, file: File): void;
   deleteFile(filePath: string): void;
-  getImports(): Array<FileImport>;
-  getEntry(): Array<FileImport>;
 }
 
 export type LoaderResult = {

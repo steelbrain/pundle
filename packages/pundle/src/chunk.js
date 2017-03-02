@@ -5,12 +5,10 @@ import type { File, FileImport, FileChunk } from 'pundle-api/types'
 export default class Chunk {
   files: Map<string, File>;
   entry: Array<FileImport>;
-  imports: Set<FileImport>;
 
-  constructor(entry: Array<FileImport>, imports: Array<FileImport>, files: Map<string, File>) {
+  constructor(entry: Array<FileImport>, files: Map<string, File>) {
     this.files = files
     this.entry = entry
-    this.imports = new Set(imports)
   }
   getEntry(): Array<FileImport> {
     return this.entry
@@ -27,11 +25,8 @@ export default class Chunk {
   deleteFile(filePath: string): void {
     this.files.delete(filePath)
   }
-  getImports(): Array<FileImport> {
-    return Array.from(this.imports)
-  }
-  static get(fileChunk: FileChunk, files: Map<string, ?File>): Chunk {
-    const chunkFiles = new Map()
+  static get(fileChunk: FileChunk, files: Map<string, File>, chunkOptions: Object = {}): Chunk {
+    let chunkFiles = new Map()
 
     function iterate(fileImport: FileImport) {
       const filePath = fileImport.resolved
@@ -48,9 +43,14 @@ export default class Chunk {
       chunkFiles.set(filePath, file)
       file.imports.forEach(entry => iterate(entry))
     }
-    fileChunk.entry.forEach(entry => iterate(entry))
-    fileChunk.imports.forEach(entry => iterate(entry))
 
-    return new Chunk(fileChunk.entry, fileChunk.imports, chunkFiles)
+    if (chunkOptions.allFiles) {
+      chunkFiles = files
+    } else {
+      fileChunk.entry.forEach(entry => iterate(entry))
+      fileChunk.imports.forEach(entry => iterate(entry))
+    }
+
+    return new Chunk(fileChunk.entry, chunkFiles)
   }
 }

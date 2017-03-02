@@ -79,7 +79,7 @@ export default class Compilation {
   }
   // TODO: Maybe use cache in build too?
   async build(cached: boolean): Promise<Array<Chunk>> {
-    const files: Map<string, ?File> = new Map()
+    const files: Map<string, File> = new Map()
     let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
       name: this.context.getNextUniqueID().toString(),
       entry: [this.context.getImportRequest(request)],
@@ -93,6 +93,7 @@ export default class Compilation {
         return
       }
       let file
+      // $FlowIgnore: Temp lock
       files.set(resolved, null)
       try {
         file = await this.processFile(resolved)
@@ -107,7 +108,7 @@ export default class Compilation {
       fileChunks = fileChunks.concat(file.chunks)
     }
 
-    await Promise.all(fileChunks.map(chunk => chunk.entry.map(chunkEntry => processFileTree(chunkEntry))))
+    await Promise.all(fileChunks.map(chunk => Promise.all(chunk.entry.map(chunkEntry => processFileTree(chunkEntry)))))
     const chunks = fileChunks.map(chunk => this.context.getChunk(chunk, files))
 
     for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
