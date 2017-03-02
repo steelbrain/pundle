@@ -6,6 +6,7 @@ import type { File } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
+import Context from './context'
 import Compilation from './compilation'
 import type { PundleConfig, Loadable } from '../types'
 
@@ -14,6 +15,7 @@ const UNIQUE_SIGNATURE_OBJ = {}
 class Pundle {
   config: PundleConfig;
   emitter: Emitter;
+  context: Context;
   compilation: Compilation;
   subscriptions: CompositeDisposable;
 
@@ -24,7 +26,8 @@ class Pundle {
 
     this.config = config
     this.emitter = new Emitter()
-    this.compilation = new Compilation(config.compilation)
+    this.context = new Context(config.compilation)
+    this.compilation = new Compilation(this.context)
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
@@ -36,7 +39,7 @@ class Pundle {
     }
     const components = await Helpers.getLoadables(givenComponents, this.config.compilation.rootDirectory)
     const subscriptions = new CompositeDisposable()
-    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
   }
   // Notes:
@@ -63,12 +66,12 @@ class Pundle {
     }).filter(i => i)
     const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)
     const subscriptions = new CompositeDisposable()
-    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
   }
   async generate(givenFiles: ?Array<File> = null, runtimeConfig: Object = {}): Promise<Object> {
     const files = givenFiles || await this.processTree()
-    return await this.compilation.generate(files, runtimeConfig)
+    return await this.context.generate(files, runtimeConfig)
   }
   // Spec:
   // - Normalize all givenRequests to an array

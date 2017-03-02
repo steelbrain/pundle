@@ -4,74 +4,22 @@ import Path from 'path'
 import debounce from 'sb-debounce'
 import fileSystem from 'pundle-fs'
 import difference from 'lodash.difference'
-import reporterCLI from 'pundle-reporter-cli'
-import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
+import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import type { File, ComponentAny, Import, Resolved } from 'pundle-api/types'
+import type { File, Import } from 'pundle-api/types'
 
 import Watcher from './watcher'
-import * as Helpers from './helpers'
-import type { ComponentEntry } from './types'
-import type { CompilationConfig } from '../../types'
-
-let uniqueID = 0
+import { fillWatcherConfig } from './helpers'
+import * as Helpers from '../context/helpers'
+import type Context from '../context'
 
 export default class Compilation {
-  config: CompilationConfig;
-  components: Set<ComponentEntry>;
+  context: Context;
   subscriptions: CompositeDisposable;
 
-  constructor(config: CompilationConfig) {
-    this.config = config
-    this.components = new Set()
+  constructor(context: Context) {
+    this.context = context
     this.subscriptions = new CompositeDisposable()
-  }
-  async report(report: Object): Promise<void> {
-    let tried = false
-    for (const entry of Helpers.filterComponents(this.components, 'reporter')) {
-      await Helpers.invokeComponent(this, entry, 'callback', [], report)
-      tried = true
-    }
-    if (!tried) {
-      reporterCLI.callback(reporterCLI.defaultConfig, report)
-    }
-  }
-  async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<Resolved> {
-    const knownExtensions = Helpers.getAllKnownExtensions(this.components)
-    const filteredComponents = Helpers.filterComponents(this.components, 'resolver')
-    if (!filteredComponents.length) {
-      throw new MessageIssue('No module resolver configured in Pundle. Try adding pundle-resolver-default to your configuration', 'error')
-    }
-    for (const entry of filteredComponents) {
-      const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
-      if (result && result.filePath) {
-        return result
-      }
-    }
-    const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
-    error.code = 'MODULE_NOT_FOUND'
-    throw error
-  }
-  async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
-    return (await this.resolveAdvanced(request, from, cached)).filePath
-  }
-  async generate(files: Array<File>, generateConfig: Object = {}): Promise<Object> {
-    let result
-    for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-      result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], files)
-      if (result) {
-        break
-      }
-    }
-    if (!result) {
-      throw new MessageIssue('No generator returned generated contents. Try adding pundle-generator-default to your configuration', 'error')
-    }
-    // Post-Transformer
-    for (const entry of Helpers.filterComponents(this.components, 'post-transformer')) {
-      const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
-      Helpers.mergeResult(result, postTransformerResults)
-    }
-    return result
   }
   // Notes:
   // Lock as early as resolved to avoid duplicates
@@ -80,7 +28,7 @@ export default class Compilation {
   // Set resolved paths on all file#imports
   async processTree(request: string, from: ?string = null, cached: boolean = true, files: Map<string, ?File>): Promise<Map<string, ?File>> {
     const processFileTree = async (entry: Import) => {
-      const resolved = await this.resolve(entry.request, entry.from, cached)
+      const resolved = await this.context.resolve(entry.request, entry.from, cached)
       if (files.has(resolved)) {
         entry.resolved = resolved
         return
@@ -126,14 +74,14 @@ export default class Compilation {
     }
 
     // Transformer
-    for (const entry of Helpers.filterComponents(this.components, 'transformer')) {
+    for (const entry of Helpers.filterComponents(this.context.components, 'transformer')) {
       const transformerResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
       Helpers.mergeResult(file, transformerResult)
     }
 
     // Loader
     let loaderResult
-    for (const entry of Helpers.filterComponents(this.components, 'loader')) {
+    for (const entry of Helpers.filterComponents(this.context.components, 'loader')) {
       loaderResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
@@ -146,41 +94,11 @@ export default class Compilation {
     }
 
     // Plugin
-    for (const entry of Helpers.filterComponents(this.components, 'plugin')) {
+    for (const entry of Helpers.filterComponents(this.context.components, 'plugin')) {
       await Helpers.invokeComponent(this, entry, 'callback', [], file)
     }
 
     return file
-  }
-  getImportRequest(request: string, from: string): Import {
-    const id = ++uniqueID
-    return { id, request, resolved: null, from }
-  }
-  setUniqueID(newUniqueID: number): void {
-    uniqueID = newUniqueID
-  }
-  getUniqueID(): number {
-    return uniqueID
-  }
-  addComponent(component: ComponentAny, config: Object): void {
-    if (!component || component.$apiVersion !== API_VERSION) {
-      throw new Error('API version of component mismatches')
-    }
-    this.components.add({ component, config })
-    Helpers.invokeComponent(this, { component, config }, 'activate', [])
-    return new Disposable(() => {
-      this.deleteComponent(component, config)
-    })
-  }
-  deleteComponent(component: ComponentAny, config: Object): boolean {
-    for (const entry of this.components) {
-      if (entry.config === config && entry.component === component) {
-        this.components.delete(entry)
-        Helpers.invokeComponent(this, entry, 'dispose', [])
-        return true
-      }
-    }
-    return false
   }
   // Spec:
   // - Create promised queue
@@ -201,8 +119,8 @@ export default class Compilation {
   async watch(givenConfig: Object = {}, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
     let queue = Promise.resolve()
     const files: Map<string, ?File> = new Map()
-    const config = Helpers.fillWatcherConfig(givenConfig)
-    const resolvedEntries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
+    const config = fillWatcherConfig(givenConfig)
+    const resolvedEntries = await Promise.all(this.context.config.entry.map(entry => this.context.resolve(entry)))
 
     const watcher = new Watcher(resolvedEntries, {
       usePolling: config.usePolling,
@@ -244,7 +162,7 @@ export default class Compilation {
           file = await this.processFile(filePath)
         }
         files.set(filePath, file)
-        await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
+        await Promise.all(file.imports.map(entry => this.context.resolve(entry.request, filePath).then(resolved => {
           entry.resolved = resolved
         })))
       } catch (error) {
@@ -254,14 +172,14 @@ export default class Compilation {
           files.delete(filePath)
         }
         processError = error
-        this.report(error)
+        this.context.report(error)
         return false
       } finally {
-        for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+        for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
           try {
             await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
           } catch (error) {
-            this.report(error)
+            this.context.report(error)
           }
         }
       }
@@ -284,7 +202,7 @@ export default class Compilation {
         const promises = await Promise.all(file.imports.map((entry: Object) => processFile(entry.resolved, false)))
         return promises.every(i => i)
       } catch (compilationError) {
-        this.report(compilationError)
+        this.context.report(compilationError)
         return false
       }
     }
@@ -294,11 +212,11 @@ export default class Compilation {
     const triggerCompile = async () => {
       compiling = true
       await queue
-      for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
         try {
           await Helpers.invokeComponent(this, entry, 'compile', [], Array.from(files.values()))
         } catch (error) {
-          this.report(error)
+          this.context.report(error)
         }
       }
       compiling = false
@@ -328,14 +246,14 @@ export default class Compilation {
           } catch (_) { /* No Op */ }
           watcher.unwatch(oldResolved)
           try {
-            const resolved = await this.resolve(entry.request, file.filePath)
+            const resolved = await this.context.resolve(entry.request, file.filePath)
             entry.resolved = resolved
             watcher.enable(resolved)
             watcher.watch(resolved)
             queue = queue.then(() => processFile(resolved, false))
           } catch (_) {
             watcher.watch(oldResolved)
-            this.report(_)
+            this.context.report(_)
             break
           }
           // If processing file failed
@@ -356,11 +274,11 @@ export default class Compilation {
     if (successful) {
       await triggerCompile()
     }
-    for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+    for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
       try {
         await Helpers.invokeComponent(this, entry, 'ready', [], successful, Array.from(files.values()))
       } catch (error) {
-        this.report(error)
+        this.context.report(error)
       }
     }
 
@@ -386,7 +304,7 @@ export default class Compilation {
     return disposable
   }
   dispose() {
-    this.components.forEach(({ component, config }) => this.deleteComponent(component, config))
+    this.context.components.forEach(({ component, config }) => this.context.deleteComponent(component, config))
     this.subscriptions.dispose()
   }
 }

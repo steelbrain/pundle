@@ -26,7 +26,7 @@ class Server {
   filesChanged: Set<string>;
   subscriptions: CompositeDisposable;
   constructor(pundle: Pundle, config: ServerConfigInput) {
-    if (Helpers.isCompilationRegistered(pundle.compilation)) {
+    if (Helpers.isCompilationRegistered(pundle.context)) {
       throw new Error('Cannot create two middlewares on one Pundle instance')
     }
 
@@ -44,7 +44,7 @@ class Server {
     this.filesChanged = new Set()
     this.subscriptions = new CompositeDisposable()
 
-    Helpers.registerCompilation(pundle.compilation, this.config)
+    Helpers.registerCompilation(pundle.context, this.config)
   }
   async activate() {
     const app = express()
@@ -53,7 +53,7 @@ class Server {
 
     this.enqueue(() => bootPromise.promise)
     if (this.config.useCache) {
-      const rootDirectory = this.pundle.compilation.config.rootDirectory
+      const rootDirectory = this.pundle.context.config.rootDirectory
       this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
         directory: rootDirectory,
         files: [],
@@ -61,7 +61,7 @@ class Server {
         prettyPrint: false,
         createIfNonExistent: true,
       })
-      this.pundle.compilation.setUniqueID(await this.cache.get('uniqueId'))
+      this.pundle.context.setUniqueID(await this.cache.get('uniqueId'))
       const oldFilesArray = await this.cache.get('files')
       oldFilesArray.forEach(function(file) {
         oldFiles.set(file.filePath, file)
@@ -146,7 +146,7 @@ class Server {
     })
   }
   async generateForHMR() {
-    const rootDirectory = this.pundle.compilation.config.rootDirectory
+    const rootDirectory = this.pundle.context.config.rootDirectory
     const changedFilePaths = unique(Array.from(this.filesChanged))
 
     const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, rootDirectory))
@@ -171,10 +171,10 @@ class Server {
     await this.state.queue
   }
   report(contents: string, severity: 'info' | 'error' | 'warning' = 'info') {
-    this.pundle.compilation.report(new MessageIssue(contents, severity))
+    this.pundle.context.report(new MessageIssue(contents, severity))
   }
   enqueue(callback: Function): void {
-    this.state.queue = this.state.queue.then(() => callback()).catch(e => this.pundle.compilation.report(e))
+    this.state.queue = this.state.queue.then(() => callback()).catch(e => this.pundle.context.report(e))
   }
   writeToConnections(contents: Object): void {
     const stringifiedContents = JSON.stringify(contents)
@@ -182,10 +182,10 @@ class Server {
   }
   dispose() {
     if (!this.subscriptions.disposed) {
-      Helpers.unregisterCompilation(this.pundle.compilation)
+      Helpers.unregisterCompilation(this.pundle.context)
       if (this.cache) {
         this.cache.setSync('files', this.state.files)
-        this.cache.setSync('uniqueId', this.pundle.compilation.getUniqueID())
+        this.cache.setSync('uniqueId', this.pundle.context.getUniqueID())
       }
     }
     this.subscriptions.dispose()

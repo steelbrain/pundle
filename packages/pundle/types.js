@@ -1,5 +1,12 @@
 /* @flow */
 
+import type { ComponentAny } from 'pundle-api/types'
+
+export type ComponentEntry = {
+  config: Object,
+  component: ComponentAny,
+}
+
 export type CompilationConfig = {
   debug: boolean,
   entry: Array<string>,

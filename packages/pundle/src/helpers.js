@@ -61,6 +61,7 @@ export async function getLoadables(loadables: Array<Loadable>, rootDirectory: st
 }
 
 
+// TODO: Simplify this
 // NOTE:
 // In all configs but rootDirectory, given config takes precendece
 export async function getPundleConfig(rootDirectory: string, a: Object): Promise<PundleConfig> {

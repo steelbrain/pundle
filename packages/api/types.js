@@ -35,9 +35,9 @@ export type Import = {
 }
 
 export type Resolved = {
+  filePath: string,
   sourceManifest: Object,
   targetManifest: Object,
-  filePath: string,
 }
 
 export type File = {

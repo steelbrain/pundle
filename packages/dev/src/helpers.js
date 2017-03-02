@@ -5,7 +5,7 @@ import FS from 'sb-fs'
 import Path from 'path'
 import Crypto from 'crypto'
 import invariant from 'assert'
-import type Compilation from 'pundle/src/compilation'
+import type Context from 'pundle/src/context'
 
 import type { ServerConfig, ServerConfigInput } from '../types'
 
@@ -62,24 +62,24 @@ export async function getCacheFilePath(directory: string): Promise<string> {
   return Path.join(stateDirectory, `${inputHash}.json`)
 }
 
-export function isCompilationRegistered(compilation: Compilation): boolean {
-  return compilation.config.entry.indexOf(browserFile) !== -1 ||
-         compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH ||
-         compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+export function isCompilationRegistered(context: Context): boolean {
+  return context.config.entry.indexOf(browserFile) !== -1 ||
+         context.config.replaceVariables.SB_PUNDLE_HMR_PATH ||
+         context.config.replaceVariables.SB_PUNDLE_HMR_PATH
 }
 
-export function registerCompilation(compilation: Compilation, config: ServerConfig): void {
-  compilation.config.entry.unshift(browserFile)
-  compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-  compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
+export function registerCompilation(context: Context, config: ServerConfig): void {
+  context.config.entry.unshift(browserFile)
+  context.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+  context.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
 }
 
-export function unregisterCompilation(compilation: Compilation): void {
-  delete compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
-  delete compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
-  const browserFileIndex = compilation.config.entry.indexOf(browserFile)
+export function unregisterCompilation(context: Context): void {
+  delete context.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  delete context.config.replaceVariables.SB_PUNDLE_HMR_HOST
+  const browserFileIndex = context.config.entry.indexOf(browserFile)
   if (browserFileIndex !== -1) {
-    compilation.config.entry.splice(browserFileIndex, 1)
+    context.config.entry.splice(browserFileIndex, 1)
   }
 }
 
