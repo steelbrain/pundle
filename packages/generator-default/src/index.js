@@ -51,10 +51,16 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
 
   chunks.push(`__sbPundle.registerMappings(${JSON.stringify(Helpers.getImportResolutions(this, chunk, config))})`)
 
-  // TODO: If entries are external deps, wrap this in a require.ensure block
+  const externalEntries = config.chunkMappings && entries.filter(entry => config.chunkMappings.find(mapping => (mapping.module === entry.id)))
+  if (externalEntries.length) {
+    chunks.push(`__sbPundle.require.ensure(${JSON.stringify(externalEntries.map(i => i.id.toString()))}, function() {`)
+  }
   for (let i = 0, length = entries.length; i < length; i++) {
     invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
     chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entries[i].resolved)}')`)
+  }
+  if (externalEntries.length) {
+    chunks.push('})')
   }
   chunks.push('})();\n')
 

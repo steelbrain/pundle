@@ -130,12 +130,9 @@ export function getChunksMappings(chunks: Array<Chunk>): Array<ChunkMappings> {
       file.imports.forEach(handleImport)
     })
 
-    return {
-      id: chunk.id,
-      external: Array.from(external).map(entry => {
-        const parts = entry.split(/:/g)
-        return { chunk: parseInt(parts[0], 10), module: parseInt(parts[1], 10), filePath: parts[2] }
-      }),
-    }
+    return Array.from(external).map(entry => {
+      const parts = entry.split(/:/g)
+      return { chunk: parseInt(parts[0], 10), module: parseInt(parts[1], 10), filePath: parts[2] }
+    })
   })
 }

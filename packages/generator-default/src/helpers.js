@@ -71,7 +71,7 @@ export function getImportResolutions(compilation: Object, chunk: Chunk, config: 
     file.imports.forEach(entry => mergeResolutions(entry, chunk.id))
   })
   if (config.chunkMappings) {
-    config.chunkMappings.external.forEach(mapping =>
+    config.chunkMappings.forEach(mapping =>
       mergeResolutions({ id: mapping.module, resolved: mapping.filePath, from: null, request: mapping.filePath }, mapping.chunk)
     )
   }
