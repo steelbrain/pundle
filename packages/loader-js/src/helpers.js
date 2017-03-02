@@ -44,7 +44,7 @@ export function processSplit(file: File, chunks: Array<FileChunk>, path: Object)
   }
   nodeEntry.elements.forEach(element => {
     const request = this.getImportRequest(element.value, file.filePath)
-    chunk.entry.push(request)
+    chunk.imports.push(request)
     element.value = request.id.toString()
   })
   if (nodeCallback && nodeCallback.params.length) {

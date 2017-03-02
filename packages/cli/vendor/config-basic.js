@@ -7,9 +7,8 @@ module.exports = {
   // By default, it's true for dev mode and false for anything else
   entry: ['./index.js'],
   output: {
-    bundlePath: 'bundle.js',
     sourceMap: true,
-    sourceMapPath: 'bundle.js.map',
+    bundlePath: 'bundle.js',
     rootDirectory: path.join(__dirname, 'static'),
   },
   server: {

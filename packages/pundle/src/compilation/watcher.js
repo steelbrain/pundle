@@ -3,16 +3,15 @@
 import invariant from 'assert'
 import chokidar from 'chokidar'
 import EventEmitter from 'events'
-import type { WatcherConfig } from '../../types'
 
 export default class Watcher extends EventEmitter {
   paths: Map<string, number>;
   active: boolean;
-  config: WatcherConfig;
+  config: Object;
   disabled: Set<string>;
   chokidar: Object;
 
-  constructor(initialFiles: Array<string>, config: WatcherConfig) {
+  constructor(initialFiles: Array<string>, config: Object) {
     super()
     this.paths = new Map()
     this.active = true

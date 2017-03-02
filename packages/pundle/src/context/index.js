@@ -6,15 +6,15 @@ import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundl
 import type { File, ComponentAny, FileImport, ResolverResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
-import type { ComponentEntry, CompilationConfig } from '../../types'
+import type { ComponentEntry, PundleConfig } from '../../types'
 
 let uniqueID = 0
 
 export default class Context {
-  config: CompilationConfig;
+  config: PundleConfig;
   components: Set<ComponentEntry>;
 
-  constructor(config: CompilationConfig) {
+  constructor(config: PundleConfig) {
     this.config = config
     this.components = new Set()
   }

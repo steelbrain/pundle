@@ -26,7 +26,7 @@ class Pundle {
 
     this.config = config
     this.emitter = new Emitter()
-    this.context = new Context(config.compilation)
+    this.context = new Context(config)
     this.compilation = new Compilation(this.context)
     this.subscriptions = new CompositeDisposable()
 
@@ -37,7 +37,7 @@ class Pundle {
     if (!Array.isArray(givenComponents)) {
       throw new Error('Parameter 1 to loadComponents() must be an Array')
     }
-    const components = await Helpers.getLoadables(givenComponents, this.config.compilation.rootDirectory)
+    const components = await Helpers.getLoadables(givenComponents, this.config.rootDirectory)
     const subscriptions = new CompositeDisposable()
     subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
@@ -48,7 +48,7 @@ class Pundle {
   async loadPreset(givenPreset: Object | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
     let preset = givenPreset
     if (typeof preset === 'string') {
-      preset = await Helpers.load(preset, this.config.compilation.rootDirectory)
+      preset = await Helpers.load(preset, this.config.rootDirectory)
     }
     if (!Array.isArray(preset)) {
       throw new Error('Invalid preset value/export. It must be an Array')
@@ -64,7 +64,7 @@ class Pundle {
       }
       return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
     }).filter(i => i)
-    const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)
+    const components = await Helpers.getLoadables(loadables, this.config.rootDirectory)
     const subscriptions = new CompositeDisposable()
     subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
@@ -81,7 +81,7 @@ class Pundle {
     let requests
     const files: Map<string, ?File> = new Map()
     if (!givenRequest) {
-      requests = this.config.compilation.entry
+      requests = this.config.entry
     } else if (typeof givenRequest === 'string') {
       requests = [givenRequest]
     } else if (!Array.isArray(givenRequest)) {

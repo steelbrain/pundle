@@ -95,6 +95,8 @@ export type PostTransformerResult = {
 export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?PostTransformerResult>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
+// TODO: ChunkTransformer component
+
 export type WatcherCallbacks = {
   tick?: ((filePath: string, error: ?Error) => Promise<void> | void),
   ready?: ((initialCompileStatus: boolean, totalFiles: Array<File>) => Promise<void> | void),

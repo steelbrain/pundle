@@ -11,7 +11,6 @@ import type { File, FileImport } from 'pundle-api/types'
 
 import Chunk from '../chunk'
 import Watcher from './watcher'
-import { fillWatcherConfig } from './helpers'
 import * as Helpers from '../context/helpers'
 import type Context from '../context'
 
@@ -146,10 +145,9 @@ export default class Compilation {
   //   and closes the file watcher
   // NOTE: Return value of this function has a special "queue" property
   // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
-  async watch(givenConfig: Object = {}, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
+  async watch(config: Object, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
     let queue = Promise.resolve()
     const files: Map<string, ?File> = new Map()
-    const config = fillWatcherConfig(givenConfig)
     const resolvedEntries = await Promise.all(this.context.config.entry.map(entry => this.context.resolve(entry)))
 
     const watcher = new Watcher(resolvedEntries, {

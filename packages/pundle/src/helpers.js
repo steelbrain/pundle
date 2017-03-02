@@ -3,7 +3,6 @@
 
 import FS from 'sb-fs'
 import Path from 'path'
-import invariant from 'assert'
 import promisify from 'sb-promisify'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { PundleConfig, Loadable, Loaded } from '../types'
@@ -60,6 +59,54 @@ export async function getLoadables(loadables: Array<Loadable>, rootDirectory: st
   return toReturn
 }
 
+function merge(name: string, given: any, ...values: Array<any>): any {
+  if (Array.isArray(given)) {
+    return values.reduce((a, b) => {
+      if (!b) {
+        return a
+      }
+      // NOTE: We are allowing non-array values on purpose, concat pushes when value is non-array
+      return a.concat(b)
+    }, given)
+  }
+  if (typeof given === 'object' && given) {
+    return Object.assign(given, ...values)
+  }
+  for (let i = 0, length = values.length; i < length; i++) {
+    const value = values[i]
+    if (typeof value !== 'undefined') {
+      return value
+    }
+  }
+  if (given === null) {
+    throw new Error(`config.${name} is required`)
+  }
+  return given
+}
+async function loadConfigFile(rootDirectory: string, configFileName: ?string): Promise<Object> {
+  let contents = {}
+  let loadFileConfig = false
+  const configPath = Path.join(rootDirectory, configFileName || '.pundle.js')
+
+  try {
+    await FS.stat(configPath)
+    loadFileConfig = true
+  } catch (_) { /* No Op */ }
+
+  if (loadFileConfig) {
+    const configModule = await load(configPath, rootDirectory)
+    if (typeof configModule === 'function') {
+      contents = await configModule()
+    } else if (typeof configModule === 'object' && configModule) {
+      contents = configModule
+    }
+    if (!contents) {
+      throw new MessageIssue(`Invalid export value of config file in '${rootDirectory}'`)
+    }
+  }
+  return contents
+}
+
 
 // TODO: Simplify this
 // NOTE:
@@ -72,104 +119,26 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
     throw new Error('Config must be an object')
   }
   if (typeof a.enableConfigFile === 'undefined' || a.enableConfigFile) {
-    let loadFileConfig = false
-    const configPath = Path.join(rootDirectory, a.configFileName || '.pundle.js')
-
-    try {
-      await FS.stat(configPath)
-      loadFileConfig = true
-    } catch (_) { /* No Op */ }
-
-    if (loadFileConfig) {
-      const configModule = await load(configPath, rootDirectory)
-      if (typeof configModule === 'function') {
-        b = await configModule()
-      } else if (typeof configModule === 'object' && configModule) {
-        b = configModule
-      }
-      if (!b) {
-        throw new MessageIssue(`Invalid export value of config file in '${rootDirectory}'`)
-      }
-    }
+    b = await loadConfigFile(rootDirectory, a.configFileName)
   }
 
   // NOTE: This copies all even non-standard stuff from Pundle config file to
   // The config. This will allow any third party consumers to be able to define
-  // custom stuff and then use it. For example, the API package uses this
+  // custom stuff and then use it. For example, the CLI package uses this
   // to support output configurations
   Object.assign(config, b)
 
-  config.watcher = {}
-  if (b.watcher) {
-    invariant(typeof b.watcher === 'object', 'config.watcher must be an Object')
-    Object.assign(config.watcher, b.watcher)
-  }
-  if (a.watcher) {
-    invariant(typeof a.watcher === 'object', 'config.watcher must be an Object')
-    Object.assign(config.watcher, a.watcher)
-  }
-  config.presets = []
-  if (a.presets) {
-    invariant(Array.isArray(a.presets), 'config.presets must be an Array')
-    config.presets = config.presets.concat(a.presets)
-  }
-  if (b.presets) {
-    invariant(Array.isArray(b.presets), 'config.presets must be an Array')
-    config.presets = config.presets.concat(b.presets)
-  }
-  config.components = []
-  if (a.components) {
-    invariant(Array.isArray(a.components), 'config.components must be an Array')
-    config.components = config.components.concat(a.components)
-  }
-  if (b.components) {
-    invariant(Array.isArray(b.components), 'config.components must be an Array')
-    config.components = config.components.concat(b.components)
-  }
+  config.debug = merge('debug', false, b.debug, a.debug)
+  config.entry = merge('entry', [], b.entry, a.entry)
+  config.output = merge('output', {}, b.output, a.output)
+  config.server = merge('server', {}, b.server, a.server)
+  config.presets = merge('presets', [], b.presets, a.presets)
+  config.watcher = merge('watcher', { usePolling: {}.hasOwnProperty.call(process.env, 'PUNDLE_WATCHER_USE_POLLING') }, b.watcher, a.watcher)
+  config.components = merge('components', [], b.components, a.components)
+  config.rootDirectory = merge('rootDirectory', null, b.rootDirectory, a.rootDirectory)
+  config.replaceVariables = merge('replaceVariables', {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV === 'production' ? 'production' : 'development'),
+  }, b.replaceVariables, a.replaceVariables)
 
-  const compilation = {}
-  if (typeof a.debug !== 'undefined') {
-    compilation.debug = !!a.debug
-  } else if (typeof b.debug !== 'undefined') {
-    compilation.debug = !!b.debug
-  } else {
-    compilation.debug = process.env.NODE_ENV !== 'production'
-  }
-  compilation.entry = []
-  if (!a.entry && !b.entry) {
-    throw new MessageIssue('config.entry should be an Array or string')
-  }
-  if (a.entry) {
-    invariant(typeof a.entry === 'string' || Array.isArray(a.entry), 'config.entry must be an Array or string')
-    compilation.entry = compilation.entry.concat(a.entry)
-  }
-  if (b.entry) {
-    invariant(typeof b.entry === 'string' || Array.isArray(b.entry), 'config.entry must be an Array or string')
-    compilation.entry = compilation.entry.concat(b.entry)
-  }
-  if (!a.rootDirectory && !b.rootDirectory) {
-    throw new MessageIssue('config.rootDirectory must be a string')
-  }
-  if (a.rootDirectory) {
-    invariant(a.rootDirectory, 'config.rootDirectory must be a string')
-    compilation.rootDirectory = a.rootDirectory
-  }
-  if (b.rootDirectory) {
-    invariant(b.rootDirectory, 'config.rootDirectory must be a string')
-    compilation.rootDirectory = b.rootDirectory
-  }
-  compilation.replaceVariables = Object.assign({}, {
-    'process.env.NODE_ENV': config.debug ? '"development"' : '"production"',
-  }, config.replaceVariables)
-  if (b.replaceVariables) {
-    invariant(typeof b.replaceVariables === 'object', 'config.replaceVariables must be an Object')
-    Object.assign(compilation.replaceVariables, b.replaceVariables)
-  }
-  if (a.replaceVariables) {
-    invariant(typeof a.replaceVariables === 'object', 'config.replaceVariables must be an Object')
-    Object.assign(compilation.replaceVariables, a.replaceVariables)
-  }
-
-  config.compilation = compilation
   return config
 }
