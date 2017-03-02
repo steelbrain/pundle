@@ -7,7 +7,7 @@ import fileSystem from 'sb-fs'
 import difference from 'lodash.difference'
 import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import type { File, FileImport } from 'pundle-api/types'
+import type { File, FileChunk, FileImport } from 'pundle-api/types'
 
 import Chunk from '../chunk'
 import Watcher from './watcher'
@@ -26,33 +26,6 @@ export default class Compilation {
   // While we could create a new chunk in this file directly, this is to allow API consumers to create chunks
   getChunk(name: string, entry: Array<string>, parent: ?Chunk): Chunk {
     return new Chunk(name, entry, parent)
-  }
-  // Notes:
-  // Lock as early as resolved to avoid duplicates
-  // Make sure to clear the null lock in case of any error
-  // Recurse asyncly until all resolves are taken care of
-  // Set resolved paths on all file#imports
-  async processTree(request: string, from: ?string = null, cached: boolean = true, files: Map<string, ?File>): Promise<Map<string, ?File>> {
-    const processFileTree = async (entry: FileImport) => {
-      const resolved = await this.context.resolve(entry.request, entry.from, cached)
-      if (files.has(resolved)) {
-        entry.resolved = resolved
-        return
-      }
-      let file
-      files.set(resolved, null)
-      try {
-        file = await this.processFile(resolved)
-      } catch (error) {
-        files.delete(resolved)
-        throw error
-      }
-      files.set(resolved, file)
-      await Promise.all(file.imports.map(item => processFileTree(item, resolved)))
-      entry.resolved = resolved
-    }
-    await processFileTree({ id: 0, request, resolved: null, from })
-    return files
   }
   // Order of execution:
   // - Transformer (all)
@@ -111,7 +84,6 @@ export default class Compilation {
     file.chunks.forEach(function(chunk) {
       const oldValue = chunksMap.get(chunk.name)
       if (oldValue) {
-        oldValue.entry = oldValue.entry.concat(chunk.entry)
         oldValue.imports = oldValue.imports.concat(chunk.imports)
       } else {
         chunksMap.set(chunk.name, chunk)
@@ -119,15 +91,50 @@ export default class Compilation {
     })
     file.chunks = Array.from(chunksMap.values())
 
-    // Dedupe imports and entries in chunks
+    // Dedupe imports in chunks
     file.chunks.forEach(function(chunk) {
-      chunk.entry = uniqBy(chunk.entry, 'request')
       chunk.imports = uniqBy(chunk.imports, 'request')
     })
     // Dedupe imports in file
     file.imports = uniqBy(file.imports, 'request')
 
     return file
+  }
+  // TODO: Maybe use cache in build too?
+  async build(cached: boolean): Promise<Array<FileChunk>> {
+    const files: Map<string, ?File> = new Map()
+    let chunks: Array<FileChunk> = this.context.config.entry.map(request => ({
+      name: this.context.getNextUniqueID().toString(),
+      entry: this.context.getImportRequest(request),
+      imports: [],
+    }))
+
+    const processFileTree = async (entry: FileImport) => {
+      const resolved = await this.context.resolve(entry.request, entry.from, cached)
+      if (files.has(resolved)) {
+        entry.resolved = resolved
+        return
+      }
+      let file
+      files.set(resolved, null)
+      try {
+        file = await this.processFile(resolved)
+      } catch (error) {
+        files.delete(resolved)
+        throw error
+      }
+      files.set(resolved, file)
+      await Promise.all(file.imports.map(item => processFileTree(item, resolved)))
+      await Promise.all(file.chunks.map(item => Promise.all(item.imports.map(importEntry => processFileTree(importEntry)))))
+      entry.resolved = resolved
+      chunks = chunks.concat(file.chunks)
+    }
+
+    await Promise.all(chunks.map(chunk => chunk.entry && processFileTree(chunk.entry)))
+    // TODO: Invoke chunk transformer here
+    console.log(chunks, files)
+
+    return chunks
   }
   // Spec:
   // - Create promised queue

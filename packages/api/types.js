@@ -35,7 +35,7 @@ export type FileImport = {
 }
 export type FileChunk = {
   name: string,
-  entry: Array<FileImport>,
+  entry: ?FileImport,
   imports: Array<FileImport>,
 }
 

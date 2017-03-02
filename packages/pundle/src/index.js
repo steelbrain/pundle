@@ -2,7 +2,7 @@
 
 import invariant from 'assert'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import type { File } from 'pundle-api/types'
+import type { File, FileChunk } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
@@ -69,33 +69,13 @@ class Pundle {
     subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
   }
-  async generate(givenFiles: ?Array<File> = null, runtimeConfig: Object = {}): Promise<Object> {
-    const files = givenFiles || await this.processTree()
-    return await this.context.generate(files, runtimeConfig)
+  // $FlowIgnore: TODO: Remove these when fixed in dev package
+  async generate(chunks: ?Array<FileChunk> = null, runtimeConfig: Object = {}): Promise<Object> {
+    return await this.context.generate(chunks || await this.build(), runtimeConfig)
   }
-  // Spec:
-  // - Normalize all givenRequests to an array
-  // - Asyncly and con-currently process all trees
-  // - Share files cache between tree resolutions to avoid duplicates
-  async processTree(givenRequest: ?string = null, givenFrom: ?string = null, cached: boolean = true): Promise<Array<File>> {
-    let requests
-    const files: Map<string, ?File> = new Map()
-    if (!givenRequest) {
-      requests = this.config.entry
-    } else if (typeof givenRequest === 'string') {
-      requests = [givenRequest]
-    } else if (!Array.isArray(givenRequest)) {
-      throw new Error('Parameter 1 to processTree() must be null, String or an Array')
-    } else {
-      requests = givenRequest
-    }
-
-    await Promise.all(requests.map(request =>
-      this.compilation.processTree(request, givenFrom, cached, files)
-    ))
-
-    const filteredFiles: Array<any> = Array.from(files.values())
-    return filteredFiles
+  // $FlowIgnore: TODO: Remove these when fixed in dev package
+  async build(cached: boolean = true): Promise<Array<FileChunk>> {
+    return this.compilation.build(cached)
   }
   watch(config: Object = {}, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
     return this.compilation.watch(Object.assign({}, this.config.watcher, config), oldFiles)

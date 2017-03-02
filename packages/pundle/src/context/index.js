@@ -74,7 +74,7 @@ export default class Context {
   getNextUniqueID(): number {
     return ++uniqueID
   }
-  getImportRequest(request: string, from: string): FileImport {
+  getImportRequest(request: string, from: ?string = null): FileImport {
     return { id: this.getNextUniqueID(), request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {

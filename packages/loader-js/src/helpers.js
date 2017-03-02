@@ -39,7 +39,7 @@ export function processSplit(file: File, chunks: Array<FileChunk>, path: Object)
 
   const chunk = {
     name: nodeName ? nodeName.value : this.getNextUniqueID().toString(),
-    entry: [],
+    entry: null,
     imports: [],
   }
   nodeEntry.elements.forEach(element => {
