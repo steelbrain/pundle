@@ -1,6 +1,5 @@
 /* @flow */
 
-import semver from 'semver'
 import reporterCli from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
@@ -82,7 +81,7 @@ export default class Context {
     if (!component) {
       throw new Error('Invalid component provided')
     }
-    if (!semver.satisfies(component.$apiVersion, `^${API_VERSION.split('.')[0]}`)) {
+    if (component.$apiVersion !== API_VERSION) {
       throw new Error('API version of component mismatches')
     }
     this.components.add({ component, config })

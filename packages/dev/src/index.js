@@ -51,17 +51,16 @@ class Server {
     const app = express()
     const oldFiles: Map<string, File> = new Map()
     const bootPromise = promiseDefer()
+    const rootDirectory = this.pundle.context.config.rootDirectory
 
-    this.enqueue(() => bootPromise.promise)
+    this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
+      directory: rootDirectory,
+      files: [],
+    }, {
+      prettyPrint: false,
+      createIfNonExistent: true,
+    })
     if (this.config.useCache) {
-      const rootDirectory = this.pundle.context.config.rootDirectory
-      this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
-        directory: rootDirectory,
-        files: [],
-      }, {
-        prettyPrint: false,
-        createIfNonExistent: true,
-      })
       this.pundle.context.setUniqueID(await this.cache.get('uniqueId'))
       const oldFilesArray = await this.cache.get('files')
       oldFilesArray.forEach(function(file) {
@@ -71,6 +70,7 @@ class Server {
     if (oldFiles.size) {
       this.report(`Restoring ${oldFiles.size} files from cache`)
     }
+    this.enqueue(() => bootPromise.promise)
 
     app.get(this.config.bundlePath, (req, res) => {
       this.generateIfNecessary().then(() => res.set('content-type', 'application/javascript').end(this.state.generated.contents))
@@ -184,10 +184,8 @@ class Server {
   dispose() {
     if (!this.subscriptions.disposed) {
       Helpers.unregisterCompilation(this.pundle.context)
-      if (this.cache) {
-        this.cache.setSync('files', this.state.files)
-        this.cache.setSync('uniqueId', this.pundle.context.getUniqueID())
-      }
+      this.cache.setSync('files', this.state.files)
+      this.cache.setSync('uniqueId', this.pundle.context.getUniqueID())
     }
     this.subscriptions.dispose()
   }

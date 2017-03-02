@@ -36,7 +36,6 @@
     "sb-event-kit": "^3.0.0",
     "sb-fs": "^2.0.0",
     "sb-promisify": "^2.0.1",
-    "semver": "^5.3.0",
     "source-map": "^0.5.6"
   }
 }
