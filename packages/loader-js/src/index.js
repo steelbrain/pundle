@@ -66,24 +66,26 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
     // NOTE: ^ Casting it to string is VERY VERY important, it breaks everything otherwise
   }
   const processSplit = path => {
-    const chunkName = path.node.arguments[2] && path.node.arguments[2].type === 'StringLiteral' ? path.node.arguments[2].value : this.getNextUniqueID().toString()
+    const [nodeEntry, nodeCallback, nodeName] = path.node.arguments
+
     const chunk = {
-      name: chunkName,
+      name: nodeName ? nodeName.value : this.getNextUniqueID().toString(),
       entry: [],
       imports: [],
     }
-    path.node.arguments[0].elements.forEach(element => {
+    nodeEntry.elements.forEach(element => {
       const request = this.getImportRequest(element.value, file.filePath)
       chunk.entry.push(request)
       element.value = request.id.toString()
     })
-    if (path.node.arguments[1] && path.node.arguments[1].type === 'FunctionExpression' && path.node.arguments[1].params.length) {
-      path.scope.traverse(path.node.arguments[1], {
-        CallExpression: (newPath) => {
-          if (newPath.node.callee.name === path.node.arguments[1].params[0].name) {
-            const request = this.getImportRequest(newPath.node.arguments[0].value, file.filePath)
+    if (nodeCallback && nodeCallback.params.length) {
+      const nodeCallbackParam = nodeCallback.params[0]
+      path.scope.traverse(nodeCallback, {
+        CallExpression: ({ node, scope }) => {
+          if (node.callee.name === nodeCallbackParam.name && !scope.getBinding(nodeCallbackParam.name)) {
+            const request = this.getImportRequest(node.arguments[0].value, file.filePath)
             chunk.imports.push(request)
-            newPath.node.arguments[0].value = request.id.toString()
+            node.arguments[0].value = request.id.toString()
           }
         },
       })
