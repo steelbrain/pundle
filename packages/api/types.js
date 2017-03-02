@@ -34,6 +34,7 @@ export type FileImport = {
   resolved: ?string,
 }
 export type FileChunk = {
+  id: number,
   entry: Array<FileImport>,
   imports: Array<FileImport>,
 }
@@ -51,9 +52,11 @@ export type File = {
 }
 
 export type Chunk = {
+  id: number;
   files: Map<string, File>;
   entry: Array<FileImport>;
   imports: Set<FileImport>;
+  getId(): number;
   getEntry(): Array<FileImport>;
   getFiles(): Array<File>;
   hasFile(filePath: string): boolean;

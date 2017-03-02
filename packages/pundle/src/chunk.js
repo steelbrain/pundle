@@ -3,12 +3,17 @@
 import type { File, FileImport, FileChunk } from 'pundle-api/types'
 
 export default class Chunk {
+  id: number;
   files: Map<string, File>;
   entry: Array<FileImport>;
 
-  constructor(entry: Array<FileImport>, files: Map<string, File>) {
+  constructor(id: number, entry: Array<FileImport>, files: Map<string, File>) {
+    this.id = id
     this.files = files
     this.entry = entry
+  }
+  getId(): number {
+    return this.id
   }
   getEntry(): Array<FileImport> {
     return this.entry
@@ -51,6 +56,6 @@ export default class Chunk {
       fileChunk.imports.forEach(entry => iterate(entry))
     }
 
-    return new Chunk(fileChunk.entry, chunkFiles)
+    return new Chunk(fileChunk.id, fileChunk.entry, chunkFiles)
   }
 }

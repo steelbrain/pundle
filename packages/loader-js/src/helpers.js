@@ -38,6 +38,7 @@ export function processSplit(file: File, chunks: Array<FileChunk>, path: Object)
   const [nodeEntry, nodeCallback] = path.node.arguments
 
   const chunk = {
+    id: this.getNextUniqueID(),
     entry: [],
     imports: [],
   }

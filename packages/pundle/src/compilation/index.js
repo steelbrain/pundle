@@ -81,7 +81,7 @@ export default class Compilation {
   async build(cached: boolean): Promise<Array<Chunk>> {
     const files: Map<string, File> = new Map()
     let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
-      name: this.context.getNextUniqueID().toString(),
+      id: this.context.getNextUniqueID(),
       entry: [this.context.getImportRequest(request)],
       imports: [],
     }))
