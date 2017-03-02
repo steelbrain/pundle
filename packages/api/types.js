@@ -36,14 +36,10 @@ export type FileImport = {
 export type FileChunk = {
   name: string,
   entry: Array<string>,
+  imports: Array<FileImport>,
 }
 
-export type Resolved = {
-  filePath: string,
-  sourceManifest: Object,
-  targetManifest: Object,
-}
-
+// TODO: Merge chunks with the same name
 export type File = {
   source: string,
   chunks: Array<FileChunk>,
@@ -56,25 +52,48 @@ export type File = {
   // ^ in seconds not miliseconds aka Date.now()/1000
 }
 
-export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<FileImport>, contents: string, sourceMap: ?Object }>)
+export type LoaderResult = {
+  chunks: Array<FileChunk>,
+  imports: Array<FileImport>,
+  contents: string,
+  sourceMap: ?Object,
+}
+export type LoaderCallback = ((config: Object, file: File) => Promise<?LoaderResult>)
 export type Loader = Component<'loader', LoaderCallback>
 
-export type PluginCallback = ((config: Object, file: File) => Promise<void>)
+export type PluginResult = void
+export type PluginCallback = ((config: Object, file: File) => Promise<?PluginResult>)
 export type Plugin = Component<'plugin', PluginCallback>
 
-export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?Resolved>)
+export type ResolverResult = {
+  filePath: string,
+  sourceManifest: Object,
+  targetManifest: Object,
+}
+export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?ResolverResult>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
-export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<void>)
+export type ReporterResult = void
+export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<ReporterResult>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
-export type GeneratorCallback = ((config: Object, files: Array<File>, runtimeConfig: Object) => Promise<?Object>)
+// TODO: Type this properly
+export type GeneratorResult = Object
+export type GeneratorCallback = ((config: Object, files: Array<File>, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 
-export type TransformerCallback = ((config: Object, file: File) => Promise<?{ contents: string, sourceMap: ?Object }>)
+export type TransformerResult = {
+  contents: string,
+  sourceMap: ?Object,
+}
+export type TransformerCallback = ((config: Object, file: File) => Promise<?TransformerResult>)
 export type Transformer = Component<'transformer', TransformerCallback>
 
-export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?{ contents: string, sourceMap: ?Object }>)
+export type PostTransformerResult = {
+  contents: string,
+  sourceMap: ?Object,
+}
+export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?PostTransformerResult>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
 export type WatcherCallbacks = {

@@ -4,7 +4,7 @@ import semver from 'semver'
 import reporterCli from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { File, ComponentAny, FileImport, Resolved } from 'pundle-api/types'
+import type { File, ComponentAny, FileImport, ResolverResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ComponentEntry, CompilationConfig } from '../../types'
@@ -29,7 +29,7 @@ export default class Context {
       Helpers.invokeComponent(this, { config: {}, component: reporterCli }, 'callback', [], report)
     }
   }
-  async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<Resolved> {
+  async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<ResolverResult> {
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
     const filteredComponents = Helpers.filterComponents(this.components, 'resolver')
     if (!filteredComponents.length) {
@@ -66,15 +66,17 @@ export default class Context {
     }
     return result
   }
-  getImportRequest(request: string, from: string): FileImport {
-    const id = ++uniqueID
-    return { id, request, resolved: null, from }
-  }
   setUniqueID(newUniqueID: number): void {
     uniqueID = newUniqueID
   }
   getUniqueID(): number {
     return uniqueID
+  }
+  getNextUniqueID(): number {
+    return ++uniqueID
+  }
+  getImportRequest(request: string, from: string): FileImport {
+    return { id: this.getNextUniqueID(), request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {
     if (!component) {

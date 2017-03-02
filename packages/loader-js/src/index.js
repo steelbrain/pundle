@@ -4,12 +4,13 @@ import { parse } from 'babylon'
 import traverse from 'babel-traverse'
 import generate from 'babel-generator'
 import { createLoader, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import type { File, FileImport, FileChunk, LoaderResult } from 'pundle-api/types'
 
 import { getName, getParsedReplacement } from './helpers'
 
 const RESOLVE_NAMES = new Set([
   'require',
+  'require.ensure',
   'require.resolve',
   'module.hot.accept',
   'module.hot.decline',
@@ -18,12 +19,15 @@ const RESOLVE_NAMES_SENSITIVE = new Set([
   'require',
   'require.resolve',
 ])
+const UNIQUE_CHUNK_KEY = '__$sb_pundle_context_chunk'
 
-export default createLoader(function(config: Object, file: File) {
+export default createLoader(function(config: Object, file: File): ?LoaderResult {
   if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
     return null
   }
-  const imports: Array<string> = []
+
+  const chunks: Array<FileChunk> = []
+  const imports: Array<FileImport> = []
 
   let ast
   try {
@@ -53,14 +57,24 @@ export default createLoader(function(config: Object, file: File) {
     }
   }
 
-  const processResolve = node => {
-    if (typeof node.value === 'string') {
-      // StringLiteral
-      const request = this.getImportRequest(node.value, file.filePath)
-      imports.push(request)
-      // NOTE: Casting it to string is VERY important and required
-      node.value = request.id.toString()
+  const processSplit = node => {
+    const chunkName = node.arguments[2] && node.arguments[2].type === 'StringLiteral' ? node.arguments[2].value : this.getNextUniqueID().toString()
+    const entryPoints = node.arguments[0].elements.map(arg => arg.value)
+    const chunk = chunks.filter(c => c.name === chunkName)[0] || {
+      name: chunkName,
+      entry: entryPoints,
+      imports: [],
     }
+    node[UNIQUE_CHUNK_KEY] = chunk
+    if (chunks.indexOf(chunk) === -1) {
+      chunks.push(chunk)
+    }
+  }
+  const processResolve = node => {
+    const request = this.getImportRequest(node.value, file.filePath)
+    imports.push(request)
+    node.value = request.id.toString()
+    // NOTE: ^ Casting it to string is VERY VERY important, it breaks everything otherwise
   }
   const processReplaceable = path => {
     const name = getName(path.node)
@@ -78,13 +92,24 @@ export default createLoader(function(config: Object, file: File) {
         return
       }
       const parameter = path.node.arguments && path.node.arguments[0]
-      if (!parameter || typeof parameter.value !== 'string') {
+      if (!parameter || parameter.type !== (name === 'require.ensure' ? 'ArrayExpression' : 'StringLiteral')) {
         return
       }
       if (RESOLVE_NAMES_SENSITIVE.has(name) && path.scope.hasBinding('require')) {
         return
       }
-      processResolve(parameter)
+      if (name === 'require.ensure') {
+        processSplit(path.node)
+      } else {
+        const chunk: ?FileChunk = path.findParent(parentPath => parentPath.node[UNIQUE_CHUNK_KEY])
+        if (chunk) {
+          const request = this.getImportRequest(parameter.value, file.filePath)
+          chunk.imports.push(request)
+          parameter.value = request.id.toString()
+        } else {
+          processResolve(parameter)
+        }
+      }
     },
     Identifier: processReplaceable,
     MemberExpression: processReplaceable,
@@ -100,6 +125,7 @@ export default createLoader(function(config: Object, file: File) {
   })
 
   return {
+    chunks,
     imports,
     contents: compiled.code,
     sourceMap: compiled.map,
