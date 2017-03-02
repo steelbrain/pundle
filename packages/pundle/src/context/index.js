@@ -25,8 +25,7 @@ export default class Context {
       tried = true
     }
     if (!tried) {
-      // TODO: Use invoke component here
-      reporterCli.callback(reporterCli.defaultConfig, report)
+      Helpers.invokeComponent(this, { config: {}, component: reporterCli }, 'callback', [], report)
     }
   }
   async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<Resolved> {
