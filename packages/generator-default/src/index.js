@@ -68,7 +68,6 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   }
 
   return {
-    name: chunk.getName(),
     contents: chunks.join('\n'),
     sourceMap,
     filePaths: files.map(i => i.filePath),

@@ -35,10 +35,9 @@ export function getParsedReplacement(rawValue: any): Object {
 }
 
 export function processSplit(file: File, chunks: Array<FileChunk>, path: Object) {
-  const [nodeEntry, nodeCallback, nodeName] = path.node.arguments
+  const [nodeEntry, nodeCallback] = path.node.arguments
 
   const chunk = {
-    name: nodeName ? nodeName.value : this.getNextUniqueID().toString(),
     entry: null,
     imports: [],
   }

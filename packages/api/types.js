@@ -34,7 +34,6 @@ export type FileImport = {
   resolved: ?string,
 }
 export type FileChunk = {
-  name: string,
   entry: ?FileImport,
   imports: Array<FileImport>,
 }
@@ -52,7 +51,6 @@ export type File = {
 }
 
 export type Chunk = {
-  getName(): string;
   getFiles(): Array<File>;
   hasFile(filePath: string): boolean;
   addFile(filePath: string, file: File): void;
@@ -86,7 +84,7 @@ export type ReporterResult = void
 export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<ReporterResult>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
-export type GeneratorResult = { name: string, contents: string, sourceMap: Object, filePaths: Array<string> }
+export type GeneratorResult = { contents: string, sourceMap: Object, filePaths: Array<string> }
 export type GeneratorCallback = ((config: Object, files: Chunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 
