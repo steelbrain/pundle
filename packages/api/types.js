@@ -27,11 +27,15 @@ export type CallbackOrConfig<T> = T | {
   dispose?: ((config: Object) => void),
 }
 
-export type Import = {
+export type FileImport = {
   id: number,
   from: ?string,
   request: string,
   resolved: ?string,
+}
+export type FileChunk = {
+  name: string,
+  entry: Array<string>,
 }
 
 export type Resolved = {
@@ -42,7 +46,8 @@ export type Resolved = {
 
 export type File = {
   source: string,
-  imports: Array<Import>,
+  chunks: Array<FileChunk>,
+  imports: Array<FileImport>,
   filePath: string,
   // ^ The absolute path on file system
   contents: string,
@@ -51,7 +56,7 @@ export type File = {
   // ^ in seconds not miliseconds aka Date.now()/1000
 }
 
-export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<Import>, contents: string, sourceMap: ?Object }>)
+export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<FileImport>, contents: string, sourceMap: ?Object }>)
 export type Loader = Component<'loader', LoaderCallback>
 
 export type PluginCallback = ((config: Object, file: File) => Promise<void>)

@@ -6,7 +6,7 @@ import fileSystem from 'sb-fs'
 import difference from 'lodash.difference'
 import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import type { File, Import } from 'pundle-api/types'
+import type { File, FileImport } from 'pundle-api/types'
 
 import Chunk from '../chunk'
 import Watcher from './watcher'
@@ -33,7 +33,7 @@ export default class Compilation {
   // Recurse asyncly until all resolves are taken care of
   // Set resolved paths on all file#imports
   async processTree(request: string, from: ?string = null, cached: boolean = true, files: Map<string, ?File>): Promise<Map<string, ?File>> {
-    const processFileTree = async (entry: Import) => {
+    const processFileTree = async (entry: FileImport) => {
       const resolved = await this.context.resolve(entry.request, entry.from, cached)
       if (files.has(resolved)) {
         entry.resolved = resolved
@@ -72,6 +72,7 @@ export default class Compilation {
     const sourceStat = await fileSystem.stat(filePath)
     const file = {
       source,
+      chunks: [],
       imports: [],
       filePath,
       contents: source,

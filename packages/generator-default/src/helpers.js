@@ -5,7 +5,7 @@ import slash from 'slash'
 import fileSystem from 'sb-fs'
 import { MessageIssue } from 'pundle-api'
 import { SourceMapConsumer } from 'source-map'
-import type { File, Import } from 'pundle-api/types'
+import type { File, FileImport } from 'pundle-api/types'
 
 export const LINE_BREAK = /\r\n|\n|\r/
 export function getLinesCount(text: string): number {
@@ -70,7 +70,7 @@ export async function getWrapperContents(compilation: Object, config: Object): P
 export function getImportResolutions(compilation: Object, config: Object, files: Array<File>) : Object {
   const resolutionMap = {}
 
-  function mergeResolutions(entry: Import) {
+  function mergeResolutions(entry: FileImport) {
     if (!entry.resolved) {
       throw new MessageIssue(`Error generating output, ${entry.request} not resolved from ${entry.from || 'Source root'}`, 'error')
     }
