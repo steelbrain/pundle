@@ -8,9 +8,9 @@ import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, FileChunk, FileImport } from 'pundle-api/types'
 
-import Chunk from './chunk'
 import Watcher from './watcher'
 import * as Helpers from '../context/helpers'
+import type Chunk from '../chunk'
 import type Context from '../context'
 
 export default class Compilation {
@@ -20,11 +20,6 @@ export default class Compilation {
   constructor(context: Context) {
     this.context = context
     this.subscriptions = new CompositeDisposable()
-  }
-  // NOTE:
-  // While we could create a new chunk in this file directly, this is to allow API consumers to create chunks
-  getChunk(fileChunk: FileChunk, files: Map<string, ?File>): Chunk {
-    return Chunk.get(fileChunk, files)
   }
   // Order of execution:
   // - Transformer (all)
@@ -87,7 +82,7 @@ export default class Compilation {
     const files: Map<string, ?File> = new Map()
     let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
       name: this.context.getNextUniqueID().toString(),
-      entry: this.context.getImportRequest(request),
+      entry: [this.context.getImportRequest(request)],
       imports: [],
     }))
 
@@ -112,8 +107,8 @@ export default class Compilation {
       fileChunks = fileChunks.concat(file.chunks)
     }
 
-    await Promise.all(fileChunks.map(chunk => chunk.entry && processFileTree(chunk.entry)))
-    const chunks = fileChunks.map(chunk => this.getChunk(chunk, files))
+    await Promise.all(fileChunks.map(chunk => chunk.entry.map(chunkEntry => processFileTree(chunkEntry))))
+    const chunks = fileChunks.map(chunk => this.context.getChunk(chunk, files))
 
     for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)

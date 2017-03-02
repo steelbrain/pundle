@@ -3,10 +3,11 @@
 import reporterCli from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { ComponentAny, FileImport, ResolverResult } from 'pundle-api/types'
+import type { File, FileChunk, ComponentAny, FileImport, ResolverResult } from 'pundle-api/types'
 
+import Chunk from '../chunk'
 import * as Helpers from './helpers'
-import type { Chunk, ComponentEntry, PundleConfig } from '../../types'
+import type { ComponentEntry, PundleConfig } from '../../types'
 
 let uniqueID = 0
 
@@ -17,6 +18,11 @@ export default class Context {
   constructor(config: PundleConfig) {
     this.config = config
     this.components = new Set()
+  }
+  // NOTE:
+  // While we could create a new chunk in this file directly, this is to allow API consumers to create chunks
+  getChunk(fileChunk: FileChunk, files: Map<string, ?File>): Chunk {
+    return Chunk.get(fileChunk, files)
   }
   async report(report: Object): Promise<void> {
     let tried = false

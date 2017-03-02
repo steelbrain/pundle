@@ -34,7 +34,7 @@ export type FileImport = {
   resolved: ?string,
 }
 export type FileChunk = {
-  entry: ?FileImport,
+  entry: Array<FileImport>,
   imports: Array<FileImport>,
 }
 
@@ -51,12 +51,15 @@ export type File = {
 }
 
 export type Chunk = {
+  files: Map<string, File>;
+  entry: Array<FileImport>;
+  imports: Set<FileImport>;
   getFiles(): Array<File>;
   hasFile(filePath: string): boolean;
   addFile(filePath: string, file: File): void;
   deleteFile(filePath: string): void;
   getImports(): Array<FileImport>;
-  getEntry(): ?FileImport;
+  getEntry(): Array<FileImport>;
 }
 
 export type LoaderResult = {

@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import invariant from 'assert'
 import sourceMapToComment from 'source-map-to-comment'
 import { createGenerator } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
@@ -25,7 +26,7 @@ import * as Helpers from './helpers'
 
 export default createGenerator(async function(config: Object, chunk: Chunk): Promise<GeneratorResult> {
   const files = chunk.getFiles()
-  const entry = chunk.getEntry()
+  const entries = chunk.getEntry()
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
   const chunks = [';(function() {', wrapperContents]
@@ -53,8 +54,9 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
 
   const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
   chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
-  if (entry && entry.resolved) {
-    chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entry.resolved)}')`)
+  for (let i = 0, length = entries.length; i < length; i++) {
+    invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
+    chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entries[i].resolved)}')`)
   }
   chunks.push('})();\n')
 

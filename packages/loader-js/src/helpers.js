@@ -38,7 +38,7 @@ export function processSplit(file: File, chunks: Array<FileChunk>, path: Object)
   const [nodeEntry, nodeCallback] = path.node.arguments
 
   const chunk = {
-    entry: null,
+    entry: [],
     imports: [],
   }
   nodeEntry.elements.forEach(element => {

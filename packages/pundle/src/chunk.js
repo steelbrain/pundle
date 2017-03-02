@@ -4,15 +4,15 @@ import type { File, FileImport, FileChunk } from 'pundle-api/types'
 
 export default class Chunk {
   files: Map<string, File>;
-  entry: ?FileImport;
+  entry: Array<FileImport>;
   imports: Set<FileImport>;
 
-  constructor(entry: ?FileImport, imports: Array<FileImport>, files: Map<string, File>) {
+  constructor(entry: Array<FileImport>, imports: Array<FileImport>, files: Map<string, File>) {
     this.files = files
     this.entry = entry
     this.imports = new Set(imports)
   }
-  getEntry(): ?FileImport {
+  getEntry(): Array<FileImport> {
     return this.entry
   }
   getFiles(): Array<File> {
@@ -48,9 +48,7 @@ export default class Chunk {
       chunkFiles.set(filePath, file)
       file.imports.forEach(entry => iterate(entry))
     }
-    if (fileChunk.entry) {
-      iterate(fileChunk.entry)
-    }
+    fileChunk.entry.forEach(entry => iterate(entry))
     fileChunk.imports.forEach(entry => iterate(entry))
 
     return new Chunk(fileChunk.entry, fileChunk.imports, chunkFiles)
