@@ -61,6 +61,7 @@ class Server {
         prettyPrint: false,
         createIfNonExistent: true,
       })
+      this.pundle.compilation.setUniqueID(await this.cache.get('uniqueId'))
       const oldFilesArray = await this.cache.get('files')
       oldFilesArray.forEach(function(file) {
         oldFiles.set(file.filePath, file)
@@ -184,6 +185,7 @@ class Server {
       Helpers.unregisterCompilation(this.pundle.compilation)
       if (this.cache) {
         this.cache.setSync('files', this.state.files)
+        this.cache.setSync('uniqueId', this.pundle.compilation.getUniqueID())
       }
     }
     this.subscriptions.dispose()
