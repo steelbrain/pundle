@@ -29,6 +29,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
   const chunks = [';(function() {', wrapperContents]
+  const outputName = Helpers.getOutputName(chunk.id)
   const chunksMap = new SourceMapGenerator({
     skipValidation: true,
   })
@@ -49,11 +50,11 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
     }
   }
 
-  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(Helpers.getMappings(this, chunk, config))})`)
+  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(outputName.toString())}, ${JSON.stringify(Helpers.getMappings(this, chunk, config))})`)
 
   const externalEntries = entries.filter(entry => config.chunkMappings.find(mapping => (mapping.module === entry.id)))
   if (externalEntries.length) {
-    chunks.push(`__sbPundle.require.ensure(${JSON.stringify(externalEntries.map(i => i.id.toString()))}, function() {`)
+    chunks.push(`__sbPundle.ensure(${JSON.stringify(externalEntries.map(i => i.id.toString()))}, '$root', function() {`)
   }
   for (let i = 0, length = entries.length; i < length; i++) {
     invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
@@ -74,7 +75,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   return {
     contents: chunks.join('\n'),
     sourceMap,
-    outputName: Helpers.getOutputName(chunk.id),
+    outputName,
     filesGenerated: Array.from(chunk.files.keys()),
   }
 }, {

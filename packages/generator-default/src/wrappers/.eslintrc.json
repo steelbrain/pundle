@@ -5,8 +5,11 @@
     "camelcase": "off",
     "guard-for-in": "off",
     "no-unused-vars": "off",
-    "object-shorthand": ["error", "never"],
     "no-use-before-define": "off",
     "no-underscore-dangle": "off"
+  },
+  "globals": {
+    "SB_PUNDLE_PUBLIC_PRE": true,
+    "SB_PUNDLE_PUBLIC_POST": true
   }
 }

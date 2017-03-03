@@ -177,7 +177,7 @@ command
             if (writeSourceMap) {
               const sourceMap = JSON.stringify(output.sourceMap)
               FS.writeFileSync(currentSourceMapPath, sourceMap)
-              Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(currentSourceMapPath)}'`)
+              Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(Path.relative(options.rootDirectory, currentSourceMapPath))}'`)
             }
           })
         })

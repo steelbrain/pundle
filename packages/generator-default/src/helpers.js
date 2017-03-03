@@ -31,7 +31,7 @@ export function getFilePath(compilation: Object, config: Object, filePath: strin
 
 export const wrapperHMR = require.resolve('./wrappers/hmr')
 export const wrapperNormal = require.resolve('./wrappers/normal')
-export async function getWrapperContents(compilation: Object, config: Object): Promise<string> {
+export async function getWrapperContents(context: Object, config: Object): Promise<string> {
   let wrapper = config.wrapper
   if (wrapper === 'normal') {
     wrapper = wrapperNormal
@@ -41,15 +41,21 @@ export async function getWrapperContents(compilation: Object, config: Object): P
     return ''
   }
   if (!Path.isAbsolute(wrapper)) {
-    wrapper = await compilation.resolve(wrapper)
+    wrapper = await context.resolve(wrapper)
   }
-  const fileContents = await fileSystem.readFile(wrapper)
+  let fileContents = await fileSystem.readFile(wrapper)
   if (fileContents.slice(1, 11) === 'use strict') {
     // Trim off first line in case it starts with use strict, this is to allow
     // unsafe modules to work inside of Pundle
-    return fileContents.slice(13)
+    fileContents = fileContents.slice(13)
   }
+
+  const outputPath = Path.join(context.config.output.publicRoot, context.config.output.bundlePath)
+  const outputPathExt = Path.extname(outputPath)
+
   return fileContents
+    .replace('SB_PUNDLE_PUBLIC_PRE', JSON.stringify(outputPath.slice(0, -1 * outputPathExt.length)))
+    .replace('SB_PUNDLE_PUBLIC_POST', JSON.stringify(outputPathExt))
 }
 
 export function getOutputName(chunkId: number): string {

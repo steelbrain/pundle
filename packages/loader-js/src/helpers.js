@@ -59,7 +59,10 @@ export function processSplit(file: File, chunks: Array<FileChunk>, path: Object)
       },
     })
   }
-  path.node.arguments.unshift(t.stringLiteral(chunk.id.toString()))
+  // NOTE: Replace node entry with the new chunk id because we no longer need entry anywhere
+  path.node.arguments[0] = t.stringLiteral(chunk.id.toString())
+  path.node.arguments[1] = t.identifier('module.id')
+  path.node.arguments[2] = nodeCallback
 
   chunks.push(chunk)
 }
