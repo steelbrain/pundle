@@ -78,23 +78,25 @@ global.__sbPundle = global.__sbPundle || {
   require(request: string) {
     return this.requireModule('$root', request)
   },
-  ensure(requestedChunk: string, moduleId: string, loadedCallback: Function) {
-    const chunkId = this.mapChunks[requestedChunk]
-    if (!this.chunks[chunkId]) {
-      let resolve
-      let reject
-      const promise = new Promise(function(_resolve, _reject) {
-        resolve = _resolve
-        reject = _reject
-      })
-      this.chunks[chunkId] = { promise, resolve, reject }
-      const script = document.createElement('script')
-      // $FlowIgnore: These are replaced vars
-      script.src = `${SB_PUNDLE_PUBLIC_PRE}.${chunkId}${SB_PUNDLE_PUBLIC_POST}`
-      script.onerror = reject
-      // $FlowIgnore: It's never null bro
-      document.body.appendChild(script)
-    }
-    this.chunks[chunkId].promise.then(() => loadedCallback(this.generateRequire(moduleId)))
+  ensure(requestedChunks: Array<string>, moduleId: string, loadedCallback: Function) {
+    requestedChunks.forEach(requestedChunk => {
+      const chunkId = this.mapChunks[requestedChunk]
+      if (!this.chunks[chunkId]) {
+        let resolve
+        let reject
+        const promise = new Promise(function(_resolve, _reject) {
+          resolve = _resolve
+          reject = _reject
+        })
+        this.chunks[chunkId] = { promise, resolve, reject }
+        const script = document.createElement('script')
+        // $FlowIgnore: These are replaced vars
+        script.src = `${SB_PUNDLE_PUBLIC_PRE}.${chunkId}${SB_PUNDLE_PUBLIC_POST}`
+        script.onerror = reject
+        // $FlowIgnore: It's never null bro
+        document.body.appendChild(script)
+      }
+      this.chunks[chunkId].promise.then(() => loadedCallback(this.generateRequire(moduleId)))
+    })
   },
 }

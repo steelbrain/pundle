@@ -52,9 +52,13 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
 
   chunks.push(`__sbPundle.registerMappings(${JSON.stringify(outputName.toString())}, ${JSON.stringify(Helpers.getMappings(this, chunk, config))})`)
 
-  const externalEntries = entries.filter(entry => config.chunkMappings.find(mapping => (mapping.module === entry.id)))
+  const externalEntries = []
+  entries.forEach(function(entry) {
+    const found = config.chunkMappings.find(mapping => (mapping.module === entry.id))
+    externalEntries.push(found)
+  })
   if (externalEntries.length) {
-    chunks.push(`__sbPundle.ensure(${JSON.stringify(externalEntries.map(i => i.id.toString()))}, '$root', function() {`)
+    chunks.push(`__sbPundle.ensure(${JSON.stringify(externalEntries.map(i => i.chunk.toString()))}, '$root', function() {`)
   }
   for (let i = 0, length = entries.length; i < length; i++) {
     invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
