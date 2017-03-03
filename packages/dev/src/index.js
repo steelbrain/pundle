@@ -51,7 +51,7 @@ class Server {
     const app = express()
     const oldFiles: Map<string, File> = new Map()
     const bootPromise = promiseDefer()
-    const rootDirectory = this.pundle.context.config.rootDirectory
+    const rootDirectory = this.pundle.config.rootDirectory
 
     this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
       directory: rootDirectory,
@@ -147,7 +147,7 @@ class Server {
     })
   }
   async generateForHMR() {
-    const rootDirectory = this.pundle.context.config.rootDirectory
+    const rootDirectory = this.pundle.config.rootDirectory
     const changedFilePaths = unique(Array.from(this.filesChanged))
 
     const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, rootDirectory))

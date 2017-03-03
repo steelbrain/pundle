@@ -49,7 +49,7 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
     }
   }
 
-  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(Helpers.getImportResolutions(this, chunk, config))})`)
+  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(Helpers.getMappings(this, chunk, config))})`)
 
   const externalEntries = entries.filter(entry => config.chunkMappings.find(mapping => (mapping.module === entry.id)))
   if (externalEntries.length) {
@@ -74,9 +74,9 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   }
 
   return {
-    id: chunk.id.toString(),
     contents: chunks.join('\n'),
     sourceMap,
+    outputName: Helpers.getOutputName(chunk.id),
     filesGenerated: Array.from(chunk.files.keys()),
   }
 }, {

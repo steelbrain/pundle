@@ -16,8 +16,9 @@ export type PundleConfig = {
   debug: boolean,
   entry: Array<string>,
   output: {
-    bundlePath?: string,
     sourceMap?: boolean,
+    publicPath?: string,
+    bundlePath?: string,
     sourceMapPath?: string,
     rootDirectory?: string,
   },

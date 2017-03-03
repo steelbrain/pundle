@@ -59,6 +59,7 @@ export function processSplit(file: File, chunks: Array<FileChunk>, path: Object)
       },
     })
   }
+  path.node.arguments.unshift(t.stringLiteral(chunk.id.toString()))
 
   chunks.push(chunk)
 }

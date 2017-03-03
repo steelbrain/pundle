@@ -2,6 +2,7 @@
 
 import Path from 'path'
 import slash from 'slash'
+import Crypto from 'crypto'
 import fileSystem from 'sb-fs'
 import { SourceMapConsumer } from 'source-map'
 import type { Chunk } from 'pundle-api/types'
@@ -51,16 +52,23 @@ export async function getWrapperContents(compilation: Object, config: Object): P
   return fileContents
 }
 
-export function getImportResolutions(compilation: Object, chunk: Chunk, config: Object, chunksProcessed: Set<number> = new Set()) : Object {
-  const resolutionMap = {}
+export function getOutputName(chunkId: number): string {
+  return Crypto.createHash('sha1').update(chunkId.toString()).digest('hex')
+}
+
+export function getMappings(compilation: Object, chunk: Chunk, config: Object, chunksProcessed: Set<number> = new Set()) : Object {
+  const chunks = {}
+  const imports = {}
 
   function mergeResolutions(resolved: string, id: number, chunkId: number) {
     const filePath = getFilePath(compilation, config, resolved)
-    if (resolutionMap[filePath]) {
-      resolutionMap[filePath].push(`${id}:${chunkId}`)
-    } else {
-      resolutionMap[filePath] = [`${id}:${chunkId}`]
+    if (!imports[chunkId]) {
+      imports[chunkId] = {}
     }
+    if (!imports[chunkId][filePath]) {
+      imports[chunkId][filePath] = []
+    }
+    imports[chunkId][filePath].push(id)
   }
 
   chunk.files.forEach(function(file) {
@@ -78,7 +86,13 @@ export function getImportResolutions(compilation: Object, chunk: Chunk, config: 
   config.chunkMappings.forEach(mapping =>
     mergeResolutions(mapping.filePath, mapping.module, mapping.chunk)
   )
-  return resolutionMap
+
+  for (const key in imports) {
+    if (!{}.hasOwnProperty.call(imports, key)) continue
+    chunks[key] = getOutputName(parseInt(key, 10))
+  }
+
+  return { chunks, imports }
 }
 
 export function mergeSourceMap(sourceMap: Object, target: Object, filePath: string, sourceContents: string, offset: number): void {

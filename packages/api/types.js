@@ -96,9 +96,9 @@ export type ReporterCallback = ((config: Object, error: Error | FileIssue | Mess
 export type Reporter = Component<'reporter', ReporterCallback>
 
 export type GeneratorResult = {
-  id: string,
   contents: string,
   sourceMap: Object,
+  outputName: string,
   filesGenerated: Array<string>,
 }
 export type GeneratorCallback = ((config: Object, files: Chunk, runtimeConfig: Object) => Promise<?GeneratorResult>)

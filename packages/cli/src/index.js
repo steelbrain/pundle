@@ -156,7 +156,7 @@ command
           sourceMap: config.output.sourceMap,
           sourceMapPath: config.output.sourceMapPath,
         }).then(async function(generated) {
-          const outputDirectory = Path.resolve(pundle.config.context.rootDirectory, config.output.rootDirectory)
+          const outputDirectory = Path.resolve(pundle.config.rootDirectory, config.output.rootDirectory)
           const outputFilePath = Path.resolve(outputDirectory, config.output.bundlePath)
           const outputSourceMapPath = Path.resolve(outputDirectory, config.output.sourceMapPath)
           FS.writeFileSync(outputFilePath, generated.contents)
