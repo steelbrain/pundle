@@ -115,6 +115,15 @@ export default class Compilation {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
     }
 
+    // NOTE: Move all the entries from everyone to the first, this is required because we can only have one entry point in bundles, not several
+    for (let i = 1, length = chunks.length; i < length; i++) {
+      const chunk = chunks[i]
+      if (chunk.entry.length) {
+        chunks[0].entry = chunks[0].entry.concat(chunk.entry)
+        chunk.entry = []
+      }
+    }
+
     return chunks
   }
   // Spec:
