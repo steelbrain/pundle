@@ -68,8 +68,6 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   if (config.sourceMap) {
     if (config.sourceMapPath === 'inline') {
       chunks.push(sourceMapToComment(sourceMap))
-    } else if (config.sourceMapPath) {
-      chunks.push(`//# sourceMappingURL=${config.sourceMapPath}`)
     }
   }
 

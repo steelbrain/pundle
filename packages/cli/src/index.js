@@ -155,17 +155,31 @@ command
         promise = pundle.generate(null, {
           sourceMap: config.output.sourceMap,
           sourceMapPath: config.output.sourceMapPath,
-        }).then(async function(generated) {
+        }).then(async function(outputs) {
           const outputDirectory = Path.resolve(pundle.config.rootDirectory, config.output.rootDirectory)
           const outputFilePath = Path.resolve(outputDirectory, config.output.bundlePath)
           const outputSourceMapPath = Path.resolve(outputDirectory, config.output.sourceMapPath)
-          FS.writeFileSync(outputFilePath, generated.contents)
-          Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
-          if (config.output.sourceMap && config.output.sourceMapPath !== 'inline') {
-            const sourceMap = JSON.stringify(generated.sourceMap)
-            FS.writeFileSync(outputSourceMapPath, sourceMap)
-            Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
-          }
+
+          const writeSourceMap = config.output.sourceMap && config.output.sourceMapPath !== 'inline'
+          const outputFilePathExt = Path.extname(outputFilePath)
+          const outputSourceMapPathExt = outputSourceMapPath.endsWith('.js.map') ? '.js.map' : Path.extname(outputSourceMapPath)
+
+          outputs.forEach(function(output, index) {
+            let contents = output.contents
+            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + (index === 0 ? '' : `.${output.outputName}`) + outputFilePathExt
+            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + (index === 0 ? '' : `.${output.outputName}`) + outputSourceMapPathExt
+
+            if (writeSourceMap) {
+              contents += `//# sourceMappingURL=${Path.relative(outputDirectory, currentSourceMapPath)}\n`
+            }
+            FS.writeFileSync(currentFilePath, contents)
+            Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(output.contents.length))} to '${chalk.blue(Path.relative(options.rootDirectory, currentFilePath))}'`)
+            if (writeSourceMap) {
+              const sourceMap = JSON.stringify(output.sourceMap)
+              FS.writeFileSync(currentSourceMapPath, sourceMap)
+              Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(currentSourceMapPath)}'`)
+            }
+          })
         })
       }
       return promise.catch(function(error) {
