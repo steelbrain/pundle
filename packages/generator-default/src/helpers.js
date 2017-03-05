@@ -50,6 +50,7 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     fileContents = fileContents.slice(13)
   }
 
+  // TODO: Maaybe complain if there's more than one chunk and this isn't set?
   const outputPath = Path.join(context.config.output.publicRoot, context.config.output.bundlePath)
   const outputPathExt = Path.extname(outputPath)
 

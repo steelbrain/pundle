@@ -77,8 +77,59 @@ export default class Compilation {
 
     return file
   }
-  // TODO: Maybe use cache in build too?
-  async build(cached: boolean): Promise<Array<Chunk>> {
+  async processFileTree(
+    entry: FileImport,
+    files: Map<string, File>,
+    oldFiles: Map<string, File>,
+    useCache: boolean,
+    forceOverwrite: boolean = false,
+    tickCallback: ((oldFile: ?File, file: File) => any)
+  ): Promise<boolean> {
+    const resolved = await this.context.resolve(entry.request, entry.from, useCache)
+    if (files.has(resolved) && !forceOverwrite) {
+      return true
+    }
+
+    let file
+    const oldFile = files.get(resolved)
+    if (oldFile === null) {
+      // It's locked and therefore in progress
+      return true
+    }
+    if (!oldFile && oldFiles.has(resolved) && useCache) {
+      // $FlowIgnore: It's a temp lock
+      files.set(resolved, null)
+      // ^ Lock the cache early to avoid double-processing because we await below
+      let fileStat
+      try {
+        fileStat = await fileSystem.stat(resolved)
+      } catch (_) {
+        // The file could no longer exist since the cache was built
+      }
+      const lastStateFile = oldFiles.get(resolved)
+      if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
+        file = lastStateFile
+      }
+    }
+    if (!file) {
+      // $FlowIgnore: It's a temp lock
+      files.set(resolved, null)
+      file = await this.processFile(resolved)
+    }
+    files.set(resolved, file)
+    await Promise.all(file.imports.map(item =>
+      this.processFileTree(item, files, oldFiles, useCache, forceOverwrite, tickCallback)
+    ))
+    await Promise.all(file.chunks.map(item =>
+      Promise.all(item.imports.map(importEntry =>
+        this.processFileTree(importEntry, files, oldFiles, useCache, forceOverwrite, tickCallback)
+      ))
+    ))
+    await tickCallback(oldFile, file)
+    entry.resolved = resolved
+    return true
+  }
+  async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<Chunk>> {
     const files: Map<string, File> = new Map()
     let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
       id: this.context.getNextUniqueID(),
@@ -86,29 +137,15 @@ export default class Compilation {
       imports: [],
     }))
 
-    const processFileTree = async (entry: FileImport) => {
-      const resolved = await this.context.resolve(entry.request, entry.from, cached)
-      if (files.has(resolved)) {
-        entry.resolved = resolved
-        return
-      }
-      let file
-      // $FlowIgnore: Temp lock
-      files.set(resolved, null)
-      try {
-        file = await this.processFile(resolved)
-      } catch (error) {
-        files.delete(resolved)
-        throw error
-      }
-      files.set(resolved, file)
-      await Promise.all(file.imports.map(item => processFileTree(item, resolved)))
-      await Promise.all(file.chunks.map(item => Promise.all(item.imports.map(importEntry => processFileTree(importEntry)))))
-      entry.resolved = resolved
-      fileChunks = fileChunks.concat(file.chunks)
-    }
-
-    await Promise.all(fileChunks.map(chunk => Promise.all(chunk.entry.map(chunkEntry => processFileTree(chunkEntry)))))
+    await Promise.all(fileChunks.map(chunk =>
+      Promise.all(chunk.entry.map(chunkEntry =>
+        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
+          if (file.chunks.length) {
+            fileChunks = fileChunks.concat(file.chunks)
+          }
+        })
+      ))
+    ))
     const chunks = fileChunks.map(chunk => this.context.getChunk(chunk, files))
 
     for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
@@ -116,15 +153,19 @@ export default class Compilation {
     }
 
     // NOTE: Move all the entries from everyone to the first, this is required because we can only have one entry point in bundles, not several
-    for (let i = 1, length = chunks.length; i < length; i++) {
-      const chunk = chunks[i]
+    chunks.forEach(function(chunk, index) {
+      if (index === 0) return
       if (chunk.entry.length) {
         chunks[0].entry = chunks[0].entry.concat(chunk.entry)
         chunk.entry = []
       }
-    }
+    })
 
     return chunks
+  }
+  async watch(config: Object, oldFiles: Map<string, File> = new Map()): Promise<void> {
+    const files: Map<string, File> = new Map()
+    console.log('Hiya!')
   }
   // Spec:
   // - Create promised queue
@@ -142,7 +183,7 @@ export default class Compilation {
   //   and closes the file watcher
   // NOTE: Return value of this function has a special "queue" property
   // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
-  async watch(config: Object, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
+  async watchOld(config: Object, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
     let queue = Promise.resolve()
     const files: Map<string, ?File> = new Map()
     const resolvedEntries = await Promise.all(this.context.config.entry.map(entry => this.context.resolve(entry)))
@@ -150,87 +191,6 @@ export default class Compilation {
     const watcher = new Watcher(resolvedEntries, {
       usePolling: config.usePolling,
     })
-
-    const processFile = async (filePath, overwrite = true) => {
-      if (files.has(filePath) && !overwrite) {
-        return true
-      }
-      const oldValue = files.get(filePath)
-      if (oldValue === null) {
-        // We are returning even when forced in case of null value, 'cause it
-        // means it is already in progress
-        return true
-      }
-
-      // Reset contents on both being unable to resolve and error in processing
-      let file: any = null
-      let processError = null
-
-      if (typeof oldValue === 'undefined' && lastState.has(filePath)) {
-        files.set(filePath, null)
-        // ^ Lock the cache early to avoid double-processing because we await below
-        let fileStat
-        try {
-          fileStat = await fileSystem.stat(filePath)
-        } catch (_) {
-          // The file could no longer exist since the cache was built
-        }
-        const lastStateFile = lastState.get(filePath)
-        if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
-          file = lastStateFile
-        }
-      }
-
-      try {
-        if (!file) {
-          files.set(filePath, null)
-          file = await this.processFile(filePath)
-        }
-        files.set(filePath, file)
-        await Promise.all(file.imports.map(entry => this.context.resolve(entry.request, filePath).then(resolved => {
-          entry.resolved = resolved
-        })))
-      } catch (error) {
-        if (oldValue) {
-          files.set(filePath, oldValue)
-        } else {
-          files.delete(filePath)
-        }
-        processError = error
-        this.context.report(error)
-        return false
-      } finally {
-        for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
-          try {
-            await Helpers.invokeComponent(this.context, entry, 'tick', [], filePath, processError, file)
-          } catch (error) {
-            this.context.report(error)
-          }
-        }
-      }
-
-      const oldImports = oldValue ? oldValue.imports : []
-      const newImports = file.imports
-      const addedImports = difference(newImports, oldImports)
-      const removedImports = difference(oldImports, newImports)
-      addedImports.forEach(function(entry) {
-        watcher.watch(entry.resolved)
-      })
-      removedImports.forEach(function(entry) {
-        watcher.unwatch(entry.resolved)
-      })
-      for (let i = 0, length = newImports.length; i < length; i++) {
-        watcher.enable(newImports[i].resolved || '')
-      }
-
-      try {
-        const promises = await Promise.all(file.imports.map((entry: Object) => processFile(entry.resolved, false)))
-        return promises.every(i => i)
-      } catch (compilationError) {
-        this.context.report(compilationError)
-        return false
-      }
-    }
 
     let compiling = false
     let recompile: boolean = false
@@ -257,41 +217,6 @@ export default class Compilation {
         triggerCompile()
       }
     }, 10)
-    const triggerDebouncedImportsCheck = debounce(async () => {
-      await queue
-      let changed = false
-      for (const file of files.values()) {
-        if (!file) continue
-        for (let i = 0, length = file.imports.length; i < length; i++) {
-          const entry = file.imports[i]
-          const oldResolved = entry.resolved
-          try {
-            await fileSystem.stat(oldResolved)
-            continue
-          } catch (_) { /* No Op */ }
-          watcher.unwatch(oldResolved)
-          try {
-            const resolved = await this.context.resolve(entry.request, file.filePath)
-            entry.resolved = resolved
-            watcher.enable(resolved)
-            watcher.watch(resolved)
-            queue = queue.then(() => processFile(resolved, false))
-          } catch (_) {
-            watcher.watch(oldResolved)
-            this.context.report(_)
-            break
-          }
-          // If processing file failed
-          if (!await queue) {
-            break
-          }
-          changed = true
-        }
-      }
-      if (changed) {
-        triggerDebouncedCompile()
-      }
-    }, 100)
 
     const promises = resolvedEntries.map(entry => processFile(entry))
     const successful = (await Promise.all(promises)).every(i => i)

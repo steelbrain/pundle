@@ -102,9 +102,11 @@ class Server {
     this.subscriptions.add(function() {
       server.close()
     })
-    const watcherSubscription = await this.pundle.watch({}, oldFiles)
-    this.enqueue(() => watcherSubscription.queue)
-    this.subscriptions.add(watcherSubscription)
+    await this.pundle.watch({}, oldFiles)
+    // TODO: Uncomment this
+    // const watcherSubscription = await this.pundle.watch({}, oldFiles)
+    // this.enqueue(() => watcherSubscription.queue)
+    // this.subscriptions.add(watcherSubscription)
   }
   async attachComponents(bootPromise: Object): Promise<void> {
     this.subscriptions.add(await this.pundle.loadComponents([
