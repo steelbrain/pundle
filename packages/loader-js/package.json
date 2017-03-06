@@ -24,5 +24,7 @@
     "babylon": "^6.16.1",
     "pundle-api": "2.0.0-beta16"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "pundle": "2.0.0-beta16"
+  }
 }

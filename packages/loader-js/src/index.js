@@ -15,9 +15,6 @@ const RESOLVE_NAMES = new Set([
   'module.hot.accept',
   'module.hot.decline',
 ])
-const RESOLVE_NAMES_CHUNK = new Set([
-  'require.ensure',
-])
 const RESOLVE_NAMES_SENSITIVE = new Set([
   'require',
   'require.resolve',
@@ -65,19 +62,23 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
       processResolve(path.node.source)
     },
     CallExpression: (path) => {
+      if (path.node.callee.type === 'Import') {
+        Helpers.processImport(this, file, chunks, path)
+        return
+      }
       const name = Helpers.getName(path.node.callee)
       if (!RESOLVE_NAMES.has(name)) {
         return
       }
       const parameter = path.node.arguments && path.node.arguments[0]
-      if (!parameter || parameter.type !== (RESOLVE_NAMES_CHUNK.has(name) ? 'ArrayExpression' : 'StringLiteral')) {
+      if (!parameter || parameter.type !== (name === 'require.ensure' ? 'ArrayExpression' : 'StringLiteral')) {
         return
       }
       if (RESOLVE_NAMES_SENSITIVE.has(name) && path.scope.hasBinding('require')) {
         return
       }
-      if (RESOLVE_NAMES_CHUNK.has(name)) {
-        Helpers.processSplit.call(this, file, chunks, path)
+      if (name === 'require.ensure') {
+        Helpers.processEnsure(this, file, chunks, path)
       } else {
         processResolve(parameter)
       }

@@ -86,7 +86,7 @@ export default class Context {
 
     return results
   }
-  serialize() {
+  serialize(): string {
     const serializedUID = {}
     this.uid.forEach(function(value, key) {
       serializedUID[key] = value
