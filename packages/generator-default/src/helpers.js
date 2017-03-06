@@ -61,13 +61,18 @@ export async function getWrapperContents(context: Object, config: Object): Promi
 
 export function getFileMappings(compilation: Object, chunk: FileChunk, config: Object) : Object {
   const mappings = {}
+
+  function processImport(entry) {
+    const filePath = getFilePath(compilation, config, entry.resolved || '')
+    if (!mappings[filePath]) {
+      mappings[filePath] = []
+    }
+    mappings[filePath].push(entry.id)
+  }
   chunk.files.forEach(function(file) {
-    file.imports.forEach(entry => {
-      const filePath = getFilePath(compilation, config, entry.resolved || '')
-      if (!mappings[filePath]) {
-        mappings[filePath] = []
-      }
-      mappings[filePath].push(entry.id)
+    file.imports.forEach(processImport)
+    file.chunks.forEach(function(childChunk) {
+      childChunk.imports.forEach(processImport)
     })
   })
   return mappings

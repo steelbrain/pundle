@@ -57,7 +57,7 @@ export default class Context {
       const relatingChunks = [chunk].concat(chunks.filter(entry => (chunk.parents.indexOf(entry) !== -1 || entry.parents.indexOf(chunk) !== -1)))
       const chunkMappings = { chunks: {} }
       relatingChunks.forEach(function(entry) {
-        chunkMappings.chunks[entry.id] = entry.id
+        chunkMappings.chunks[entry.id] = entry.id.toString()
       })
 
       let result

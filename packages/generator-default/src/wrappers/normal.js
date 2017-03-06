@@ -22,20 +22,19 @@ global.__sbPundle = global.__sbPundle || {
       parents: [],
     }
   },
-  registerMappings(currentChunk, mappings) {
-    if (this.chunks[currentChunk]) {
-      this.chunks[currentChunk].resolve()
-    } else {
-      this.chunks[currentChunk] = { promise: Promise.resolve(), resolve() {}, reject() {} }
-    }
+  registerMappings(mappings) {
     Object.assign(this.mapChunks, mappings.chunks)
-
-    for (const chunkId in mappings.imports) {
-      for (const moduleId in mappings.imports[chunkId]) {
-        mappings.imports[chunkId][moduleId].forEach((requestId) => {
-          this.mapModules[requestId] = { chunkId: mappings.chunks[chunkId], moduleId }
-        })
-      }
+    for (const moduleId in mappings.files) {
+      mappings.files[moduleId].forEach((requestId) => {
+        this.mapModules[requestId] = moduleId
+      })
+    }
+  },
+  registerLoaded(chunkId) {
+    if (this.chunks[chunkId]) {
+      this.chunks[chunkId].resolve()
+    } else {
+      this.chunks[chunkId] = { promise: Promise.resolve(), resolve() {}, reject() {} }
     }
   },
   registerModule(moduleId, callback) {
@@ -46,14 +45,7 @@ global.__sbPundle = global.__sbPundle || {
     }
   },
   requireModule(fromModule: string, givenRequest: string) {
-    let request = this.mapModules[givenRequest] || givenRequest
-    if (typeof request === 'object') {
-      if (!this.chunks[request.chunkId]) {
-        throw new Error('Unable to require module from a chunk thats not yet loaded')
-      }
-      // TODO: We can't know if the promise is resolved or not
-      request = request.moduleId
-    }
+    const request = this.mapModules[givenRequest] || givenRequest
     const module: ?ModuleNormal = this.cache[request]
     if (!module) {
       throw new Error('Module not found')
@@ -78,9 +70,10 @@ global.__sbPundle = global.__sbPundle || {
   require(request: string) {
     return this.requireModule('$root', request)
   },
-  ensure(requestedChunks: Array<string>, moduleId: string, loadedCallback: Function) {
-    requestedChunks.forEach(requestedChunk => {
-      const chunkId = this.mapChunks[requestedChunk]
+  ensure(requestedChunk: string | Array<string>, moduleId: string, loadedCallback: Function) {
+    const requestedChunks = [].concat(requestedChunk)
+    requestedChunks.forEach(entry => {
+      const chunkId = this.mapChunks[entry]
       if (!this.chunks[chunkId]) {
         let resolve
         let reject
