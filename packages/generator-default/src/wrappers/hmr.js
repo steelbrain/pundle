@@ -129,7 +129,7 @@ global.__sbPundle = global.__sbPundle || {
   ensure(requestedChunk: string | Array<string>, loadedCallback: Function, errorCallback: Function) {
     // $FlowIgnore: This is a replaced var
     if (typeof SB_PUNDLE_PUBLIC_PRE === 'undefined') {
-      throw new Error('Please specify config.output.sourceRoot in configuration')
+      throw new Error('Please specify config.output.publicRoot in configuration')
     }
 
     const requestedChunks = [].concat(requestedChunk)
