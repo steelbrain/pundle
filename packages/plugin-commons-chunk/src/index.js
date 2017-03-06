@@ -1,42 +1,39 @@
 /* @flow */
 
 import { createChunkTransformer } from 'pundle-api'
-import type { File, Chunk, ChunkTransformerResult, FileImport } from 'pundle-api/types'
+import type { File, FileChunk, ChunkTransformerResult } from 'pundle-api/types'
 
-export default createChunkTransformer(function(config: Object, chunks: Array<Chunk>): ChunkTransformerResult {
+export default createChunkTransformer(function(config: Object, chunks: Array<FileChunk>): ChunkTransformerResult {
   const known: Set<string> = new Set()
-  const files: Map<string, File> = new Map()
-  let entries: Array<FileImport> = []
+  const newChunkFiles: Map<string, File> = new Map()
+  const newChunkChildren: Set<FileChunk> = new Set()
 
-  chunks.forEach(function(chunk: Chunk) {
+  chunks.forEach(function(chunk) {
     chunk.files.forEach(function(file) {
       if (known.has(file.filePath)) {
-        files.set(file.filePath, file)
+        newChunkFiles.set(file.filePath, file)
       } else {
         known.add(file.filePath)
       }
     })
   })
 
-  files.forEach(function(file: File) {
+  newChunkFiles.forEach(function(file: File) {
     chunks.forEach(function(chunk) {
-      chunk.deleteFile(file.filePath)
-      file.chunks.push(chunk.serialize())
+      if (chunk.files.has(file.filePath)) {
+        chunk.files.delete(file.filePath)
+        newChunkChildren.add(chunk)
+      }
     })
   })
 
-  if (!files.size) {
+  if (!newChunkFiles.size) {
     // No common chunks found
     return
   }
-  chunks.forEach(function(chunk: Chunk) {
-    entries = entries.concat(chunk.entry)
-    chunk.entry = []
+  const newChunk = this.getChunk(null, null, newChunkFiles, null)
+  newChunkChildren.forEach(function(chunk) {
+    chunk.parents.push(newChunk)
   })
-
-  chunks.unshift(this.getChunk({
-    id: this.getUIDForChunk(),
-    entry: entries,
-    imports: [],
-  }, files, { allFiles: true }))
+  chunks.push(newChunk)
 })

@@ -73,7 +73,6 @@ class Pundle {
   async generate(chunks: ?Array<FileChunk> = null, runtimeConfig: Object = {}): Promise<Object> {
     return await this.context.generate(chunks || await this.build(), runtimeConfig)
   }
-  // $FlowIgnore: TODO: Remove these when fixed in dev package
   async build(cached: boolean = true): Promise<Array<FileChunk>> {
     return this.compilation.build(cached)
   }

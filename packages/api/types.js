@@ -35,7 +35,10 @@ export type FileImport = {
 }
 export type FileChunk = {
   id: number,
+  // eslint-disable-next-line no-use-before-define
+  files: Map<string, File>,
   entry: Array<FileImport>,
+  parents: Array<FileChunk>,
   imports: Array<FileImport>,
 }
 
@@ -49,19 +52,6 @@ export type File = {
   sourceMap: ?Object,
   lastModified: number,
   // ^ in seconds not miliseconds aka Date.now()/1000
-}
-
-export type Chunk = {
-  id: number;
-  files: Map<string, File>;
-  entry: Array<FileImport>;
-  getId(): number;
-  getEntry(): Array<FileImport>;
-  getFiles(): Array<File>;
-  hasFile(filePath: string): boolean;
-  addFile(filePath: string, file: File): void;
-  deleteFile(filePath: string): void;
-  serialize(): FileChunk;
 }
 
 export type ChunkMappings = Array<{

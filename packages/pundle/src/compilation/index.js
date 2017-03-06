@@ -129,28 +129,45 @@ export default class Compilation {
     await tickCallback(oldFile, file)
     return true
   }
+  // Helper method to attach files to a chunk from a files pool
+  processChunk(chunk: FileChunk, files: Map<string, File>): void {
+    function iterate(fileImport: FileImport) {
+      const filePath = fileImport.resolved
+      if (!filePath) {
+        throw new Error(`${fileImport.request} was not resolved from ${fileImport.from || 'Project root'}`)
+      }
+      if (chunk.files.has(filePath)) {
+        return
+      }
+      const file = files.get(filePath)
+      if (!file) {
+        throw new Error(`${filePath} was not processed`)
+      }
+      chunk.files.set(filePath, file)
+      file.imports.forEach(entry => iterate(entry))
+    }
+
+    chunk.entry.forEach(entry => iterate(entry))
+    chunk.imports.forEach(entry => iterate(entry))
+  }
   async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<Chunk>> {
     const files: Map<string, File> = new Map()
-    let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
-      id: this.context.getUIDForChunk(),
-      entry: [this.context.getImportRequest(request)],
-      imports: [],
-    }))
+    let chunks = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
 
-    await Promise.all(fileChunks.map(chunk =>
+    await Promise.all(chunks.map(chunk =>
       Promise.all(chunk.entry.map(chunkEntry =>
         this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
           if (file.chunks.length) {
-            fileChunks = fileChunks.concat(file.chunks)
+            chunks = chunks.concat(file.chunks)
           }
         })
       ))
     ))
-    const chunks = fileChunks.map(chunk => this.context.getChunk(chunk, files))
-
+    chunks.forEach(chunk => this.processChunk(chunk, files))
     for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
     }
+
     // TODO: Add a way for to replace the javascript in an html file so we can fill the scripts with the chunk paths
     // because we know where they are
 
@@ -158,37 +175,23 @@ export default class Compilation {
   }
   async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<void> {
     const files: Map<string, File> = new Map()
-    let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
-      id: this.context.getUIDForChunk(),
-      entry: [this.context.getImportRequest(request)],
-      imports: [],
-    }))
+    let chunks: Array<FileChunk> = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
 
-    await Promise.all(fileChunks.map(chunk =>
+    await Promise.all(chunks.map(chunk =>
       Promise.all(chunk.entry.map(chunkEntry =>
         this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
           if (file.chunks.length) {
-            fileChunks = fileChunks.concat(file.chunks)
+            chunks = chunks.concat(file.chunks)
           }
           // TODO: Diff the imports and watch/unwatch files
           // TODO: Diff the chunks and add/remove chunks
         })
       ))
     ))
-    const chunks = fileChunks.map(chunk => this.context.getChunk(chunk, files))
-
+    chunks.forEach(chunk => this.processChunk(chunk, files))
     for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
     }
-
-    // NOTE: Move all the entries from everyone to the first, this is required because we can only have one entry point in bundles, not several
-    chunks.forEach(function(chunk, index) {
-      if (index === 0) return
-      if (chunk.entry.length) {
-        chunks[0].entry = chunks[0].entry.concat(chunk.entry)
-        chunk.entry = []
-      }
-    })
 
     console.log(chunks)
   }

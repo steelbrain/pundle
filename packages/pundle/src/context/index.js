@@ -3,7 +3,7 @@
 import reporterCli from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { File, FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
+import type { FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
 
 import Chunk from '../chunk'
 import * as Helpers from './helpers'
@@ -18,11 +18,6 @@ export default class Context {
     this.uid = new Map()
     this.config = config
     this.components = new Set()
-  }
-  // NOTE:
-  // While we could create a new chunk in this file directly, this is to allow API consumers to create chunks
-  getChunk(fileChunk: FileChunk, files: Map<string, File>, chunkOptions: Object = {}): Chunk {
-    return Chunk.get(fileChunk, files, chunkOptions)
   }
   async report(report: Object): Promise<void> {
     let tried = false
@@ -110,14 +105,17 @@ export default class Context {
     this.uid.set(label, uid)
     return uid
   }
-  getUIDForImport(): number {
-    return this.getUID('import')
-  }
-  getUIDForChunk(): number {
-    return this.getUID('chunk')
+  getChunk(entry: ?Array<FileImport> = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null, parents: ?Array<FileChunk> = null): FileChunk {
+    return {
+      id: this.getUID('chunk'),
+      files: files || new Map(),
+      entry: entry || [],
+      parents: parents || [],
+      imports: imports || [],
+    }
   }
   getImportRequest(request: string, from: ?string = null): FileImport {
-    return { id: this.getUIDForImport(), request, resolved: null, from }
+    return { id: this.getUID('import'), request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {
     if (!component) {
