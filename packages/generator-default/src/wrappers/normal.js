@@ -65,13 +65,13 @@ global.__sbPundle = global.__sbPundle || {
     require.extensions = this.extensions
     require.resolve = this.resolve
     require.ensure = (chunk, callback) => this.ensure(chunk, () => callback(require))
-    require.import = (chunk, moduleId) => (new Promise(resolve => this.ensure(chunk, () => resolve(require(moduleId)))))
+    require.import = (chunk, moduleId) => new Promise((resolve, reject) => this.ensure(chunk, () => resolve(require(moduleId)), reject))
     return require
   },
   require(request: string) {
     return this.requireModule('$root', request)
   },
-  ensure(requestedChunk: string | Array<string>, loadedCallback: Function) {
+  ensure(requestedChunk: string | Array<string>, loadedCallback: Function, errorCallback: Function) {
     const requestedChunks = [].concat(requestedChunk)
     requestedChunks.forEach(entry => {
       const chunkId = this.mapChunks[entry]
@@ -90,7 +90,7 @@ global.__sbPundle = global.__sbPundle || {
         // $FlowIgnore: It's never null bro
         document.body.appendChild(script)
       }
-      return this.chunks[chunkId].promise.then(loadedCallback)
+      return this.chunks[chunkId].promise.then(loadedCallback, errorCallback)
     })
   },
 }
