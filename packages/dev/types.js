@@ -35,9 +35,9 @@ export type ServerConfigInput = {
 }
 
 export type ServerState = {
-  files: Array<File>,
-  chunks: Array<FileChunk>,
   queue: Promise<void>,
-  modified: boolean,
+  files: Map<string, File>,
+  chunks: Array<FileChunk>,
+  changed: Map<string, File>,
   generated: Map<FileChunk, GeneratorResult>,
 }

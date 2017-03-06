@@ -93,3 +93,15 @@ export function getWssServer(): Function {
     return require('ws').Server
   }
 }
+
+export function getChunkId(url: string, bundlePath: string): string {
+  const expected = Path.basename(bundlePath)
+  const expectedExt = expected.endsWith('.js.map') ? '.js.map' : Path.extname(expected)
+  const expectedPrefix = expected.slice(0, -1 * expectedExt.length)
+
+  const given = Path.basename(url).slice(expectedPrefix.length)
+  const givenExt = given.endsWith('.js.map') ? '.js.map' : Path.extname(given)
+  const givenId = given.slice(0, -1 * givenExt.length)
+
+  return givenId || '0'
+}

@@ -8,13 +8,12 @@ import ConfigFile from 'sb-config-file'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
 import type Pundle from 'pundle/src'
-import type { File, FileChunk } from 'pundle-api/types'
+import type { File, FileChunk, GeneratorResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ServerConfig, ServerState, ServerConfigInput } from '../types'
 
 const WssServer = Helpers.getWssServer()
-const debugTick = require('debug')('PUNDLE:DEV:TICK')
 const cliReporter: Object = require('pundle-reporter-cli')
 
 class Server {
@@ -23,7 +22,6 @@ class Server {
   config: ServerConfig;
   pundle: Pundle;
   connections: Set<Object>;
-  filesChanged: Set<string>;
   subscriptions: CompositeDisposable;
   constructor(pundle: Pundle, config: ServerConfigInput) {
     if (Helpers.isPundleRegistered(pundle)) {
@@ -37,16 +35,15 @@ class Server {
     // only hmr when connected clients
 
     this.state = {
-      files: [],
-      chunks: [],
       queue: Promise.resolve(),
-      modified: false,
+      files: new Map(),
+      chunks: [],
+      changed: new Map(),
       generated: new Map(),
     }
     this.pundle = pundle
     this.config = Helpers.fillConfig(config)
     this.connections = new Set()
-    this.filesChanged = new Set()
     this.subscriptions = new CompositeDisposable()
 
     Helpers.registerPundle(pundle, this.config)
@@ -74,25 +71,7 @@ class Server {
       this.report(`Restoring ${oldFiles.size} files from cache`)
     }
 
-    // TODO: Bundle paths
-    app.get(this.config.bundlePath, (req, res) => {
-      this.generateIfNecessary().then(() => res.set('content-type', 'application/javascript').end(this.state.generated.contents))
-    })
-    if (this.config.sourceMap && this.config.sourceMapPath !== 'inline') {
-      app.get(this.config.sourceMapPath, (req, res) => {
-        this.generateIfNecessary().then(() => res.set('content-type', 'application/javascript').end(JSON.stringify(this.state.generated.sourceMap)))
-      })
-    }
-    app.use('/', express.static(this.config.rootDirectory))
-    if (this.config.redirectNotFoundToIndex) {
-      app.use((req, res, next) => {
-        if (req.url !== '/' && req.baseUrl !== '/') {
-          req.baseUrl = req.url = '/'
-          // TODO: Replace this with a route caller, because we are gonna be transforming index.html
-          send(req, req.baseUrl, { root: this.config.rootDirectory, index: 'index.html' }).on('error', next).on('directory', next).pipe(res)
-        } else next()
-      })
-    }
+    await this.attachRoutes(app)
     await this.attachComponents()
 
     const server = app.listen(this.config.port)
@@ -108,6 +87,37 @@ class Server {
     })
     this.subscriptions.add(await this.pundle.watch(this.config.useCache, oldFiles))
   }
+  attachRoutes(app: Object): void {
+    app.get([this.config.bundlePath, `${this.config.bundlePath}*`], (req, res, next) => {
+      this.generateChunk(req.url).then(function(chunk) {
+        if (!chunk) {
+          next()
+          return
+        }
+        if (req.url.endsWith('.js.map')) {
+          res.set('content-type', 'application/json')
+          res.end(JSON.stringify(chunk.sourceMap))
+        } else {
+          res.set('content-type', 'application/javascript')
+          res.end(chunk.contents)
+        }
+      }).catch(next)
+    })
+    app.get('/', function(req, res) {
+      res.end('Show a custom filled in index.html here')
+    })
+
+    app.use('/', express.static(this.config.rootDirectory))
+    if (this.config.redirectNotFoundToIndex) {
+      app.use((req, res, next) => {
+        if (req.url !== '/' && req.baseUrl !== '/') {
+          req.baseUrl = req.url = '/'
+          // TODO: Replace this with a route caller, because we are gonna be transforming index.html
+          send(req, req.baseUrl, { root: this.config.rootDirectory, index: 'index.html' }).on('error', next).on('directory', next).pipe(res)
+        } else next()
+      })
+    }
+  }
   async attachComponents(): Promise<void> {
     let booted = false
     this.subscriptions.add(await this.pundle.loadComponents([
@@ -119,10 +129,9 @@ class Server {
         },
       }],
       createWatcher({
-        tick: (_: Object, filePath: string, error: ?Error) => {
-          debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
-          if (!error && filePath !== Helpers.browserFile && booted) {
-            this.filesChanged.add(filePath)
+        tick: (_: Object, file: File) => {
+          if (booted && file.filePath !== Helpers.browserFile) {
+            this.state.changed.set(file.filePath, file)
           }
         },
         ready: () => {
@@ -130,26 +139,26 @@ class Server {
           this.report('Server initialized successfully')
         },
         compile: async (_: Object, chunks: Array<FileChunk>, files: Map<string, File>) => {
-          console.log('wtf', chunks, files)
-          // bootPromise.resolve()
-          // this.state.files = files
-          // this.state.booted = true
-          // this.state.modified = true
-          // if (this.connections.size && this.filesChanged.size) {
-          //   await this.generateForHMR()
-          // }
+          this.state.files = files
+          this.state.chunks = chunks
+          if (this.connections.size && this.state.changed.size) {
+            // TODO: Uncomment this
+            // await this.generateForHMR()
+          }
         },
       }),
     ]))
   }
-  async generate() {
-    this.state.modified = false
-    this.state.generated = await this.pundle.generate(this.state.chunks, {
+  // NOTE: Stuff below this line is called at will and not excuted on activate or whatever
+  async generate(chunk: FileChunk) {
+    this.state.changed.clear()
+    const generated = await this.pundle.generate([chunk], {
       wrapper: 'hmr',
       sourceMap: this.config.sourceMap,
       sourceMapPath: this.config.sourceMapPath,
       sourceNamespace: 'app',
     })
+    this.state.generated.set(chunk, generated[0])
   }
   async generateForHMR() {
     const rootDirectory = this.pundle.config.rootDirectory
@@ -174,9 +183,27 @@ class Server {
     this.writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
     this.filesChanged.clear()
   }
-  async generateIfNecessary() {
-    this.enqueue(() => this.state.modified && this.generate())
-    await this.state.queue
+  async generateChunk(url: string): Promise<?GeneratorResult> {
+    const chunkId = Helpers.getChunkId(url, this.config.bundlePath)
+    const chunk = this.state.chunks.find(entry => entry.id.toString() === chunkId || entry.label === chunkId)
+    if (!chunk) {
+      return null
+    }
+
+    let chunkIsModified = !this.state.generated.has(chunk)
+    for (const filePath of this.state.changed.keys()) {
+      const fileMatches = chunk.files.has(filePath)
+      if (fileMatches) {
+        chunkIsModified = true
+        break
+      }
+    }
+
+    if (chunkIsModified) {
+      this.enqueue(() => this.generate(chunk))
+      await this.state.queue
+    }
+    return this.state.generated.get(chunk)
   }
   report(contents: string, severity: 'info' | 'error' | 'warning' = 'info') {
     this.pundle.context.report(new MessageIssue(contents, severity))
@@ -191,7 +218,7 @@ class Server {
   dispose() {
     if (!this.subscriptions.disposed) {
       Helpers.unregisterPundle(this.pundle)
-      this.cache.setSync('files', this.state.files)
+      this.cache.setSync('files', Array.from(this.state.files.values()))
       this.cache.setSync('state', this.pundle.context.serialize())
     }
     this.subscriptions.dispose()
