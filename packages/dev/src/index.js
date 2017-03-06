@@ -106,9 +106,10 @@ class Server {
         }
       }).catch(next)
     })
-    app.get('/', function(req, res) {
-      res.end('Show a custom filled in index.html here')
-    })
+    // TODO: Fix this
+    // app.get('/', function(req, res) {
+    //   res.end('Show a custom filled in index.html here')
+    // })
 
     app.use('/', express.static(this.config.rootDirectory))
     if (this.config.redirectNotFoundToIndex) {

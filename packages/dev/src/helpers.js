@@ -69,7 +69,7 @@ export function isPundleRegistered(pundle: Pundle): boolean {
 }
 
 export function registerPundle(pundle: Pundle, config: ServerConfig): void {
-  pundle.config.entry.unshift(browserFile)
+  pundle.config.entry.push(browserFile)
   pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
   pundle.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
 }

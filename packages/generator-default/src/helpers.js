@@ -55,8 +55,8 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     const outputPath = Path.join(config.publicRoot, Path.basename(config.bundlePath))
     const outputPathExt = Path.extname(outputPath)
     fileContents = fileContents
-      .replace('SB_PUNDLE_PUBLIC_PRE', JSON.stringify(outputPath.slice(0, -1 * outputPathExt.length)))
-      .replace('SB_PUNDLE_PUBLIC_POST', JSON.stringify(outputPathExt))
+      .replace(/SB_PUNDLE_PUBLIC_PRE/g, JSON.stringify(outputPath.slice(0, -1 * outputPathExt.length)))
+      .replace(/SB_PUNDLE_PUBLIC_POST/g, JSON.stringify(outputPathExt))
   }
   return fileContents
 }

@@ -62,7 +62,6 @@ global.__sbPundle = global.__sbPundle || {
   generateRequire(fromModule: string) {
     const require = this.requireModule.bind(this, fromModule)
     require.cache = this.cache
-    require.extensions = this.extensions
     require.resolve = this.resolve
     require.ensure = (chunk, callback) => this.ensure(chunk, () => callback(require))
     require.import = (chunk, moduleId) => new Promise((resolve, reject) => this.ensure(chunk, () => resolve(require(moduleId)), reject))
