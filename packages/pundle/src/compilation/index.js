@@ -1,15 +1,15 @@
 /* @flow */
 
 import Path from 'path'
-import debounce from 'sb-debounce'
 import fileSystem from 'sb-fs'
-import difference from 'lodash.difference'
+import differenceBy from 'lodash.differenceby'
 import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, FileChunk, FileImport } from 'pundle-api/types'
 
 import Watcher from './watcher'
 import * as Helpers from '../context/helpers'
+import { serializeImport, serializeChunk } from './helpers'
 import type Context from '../context'
 
 export default class Compilation {
@@ -77,15 +77,20 @@ export default class Compilation {
     return file
   }
   async processFileTree(
-    entry: FileImport,
+    entry: string | FileImport,
     files: Map<string, File>,
     oldFiles: Map<string, File>,
     useCache: boolean,
     forceOverwrite: boolean = false,
     tickCallback: ((oldFile: ?File, file: File) => any)
   ): Promise<boolean> {
-    const resolved = await this.context.resolve(entry.request, entry.from, useCache)
-    entry.resolved = resolved
+    let resolved
+    if (typeof entry === 'string') {
+      resolved = entry
+    } else {
+      resolved = await this.context.resolve(entry.request, entry.from, useCache)
+      entry.resolved = resolved
+    }
     if (files.has(resolved) && !forceOverwrite) {
       return true
     }
@@ -118,11 +123,11 @@ export default class Compilation {
     }
     files.set(resolved, file)
     await Promise.all(file.imports.map(item =>
-      this.processFileTree(item, files, oldFiles, useCache, forceOverwrite, tickCallback)
+      this.processFileTree(item, files, oldFiles, useCache, false, tickCallback)
     ))
     await Promise.all(file.chunks.map(item =>
       Promise.all(item.imports.map(importEntry =>
-        this.processFileTree(importEntry, files, oldFiles, useCache, forceOverwrite, tickCallback)
+        this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback)
       ))
     ))
     await tickCallback(oldFile, file)
@@ -173,26 +178,87 @@ export default class Compilation {
     return chunks
   }
   async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<void> {
-    const files: Map<string, File> = new Map()
+    let queue = Promise.resolve()
     let chunks: Array<FileChunk> = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
+
+    const files: Map<string, File> = new Map()
+    const watcher = new Watcher({
+      usePolling: this.context.config.watcher.usePolling,
+    })
+
+    const enqueue = callback => (queue = queue.then(callback).catch(e => this.context.report(e)))
+    const getProcessedChunks = async (): Promise<Array<FileChunk>> => {
+      const cloned = chunks.slice()
+      cloned.forEach(chunk => this.processChunk(chunk, files))
+      for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
+        await Helpers.invokeComponent(this.context, entry, 'callback', [], cloned)
+      }
+      return cloned
+    }
+    const tickCallback = async (oldFile: ?File, file: File) => {
+      if (file.chunks.length) {
+        chunks = chunks.concat(file.chunks)
+      }
+      const oldChunks = oldFile ? oldFile.chunks : []
+      const newChunks = file.chunks
+      const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
+      const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
+
+      const oldImports = oldFile ? oldFile.imports : []
+      const newImports = file.imports
+      const addedImports = differenceBy(newImports, oldImports, serializeImport)
+      const removedImports = differenceBy(oldImports, newImports, serializeImport)
+
+      if (!oldFile && file) {
+        // First compile of this file
+        watcher.watch(file.filePath)
+      }
+
+      removedChunks.forEach(function(entry) {
+        const index = chunks.indexOf(entry)
+        if (index !== -1) {
+          chunks.splice(index, 1)
+        }
+      })
+      addedChunks.forEach(function(entry) {
+        chunks.push(entry)
+      })
+      addedImports.forEach(function(entry) {
+        watcher.watch(entry.resolved)
+      })
+      removedImports.forEach(function(entry) {
+        watcher.unwatch(entry.resolved)
+      })
+
+      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
+        try {
+          await Helpers.invokeComponent(this.context, entry, 'tick', [], file)
+        } catch (error) {
+          this.context.report(error)
+        }
+      }
+    }
 
     await Promise.all(chunks.map(chunk =>
       Promise.all(chunk.entries.map(chunkEntry =>
-        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
-          if (file.chunks.length) {
-            chunks = chunks.concat(file.chunks)
-          }
-          // TODO: Diff the imports and watch/unwatch files
-          // TODO: Diff the chunks and add/remove chunks
-        })
+        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, tickCallback)
       ))
     ))
-    chunks.forEach(chunk => this.processChunk(chunk, files))
-    for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
-      await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
+
+    const processedChunksInitial = await getProcessedChunks()
+    for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
+      try {
+        await Helpers.invokeComponent(this, entry, 'ready', [], processedChunksInitial, files)
+      } catch (error) {
+        this.context.report(error)
+      }
     }
 
-    console.log(chunks)
+    watcher.on('change', (filePath) => {
+      enqueue(() => this.processFileTree(filePath, files, oldFiles, useCache, true, tickCallback).then(() => {
+        console.log('should recompile now')
+      }))
+    })
   }
   dispose() {
     this.context.components.forEach(({ component, config }) => this.context.deleteComponent(component, config))

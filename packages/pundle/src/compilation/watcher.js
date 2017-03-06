@@ -6,28 +6,18 @@ import EventEmitter from 'events'
 
 export default class Watcher extends EventEmitter {
   paths: Map<string, number>;
-  active: boolean;
-  config: Object;
-  disabled: Set<string>;
   chokidar: Object;
 
-  constructor(initialFiles: Array<string>, config: Object) {
+  constructor(config: Object) {
     super()
     this.paths = new Map()
-    this.active = true
-    this.config = config
-    this.disabled = new Set()
     this.chokidar = chokidar.watch([], {
       usePolling: config.usePolling,
       ignoreInitial: true,
     })
-    this.chokidar.on('add', filePath => !this.disabled.has(filePath) && this.emit('change', filePath))
-    this.chokidar.on('unlink', filePath => !this.disabled.has(filePath) && this.emit('unlink', filePath))
-    this.chokidar.on('change', filePath => !this.disabled.has(filePath) && this.emit('change', filePath))
-
-    setImmediate(() => {
-      initialFiles.forEach(file => this.watch(file))
-    })
+    this.chokidar.on('add', filePath => this.emit('change', filePath))
+    this.chokidar.on('unlink', filePath => this.emit('unlink', filePath))
+    this.chokidar.on('change', filePath => this.emit('change', filePath))
   }
   watch(filePath: string): void {
     invariant(typeof filePath === 'string', 'filePath must be string')
@@ -39,20 +29,14 @@ export default class Watcher extends EventEmitter {
       this.chokidar.add(filePath)
     }
   }
-  unwatch(filePath: string, force: boolean = false): void {
+  unwatch(filePath: string): void {
     invariant(typeof filePath === 'string', 'filePath must be string')
     const count = this.paths.get(filePath) || 0
     const newCount = count - 1
-    if (newCount < 1 || force) {
+    if (newCount < 1) {
       this.chokidar.unwatch(filePath)
       this.paths.delete(filePath)
     }
-  }
-  enable(filePath: string): void {
-    this.disabled.delete(filePath)
-  }
-  disable(filePath: string): void {
-    this.disabled.add(filePath)
   }
   getWatchedFiles(): Array<string> {
     return Array.from(this.paths.keys())

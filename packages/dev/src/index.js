@@ -9,7 +9,7 @@ import promiseDefer from 'promise.defer'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
 import type Pundle from 'pundle/src'
-import type { File } from 'pundle-api/types'
+import type { File, FileChunk } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ServerConfig, ServerState, ServerConfigInput } from '../types'
@@ -124,8 +124,9 @@ class Server {
             this.filesChanged.add(filePath)
           }
         },
-        ready: (_, initalStatus) => {
-          this.report(`Server initialized ${initalStatus ? 'successfully' : 'with errors'}`)
+        ready: (_: Object, chunks: Array<FileChunk>, files: Map<string, File>) => {
+          this.report('Server initialized successfully')
+          this.state.files = Array.from(files.values())
         },
         compile: async (_: Object, files: Array<File>) => {
           bootPromise.resolve()

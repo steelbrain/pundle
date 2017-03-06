@@ -106,17 +106,17 @@ export type ChunkTransformerCallback = ((config: Object, chunks: Array<FileChunk
 export type ChunkTransformer = Component<'chunk-transformer', ChunkTransformerCallback>
 
 export type WatcherCallbacks = {
-  tick?: ((filePath: string, error: ?Error) => Promise<void> | void),
-  ready?: ((initialCompileStatus: boolean, totalFiles: Array<File>) => Promise<void> | void),
-  compile?: ((totalFiles: Array<File>) => Promise<void> | void),
+  tick?: ((file: File) => Promise<void> | void),
+  ready?: ((chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
+  compile?: ((chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
 }
 export type Watcher = {
   $type: 'watcher',
   $apiVersion: number,
   activate(config: Object): void,
-  tick(filePath: string, error: ?Error, file: ?File): Promise<void> | void,
-  ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
-  compile(totalFiles: Array<File>): Promise<void> | void,
+  tick(file: File): Promise<void> | void,
+  ready(chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
+  compile(chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
   dispose(config: Object): void,
   defaultConfig: Object,
 }
