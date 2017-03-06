@@ -2,103 +2,24 @@
 
 import Path from 'path'
 import debounce from 'sb-debounce'
-import fileSystem from 'pundle-fs'
-import difference from 'lodash.difference'
-import reporterCLI from 'pundle-reporter-cli'
-import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
+import fileSystem from 'sb-fs'
+import differenceBy from 'lodash.differenceby'
+import { MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import type { File, ComponentAny, Import, Resolved } from 'pundle-api/types'
+import type { File, FileChunk, FileImport } from 'pundle-api/types'
 
 import Watcher from './watcher'
-import * as Helpers from './helpers'
-import type { ComponentEntry } from './types'
-import type { CompilationConfig } from '../../types'
-
-let uniqueID = 0
+import * as Helpers from '../context/helpers'
+import { serializeImport, serializeChunk } from './helpers'
+import type Context from '../context'
 
 export default class Compilation {
-  config: CompilationConfig;
-  components: Set<ComponentEntry>;
+  context: Context;
   subscriptions: CompositeDisposable;
 
-  constructor(config: CompilationConfig) {
-    this.config = config
-    this.components = new Set()
+  constructor(context: Context) {
+    this.context = context
     this.subscriptions = new CompositeDisposable()
-  }
-  async report(report: Object): Promise<void> {
-    let tried = false
-    for (const entry of Helpers.filterComponents(this.components, 'reporter')) {
-      await Helpers.invokeComponent(this, entry, 'callback', [], report)
-      tried = true
-    }
-    if (!tried) {
-      reporterCLI.callback(reporterCLI.defaultConfig, report)
-    }
-  }
-  async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<Resolved> {
-    const knownExtensions = Helpers.getAllKnownExtensions(this.components)
-    const filteredComponents = Helpers.filterComponents(this.components, 'resolver')
-    if (!filteredComponents.length) {
-      throw new MessageIssue('No module resolver configured in Pundle. Try adding pundle-resolver-default to your configuration', 'error')
-    }
-    for (const entry of filteredComponents) {
-      const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
-      if (result && result.filePath) {
-        return result
-      }
-    }
-    const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
-    error.code = 'MODULE_NOT_FOUND'
-    throw error
-  }
-  async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
-    return (await this.resolveAdvanced(request, from, cached)).filePath
-  }
-  async generate(files: Array<File>, generateConfig: Object = {}): Promise<Object> {
-    let result
-    for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-      result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], files)
-      if (result) {
-        break
-      }
-    }
-    if (!result) {
-      throw new MessageIssue('No generator returned generated contents. Try adding pundle-generator-default to your configuration', 'error')
-    }
-    // Post-Transformer
-    for (const entry of Helpers.filterComponents(this.components, 'post-transformer')) {
-      const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
-      Helpers.mergeResult(result, postTransformerResults)
-    }
-    return result
-  }
-  // Notes:
-  // Lock as early as resolved to avoid duplicates
-  // Make sure to clear the null lock in case of any error
-  // Recurse asyncly until all resolves are taken care of
-  // Set resolved paths on all file#imports
-  async processTree(request: string, from: ?string = null, cached: boolean = true, files: Map<string, ?File>): Promise<Map<string, ?File>> {
-    const processFileTree = async (entry: Import) => {
-      const resolved = await this.resolve(entry.request, entry.from, cached)
-      if (files.has(resolved)) {
-        entry.resolved = resolved
-        return
-      }
-      let file
-      files.set(resolved, null)
-      try {
-        file = await this.processFile(resolved)
-      } catch (error) {
-        files.delete(resolved)
-        throw error
-      }
-      files.set(resolved, file)
-      await Promise.all(file.imports.map(item => processFileTree(item, resolved)))
-      entry.resolved = resolved
-    }
-    await processFileTree({ id: 0, request, resolved: null, from })
-    return files
   }
   // Order of execution:
   // - Transformer (all)
@@ -109,6 +30,8 @@ export default class Compilation {
   // - We are executing Transformers before Loaders because imagine ES6 modules
   //   being transpiled with babel BEFORE giving to loader-js. If they are not
   //   transpiled before hand, they'll give a syntax error in loader
+  // - We are not deduping imports because regardless of request, each import
+  //   has a unique ID and we have to add mapping for that. So we need them all
   async processFile(filePath: string): Promise<File> {
     if (!Path.isAbsolute(filePath)) {
       throw new Error('compilation.processFile() expects path to be an absolute path')
@@ -118,6 +41,7 @@ export default class Compilation {
     const sourceStat = await fileSystem.stat(filePath)
     const file = {
       source,
+      chunks: [],
       imports: [],
       filePath,
       contents: source,
@@ -126,17 +50,18 @@ export default class Compilation {
     }
 
     // Transformer
-    for (const entry of Helpers.filterComponents(this.components, 'transformer')) {
-      const transformerResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
+    for (const entry of Helpers.filterComponents(this.context.components, 'transformer')) {
+      const transformerResult = await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
       Helpers.mergeResult(file, transformerResult)
     }
 
     // Loader
     let loaderResult
-    for (const entry of Helpers.filterComponents(this.components, 'loader')) {
-      loaderResult = await Helpers.invokeComponent(this, entry, 'callback', [], file)
+    for (const entry of Helpers.filterComponents(this.context.components, 'loader')) {
+      loaderResult = await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
+        file.chunks = file.chunks.concat(loaderResult.chunks)
         file.imports = file.imports.concat(loaderResult.imports)
         break
       }
@@ -146,247 +71,253 @@ export default class Compilation {
     }
 
     // Plugin
-    for (const entry of Helpers.filterComponents(this.components, 'plugin')) {
-      await Helpers.invokeComponent(this, entry, 'callback', [], file)
+    for (const entry of Helpers.filterComponents(this.context.components, 'plugin')) {
+      await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
     }
 
     return file
   }
-  getImportRequest(request: string, from: string): Import {
-    const id = ++uniqueID
-    return { id, request, resolved: null, from }
-  }
-  setUniqueID(newUniqueID: number): void {
-    uniqueID = newUniqueID
-  }
-  getUniqueID(): number {
-    return uniqueID
-  }
-  addComponent(component: ComponentAny, config: Object): void {
-    if (!component || component.$apiVersion !== API_VERSION) {
-      throw new Error('API version of component mismatches')
+  async processFileTree(
+    entry: string | FileImport,
+    files: Map<string, File>,
+    oldFiles: Map<string, File>,
+    useCache: boolean,
+    forceOverwrite: boolean = false,
+    tickCallback: ((oldFile: ?File, file: File) => any)
+  ): Promise<boolean> {
+    let resolved
+    if (typeof entry === 'string') {
+      resolved = entry
+    } else {
+      resolved = await this.context.resolve(entry.request, entry.from, useCache)
+      entry.resolved = resolved
     }
-    this.components.add({ component, config })
-    Helpers.invokeComponent(this, { component, config }, 'activate', [])
-    return new Disposable(() => {
-      this.deleteComponent(component, config)
-    })
-  }
-  deleteComponent(component: ComponentAny, config: Object): boolean {
-    for (const entry of this.components) {
-      if (entry.config === config && entry.component === component) {
-        this.components.delete(entry)
-        Helpers.invokeComponent(this, entry, 'dispose', [])
-        return true
-      }
+    if (files.has(resolved) && !forceOverwrite) {
+      return true
     }
-    return false
-  }
-  // Spec:
-  // - Create promised queue
-  // - Create files map
-  // - Normalize watcher config
-  // - Resolve all given entries
-  // - Watch the resolved entries
-  // - Process trees of all resolved entries
-  // - Trigger config.ready regardless of initial success status
-  // - Trigger config.compile if initially successful
-  // - On each observed file change, try to re-build it's tree and trigger
-  //   cofig.compile() if tree rebuilding is successful (in queue)
-  // - On each observed unlink, make sure to delete the file (in queue)
-  // - Return a disposable, that's also attached to this Compilation instance
-  //   and closes the file watcher
-  // NOTE: Return value of this function has a special "queue" property
-  // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
-  async watch(givenConfig: Object = {}, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
-    let queue = Promise.resolve()
-    const files: Map<string, ?File> = new Map()
-    const config = Helpers.fillWatcherConfig(givenConfig)
-    const resolvedEntries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
 
-    const watcher = new Watcher(resolvedEntries, {
-      usePolling: config.usePolling,
-    })
-
-    const processFile = async (filePath, overwrite = true) => {
-      if (files.has(filePath) && !overwrite) {
-        return true
-      }
-      const oldValue = files.get(filePath)
-      if (oldValue === null) {
-        // We are returning even when forced in case of null value, 'cause it
-        // means it is already in progress
-        return true
-      }
-
-      // Reset contents on both being unable to resolve and error in processing
-      let file: any = null
-      let processError = null
-
-      if (typeof oldValue === 'undefined' && lastState.has(filePath)) {
-        files.set(filePath, null)
-        // ^ Lock the cache early to avoid double-processing because we await below
-        let fileStat
-        try {
-          fileStat = await fileSystem.stat(filePath)
-        } catch (_) {
-          // The file could no longer exist since the cache was built
-        }
-        const lastStateFile = lastState.get(filePath)
-        if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
-          file = lastStateFile
-        }
-      }
-
+    let file
+    const oldFile = files.get(resolved)
+    if (oldFile === null) {
+      // It's locked and therefore in progress
+      return true
+    }
+    if (!oldFile && oldFiles.has(resolved) && useCache) {
+      // $FlowIgnore: It's a temp lock
+      files.set(resolved, null)
+      // ^ Lock the cache early to avoid double-processing because we await below
+      let fileStat
       try {
-        if (!file) {
-          files.set(filePath, null)
-          file = await this.processFile(filePath)
-        }
-        files.set(filePath, file)
-        await Promise.all(file.imports.map(entry => this.resolve(entry.request, filePath).then(resolved => {
-          entry.resolved = resolved
-        })))
-      } catch (error) {
-        if (oldValue) {
-          files.set(filePath, oldValue)
-        } else {
-          files.delete(filePath)
-        }
-        processError = error
-        this.report(error)
-        return false
-      } finally {
-        for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
-          try {
-            await Helpers.invokeComponent(this, entry, 'tick', [], filePath, processError, file)
-          } catch (error) {
-            this.report(error)
+        fileStat = await fileSystem.stat(resolved)
+      } catch (_) {
+        // The file could no longer exist since the cache was built
+      }
+      const lastStateFile = oldFiles.get(resolved)
+      if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
+        file = lastStateFile
+      }
+    }
+    if (!file) {
+      // $FlowIgnore: It's a temp lock
+      files.set(resolved, null)
+      file = await this.processFile(resolved)
+    }
+    try {
+      await Promise.all(file.imports.map(item =>
+        this.processFileTree(item, files, oldFiles, useCache, false, tickCallback)
+      ))
+      await Promise.all(file.chunks.map(item =>
+        Promise.all(item.imports.map(importEntry =>
+          this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback)
+        ))
+      ))
+    } catch (error) {
+      if (oldFile) {
+        files.set(resolved, oldFile)
+      } else {
+        files.delete(resolved)
+      }
+      throw error
+    }
+    await tickCallback(oldFile, file)
+    files.set(resolved, file)
+    return true
+  }
+  // Helper method to attach files to a chunk from a files pool
+  processChunk(chunk: FileChunk, files: Map<string, File>): void {
+    chunk.files.clear()
+    function iterate(fileImport: FileImport) {
+      const filePath = fileImport.resolved
+      if (!filePath) {
+        throw new Error(`${fileImport.request} was not resolved from ${fileImport.from || 'Project root'}`)
+      }
+      if (chunk.files.has(filePath)) {
+        return
+      }
+      const file = files.get(filePath)
+      if (!file) {
+        throw new Error(`${filePath} was not processed`)
+      }
+      chunk.files.set(filePath, file)
+      file.imports.forEach(entry => iterate(entry))
+    }
+
+    chunk.entries.forEach(entry => iterate(entry))
+    chunk.imports.forEach(entry => iterate(entry))
+  }
+  async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<FileChunk>> {
+    const files: Map<string, File> = new Map()
+    let chunks = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
+
+    await Promise.all(chunks.map(chunk =>
+      Promise.all(chunk.entries.map(chunkEntry =>
+        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
+          if (file.chunks.length) {
+            chunks = chunks.concat(file.chunks)
           }
+        })
+      ))
+    ))
+    chunks.forEach(chunk => this.processChunk(chunk, files))
+    for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
+      await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
+    }
+
+    return chunks
+  }
+  async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
+    let queue = Promise.resolve()
+    const chunks: Array<FileChunk> = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
+
+    const files: Map<string, File> = new Map()
+    const watcher = new Watcher({
+      usePolling: this.context.config.watcher.usePolling,
+    })
+
+    const enqueue = callback => (queue = queue.then(callback).catch(e => this.context.report(e)))
+    const triggerRecompile = async () => {
+      await queue
+      const cloned = chunks.slice()
+      try {
+        cloned.forEach(chunk => this.processChunk(chunk, files))
+      } catch (_) {
+        // In case of a missing import, quit silently
+        // The user already knows the error from other callbacks
+        return
+      }
+      for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
+        await Helpers.invokeComponent(this.context, entry, 'callback', [], cloned)
+      }
+      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
+        try {
+          await Helpers.invokeComponent(this, entry, 'compile', [], cloned, files)
+        } catch (error) {
+          this.context.report(error)
         }
       }
+    }
+    const tickCallback = async (oldFile: ?File, file: File) => {
+      const oldChunks = oldFile ? oldFile.chunks : []
+      const newChunks = file.chunks
+      const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
+      const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
+      const unchangedChunks = oldChunks.filter(chunk => !~removedChunks.indexOf(chunk))
 
-      const oldImports = oldValue ? oldValue.imports : []
+      const oldImports = oldFile ? oldFile.imports : []
       const newImports = file.imports
-      const addedImports = difference(newImports, oldImports)
-      const removedImports = difference(oldImports, newImports)
+      const addedImports = differenceBy(newImports, oldImports, serializeImport)
+      const removedImports = differenceBy(oldImports, newImports, serializeImport)
+
+      if (!oldFile && file) {
+        // First compile of this file
+        watcher.watch(file.filePath)
+      }
+
+      removedChunks.forEach(function(entry) {
+        const index = chunks.indexOf(entry)
+        if (index !== -1) {
+          chunks.splice(index, 1)
+        }
+      })
+      addedChunks.forEach(function(entry) {
+        chunks.push(entry)
+      })
       addedImports.forEach(function(entry) {
         watcher.watch(entry.resolved)
       })
       removedImports.forEach(function(entry) {
-        watcher.unwatch(entry.resolved)
+        if (entry.resolved) {
+          console.log('unwatching', entry)
+          watcher.unwatch(entry.resolved)
+        }
       })
-      for (let i = 0, length = newImports.length; i < length; i++) {
-        watcher.enable(newImports[i].resolved || '')
-      }
+      // NOTE: This is required for incremental HMR
+      file.chunks.forEach(function(chunk) {
+        const matchingChunk = unchangedChunks.find(entry => serializeChunk(entry) === serializeChunk(chunk))
+        if (matchingChunk) {
+          chunk.files = matchingChunk.files
+          chunk.label = matchingChunk.label
+          const index = chunks.indexOf(matchingChunk)
+          if (index !== -1) {
+            chunks.splice(index, 1)
+            chunks.push(chunk)
+          }
+        }
+      })
 
-      try {
-        const promises = await Promise.all(file.imports.map((entry: Object) => processFile(entry.resolved, false)))
-        return promises.every(i => i)
-      } catch (compilationError) {
-        this.report(compilationError)
-        return false
-      }
-    }
-
-    let compiling = false
-    let recompile: boolean = false
-    const triggerCompile = async () => {
-      compiling = true
-      await queue
-      for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
         try {
-          await Helpers.invokeComponent(this, entry, 'compile', [], Array.from(files.values()))
+          await Helpers.invokeComponent(this.context, entry, 'tick', [], file)
         } catch (error) {
-          this.report(error)
+          this.context.report(error)
         }
       }
-      compiling = false
-      if (recompile) {
-        recompile = false
-        triggerCompile()
-      }
     }
-    const triggerDebouncedCompile = debounce(function() {
-      if (compiling) {
-        recompile = true
-      } else {
-        triggerCompile()
-      }
-    }, 10)
-    const triggerDebouncedImportsCheck = debounce(async () => {
-      await queue
-      let changed = false
-      for (const file of files.values()) {
-        if (!file) continue
-        for (let i = 0, length = file.imports.length; i < length; i++) {
-          const entry = file.imports[i]
-          const oldResolved = entry.resolved
-          try {
-            await fileSystem.stat(oldResolved)
-            continue
-          } catch (_) { /* No Op */ }
-          watcher.unwatch(oldResolved)
-          try {
-            const resolved = await this.resolve(entry.request, file.filePath)
-            entry.resolved = resolved
-            watcher.enable(resolved)
-            watcher.watch(resolved)
-            queue = queue.then(() => processFile(resolved, false))
-          } catch (_) {
-            watcher.watch(oldResolved)
-            this.report(_)
-            break
-          }
-          // If processing file failed
-          if (!await queue) {
-            break
-          }
-          changed = true
-        }
-      }
-      if (changed) {
-        triggerDebouncedCompile()
-      }
-    }, 100)
 
-    const promises = resolvedEntries.map(entry => processFile(entry))
-    const successful = (await Promise.all(promises)).every(i => i)
+    await Promise.all(chunks.map(chunk =>
+      Promise.all(chunk.entries.map(chunkEntry =>
+        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, tickCallback)
+      ))
+    ))
 
-    if (successful) {
-      await triggerCompile()
-    }
-    for (const entry of Helpers.filterComponents(this.components, 'watcher')) {
+    for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
       try {
-        await Helpers.invokeComponent(this, entry, 'ready', [], successful, Array.from(files.values()))
+        await Helpers.invokeComponent(this, entry, 'ready', [])
       } catch (error) {
-        this.report(error)
+        this.context.report(error)
       }
     }
+    await triggerRecompile()
 
+    const debounceRecompile = debounce(triggerRecompile, 20)
     watcher.on('change', (filePath) => {
-      // NOTE: Only trigger imports check if processFile() succeeds
-      queue = queue
-        .then(() => processFile(filePath, true)
-        .then((status) => status && triggerDebouncedCompile()))
+      enqueue(() => this.processFileTree(filePath, files, oldFiles, useCache, true, tickCallback))
+      debounceRecompile()
     })
     watcher.on('unlink', (filePath) => {
-      files.delete(filePath)
-      watcher.disable(filePath)
-      triggerDebouncedImportsCheck()
+      enqueue(() => {
+        const filesDepending = []
+        files.forEach(function(file) {
+          if (file.imports.some(entry => entry.resolved === filePath)) {
+            filesDepending.push(file)
+          }
+        })
+        return Promise.all(filesDepending.map(file =>
+          this.processFileTree(file.filePath, files, oldFiles, useCache, true, tickCallback)
+        ))
+      })
+      debounceRecompile()
     })
 
     const disposable = new Disposable(() => {
-      this.subscriptions.delete(disposable)
       watcher.dispose()
+      this.subscriptions.delete(disposable)
     })
-    disposable.queue = queue
-    disposable.files = files
     this.subscriptions.add(disposable)
     return disposable
   }
   dispose() {
-    this.components.forEach(({ component, config }) => this.deleteComponent(component, config))
+    this.context.components.forEach(({ component, config }) => this.context.deleteComponent(component, config))
     this.subscriptions.dispose()
   }
 }

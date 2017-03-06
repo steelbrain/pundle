@@ -1,6 +1,6 @@
 /* @flow */
 
-import fileSystem from 'pundle-fs'
+import fileSystem from 'sb-fs'
 import { createLoader, shouldProcess } from 'pundle-api'
 import type { File } from 'pundle-api/types'
 

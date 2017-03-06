@@ -1,14 +1,10 @@
 /* @flow */
 
-export type CompilationConfig = {
-  debug: boolean,
-  entry: Array<string>,
-  rootDirectory: string,
-  replaceVariables: Object, // <string, Object>
-}
+import type { ComponentAny } from 'pundle-api/types'
 
-export type WatcherConfig = {
-  usePolling: boolean,
+export type ComponentEntry = {
+  config: Object,
+  component: ComponentAny,
 }
 
 export type Preset = Array<{ component: string | Object, config: Object, name: string }>
@@ -17,17 +13,12 @@ export type Loadable = string | [string, Object] | [Object, Object]
 
 // NOTE: This is the config after transformation, not what Pundle accepts
 export type PundleConfig = {
-  watcher: Object,
-  presets: Array<Loadable>,
-  components: Array<Loadable>,
-  compilation: CompilationConfig,
-}
-
-// NOTE: Not used anywhere but this is what Pundle supports publically
-export type PublicPundleConfig = CompilationConfig & {
+  debug: boolean,
+  entry: Array<string>,
   output: {
-    bundlePath?: string,
     sourceMap?: boolean,
+    publicRoot?: string,
+    bundlePath?: string,
     sourceMapPath?: string,
     rootDirectory?: string,
   },
@@ -40,9 +31,17 @@ export type PublicPundleConfig = CompilationConfig & {
     rootDirectory: string,
     redirectNotFoundToIndex?: boolean,
   },
-  watcher?: WatcherConfig,
-  presets?: Array<Loadable>,
-  components?: Array<Loadable>,
+  presets: Array<Loadable>,
+  watcher: {
+    usePolling: boolean,
+  },
+  components: Array<Loadable>,
+  rootDirectory: string,
+  replaceVariables: Object, // <string, Object>
+}
+
+// NOTE: Not used anywhere but this is what Pundle supports publically
+export type PublicPundleConfig = {
   configFileName?: string,
   enableConfigFile: boolean,
 }

@@ -27,22 +27,25 @@ export type CallbackOrConfig<T> = T | {
   dispose?: ((config: Object) => void),
 }
 
-export type Import = {
+export type FileImport = {
   id: number,
   from: ?string,
   request: string,
   resolved: ?string,
 }
-
-export type Resolved = {
-  sourceManifest: Object,
-  targetManifest: Object,
-  filePath: string,
+export type FileChunk = {
+  id: number,
+  label: string,
+  // eslint-disable-next-line no-use-before-define
+  files: Map<string, File>,
+  entries: Array<FileImport>,
+  imports: Array<FileImport>,
 }
 
 export type File = {
   source: string,
-  imports: Array<Import>,
+  chunks: Array<FileChunk>,
+  imports: Array<FileImport>,
   filePath: string,
   // ^ The absolute path on file system
   contents: string,
@@ -51,41 +54,72 @@ export type File = {
   // ^ in seconds not miliseconds aka Date.now()/1000
 }
 
-export type LoaderCallback = ((config: Object, file: File) => Promise<?{ imports: Set<Import>, contents: string, sourceMap: ?Object }>)
+export type LoaderResult = {
+  chunks: Array<FileChunk>,
+  imports: Array<FileImport>,
+  contents: string,
+  sourceMap: ?Object,
+}
+export type LoaderCallback = ((config: Object, file: File) => Promise<?LoaderResult>)
 export type Loader = Component<'loader', LoaderCallback>
 
-export type PluginCallback = ((config: Object, file: File) => Promise<void>)
+export type PluginResult = void
+export type PluginCallback = ((config: Object, file: File) => Promise<?PluginResult>)
 export type Plugin = Component<'plugin', PluginCallback>
 
-export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?Resolved>)
+export type ResolverResult = {
+  filePath: string,
+  sourceManifest: Object,
+  targetManifest: Object,
+}
+export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?ResolverResult>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
-export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<void>)
+export type ReporterResult = void
+export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<ReporterResult>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
-export type GeneratorCallback = ((config: Object, files: Array<File>, runtimeConfig: Object) => Promise<?Object>)
+export type GeneratorResult = {
+  chunk: FileChunk,
+  contents: string,
+  sourceMap: Object,
+  filesGenerated: Array<string>,
+}
+export type GeneratorCallback = ((config: Object, chunk: FileChunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 
-export type TransformerCallback = ((config: Object, file: File) => Promise<?{ contents: string, sourceMap: ?Object }>)
+export type TransformerResult = {
+  contents: string,
+  sourceMap: ?Object,
+}
+export type TransformerCallback = ((config: Object, file: File) => Promise<?TransformerResult>)
 export type Transformer = Component<'transformer', TransformerCallback>
 
-export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?{ contents: string, sourceMap: ?Object }>)
+export type PostTransformerResult = {
+  contents: string,
+  sourceMap: ?Object,
+}
+export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?PostTransformerResult>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
+export type ChunkTransformerResult = void
+export type ChunkTransformerCallback = ((config: Object, chunks: Array<FileChunk>) => Promise<?ChunkTransformerResult>)
+export type ChunkTransformer = Component<'chunk-transformer', ChunkTransformerCallback>
+
 export type WatcherCallbacks = {
-  tick?: ((filePath: string, error: ?Error) => Promise<void> | void),
-  ready?: ((initialCompileStatus: boolean, totalFiles: Array<File>) => Promise<void> | void),
-  compile?: ((totalFiles: Array<File>) => Promise<void> | void),
+  tick?: ((file: File) => Promise<void> | void),
+  ready?: ((chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
+  compile?: ((chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
 }
 export type Watcher = {
   $type: 'watcher',
   $apiVersion: number,
   activate(config: Object): void,
-  tick(filePath: string, error: ?Error, file: ?File): Promise<void> | void,
-  ready(initialCompileStatus: boolean, totalFiles: Array<File>): Promise<void> | void,
-  compile(totalFiles: Array<File>): Promise<void> | void,
+  tick(file: File): Promise<void> | void,
+  ready(chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
+  compile(chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
   dispose(config: Object): void,
   defaultConfig: Object,
 }
 
-export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher
+export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher | ChunkTransformer

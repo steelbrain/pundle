@@ -60,44 +60,53 @@ class __sbPundle_HMR {
   }
 }
 
-const __sbPundle = {
+global.__sbPundle = global.__sbPundle || {
   cache: {},
-  extensions: [],
-  resolutionMap: {},
-  resolve: function(path) {
+  chunks: {},
+  mapChunks: {},
+  mapModules: {},
+  resolve(path) {
     return path
   },
-  getModule: function(moduleId, callback) {
+  getModule(moduleId, callback) {
     return {
       id: moduleId,
-      hot: new __sbPundle_HMR(),
-      callback: callback,
       invoked: false,
+      callback,
       exports: {},
       parents: [],
+      hot: new __sbPundle_HMR(),
     }
   },
-  registerMappings: function(mappings) {
-    for (const key in mappings) {
-      mappings[key].forEach(value => {
-        this.resolutionMap[value] = key
+  registerMappings(mappings) {
+    Object.assign(this.mapChunks, mappings.chunks)
+    for (const moduleId in mappings.files) {
+      mappings.files[moduleId].forEach((requestId) => {
+        this.mapModules[requestId] = moduleId
       })
     }
   },
-  registerModule: function(moduleId, callback) {
+  registerLoaded(chunkId) {
+    if (this.chunks[chunkId]) {
+      this.chunks[chunkId].resolve()
+    } else {
+      this.chunks[chunkId] = { promise: Promise.resolve(), resolve() {}, reject() {} }
+    }
+  },
+  registerModule(moduleId, callback) {
     if (this.cache[moduleId]) {
       this.cache[moduleId].callback = callback
     } else {
       this.cache[moduleId] = this.getModule(moduleId, callback)
     }
   },
-  requireModule: function(fromModule: ?string, givenRequest: string) {
-    const request = this.resolutionMap[givenRequest] || givenRequest
+  requireModule(fromModule: string, givenRequest: string) {
+    const request = this.mapModules[givenRequest] || givenRequest
     const module: ?ModuleNormal = this.cache[request]
     if (!module) {
-      throw new Error('Module not found')
+      throw new Error(`Module '${request}' not found. Did you forget to load the parent chunks before this one?`)
     }
-    if (fromModule && module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
+    if (module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
       module.parents.push(fromModule)
     }
     if (!module.invoked) {
@@ -106,19 +115,47 @@ const __sbPundle = {
     }
     return module.exports
   },
-  generateRequire: function(fromModule: ?string) {
+  generateRequire(fromModule: string) {
     const require = this.requireModule.bind(this, fromModule)
     require.cache = this.cache
-    require.extensions = this.extensions
     require.resolve = this.resolve
+    require.ensure = (chunk, callback) => this.ensure(chunk, () => callback(require))
+    require.import = (chunk, moduleId) => new Promise((resolve, reject) => this.ensure(chunk, () => resolve(require(moduleId)), reject))
     return require
   },
-  require: function(request: string) {
+  require(request: string) {
     return this.requireModule('$root', request)
+  },
+  ensure(requestedChunk: string | Array<string>, loadedCallback: Function, errorCallback: Function) {
+    // $FlowIgnore: This is a replaced var
+    if (typeof SB_PUNDLE_PUBLIC_PRE === 'undefined') {
+      throw new Error('Please specify config.output.publicRoot in configuration')
+    }
+
+    const requestedChunks = [].concat(requestedChunk)
+    requestedChunks.forEach(entry => {
+      const chunkId = this.mapChunks[entry]
+      if (!this.chunks[chunkId]) {
+        let resolve
+        let reject
+        const promise = new Promise(function(_resolve, _reject) {
+          resolve = _resolve
+          reject = _reject
+        })
+        this.chunks[chunkId] = { promise, resolve, reject }
+        const script = document.createElement('script')
+        // $FlowIgnore: These are replaced vars
+        script.src = `${SB_PUNDLE_PUBLIC_PRE}.${chunkId}${SB_PUNDLE_PUBLIC_POST}`
+        script.onerror = reject
+        // $FlowIgnore: It's never null bro
+        document.body.appendChild(script)
+      }
+      return this.chunks[chunkId].promise.then(loadedCallback, errorCallback)
+    })
   },
   hmrSort: eval(__sbPundle_hmrSort),
   ansiToHtml: eval(__sbPundle_hmrAnsi),
-  hmrIsAccepted: function(moduleId: string, matchAgainst: string = moduleId): 'no' | 'direct' | 'parent' {
+  hmrIsAccepted(moduleId: string, matchAgainst: string = moduleId): 'no' | 'direct' | 'parent' {
     const module = this.cache[moduleId]
     if (module.hot.accepts.has('*') || module.hot.accepts.has(matchAgainst)) {
       return 'direct'
@@ -128,7 +165,7 @@ const __sbPundle = {
     }
     return 'no'
   },
-  hmrGetOrder: function(files: Array<string>): Array<string> {
+  hmrGetOrder(files: Array<string>): Array<string> {
     const input: Array<[string, string]> = []
     const added: Set<string> = new Set()
     const failed: Array<string> = []
@@ -193,10 +230,10 @@ const __sbPundle = {
 
     return sorted
   },
-  hmrApply: function(givenFiles: Array<string>, newFiles: Array<string>) {
-    const files = givenFiles.filter(file => !~newFiles.indexOf(file))
+  hmrApply(givenFiles: Array<string>) {
+    const files = givenFiles.filter(file => this.cache[file].invoked)
     const updateOrder = this.hmrGetOrder(files)
-    const hmrDebugging = __sbPundle.debugHMR
+    const hmrDebugging = this.debugHMR
     if (hmrDebugging) {
       console.log('[HMR] Update order is', updateOrder)
     }

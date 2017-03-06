@@ -1,7 +1,7 @@
 /* @flow */
 
 import Path from 'path'
-import fileSystem from 'pundle-fs'
+import fileSystem from 'sb-fs'
 import pundleBrowser from 'pundle-browser'
 import { createResolver } from 'pundle-api'
 import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly, promisedResolve } from './helpers'

@@ -5,7 +5,7 @@ import FS from 'sb-fs'
 import Path from 'path'
 import Crypto from 'crypto'
 import invariant from 'assert'
-import type Compilation from 'pundle/src/compilation'
+import type Pundle from 'pundle/src'
 
 import type { ServerConfig, ServerConfigInput } from '../types'
 
@@ -62,35 +62,25 @@ export async function getCacheFilePath(directory: string): Promise<string> {
   return Path.join(stateDirectory, `${inputHash}.json`)
 }
 
-export function isCompilationRegistered(compilation: Compilation): boolean {
-  return compilation.config.entry.indexOf(browserFile) !== -1 ||
-         compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH ||
-         compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
+export function isPundleRegistered(pundle: Pundle): boolean {
+  return pundle.config.entry.indexOf(browserFile) !== -1 ||
+         pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH ||
+         pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH
 }
 
-export function registerCompilation(compilation: Compilation, config: ServerConfig): void {
-  compilation.config.entry.unshift(browserFile)
-  compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-  compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
+export function registerPundle(pundle: Pundle, config: ServerConfig): void {
+  pundle.config.entry.push(browserFile)
+  pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+  pundle.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
 }
 
-export function unregisterCompilation(compilation: Compilation): void {
-  delete compilation.config.replaceVariables.SB_PUNDLE_HMR_PATH
-  delete compilation.config.replaceVariables.SB_PUNDLE_HMR_HOST
-  const browserFileIndex = compilation.config.entry.indexOf(browserFile)
+export function unregisterPundle(pundle: Pundle): void {
+  delete pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  delete pundle.config.replaceVariables.SB_PUNDLE_HMR_HOST
+  const browserFileIndex = pundle.config.entry.indexOf(browserFile)
   if (browserFileIndex !== -1) {
-    compilation.config.entry.splice(browserFileIndex, 1)
+    pundle.config.entry.splice(browserFileIndex, 1)
   }
-}
-
-export function deferPromise(): Object {
-  let reject
-  let resolve
-  const promise = new Promise(function(givenResolve, givenReject) {
-    reject = givenReject
-    resolve = givenResolve
-  })
-  return { reject, resolve, promise }
 }
 
 export function getWssServer(): Function {
@@ -102,4 +92,16 @@ export function getWssServer(): Function {
     }
     return require('ws').Server
   }
+}
+
+export function getChunkId(url: string, bundlePath: string): string {
+  const expected = Path.basename(bundlePath)
+  const expectedExt = expected.endsWith('.js.map') ? '.js.map' : Path.extname(expected)
+  const expectedPrefix = expected.slice(0, -1 * expectedExt.length)
+
+  const given = Path.basename(url).slice(expectedPrefix.length + 1)
+  const givenExt = given.endsWith('.js.map') ? '.js.map' : Path.extname(given)
+  const givenId = given.slice(0, -1 * givenExt.length)
+
+  return givenId || '1'
 }

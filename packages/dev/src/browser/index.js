@@ -70,7 +70,7 @@ function openHMRConnection() {
     if (message.type === 'hmr') {
       eval(`${message.contents}\n//@ sourceURL=${location.origin}/__pundle__/hmr-${numUpdate++}`)
       console.log('[HMR] Files Changed:', message.files.join(', '))
-      __sbPundle.hmrApply(message.files, message.newFiles)
+      __sbPundle.hmrApply(message.files)
     } else if (message.type === 'report') {
       if (overlay) {
         overlay.remove()

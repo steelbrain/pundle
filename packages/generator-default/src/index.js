@@ -1,10 +1,11 @@
 /* @flow */
 
 import Path from 'path'
+import invariant from 'assert'
 import sourceMapToComment from 'source-map-to-comment'
 import { createGenerator } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
-import type { File } from 'pundle-api/types'
+import type { FileChunk, GeneratorResult } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 // Spec:
@@ -23,63 +24,67 @@ import * as Helpers from './helpers'
 // - Push sourceMap stringified or it's path (depending on config) (if enabled)
 // - Return all chunks joined, and sourceMap (if enabled)
 
-export default createGenerator(async function(config: Object, givenFiles: Array<File>) {
-  const files = givenFiles.slice()
-  const entry = await Helpers.normalizeEntry(this, config)
+export default createGenerator(async function(config: Object, chunk: FileChunk): Promise<GeneratorResult> {
+  const entries = chunk.entries
+  const filesGenerated = []
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
   const chunks = [';(function() {', wrapperContents]
   const chunksMap = new SourceMapGenerator({
     skipValidation: true,
   })
-  const filePaths = []
   // NOTE: I don't know why we need a +1, but adding it makes things work
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
-  // Sort the files so git diff and others don't always have random output
-  files.sort((a, b) => a.filePath.localeCompare(b.filePath))
-
-  for (let i = 0, length = files.length; i < length; i++) {
-    const file = files[i]
+  for (const file of chunk.files.values()) {
     const publicPath = Helpers.getFilePath(this, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
-    chunks.push(fileContents)
-    filePaths.push(publicPath)
     const fileSourceMap = file.sourceMap
-    if (config.sourceMap && fileSourceMap) {
-      const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
-      Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.source, linesCount)
+
+    chunks.push(fileContents)
+    filesGenerated.push(publicPath)
+
+    if (config.sourceMap) {
+      if (fileSourceMap) {
+        const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
+        Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.source, linesCount)
+      }
+      linesCount += Helpers.getLinesCount(fileContents)
     }
-    linesCount += Helpers.getLinesCount(fileContents)
   }
 
-  const resolutionMap = JSON.stringify(Helpers.getImportResolutions(this, config, files))
-  chunks.push(`__sbPundle.registerMappings(${resolutionMap})`)
-  for (let i = 0, length = entry.length; i < length; i++) {
-    chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entry[i])}')`)
+  const mappings = Object.assign({}, config.mappings, {
+    files: Object.assign({}, Helpers.getFileMappings(this, chunk, config), config.mappings.files),
+  })
+  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(mappings)})`)
+  chunks.push(`__sbPundle.registerLoaded(${JSON.stringify(config.label)})`)
+  for (let i = 0, length = entries.length; i < length; i++) {
+    invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
+    chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entries[i].resolved)}')`)
   }
   chunks.push('})();\n')
 
-  let sourceMap = null
+  const sourceMap = chunksMap.toJSON()
   if (config.sourceMap) {
-    sourceMap = chunksMap.toJSON()
     if (config.sourceMapPath === 'inline') {
       chunks.push(sourceMapToComment(sourceMap))
-    } else if (config.sourceMapPath) {
-      chunks.push(`//# sourceMappingURL=${config.sourceMapPath}`)
     }
   }
 
   return {
+    chunk,
     contents: chunks.join('\n'),
     sourceMap,
-    filePaths,
+    filesGenerated,
   }
 }, {
-  entry: null,
+  label: '',
   wrapper: 'normal',
   pathType: 'filePath',
+  mappings: {},
   sourceMap: false,
+  bundlePath: '',
+  publicRoot: '',
   sourceMapPath: null,
   sourceNamespace: 'app',
   sourceMapNamespace: 'app',

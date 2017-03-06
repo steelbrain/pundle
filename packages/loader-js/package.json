@@ -21,8 +21,10 @@
     "babel-generator": "^6.19.0",
     "babel-traverse": "^6.21.0",
     "babel-types": "^6.19.0",
-    "babylon": "6.13.1",
+    "babylon": "^6.16.1",
     "pundle-api": "2.0.0-beta16"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "pundle": "2.0.0-beta16"
+  }
 }

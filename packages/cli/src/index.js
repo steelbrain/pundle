@@ -150,27 +150,55 @@ command
         subscriptions.add(devServer)
         promise = devServer.activate().then(function() {
           Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
+        }).catch(function(error) {
+          process.nextTick(function() {
+            process.exit()
+          })
+          throw error
         })
       } else {
         promise = pundle.generate(null, {
           sourceMap: config.output.sourceMap,
           sourceMapPath: config.output.sourceMapPath,
-        }).then(async function(generated) {
-          const outputDirectory = Path.resolve(pundle.config.compilation.rootDirectory, config.output.rootDirectory)
+        }).then(async function(outputs) {
+          const outputDirectory = Path.resolve(pundle.config.rootDirectory, config.output.rootDirectory)
           const outputFilePath = Path.resolve(outputDirectory, config.output.bundlePath)
           const outputSourceMapPath = Path.resolve(outputDirectory, config.output.sourceMapPath)
-          FS.writeFileSync(outputFilePath, generated.contents)
-          Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(generated.contents.length))} to '${chalk.blue(outputFilePath)}'`)
-          if (config.output.sourceMap && config.output.sourceMapPath !== 'inline') {
-            const sourceMap = JSON.stringify(generated.sourceMap)
-            FS.writeFileSync(outputSourceMapPath, sourceMap)
-            Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(outputSourceMapPath)}'`)
-          }
+
+          const writeSourceMap = config.output.sourceMap && config.output.sourceMapPath !== 'inline'
+          const outputFilePathExt = Path.extname(outputFilePath)
+          const outputSourceMapPathExt = outputSourceMapPath.endsWith('.js.map') ? '.js.map' : Path.extname(outputSourceMapPath)
+
+          outputs.forEach(function(output) {
+            let contents = output.contents
+            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + '.' + output.label + outputFilePathExt
+            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + '.' + output.label + outputSourceMapPathExt
+
+            if (writeSourceMap) {
+              contents += `//# sourceMappingURL=${Path.relative(outputDirectory, currentSourceMapPath)}\n`
+            }
+            FS.writeFileSync(currentFilePath, contents)
+            Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(output.contents.length))} to '${chalk.blue(Path.relative(options.rootDirectory, currentFilePath))}'`)
+            if (writeSourceMap) {
+              const sourceMap = JSON.stringify(output.sourceMap)
+              FS.writeFileSync(currentSourceMapPath, sourceMap)
+              Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(Path.relative(options.rootDirectory, currentSourceMapPath))}'`)
+            }
+          })
+
+          const indexHtmlSource = Path.join(pundle.config.rootDirectory, 'index.html')
+          const indexHtmlTarget = Path.join(outputDirectory, 'index.html')
+          const indexHtml = pundle.fill(await FS.readFile(indexHtmlSource, 'utf8'), outputs.map(o => o.chunk), {
+            publicRoot: pundle.config.output.publicRoot,
+            bundlePath: pundle.config.output.bundlePath,
+          })
+          await FS.writeFile(indexHtmlTarget, indexHtml)
+          Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(indexHtml.length))} to '${chalk.blue(Path.relative(options.rootDirectory, indexHtmlTarget))}'`)
         })
       }
       return promise.catch(function(error) {
         process.exitCode = 1
-        pundle.compilation.report(error)
+        pundle.context.report(error)
       })
     }).catch(function(error) {
       process.exitCode = 1

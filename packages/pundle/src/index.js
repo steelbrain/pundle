@@ -1,11 +1,13 @@
 /* @flow */
 
+import Path from 'path'
 import invariant from 'assert'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import type { File } from 'pundle-api/types'
+import type { File, FileChunk } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
+import Context from './context'
 import Compilation from './compilation'
 import type { PundleConfig, Loadable } from '../types'
 
@@ -14,6 +16,7 @@ const UNIQUE_SIGNATURE_OBJ = {}
 class Pundle {
   config: PundleConfig;
   emitter: Emitter;
+  context: Context;
   compilation: Compilation;
   subscriptions: CompositeDisposable;
 
@@ -24,7 +27,8 @@ class Pundle {
 
     this.config = config
     this.emitter = new Emitter()
-    this.compilation = new Compilation(config.compilation)
+    this.context = new Context(config)
+    this.compilation = new Compilation(this.context)
     this.subscriptions = new CompositeDisposable()
 
     this.subscriptions.add(this.emitter)
@@ -34,9 +38,9 @@ class Pundle {
     if (!Array.isArray(givenComponents)) {
       throw new Error('Parameter 1 to loadComponents() must be an Array')
     }
-    const components = await Helpers.getLoadables(givenComponents, this.config.compilation.rootDirectory)
+    const components = await Helpers.getLoadables(givenComponents, this.config.rootDirectory)
     const subscriptions = new CompositeDisposable()
-    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
   }
   // Notes:
@@ -45,7 +49,7 @@ class Pundle {
   async loadPreset(givenPreset: Object | string, presetConfig: Object = {}): Promise<CompositeDisposable> {
     let preset = givenPreset
     if (typeof preset === 'string') {
-      preset = await Helpers.load(preset, this.config.compilation.rootDirectory)
+      preset = await Helpers.load(preset, this.config.rootDirectory)
     }
     if (!Array.isArray(preset)) {
       throw new Error('Invalid preset value/export. It must be an Array')
@@ -61,41 +65,32 @@ class Pundle {
       }
       return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
     }).filter(i => i)
-    const components = await Helpers.getLoadables(loadables, this.config.compilation.rootDirectory)
+    const components = await Helpers.getLoadables(loadables, this.config.rootDirectory)
     const subscriptions = new CompositeDisposable()
-    subscriptions.add(...components.map(([component, config]) => this.compilation.addComponent(component, config)))
+    subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
   }
-  async generate(givenFiles: ?Array<File> = null, runtimeConfig: Object = {}): Promise<Object> {
-    const files = givenFiles || await this.processTree()
-    return await this.compilation.generate(files, runtimeConfig)
+  // $FlowIgnore: TODO: Remove these when fixed in dev package
+  async generate(chunks: ?Array<FileChunk> = null, runtimeConfig: Object = {}): Promise<Object> {
+    return await this.context.generate(chunks || await this.build(), runtimeConfig)
   }
-  // Spec:
-  // - Normalize all givenRequests to an array
-  // - Asyncly and con-currently process all trees
-  // - Share files cache between tree resolutions to avoid duplicates
-  async processTree(givenRequest: ?string = null, givenFrom: ?string = null, cached: boolean = true): Promise<Array<File>> {
-    let requests
-    const files: Map<string, ?File> = new Map()
-    if (!givenRequest) {
-      requests = this.config.compilation.entry
-    } else if (typeof givenRequest === 'string') {
-      requests = [givenRequest]
-    } else if (!Array.isArray(givenRequest)) {
-      throw new Error('Parameter 1 to processTree() must be null, String or an Array')
-    } else {
-      requests = givenRequest
-    }
-
-    await Promise.all(requests.map(request =>
-      this.compilation.processTree(request, givenFrom, cached, files)
-    ))
-
-    const filteredFiles: Array<any> = Array.from(files.values())
-    return filteredFiles
+  async build(cached: boolean = true): Promise<Array<FileChunk>> {
+    return this.compilation.build(cached)
   }
-  watch(config: Object = {}, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
-    return this.compilation.watch(Object.assign({}, this.config.watcher, config), oldFiles)
+  fill(html: string, chunks: Array<FileChunk>, config: { publicRoot: string, bundlePath: string }): string {
+    const primaryChunks = []
+    const bundlePathExt = Path.extname(config.bundlePath)
+    const bundlePathWithoutExt = config.bundlePath.slice(0, -1 * bundlePathExt.length)
+    chunks.forEach(function(chunk) {
+      if (chunk.entries.length || (!chunk.imports.length && chunk.files.size)) {
+        primaryChunks.push(`  <script src="${Path.join(config.publicRoot || '/', `${bundlePathWithoutExt}.${chunk.label}.js`)}"></script>`)
+      }
+    })
+
+    return html.replace('<!-- pundle scripts -->', primaryChunks.join('\n').trim())
+  }
+  watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
+    return this.compilation.watch(useCache, oldFiles)
   }
   dispose() {
     this.subscriptions.dispose()

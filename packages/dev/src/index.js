@@ -1,20 +1,20 @@
 /* @flow */
 
-import send from 'send'
+import FS from 'sb-fs'
+import Path from 'path'
 import unique from 'lodash.uniq'
 import express from 'express'
-import arrayDiff from 'lodash.difference'
+import promiseDefer from 'promise.defer'
 import ConfigFile from 'sb-config-file'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
 import type Pundle from 'pundle/src'
-import type { File } from 'pundle-api/types'
+import type { File, FileChunk, GeneratorResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ServerConfig, ServerState, ServerConfigInput } from '../types'
 
 const WssServer = Helpers.getWssServer()
-const debugTick = require('debug')('PUNDLE:DEV:TICK')
 const cliReporter: Object = require('pundle-reporter-cli')
 
 class Server {
@@ -23,46 +23,45 @@ class Server {
   config: ServerConfig;
   pundle: Pundle;
   connections: Set<Object>;
-  filesChanged: Set<string>;
   subscriptions: CompositeDisposable;
   constructor(pundle: Pundle, config: ServerConfigInput) {
-    if (Helpers.isCompilationRegistered(pundle.compilation)) {
+    if (Helpers.isPundleRegistered(pundle)) {
       throw new Error('Cannot create two middlewares on one Pundle instance')
     }
 
     this.state = {
-      files: [],
       queue: Promise.resolve(),
-      booted: false,
-      modified: false,
-      activated: false,
-      generated: { contents: '', sourceMap: {}, filePaths: [] },
+      files: new Map(),
+      chunks: [],
+      changed: new Map(),
     }
     this.pundle = pundle
     this.config = Helpers.fillConfig(config)
     this.connections = new Set()
-    this.filesChanged = new Set()
     this.subscriptions = new CompositeDisposable()
 
-    Helpers.registerCompilation(pundle.compilation, this.config)
+    Helpers.registerPundle(pundle, this.config)
   }
   async activate() {
     const app = express()
     const oldFiles: Map<string, File> = new Map()
-    const bootPromise = Helpers.deferPromise()
+    const rootDirectory = this.pundle.config.rootDirectory
 
-    this.enqueue(() => bootPromise.promise)
+    this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
+      directory: rootDirectory,
+      files: [],
+    }, {
+      prettyPrint: false,
+      createIfNonExistent: true,
+    })
     if (this.config.useCache) {
-      const rootDirectory = this.pundle.compilation.config.rootDirectory
-      this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
-        directory: rootDirectory,
-        files: [],
-      }, {
-        prettyPrint: false,
-        createIfNonExistent: true,
-      })
+      this.pundle.context.unserialize(await this.cache.get('state'))
       const oldFilesArray = await this.cache.get('files')
       oldFilesArray.forEach(function(file) {
+        file.chunks = file.chunks.map(chunk => ({
+          ...chunk,
+          files: new Map(),
+        }))
         oldFiles.set(file.filePath, file)
       })
     }
@@ -70,24 +69,8 @@ class Server {
       this.report(`Restoring ${oldFiles.size} files from cache`)
     }
 
-    app.get(this.config.bundlePath, (req, res) => {
-      this.generateIfNecessary().then(() => res.set('content-type', 'application/javascript').end(this.state.generated.contents))
-    })
-    if (this.config.sourceMap && this.config.sourceMapPath !== 'inline') {
-      app.get(this.config.sourceMapPath, (req, res) => {
-        this.generateIfNecessary().then(() => res.set('content-type', 'application/javascript').end(JSON.stringify(this.state.generated.sourceMap)))
-      })
-    }
-    app.use('/', express.static(this.config.rootDirectory))
-    if (this.config.redirectNotFoundToIndex) {
-      app.use((req, res, next) => {
-        if (req.url !== '/index.html' && req.baseUrl !== '/index.html') {
-          req.baseUrl = req.url = '/index.html'
-          send(req, req.baseUrl, { root: this.config.rootDirectory, index: 'index.html' }).on('error', next).on('directory', next).pipe(res)
-        } else next()
-      })
-    }
-    await this.attachComponents(bootPromise)
+    await this.attachRoutes(app)
+    await this.attachComponents()
 
     const server = app.listen(this.config.port)
     if (this.config.hmrPath) {
@@ -100,11 +83,50 @@ class Server {
     this.subscriptions.add(function() {
       server.close()
     })
-    const watcherSubscription = await this.pundle.watch({}, oldFiles)
-    this.enqueue(() => watcherSubscription.queue)
-    this.subscriptions.add(watcherSubscription)
+    this.subscriptions.add(await this.pundle.watch(this.config.useCache, oldFiles))
   }
-  async attachComponents(bootPromise: Object): Promise<void> {
+  attachRoutes(app: Object): void {
+    const bundlePathExt = Path.extname(this.config.bundlePath)
+    app.get([this.config.bundlePath, `${this.config.bundlePath.slice(0, -1 * bundlePathExt.length)}*`], (req, res, next) => {
+      this.generateChunk(req.url).then(function(chunk) {
+        if (!chunk) {
+          next()
+          return
+        }
+        if (req.url.endsWith('.js.map')) {
+          res.set('content-type', 'application/json')
+          res.end(JSON.stringify(chunk.sourceMap))
+        } else {
+          res.set('content-type', 'application/javascript')
+          res.end(chunk.contents)
+        }
+      }).catch(next)
+    })
+
+    const serveFilledHtml = (req, res, next) => {
+      this.state.queue.then(() => FS.readFile(Path.join(this.pundle.config.rootDirectory, 'index.html'), 'utf8')).then(contents => {
+        res.set('content-type', 'text/html')
+        res.end(this.pundle.fill(contents, this.state.chunks, {
+          publicRoot: Path.dirname(this.config.bundlePath),
+          bundlePath: Path.basename(this.config.bundlePath),
+        }))
+      }, function(error) {
+        if (error.code === 'ENOENT') {
+          next()
+        } else next(error)
+      })
+    }
+    app.get('/', serveFilledHtml)
+
+    app.use('/', express.static(this.config.rootDirectory))
+    if (this.config.redirectNotFoundToIndex) {
+      app.use(serveFilledHtml)
+    }
+  }
+  async attachComponents(): Promise<void> {
+    let booted = false
+    const boot = promiseDefer()
+    this.enqueue(() => boot.promise)
     this.subscriptions.add(await this.pundle.loadComponents([
       [cliReporter, {
         log: (text, error) => {
@@ -114,66 +136,79 @@ class Server {
         },
       }],
       createWatcher({
-        tick: (_: Object, filePath: string, error: ?Error) => {
-          debugTick(`${filePath} :: ${error ? error.message : 'null'}`)
-          if (!error && filePath !== Helpers.browserFile && this.state.booted) {
-            this.filesChanged.add(filePath)
+        tick: (_: Object, file: File) => {
+          if (booted && file.filePath !== Helpers.browserFile) {
+            this.state.changed.set(file.filePath, file)
           }
         },
-        ready: (_, initalStatus) => {
-          this.report(`Server initialized ${initalStatus ? 'successfully' : 'with errors'}`)
+        ready: () => {
+          this.report('Server initialized successfully')
         },
-        compile: async (_: Object, files: Array<File>) => {
-          bootPromise.resolve()
+        compile: async (_: Object, chunks: Array<FileChunk>, files: Map<string, File>) => {
           this.state.files = files
-          this.state.booted = true
-          this.state.modified = true
-          if (this.connections.size && this.filesChanged.size) {
+          this.state.chunks = chunks
+          if (this.connections.size && this.state.changed.size) {
             await this.generateForHMR()
           }
+          boot.resolve()
+          booted = true
         },
       }),
     ]))
   }
-  async generate() {
-    this.state.modified = false
-    this.state.generated = await this.pundle.generate(this.state.files, {
+  // NOTE: Stuff below this line is called at will and not excuted on activate or whatever
+  async generate(chunk: FileChunk, config: Object = {}): Promise<GeneratorResult> {
+    this.state.changed.clear()
+    const generated = await this.pundle.generate([chunk], {
       wrapper: 'hmr',
+      bundlePath: Path.basename(this.config.bundlePath),
+      publicRoot: Path.dirname(this.config.bundlePath),
       sourceMap: this.config.sourceMap,
       sourceMapPath: this.config.sourceMapPath,
       sourceNamespace: 'app',
+      ...config,
     })
+    return generated[0]
   }
   async generateForHMR() {
-    const rootDirectory = this.pundle.compilation.config.rootDirectory
-    const changedFilePaths = unique(Array.from(this.filesChanged))
+    const rootDirectory = this.pundle.config.rootDirectory
 
+    const changedFilePaths = unique(Array.from(this.state.changed.keys()))
     const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, rootDirectory))
     this.report(`Sending HMR to ${this.connections.size} clients of [ ${
       relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
     } ]`)
     this.writeToConnections({ type: 'report-clear' })
-    const generated = await this.pundle.generate(this.state.files.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
-      entry: [],
-      wrapper: 'none',
-      sourceMap: this.config.sourceMap,
+
+    const label = `hmr-${Date.now()}`
+    const chunk = this.pundle.context.getChunk(null, label, null, new Map(this.state.changed))
+    const generated = await this.generate(chunk, {
       sourceMapPath: 'inline',
-      sourceNamespace: 'app',
       sourceMapNamespace: `hmr-${Date.now()}`,
     })
-    const newFiles = arrayDiff(generated.filePaths, this.state.generated.filePaths)
-    this.writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
-    this.filesChanged.clear()
+    this.writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filesGenerated })
   }
-  async generateIfNecessary() {
-    this.enqueue(() => this.state.modified && this.generate())
+  async generateChunk(url: string): Promise<?GeneratorResult> {
     await this.state.queue
+
+    const chunkId = Helpers.getChunkId(url, this.config.bundlePath)
+    const chunk = this.state.chunks.find(entry => entry.id.toString() === chunkId || entry.label === chunkId)
+    if (!chunk) {
+      return null
+    }
+
+    let generated
+    this.enqueue(() => this.generate(chunk).then(result => {
+      generated = result
+    }))
+    await this.state.queue
+    return generated
   }
   report(contents: string, severity: 'info' | 'error' | 'warning' = 'info') {
-    this.pundle.compilation.report(new MessageIssue(contents, severity))
+    this.pundle.context.report(new MessageIssue(contents, severity))
   }
   enqueue(callback: Function): void {
-    this.state.queue = this.state.queue.then(() => callback()).catch(e => this.pundle.compilation.report(e))
+    this.state.queue = this.state.queue.then(callback).catch(e => this.pundle.context.report(e))
   }
   writeToConnections(contents: Object): void {
     const stringifiedContents = JSON.stringify(contents)
@@ -181,10 +216,19 @@ class Server {
   }
   dispose() {
     if (!this.subscriptions.disposed) {
-      Helpers.unregisterCompilation(this.pundle.compilation)
-      if (this.cache) {
-        this.cache.setSync('files', this.state.files)
-      }
+      const files = Array.from(this.state.files.values()).map(file => ({
+        ...file,
+        chunks: file.chunks.map(chunk => ({
+          id: chunk.id,
+          label: chunk.label,
+          entries: chunk.entries,
+          imports: chunk.imports,
+        })),
+      }))
+
+      this.cache.setSync('files', files)
+      this.cache.setSync('state', this.pundle.context.serialize())
+      Helpers.unregisterPundle(this.pundle)
     }
     this.subscriptions.dispose()
   }

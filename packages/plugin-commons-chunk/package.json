@@ -1,7 +1,7 @@
 {
-  "name": "pundle-fs",
+  "name": "pundle-plugin-commons-chunk",
   "version": "2.0.0-beta16",
-  "description": "Default FileSystem for Pundle",
+  "description": "Pundle Plugin to group common modules in chunks",
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "graceful-fs": "^4.1.11"
+    "pundle-api": "2.0.0-beta16"
   }
 }
