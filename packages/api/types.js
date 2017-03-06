@@ -85,7 +85,7 @@ export type GeneratorResult = {
   outputName: string,
   filesGenerated: Array<string>,
 }
-export type GeneratorCallback = ((config: Object, files: Chunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
+export type GeneratorCallback = ((config: Object, files: FileChunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 
 export type TransformerResult = {
@@ -103,7 +103,7 @@ export type PostTransformerCallback = ((config: Object, contents: string) => Pro
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
 export type ChunkTransformerResult = void
-export type ChunkTransformerCallback = ((config: Object, chunks: Array<Chunk>) => Promise<?ChunkTransformerResult>)
+export type ChunkTransformerCallback = ((config: Object, chunks: Array<FileChunk>) => Promise<?ChunkTransformerResult>)
 export type ChunkTransformer = Component<'chunk-transformer', ChunkTransformerCallback>
 
 export type WatcherCallbacks = {

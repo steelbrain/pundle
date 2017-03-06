@@ -146,15 +146,15 @@ export default class Compilation {
       file.imports.forEach(entry => iterate(entry))
     }
 
-    chunk.entry.forEach(entry => iterate(entry))
+    chunk.entries.forEach(entry => iterate(entry))
     chunk.imports.forEach(entry => iterate(entry))
   }
-  async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<Chunk>> {
+  async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<FileChunk>> {
     const files: Map<string, File> = new Map()
     let chunks = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
 
     await Promise.all(chunks.map(chunk =>
-      Promise.all(chunk.entry.map(chunkEntry =>
+      Promise.all(chunk.entries.map(chunkEntry =>
         this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
           if (file.chunks.length) {
             chunks = chunks.concat(file.chunks)
@@ -177,7 +177,7 @@ export default class Compilation {
     let chunks: Array<FileChunk> = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
 
     await Promise.all(chunks.map(chunk =>
-      Promise.all(chunk.entry.map(chunkEntry =>
+      Promise.all(chunk.entries.map(chunkEntry =>
         this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
           if (file.chunks.length) {
             chunks = chunks.concat(file.chunks)

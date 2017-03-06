@@ -112,6 +112,7 @@ export default class Context {
     }
   }
   getImportRequest(request: string, from: ?string = null): FileImport {
+    // $FlowIgnore: Sorry pal, have to do this way here so don't have to everywhere
     return { id: this.getUID('import'), request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {

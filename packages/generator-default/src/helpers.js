@@ -64,8 +64,7 @@ export function getFileMappings(compilation: Object, chunk: FileChunk, config: O
 
   chunk.files.forEach(function(file) {
     file.imports.forEach(entry => {
-      // $FlowIgnore: For God's sake, import::resolved is a string here
-      const filePath = getFilePath(compilation, config, entry.resolved)
+      const filePath = getFilePath(compilation, config, entry.resolved || '')
       if (!mappings[filePath]) {
         mappings[filePath] = []
       }
