@@ -28,7 +28,7 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Fil
   })
 
   if (!newChunkFiles.size) {
-    // No common chunks found
+    // No common files found
     return
   }
   const newChunk = this.getChunk(null, null, newChunkFiles, null)
