@@ -1,6 +1,7 @@
 /* @flow */
 
 import Path from 'path'
+import debounce from 'sb-debounce'
 import fileSystem from 'sb-fs'
 import differenceBy from 'lodash.differenceby'
 import { MessageIssue } from 'pundle-api'
@@ -135,6 +136,7 @@ export default class Compilation {
   }
   // Helper method to attach files to a chunk from a files pool
   processChunk(chunk: FileChunk, files: Map<string, File>): void {
+    chunk.files.clear()
     function iterate(fileImport: FileImport) {
       const filePath = fileImport.resolved
       if (!filePath) {
@@ -177,9 +179,9 @@ export default class Compilation {
 
     return chunks
   }
-  async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<void> {
+  async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
     let queue = Promise.resolve()
-    let chunks: Array<FileChunk> = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
+    const chunks: Array<FileChunk> = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
 
     const files: Map<string, File> = new Map()
     const watcher = new Watcher({
@@ -195,10 +197,18 @@ export default class Compilation {
       }
       return cloned
     }
-    const tickCallback = async (oldFile: ?File, file: File) => {
-      if (file.chunks.length) {
-        chunks = chunks.concat(file.chunks)
+    const triggerRecompile = async () => {
+      await queue
+      const processedChunksInitial = await getProcessedChunks()
+      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
+        try {
+          await Helpers.invokeComponent(this, entry, 'compile', [], processedChunksInitial, files)
+        } catch (error) {
+          this.context.report(error)
+        }
       }
+    }
+    const tickCallback = async (oldFile: ?File, file: File) => {
       const oldChunks = oldFile ? oldFile.chunks : []
       const newChunks = file.chunks
       const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
@@ -245,20 +255,28 @@ export default class Compilation {
       ))
     ))
 
-    const processedChunksInitial = await getProcessedChunks()
     for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
       try {
-        await Helpers.invokeComponent(this, entry, 'ready', [], processedChunksInitial, files)
+        await Helpers.invokeComponent(this, entry, 'ready', [])
       } catch (error) {
         this.context.report(error)
       }
     }
+    await triggerRecompile()
 
+    const debounceRecompile = debounce(triggerRecompile, 20)
     watcher.on('change', (filePath) => {
-      enqueue(() => this.processFileTree(filePath, files, oldFiles, useCache, true, tickCallback).then(() => {
-        console.log('should recompile now')
-      }))
+      enqueue(() => this.processFileTree(filePath, files, oldFiles, useCache, true, tickCallback))
+      debounceRecompile()
     })
+    // TODO: Watcher unlink
+
+    const disposable = new Disposable(() => {
+      watcher.dispose()
+      this.subscriptions.delete(disposable)
+    })
+    this.subscriptions.add(disposable)
+    return disposable
   }
   dispose() {
     this.context.components.forEach(({ component, config }) => this.context.deleteComponent(component, config))
