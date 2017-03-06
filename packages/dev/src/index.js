@@ -58,6 +58,10 @@ class Server {
       this.pundle.context.unserialize(await this.cache.get('state'))
       const oldFilesArray = await this.cache.get('files')
       oldFilesArray.forEach(function(file) {
+        file.chunks = file.chunks.map(chunk => ({
+          ...chunk,
+          files: new Map(),
+        }))
         oldFiles.set(file.filePath, file)
       })
     }
@@ -212,9 +216,19 @@ class Server {
   }
   dispose() {
     if (!this.subscriptions.disposed) {
-      Helpers.unregisterPundle(this.pundle)
-      this.cache.setSync('files', Array.from(this.state.files.values()))
+      const files = Array.from(this.state.files.values()).map(file => ({
+        ...file,
+        chunks: file.chunks.map(chunk => ({
+          id: chunk.id,
+          label: chunk.label,
+          entries: chunk.entries,
+          imports: chunk.imports,
+        })),
+      }))
+
+      this.cache.setSync('files', files)
       this.cache.setSync('state', this.pundle.context.serialize())
+      Helpers.unregisterPundle(this.pundle)
     }
     this.subscriptions.dispose()
   }

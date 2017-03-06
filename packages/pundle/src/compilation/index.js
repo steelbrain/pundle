@@ -174,9 +174,6 @@ export default class Compilation {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
     }
 
-    // TODO: Add a way for to replace the javascript in an html file so we can fill the scripts with the chunk paths
-    // because we know where they are
-
     return chunks
   }
   async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
