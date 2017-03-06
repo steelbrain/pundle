@@ -77,8 +77,8 @@ class Pundle {
   async build(cached: boolean = true): Promise<Array<FileChunk>> {
     return this.compilation.build(cached)
   }
-  watch(config: Object = {}, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
-    return this.compilation.watch(Object.assign({}, this.config.watcher, config), oldFiles)
+  watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
+    return this.compilation.watch(useCache, oldFiles)
   }
   dispose() {
     this.subscriptions.dispose()

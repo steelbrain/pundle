@@ -86,6 +86,7 @@ export default class Compilation {
     tickCallback: ((oldFile: ?File, file: File) => any)
   ): Promise<boolean> {
     const resolved = await this.context.resolve(entry.request, entry.from, useCache)
+    entry.resolved = resolved
     if (files.has(resolved) && !forceOverwrite) {
       return true
     }
@@ -126,7 +127,6 @@ export default class Compilation {
       ))
     ))
     await tickCallback(oldFile, file)
-    entry.resolved = resolved
     return true
   }
   async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<Chunk>> {
@@ -163,95 +163,41 @@ export default class Compilation {
 
     return chunks
   }
-  async watch(config: Object, oldFiles: Map<string, File> = new Map()): Promise<void> {
+  async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<void> {
     const files: Map<string, File> = new Map()
-    console.log('Hiya!')
-  }
-  // Spec:
-  // - Create promised queue
-  // - Create files map
-  // - Normalize watcher config
-  // - Resolve all given entries
-  // - Watch the resolved entries
-  // - Process trees of all resolved entries
-  // - Trigger config.ready regardless of initial success status
-  // - Trigger config.compile if initially successful
-  // - On each observed file change, try to re-build it's tree and trigger
-  //   cofig.compile() if tree rebuilding is successful (in queue)
-  // - On each observed unlink, make sure to delete the file (in queue)
-  // - Return a disposable, that's also attached to this Compilation instance
-  //   and closes the file watcher
-  // NOTE: Return value of this function has a special "queue" property
-  // NOTE: 10ms latency for batch operations to be compiled at once, imagine changing git branch
-  async watchOld(config: Object, lastState: Map<string, File> = new Map()): Promise<Disposable & { files: Map<string, File>, queue: Promise<void> }> {
-    let queue = Promise.resolve()
-    const files: Map<string, ?File> = new Map()
-    const resolvedEntries = await Promise.all(this.context.config.entry.map(entry => this.context.resolve(entry)))
+    let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
+      id: this.context.getNextUniqueID(),
+      entry: [this.context.getImportRequest(request)],
+      imports: [],
+    }))
 
-    const watcher = new Watcher(resolvedEntries, {
-      usePolling: config.usePolling,
-    })
+    await Promise.all(fileChunks.map(chunk =>
+      Promise.all(chunk.entry.map(chunkEntry =>
+        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
+          if (file.chunks.length) {
+            fileChunks = fileChunks.concat(file.chunks)
+          }
+          // TODO: Diff the imports and watch/unwatch files
+          // TODO: Diff the chunks and add/remove chunks
+        })
+      ))
+    ))
+    const chunks = fileChunks.map(chunk => this.context.getChunk(chunk, files))
 
-    let compiling = false
-    let recompile: boolean = false
-    const triggerCompile = async () => {
-      compiling = true
-      await queue
-      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
-        try {
-          await Helpers.invokeComponent(this.context, entry, 'compile', [], Array.from(files.values()))
-        } catch (error) {
-          this.context.report(error)
-        }
-      }
-      compiling = false
-      if (recompile) {
-        recompile = false
-        triggerCompile()
-      }
-    }
-    const triggerDebouncedCompile = debounce(function() {
-      if (compiling) {
-        recompile = true
-      } else {
-        triggerCompile()
-      }
-    }, 10)
-
-    const promises = resolvedEntries.map(entry => processFile(entry))
-    const successful = (await Promise.all(promises)).every(i => i)
-
-    if (successful) {
-      await triggerCompile()
-    }
-    for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
-      try {
-        await Helpers.invokeComponent(this.context, entry, 'ready', [], successful, Array.from(files.values()))
-      } catch (error) {
-        this.context.report(error)
-      }
+    for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
+      await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
     }
 
-    watcher.on('change', (filePath) => {
-      // NOTE: Only trigger imports check if processFile() succeeds
-      queue = queue
-        .then(() => processFile(filePath, true)
-        .then((status) => status && triggerDebouncedCompile()))
-    })
-    watcher.on('unlink', (filePath) => {
-      files.delete(filePath)
-      watcher.disable(filePath)
-      triggerDebouncedImportsCheck()
+    // NOTE: Move all the entries from everyone to the first, this is required because we can only have one entry point in bundles, not several
+    chunks.forEach(function(chunk, index) {
+      if (index === 0) return
+      if (chunk.entry.length) {
+        chunks[0].entry = chunks[0].entry.concat(chunk.entry)
+        chunk.entry = []
+      }
     })
 
-    const disposable = new Disposable(() => {
-      this.subscriptions.delete(disposable)
-      watcher.dispose()
-    })
-    disposable.queue = queue
-    disposable.files = files
-    this.subscriptions.add(disposable)
-    return disposable
+    console.log(chunks)
   }
   dispose() {
     this.context.components.forEach(({ component, config }) => this.context.deleteComponent(component, config))

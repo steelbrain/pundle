@@ -55,7 +55,9 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   const externalEntries = []
   entries.forEach(function(entry) {
     const found = config.chunkMappings.find(mapping => (mapping.module === entry.id))
-    externalEntries.push(found)
+    if (found) {
+      externalEntries.push(found)
+    }
   })
   if (externalEntries.length) {
     chunks.push(`__sbPundle.ensure(${JSON.stringify(externalEntries.map(i => i.chunk.toString()))}, '$root', function() {`)
