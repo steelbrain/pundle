@@ -5,7 +5,7 @@ import FS from 'sb-fs'
 import Path from 'path'
 import Crypto from 'crypto'
 import invariant from 'assert'
-import type Context from 'pundle/src/context'
+import type Pundle from 'pundle/src'
 
 import type { ServerConfig, ServerConfigInput } from '../types'
 
@@ -62,24 +62,24 @@ export async function getCacheFilePath(directory: string): Promise<string> {
   return Path.join(stateDirectory, `${inputHash}.json`)
 }
 
-export function isCompilationRegistered(context: Context): boolean {
-  return context.config.entry.indexOf(browserFile) !== -1 ||
-         context.config.replaceVariables.SB_PUNDLE_HMR_PATH ||
-         context.config.replaceVariables.SB_PUNDLE_HMR_PATH
+export function isPundleRegistered(pundle: Pundle): boolean {
+  return pundle.config.entry.indexOf(browserFile) !== -1 ||
+         pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH ||
+         pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH
 }
 
-export function registerCompilation(context: Context, config: ServerConfig): void {
-  context.config.entry.unshift(browserFile)
-  context.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
-  context.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
+export function registerPundle(pundle: Pundle, config: ServerConfig): void {
+  pundle.config.entry.unshift(browserFile)
+  pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH = JSON.stringify(config.hmrPath)
+  pundle.config.replaceVariables.SB_PUNDLE_HMR_HOST = JSON.stringify(config.hmrHost)
 }
 
-export function unregisterCompilation(context: Context): void {
-  delete context.config.replaceVariables.SB_PUNDLE_HMR_PATH
-  delete context.config.replaceVariables.SB_PUNDLE_HMR_HOST
-  const browserFileIndex = context.config.entry.indexOf(browserFile)
+export function unregisterPundle(pundle: Pundle): void {
+  delete pundle.config.replaceVariables.SB_PUNDLE_HMR_PATH
+  delete pundle.config.replaceVariables.SB_PUNDLE_HMR_HOST
+  const browserFileIndex = pundle.config.entry.indexOf(browserFile)
   if (browserFileIndex !== -1) {
-    context.config.entry.splice(browserFileIndex, 1)
+    pundle.config.entry.splice(browserFileIndex, 1)
   }
 }
 

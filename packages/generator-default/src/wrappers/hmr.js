@@ -64,34 +64,34 @@ const __sbPundle = {
   cache: {},
   extensions: [],
   resolutionMap: {},
-  resolve: function(path) {
+  resolve(path) {
     return path
   },
-  getModule: function(moduleId, callback) {
+  getModule(moduleId, callback) {
     return {
       id: moduleId,
       hot: new __sbPundle_HMR(),
-      callback: callback,
+      callback,
       invoked: false,
       exports: {},
       parents: [],
     }
   },
-  registerMappings: function(mappings) {
+  registerMappings(mappings) {
     for (const key in mappings) {
       mappings[key].forEach(value => {
         this.resolutionMap[value] = key
       })
     }
   },
-  registerModule: function(moduleId, callback) {
+  registerModule(moduleId, callback) {
     if (this.cache[moduleId]) {
       this.cache[moduleId].callback = callback
     } else {
       this.cache[moduleId] = this.getModule(moduleId, callback)
     }
   },
-  requireModule: function(fromModule: ?string, givenRequest: string) {
+  requireModule(fromModule: ?string, givenRequest: string) {
     const request = this.resolutionMap[givenRequest] || givenRequest
     const module: ?ModuleNormal = this.cache[request]
     if (!module) {
@@ -106,19 +106,19 @@ const __sbPundle = {
     }
     return module.exports
   },
-  generateRequire: function(fromModule: ?string) {
+  generateRequire(fromModule: ?string) {
     const require = this.requireModule.bind(this, fromModule)
     require.cache = this.cache
     require.extensions = this.extensions
     require.resolve = this.resolve
     return require
   },
-  require: function(request: string) {
+  require(request: string) {
     return this.requireModule('$root', request)
   },
   hmrSort: eval(__sbPundle_hmrSort),
   ansiToHtml: eval(__sbPundle_hmrAnsi),
-  hmrIsAccepted: function(moduleId: string, matchAgainst: string = moduleId): 'no' | 'direct' | 'parent' {
+  hmrIsAccepted(moduleId: string, matchAgainst: string = moduleId): 'no' | 'direct' | 'parent' {
     const module = this.cache[moduleId]
     if (module.hot.accepts.has('*') || module.hot.accepts.has(matchAgainst)) {
       return 'direct'
@@ -128,7 +128,7 @@ const __sbPundle = {
     }
     return 'no'
   },
-  hmrGetOrder: function(files: Array<string>): Array<string> {
+  hmrGetOrder(files: Array<string>): Array<string> {
     const input: Array<[string, string]> = []
     const added: Set<string> = new Set()
     const failed: Array<string> = []
@@ -193,7 +193,7 @@ const __sbPundle = {
 
     return sorted
   },
-  hmrApply: function(givenFiles: Array<string>, newFiles: Array<string>) {
+  hmrApply(givenFiles: Array<string>, newFiles: Array<string>) {
     const files = givenFiles.filter(file => !~newFiles.indexOf(file))
     const updateOrder = this.hmrGetOrder(files)
     const hmrDebugging = __sbPundle.debugHMR

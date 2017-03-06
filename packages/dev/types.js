@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { File } from 'pundle-api/types'
+import type { File, FileChunk, GeneratorResult } from 'pundle-api/types'
 
 export type ServerConfig = {
   hmrHost: ?string,
@@ -36,9 +36,8 @@ export type ServerConfigInput = {
 
 export type ServerState = {
   files: Array<File>,
+  chunks: Array<FileChunk>,
   queue: Promise<void>,
-  booted: boolean,
   modified: boolean,
-  activated: boolean,
-  generated: { contents: string, sourceMap: Object, filePaths: Array<string> },
+  generated: Map<FileChunk, GeneratorResult>,
 }
