@@ -72,6 +72,7 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
   }
 
   return {
+    chunk,
     contents: chunks.join('\n'),
     sourceMap,
     filesGenerated,

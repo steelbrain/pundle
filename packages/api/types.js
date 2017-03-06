@@ -80,11 +80,12 @@ export type ReporterCallback = ((config: Object, error: Error | FileIssue | Mess
 export type Reporter = Component<'reporter', ReporterCallback>
 
 export type GeneratorResult = {
+  chunk: FileChunk,
   contents: string,
   sourceMap: Object,
   filesGenerated: Array<string>,
 }
-export type GeneratorCallback = ((config: Object, files: FileChunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
+export type GeneratorCallback = ((config: Object, chunk: FileChunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 
 export type TransformerResult = {

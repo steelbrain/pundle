@@ -164,10 +164,10 @@ command
           const outputFilePathExt = Path.extname(outputFilePath)
           const outputSourceMapPathExt = outputSourceMapPath.endsWith('.js.map') ? '.js.map' : Path.extname(outputSourceMapPath)
 
-          outputs.forEach(function(output, index) {
+          outputs.forEach(function(output) {
             let contents = output.contents
-            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + (index === 0 ? '' : `.${output.label}`) + outputFilePathExt
-            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + (index === 0 ? '' : `.${output.label}`) + outputSourceMapPathExt
+            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + '.' + output.label + outputFilePathExt
+            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + '.' + output.label + outputSourceMapPathExt
 
             if (writeSourceMap) {
               contents += `//# sourceMappingURL=${Path.relative(outputDirectory, currentSourceMapPath)}\n`
@@ -180,6 +180,15 @@ command
               Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(sourceMap.length))} to '${chalk.blue(Path.relative(options.rootDirectory, currentSourceMapPath))}'`)
             }
           })
+
+          const indexHtmlSource = Path.join(pundle.config.rootDirectory, 'index.html')
+          const indexHtmlTarget = Path.join(outputDirectory, 'index.html')
+          const indexHtml = pundle.fill(await FS.readFile(indexHtmlSource, 'utf8'), outputs.map(o => o.chunk), {
+            publicRoot: pundle.config.output.publicRoot,
+            bundlePath: pundle.config.output.bundlePath,
+          })
+          await FS.writeFile(indexHtmlTarget, indexHtml)
+          Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(indexHtml.length))} to '${chalk.blue(Path.relative(options.rootDirectory, indexHtmlTarget))}'`)
         })
       }
       return promise.catch(function(error) {

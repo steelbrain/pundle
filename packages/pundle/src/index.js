@@ -83,11 +83,11 @@ class Pundle {
     const bundlePathWithoutExt = config.bundlePath.slice(0, -1 * bundlePathExt.length)
     chunks.forEach(function(chunk) {
       if (chunk.entries.length || (!chunk.imports.length && chunk.files.size)) {
-        primaryChunks.push(`  <script src="${Path.join(config.publicRoot, `${bundlePathWithoutExt}.${chunk.label}.js`)}"></script>`)
+        primaryChunks.push(`  <script src="${Path.join(config.publicRoot || '/', `${bundlePathWithoutExt}.${chunk.label}.js`)}"></script>`)
       }
     })
 
-    return html.replace('<!-- pundle scripts -->', primaryChunks.join('\n'))
+    return html.replace('<!-- pundle scripts -->', primaryChunks.join('\n').trim())
   }
   watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
     return this.compilation.watch(useCache, oldFiles)

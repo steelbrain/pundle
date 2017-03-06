@@ -9,7 +9,7 @@ module.exports = {
   output: {
     sourceMap: true,
     bundlePath: 'bundle.js',
-    rootDirectory: path.join(__dirname, 'static'),
+    rootDirectory: path.join(__dirname, 'dist'),
   },
   server: {
     port: 8090,
@@ -23,7 +23,7 @@ module.exports = {
     // sourceMap: true,
     // ^ Only specify it if it's different from output.sourceMap
     sourceMapPath: '/bundle.js.map',
-    rootDirectory: path.join(__dirname, 'static'),
+    rootDirectory: path.join(__dirname, 'dist'),
     redirectNotFoundToIndex: true,
     // ^ Setting this to true makes it redirect all 404 requests to index
   },

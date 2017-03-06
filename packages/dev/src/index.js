@@ -29,12 +29,6 @@ class Server {
       throw new Error('Cannot create two middlewares on one Pundle instance')
     }
 
-    // TODO:
-    // store latest chunks in state
-    // and compile the specific chunk when get request is recieved
-    // use the chunk labels and a regexp in express path to generate at will
-    // only hmr when connected clients
-
     this.state = {
       queue: Promise.resolve(),
       files: new Map(),
@@ -106,7 +100,7 @@ class Server {
     })
 
     const serveFilledHtml = (req, res, next) => {
-      this.state.queue.then(() => FS.readFile(Path.join(this.config.rootDirectory, 'index.html'), 'utf8')).then(contents => {
+      this.state.queue.then(() => FS.readFile(Path.join(this.pundle.config.rootDirectory, 'index.html'), 'utf8')).then(contents => {
         res.set('content-type', 'text/html')
         res.end(this.pundle.fill(contents, this.state.chunks, {
           publicRoot: Path.dirname(this.config.bundlePath),
