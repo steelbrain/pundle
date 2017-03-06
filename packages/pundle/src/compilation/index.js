@@ -122,16 +122,21 @@ export default class Compilation {
       files.set(resolved, null)
       file = await this.processFile(resolved)
     }
-    files.set(resolved, file)
-    await Promise.all(file.imports.map(item =>
-      this.processFileTree(item, files, oldFiles, useCache, false, tickCallback)
-    ))
-    await Promise.all(file.chunks.map(item =>
-      Promise.all(item.imports.map(importEntry =>
-        this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback)
+    try {
+      await Promise.all(file.imports.map(item =>
+        this.processFileTree(item, files, oldFiles, useCache, false, tickCallback)
       ))
-    ))
+      await Promise.all(file.chunks.map(item =>
+        Promise.all(item.imports.map(importEntry =>
+          this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback)
+        ))
+      ))
+    } catch (error) {
+      files.set(resolved, oldFile)
+      throw error
+    }
     await tickCallback(oldFile, file)
+    files.set(resolved, file)
     return true
   }
   // Helper method to attach files to a chunk from a files pool
@@ -186,20 +191,22 @@ export default class Compilation {
     })
 
     const enqueue = callback => (queue = queue.then(callback).catch(e => this.context.report(e)))
-    const getProcessedChunks = async (): Promise<Array<FileChunk>> => {
+    const triggerRecompile = async () => {
+      await queue
       const cloned = chunks.slice()
-      cloned.forEach(chunk => this.processChunk(chunk, files))
+      try {
+        cloned.forEach(chunk => this.processChunk(chunk, files))
+      } catch (_) {
+        // In case of a missing import, quit silently
+        // The user already knows the error from other callbacks
+        return
+      }
       for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
         await Helpers.invokeComponent(this.context, entry, 'callback', [], cloned)
       }
-      return cloned
-    }
-    const triggerRecompile = async () => {
-      await queue
-      const processedChunksInitial = await getProcessedChunks()
       for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
         try {
-          await Helpers.invokeComponent(this, entry, 'compile', [], processedChunksInitial, files)
+          await Helpers.invokeComponent(this, entry, 'compile', [], cloned, files)
         } catch (error) {
           this.context.report(error)
         }
@@ -235,7 +242,10 @@ export default class Compilation {
         watcher.watch(entry.resolved)
       })
       removedImports.forEach(function(entry) {
-        watcher.unwatch(entry.resolved)
+        if (entry.resolved) {
+          console.log('unwatching', entry)
+          watcher.unwatch(entry.resolved)
+        }
       })
       // NOTE: This is required for incremental HMR
       file.chunks.forEach(function(chunk) {
@@ -280,7 +290,20 @@ export default class Compilation {
       enqueue(() => this.processFileTree(filePath, files, oldFiles, useCache, true, tickCallback))
       debounceRecompile()
     })
-    // TODO: Watcher unlink
+    watcher.on('unlink', (filePath) => {
+      enqueue(() => {
+        const filesDepending = []
+        files.forEach(function(file) {
+          if (file.imports.some(entry => entry.resolved === filePath)) {
+            filesDepending.push(file)
+          }
+        })
+        return Promise.all(filesDepending.map(file =>
+          this.processFileTree(file.filePath, files, oldFiles, useCache, true, tickCallback)
+        ))
+      })
+      debounceRecompile()
+    })
 
     const disposable = new Disposable(() => {
       watcher.dispose()

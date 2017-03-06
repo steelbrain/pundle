@@ -150,6 +150,11 @@ command
         subscriptions.add(devServer)
         promise = devServer.activate().then(function() {
           Helpers.colorsIfAppropriate(`Server is running on ${chalk.blue(`http://localhost:${serverPort}/`)}`)
+        }).catch(function(error) {
+          process.nextTick(function() {
+            process.exit()
+          })
+          throw error
         })
       } else {
         promise = pundle.generate(null, {
