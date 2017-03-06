@@ -166,8 +166,8 @@ command
 
           outputs.forEach(function(output, index) {
             let contents = output.contents
-            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + (index === 0 ? '' : `.${output.outputName}`) + outputFilePathExt
-            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + (index === 0 ? '' : `.${output.outputName}`) + outputSourceMapPathExt
+            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + (index === 0 ? '' : `.${output.label}`) + outputFilePathExt
+            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + (index === 0 ? '' : `.${output.label}`) + outputSourceMapPathExt
 
             if (writeSourceMap) {
               contents += `//# sourceMappingURL=${Path.relative(outputDirectory, currentSourceMapPath)}\n`

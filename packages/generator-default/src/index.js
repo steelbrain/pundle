@@ -49,24 +49,20 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
     }
   }
 
-  // TODO: Supply a way to label the chunks
-  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(chunk.id)}, ${JSON.stringify(Helpers.getFileMappings(this, chunk, config))})`)
-
-  const externalEntries = []
-  entries.forEach(function(entry) {
-    const found = config.chunkMappings.find(mapping => (mapping.module === entry.id))
-    if (found) {
-      externalEntries.push(found)
-    }
+  const hasParents = chunk.parents.length
+  const mappings = Object.assign({}, config.mappings, {
+    files: Object.assign({}, Helpers.getFileMappings(this, chunk, config), config.mappings.files),
   })
-  if (externalEntries.length) {
-    chunks.push(`__sbPundle.ensure(${JSON.stringify(externalEntries.map(i => i.chunk.toString()))}, '$root', function() {`)
+  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(mappings)})`)
+  if (hasParents) {
+    chunks.push(`__sbPundle.ensure(${JSON.stringify(chunk.parents.map(e => e.id.toString()))}, '$root', function() {`)
   }
+  chunks.push(`__sbPundle.registerLoaded(${JSON.stringify(config.label)})`)
   for (let i = 0, length = entries.length; i < length; i++) {
     invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
     chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entries[i].resolved)}')`)
   }
-  if (externalEntries.length) {
+  if (hasParents) {
     chunks.push('})')
   }
   chunks.push('})();\n')
@@ -81,16 +77,15 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
   return {
     contents: chunks.join('\n'),
     sourceMap,
-    // TODO: Use the new chunk label here
-    outputName: '',
     filesGenerated: Array.from(chunk.files.keys()),
   }
 }, {
+  label: '',
   entry: null,
   wrapper: 'normal',
   pathType: 'filePath',
+  mappings: {},
   sourceMap: false,
-  chunkMappings: [],
   sourceMapPath: null,
   sourceNamespace: 'app',
   sourceMapNamespace: 'app',

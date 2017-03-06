@@ -82,7 +82,6 @@ export type Reporter = Component<'reporter', ReporterCallback>
 export type GeneratorResult = {
   contents: string,
   sourceMap: Object,
-  outputName: string,
   filesGenerated: Array<string>,
 }
 export type GeneratorCallback = ((config: Object, files: FileChunk, runtimeConfig: Object) => Promise<?GeneratorResult>)

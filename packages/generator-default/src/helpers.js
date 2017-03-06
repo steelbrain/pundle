@@ -11,6 +11,7 @@ export function getLinesCount(text: string): number {
   return text.split(LINE_BREAK).length
 }
 
+// TODO: Maybe move this function on context?
 // TODO: Persist these numeric paths when resuming from cache
 let nextNumericPath = 1
 export const numericPaths: Map<string, string> = new Map()
@@ -58,10 +59,8 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     .replace('SB_PUNDLE_PUBLIC_POST', JSON.stringify(outputPathExt))
 }
 
-// TODO: Return a list of labels or aliases for each chunk id from generator invoker in context
 export function getFileMappings(compilation: Object, chunk: FileChunk, config: Object) : Object {
   const mappings = {}
-
   chunk.files.forEach(function(file) {
     file.imports.forEach(entry => {
       const filePath = getFilePath(compilation, config, entry.resolved || '')
@@ -71,7 +70,6 @@ export function getFileMappings(compilation: Object, chunk: FileChunk, config: O
       mappings[filePath].push(entry.id)
     })
   })
-
   return mappings
 }
 

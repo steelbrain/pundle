@@ -157,6 +157,9 @@ export default class Compilation {
       Promise.all(chunk.entries.map(chunkEntry =>
         this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
           if (file.chunks.length) {
+            file.chunks.forEach(function(childChunk) {
+              childChunk.parents.push(chunk)
+            })
             chunks = chunks.concat(file.chunks)
           }
         })
@@ -180,6 +183,9 @@ export default class Compilation {
       Promise.all(chunk.entries.map(chunkEntry =>
         this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
           if (file.chunks.length) {
+            file.chunks.forEach(function(childChunk) {
+              childChunk.parents.push(chunk)
+            })
             chunks = chunks.concat(file.chunks)
           }
           // TODO: Diff the imports and watch/unwatch files

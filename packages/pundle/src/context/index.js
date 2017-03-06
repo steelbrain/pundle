@@ -47,15 +47,22 @@ export default class Context {
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     return (await this.resolveAdvanced(request, from, cached)).filePath
   }
-  async generate(given: Array<FileChunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult>> {
+  async generate(given: Array<FileChunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult & { label: string }>> {
     const chunks: Array<Object> = given.slice()
     const results = []
 
+    // TODO: Use a proper chunk label or something
     for (let i = 0, length = chunks.length; i < length; i++) {
       const chunk: FileChunk = chunks[i]
+      const relatingChunks = [chunk].concat(chunks.filter(entry => (chunk.parents.indexOf(entry) !== -1 || entry.parents.indexOf(chunk) !== -1)))
+      const chunkMappings = { chunks: {} }
+      relatingChunks.forEach(function(entry) {
+        chunkMappings.chunks[entry.id] = entry.id
+      })
+
       let result
       for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-        result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], chunk)
+        result = await Helpers.invokeComponent(this, entry, 'callback', [{ mappings: chunkMappings, label: chunk.id.toString() }, generateConfig], chunk)
         if (result) {
           break
         }
@@ -68,6 +75,7 @@ export default class Context {
         const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
         Helpers.mergeResult(result, postTransformerResults)
       }
+      result.label = chunk.id.toString()
       results.push(result)
     }
 
@@ -112,7 +120,6 @@ export default class Context {
     }
   }
   getImportRequest(request: string, from: ?string = null): FileImport {
-    // $FlowIgnore: Sorry pal, have to do this way here so don't have to everywhere
     return { id: this.getUID('import'), request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {
