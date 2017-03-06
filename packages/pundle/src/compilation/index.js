@@ -132,7 +132,11 @@ export default class Compilation {
         ))
       ))
     } catch (error) {
-      files.set(resolved, oldFile)
+      if (oldFile) {
+        files.set(resolved, oldFile)
+      } else {
+        files.delete(resolved)
+      }
       throw error
     }
     await tickCallback(oldFile, file)
