@@ -1,6 +1,6 @@
 /* @flow */
 
-import send from 'send'
+import FS from 'sb-fs'
 import Path from 'path'
 import unique from 'lodash.uniq'
 import express from 'express'
@@ -106,20 +106,25 @@ class Server {
         }
       }).catch(next)
     })
-    // TODO: Fix this
-    // app.get('/', function(req, res) {
-    //   res.end('Show a custom filled in index.html here')
-    // })
+
+    const serveFilledHtml = (req, res, next) => {
+      this.state.queue.then(() => FS.readFile(Path.join(this.config.rootDirectory, 'index.html'), 'utf8')).then(contents => {
+        res.set('content-type', 'text/html')
+        res.end(this.pundle.fill(contents, this.state.chunks, {
+          publicRoot: Path.dirname(this.config.bundlePath),
+          bundlePath: this.config.bundlePath,
+        }))
+      }, function(error) {
+        if (error.code === 'ENOENT') {
+          next()
+        } else next(error)
+      })
+    }
+    app.get('/', serveFilledHtml)
 
     app.use('/', express.static(this.config.rootDirectory))
     if (this.config.redirectNotFoundToIndex) {
-      app.use((req, res, next) => {
-        if (req.url !== '/' && req.baseUrl !== '/') {
-          req.baseUrl = req.url = '/'
-          // TODO: Replace this with a route caller, because we are gonna be transforming index.html
-          send(req, req.baseUrl, { root: this.config.rootDirectory, index: 'index.html' }).on('error', next).on('directory', next).pipe(res)
-        } else next()
-      })
+      app.use(serveFilledHtml)
     }
   }
   async attachComponents(): Promise<void> {

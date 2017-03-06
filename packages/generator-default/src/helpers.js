@@ -50,8 +50,7 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     fileContents = fileContents.slice(13)
   }
 
-  const externalChunksLength = Object.keys(config.mappings.chunks).length
-  if (externalChunksLength && config.publicRoot && config.bundlePath) {
+  if (config.publicRoot && config.bundlePath) {
     const outputPath = Path.join(config.publicRoot, Path.basename(config.bundlePath))
     const outputPathExt = Path.extname(outputPath)
     fileContents = fileContents

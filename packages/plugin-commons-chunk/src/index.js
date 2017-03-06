@@ -27,7 +27,8 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Fil
     // No common files found
     return
   }
-  chunks.push(this.getChunk(null, config.name, null, newChunkFiles))
+  // NOTE: Order is important, commons should be loaded before others
+  chunks.unshift(this.getChunk(null, config.name, null, newChunkFiles))
 }, {
   name: 'common',
 })

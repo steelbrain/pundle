@@ -1,5 +1,6 @@
 /* @flow */
 
+import Path from 'path'
 import invariant from 'assert'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import type { File, FileChunk } from 'pundle-api/types'
@@ -75,6 +76,18 @@ class Pundle {
   }
   async build(cached: boolean = true): Promise<Array<FileChunk>> {
     return this.compilation.build(cached)
+  }
+  fill(html: string, chunks: Array<FileChunk>, config: { publicRoot: string, bundlePath: string }): string {
+    const primaryChunks = []
+    const bundlePathExt = Path.extname(config.bundlePath)
+    const bundlePathWithoutExt = config.bundlePath.slice(0, -1 * bundlePathExt.length)
+    chunks.forEach(function(chunk) {
+      if (chunk.entries.length || (!chunk.imports.length && chunk.files.size)) {
+        primaryChunks.push(`  <script src="${Path.join(config.publicRoot, `${Path.basename(bundlePathWithoutExt)}.${chunk.label}.js`)}"></script>`)
+      }
+    })
+
+    return html.replace('<!-- pundle scripts -->', primaryChunks.join('\n'))
   }
   watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
     return this.compilation.watch(useCache, oldFiles)
