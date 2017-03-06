@@ -151,15 +151,8 @@ export default class Compilation {
     for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
       await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
     }
-
-    // NOTE: Move all the entries from everyone to the first, this is required because we can only have one entry point in bundles, not several
-    chunks.forEach(function(chunk, index) {
-      if (index === 0) return
-      if (chunk.entry.length) {
-        chunks[0].entry = chunks[0].entry.concat(chunk.entry)
-        chunk.entry = []
-      }
-    })
+    // TODO: Add a way for to replace the javascript in an html file so we can fill the scripts with the chunk paths
+    // because we know where they are
 
     return chunks
   }
