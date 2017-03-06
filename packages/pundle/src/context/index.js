@@ -51,7 +51,6 @@ export default class Context {
     const chunks: Array<Object> = given.slice()
     const results = []
 
-    // TODO: Use a proper chunk label or something
     for (let i = 0, length = chunks.length; i < length; i++) {
       const chunk: FileChunk = chunks[i]
       const chunkMappings = { chunks: {} }
@@ -63,12 +62,12 @@ export default class Context {
         })
       })
       childChunks.forEach(function(entry) {
-        chunkMappings.chunks[entry.id] = entry.id.toString()
+        chunkMappings.chunks[entry.id] = entry.label
       })
 
       let result
       for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-        result = await Helpers.invokeComponent(this, entry, 'callback', [{ mappings: chunkMappings, label: chunk.id.toString() }, generateConfig], chunk)
+        result = await Helpers.invokeComponent(this, entry, 'callback', [{ mappings: chunkMappings, label: chunk.label }, generateConfig], chunk)
         if (result) {
           break
         }
@@ -81,7 +80,7 @@ export default class Context {
         const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
         Helpers.mergeResult(result, postTransformerResults)
       }
-      result.label = chunk.id.toString()
+      result.label = chunk.label
       results.push(result)
     }
 
@@ -116,9 +115,11 @@ export default class Context {
     this.uid.set(label, uid)
     return uid
   }
-  getChunk(entries: ?Array<FileImport> = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null): FileChunk {
+  getChunk(entries: ?Array<FileImport> = null, label: ?string = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null): FileChunk {
+    const id = this.getUID('chunk')
     return {
-      id: this.getUID('chunk'),
+      id,
+      label: label || id.toString(),
       files: files || new Map(),
       entries: entries || [],
       imports: imports || [],

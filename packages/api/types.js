@@ -35,6 +35,7 @@ export type FileImport = {
 }
 export type FileChunk = {
   id: number,
+  label: string,
   // eslint-disable-next-line no-use-before-define
   files: Map<string, File>,
   entries: Array<FileImport>,

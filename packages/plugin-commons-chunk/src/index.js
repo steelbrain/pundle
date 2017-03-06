@@ -27,5 +27,7 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Fil
     // No common files found
     return
   }
-  chunks.push(this.getChunk(null, null, newChunkFiles))
+  chunks.push(this.getChunk(null, config.name, null, newChunkFiles))
+}, {
+  name: 'common',
 })
