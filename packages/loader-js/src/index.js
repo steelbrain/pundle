@@ -20,7 +20,6 @@ const RESOLVE_NAMES_SENSITIVE = new Set([
   'require.resolve',
 ])
 
-// TODO: Support code splitting with import() syntax, see https://webpack.js.org/guides/code-splitting-import
 export default createLoader(function(config: Object, file: File): ?LoaderResult {
   if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
     return null

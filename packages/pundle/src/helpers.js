@@ -107,8 +107,6 @@ async function loadConfigFile(rootDirectory: string, configFileName: ?string): P
   return contents
 }
 
-
-// TODO: Simplify this
 // NOTE:
 // In all configs but rootDirectory, given config takes precendece
 export async function getPundleConfig(rootDirectory: string, a: Object): Promise<PundleConfig> {
@@ -122,12 +120,6 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
     b = await loadConfigFile(rootDirectory, a.configFileName)
   }
 
-  // NOTE: This copies all even non-standard stuff from Pundle config file to
-  // The config. This will allow any third party consumers to be able to define
-  // custom stuff and then use it. For example, the CLI package uses this
-  // to support output configurations
-  Object.assign(config, b)
-
   config.debug = merge('debug', false, b.debug, a.debug)
   config.entry = merge('entry', [], b.entry, a.entry)
   config.output = merge('output', {}, b.output, a.output)
@@ -135,7 +127,7 @@ export async function getPundleConfig(rootDirectory: string, a: Object): Promise
   config.presets = merge('presets', [], b.presets, a.presets)
   config.watcher = merge('watcher', { usePolling: {}.hasOwnProperty.call(process.env, 'PUNDLE_WATCHER_USE_POLLING') }, b.watcher, a.watcher)
   config.components = merge('components', [], b.components, a.components)
-  config.rootDirectory = merge('rootDirectory', null, b.rootDirectory, a.rootDirectory)
+  config.rootDirectory = merge('rootDirectory', null, a.rootDirectory, b.rootDirectory)
   config.replaceVariables = merge('replaceVariables', {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV === 'production' ? 'production' : 'development'),
   }, b.replaceVariables, a.replaceVariables)
