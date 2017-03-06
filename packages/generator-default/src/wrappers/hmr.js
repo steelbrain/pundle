@@ -75,6 +75,7 @@ global.__sbPundle = global.__sbPundle || {
       callback,
       exports: {},
       parents: [],
+      hot: new __sbPundle_HMR(),
     }
   },
   registerMappings(mappings) {
@@ -229,8 +230,8 @@ global.__sbPundle = global.__sbPundle || {
 
     return sorted
   },
-  hmrApply(givenFiles: Array<string>, newFiles: Array<string>) {
-    const files = givenFiles.filter(file => !~newFiles.indexOf(file))
+  hmrApply(givenFiles: Array<string>) {
+    const files = givenFiles.filter(file => this.cache[file].invoked)
     const updateOrder = this.hmrGetOrder(files)
     const hmrDebugging = this.debugHMR
     if (hmrDebugging) {

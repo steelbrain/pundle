@@ -26,6 +26,7 @@ import * as Helpers from './helpers'
 
 export default createGenerator(async function(config: Object, chunk: FileChunk): Promise<GeneratorResult> {
   const entries = chunk.entries
+  const filesGenerated = []
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
   const chunks = [';(function() {', wrapperContents]
@@ -38,8 +39,11 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
   for (const file of chunk.files.values()) {
     const publicPath = Helpers.getFilePath(this, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
-    chunks.push(fileContents)
     const fileSourceMap = file.sourceMap
+
+    chunks.push(fileContents)
+    filesGenerated.push(publicPath)
+
     if (config.sourceMap) {
       if (fileSourceMap) {
         const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
@@ -70,7 +74,7 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
   return {
     contents: chunks.join('\n'),
     sourceMap,
-    filesGenerated: Array.from(chunk.files.keys()),
+    filesGenerated,
   }
 }, {
   label: '',

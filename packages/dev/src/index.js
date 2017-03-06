@@ -4,7 +4,6 @@ import FS from 'sb-fs'
 import Path from 'path'
 import unique from 'lodash.uniq'
 import express from 'express'
-import arrayDiff from 'lodash.difference'
 import promiseDefer from 'promise.defer'
 import ConfigFile from 'sb-config-file'
 import { CompositeDisposable } from 'sb-event-kit'
@@ -112,7 +111,7 @@ class Server {
         res.set('content-type', 'text/html')
         res.end(this.pundle.fill(contents, this.state.chunks, {
           publicRoot: Path.dirname(this.config.bundlePath),
-          bundlePath: this.config.bundlePath,
+          bundlePath: Path.basename(this.config.bundlePath),
         }))
       }, function(error) {
         if (error.code === 'ENOENT') {
@@ -147,57 +146,50 @@ class Server {
         },
         ready: () => {
           this.report('Server initialized successfully')
-          booted = true
         },
         compile: async (_: Object, chunks: Array<FileChunk>, files: Map<string, File>) => {
           this.state.files = files
           this.state.chunks = chunks
           if (this.connections.size && this.state.changed.size) {
-            // TODO: Uncomment this
-            // await this.generateForHMR()
+            await this.generateForHMR()
           }
           boot.resolve()
+          booted = true
         },
       }),
     ]))
   }
   // NOTE: Stuff below this line is called at will and not excuted on activate or whatever
-  async generate(chunk: FileChunk) {
+  async generate(chunk: FileChunk, config: Object = {}): Promise<GeneratorResult> {
     this.state.changed.clear()
     const generated = await this.pundle.generate([chunk], {
       wrapper: 'hmr',
-      bundlePath: this.config.bundlePath,
+      bundlePath: Path.basename(this.config.bundlePath),
       publicRoot: Path.dirname(this.config.bundlePath),
       sourceMap: this.config.sourceMap,
       sourceMapPath: this.config.sourceMapPath,
       sourceNamespace: 'app',
+      ...config,
     })
-    this.state.generated.set(chunk, generated[0])
+    return generated[0]
   }
   async generateForHMR() {
     const rootDirectory = this.pundle.config.rootDirectory
-    const changedFilePaths = unique(Array.from(this.filesChanged))
 
+    const changedFilePaths = unique(Array.from(this.state.changed.keys()))
     const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, rootDirectory))
     this.report(`Sending HMR to ${this.connections.size} clients of [ ${
       relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
     } ]`)
     this.writeToConnections({ type: 'report-clear' })
-    const generated = await this.pundle.generate(this.state.files.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
-      entry: [],
-      wrapper: 'none',
-      bundlePath: this.config.bundlePath,
-      publicRoot: Path.dirname(this.config.bundlePath),
-      sourceMap: this.config.sourceMap,
+
+    const label = `hmr-${Date.now()}`
+    const chunk = this.pundle.context.getChunk(null, label, null, new Map(this.state.changed))
+    const generated = await this.generate(chunk, {
       sourceMapPath: 'inline',
-      sourceNamespace: 'app',
       sourceMapNamespace: `hmr-${Date.now()}`,
     })
-    // TODO: Uncomment this
-    // const newFiles = arrayDiff(generated.filePaths, this.state.generated.filePaths)
-    // this.writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths, newFiles })
-    this.writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filePaths })
-    this.filesChanged.clear()
+    this.writeToConnections({ type: 'hmr', contents: generated.contents, files: generated.filesGenerated })
   }
   async generateChunk(url: string): Promise<?GeneratorResult> {
     await this.state.queue
@@ -218,7 +210,9 @@ class Server {
     }
 
     if (chunkIsModified) {
-      this.enqueue(() => this.generate(chunk))
+      this.enqueue(() => this.generate(chunk).then(generated => {
+        this.state.generated.set(chunk, generated)
+      }))
       await this.state.queue
     }
     return this.state.generated.get(chunk)
