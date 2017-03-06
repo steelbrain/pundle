@@ -34,10 +34,12 @@ export function getParsedReplacement(rawValue: any): Object {
   return parsedValue
 }
 
+// TODO: Validate the path and disallow bad characters in chunk name
+// because we use that name as label when writing to disk
 export function processSplit(file: File, chunks: Array<FileChunk>, path: Object) {
-  const [nodeEntry, nodeCallback] = path.node.arguments
+  const [nodeEntry, nodeCallback, nodeName] = path.node.arguments
 
-  const chunk = this.getChunk()
+  const chunk = this.getChunk(null, nodeName && nodeName.type === 'StringLiteral' ? nodeName.value : null)
   nodeEntry.elements.forEach(element => {
     const request = this.getImportRequest(element.value, file.filePath)
     chunk.imports.push(request)

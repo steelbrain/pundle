@@ -48,7 +48,7 @@ global.__sbPundle = global.__sbPundle || {
     const request = this.mapModules[givenRequest] || givenRequest
     const module: ?ModuleNormal = this.cache[request]
     if (!module) {
-      throw new Error('Module not found')
+      throw new Error(`Module '${request}' not found. Did you forget to load the parent chunks before this one?`)
     }
     if (module.parents.indexOf(fromModule) === -1 && fromModule !== '$root') {
       module.parents.push(fromModule)
