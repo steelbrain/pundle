@@ -54,9 +54,15 @@ export default class Context {
     // TODO: Use a proper chunk label or something
     for (let i = 0, length = chunks.length; i < length; i++) {
       const chunk: FileChunk = chunks[i]
-      const relatingChunks = [chunk].concat(chunks.filter(entry => (chunk.parents.indexOf(entry) !== -1 || entry.parents.indexOf(chunk) !== -1)))
       const chunkMappings = { chunks: {} }
-      relatingChunks.forEach(function(entry) {
+
+      const childChunks: Map<number, FileChunk> = new Map()
+      chunk.files.forEach(function(file) {
+        file.chunks.forEach(function(entry) {
+          childChunks.set(entry.id, entry)
+        })
+      })
+      childChunks.forEach(function(entry) {
         chunkMappings.chunks[entry.id] = entry.id.toString()
       })
 
@@ -110,12 +116,11 @@ export default class Context {
     this.uid.set(label, uid)
     return uid
   }
-  getChunk(entries: ?Array<FileImport> = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null, parents: ?Array<FileChunk> = null): FileChunk {
+  getChunk(entries: ?Array<FileImport> = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null): FileChunk {
     return {
       id: this.getUID('chunk'),
       files: files || new Map(),
       entries: entries || [],
-      parents: parents || [],
       imports: imports || [],
     }
   }

@@ -6,7 +6,6 @@ import type { File, FileChunk, ChunkTransformerResult } from 'pundle-api/types'
 export default createChunkTransformer(function(config: Object, chunks: Array<FileChunk>): ChunkTransformerResult {
   const known: Set<string> = new Set()
   const newChunkFiles: Map<string, File> = new Map()
-  const newChunkChildren: Set<FileChunk> = new Set()
 
   chunks.forEach(function(chunk) {
     chunk.files.forEach(function(file) {
@@ -20,10 +19,7 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Fil
 
   newChunkFiles.forEach(function(file: File) {
     chunks.forEach(function(chunk) {
-      if (chunk.files.has(file.filePath)) {
-        chunk.files.delete(file.filePath)
-        newChunkChildren.add(chunk)
-      }
+      chunk.files.delete(file.filePath)
     })
   })
 
@@ -31,9 +27,5 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Fil
     // No common files found
     return
   }
-  const newChunk = this.getChunk(null, null, newChunkFiles, null)
-  newChunkChildren.forEach(function(chunk) {
-    chunk.parents.push(newChunk)
-  })
-  chunks.push(newChunk)
+  chunks.push(this.getChunk(null, null, newChunkFiles))
 })

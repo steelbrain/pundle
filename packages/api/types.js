@@ -38,7 +38,6 @@ export type FileChunk = {
   // eslint-disable-next-line no-use-before-define
   files: Map<string, File>,
   entries: Array<FileImport>,
-  parents: Array<FileChunk>,
   imports: Array<FileImport>,
 }
 
