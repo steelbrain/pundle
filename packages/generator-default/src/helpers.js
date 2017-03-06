@@ -50,13 +50,15 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     fileContents = fileContents.slice(13)
   }
 
-  // TODO: Maaybe complain if there's more than one chunk and this isn't set?
-  const outputPath = Path.join(context.config.output.publicRoot, context.config.output.bundlePath)
-  const outputPathExt = Path.extname(outputPath)
-
+  const externalChunksLength = Object.keys(config.mappings.chunks).length
+  if (externalChunksLength && config.publicRoot && config.bundlePath) {
+    const outputPath = Path.join(config.publicRoot, Path.basename(config.bundlePath))
+    const outputPathExt = Path.extname(outputPath)
+    fileContents = fileContents
+      .replace('SB_PUNDLE_PUBLIC_PRE', JSON.stringify(outputPath.slice(0, -1 * outputPathExt.length)))
+      .replace('SB_PUNDLE_PUBLIC_POST', JSON.stringify(outputPathExt))
+  }
   return fileContents
-    .replace('SB_PUNDLE_PUBLIC_PRE', JSON.stringify(outputPath.slice(0, -1 * outputPathExt.length)))
-    .replace('SB_PUNDLE_PUBLIC_POST', JSON.stringify(outputPathExt))
 }
 
 export function getFileMappings(compilation: Object, chunk: FileChunk, config: Object) : Object {

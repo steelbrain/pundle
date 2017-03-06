@@ -3,7 +3,7 @@
 import reporterCli from 'pundle-reporter-cli'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
+import type { File, FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ComponentEntry, PundleConfig } from '../../types'
@@ -67,7 +67,7 @@ export default class Context {
 
       let result
       for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-        result = await Helpers.invokeComponent(this, entry, 'callback', [{ mappings: chunkMappings, label: chunk.label }, generateConfig], chunk)
+        result = await Helpers.invokeComponent(this, entry, 'callback', [this.config.output, { mappings: chunkMappings, label: chunk.label }, generateConfig], chunk)
         if (result) {
           break
         }

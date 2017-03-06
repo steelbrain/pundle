@@ -1,9 +1,11 @@
 /* @flow */
 
 import send from 'send'
+import Path from 'path'
 import unique from 'lodash.uniq'
 import express from 'express'
 import arrayDiff from 'lodash.difference'
+import promiseDefer from 'promise.defer'
 import ConfigFile from 'sb-config-file'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
@@ -88,7 +90,8 @@ class Server {
     this.subscriptions.add(await this.pundle.watch(this.config.useCache, oldFiles))
   }
   attachRoutes(app: Object): void {
-    app.get([this.config.bundlePath, `${this.config.bundlePath}*`], (req, res, next) => {
+    const bundlePathExt = Path.extname(this.config.bundlePath)
+    app.get([this.config.bundlePath, `${this.config.bundlePath.slice(0, -1 * bundlePathExt.length)}*`], (req, res, next) => {
       this.generateChunk(req.url).then(function(chunk) {
         if (!chunk) {
           next()
@@ -120,6 +123,8 @@ class Server {
   }
   async attachComponents(): Promise<void> {
     let booted = false
+    const boot = promiseDefer()
+    this.enqueue(() => boot.promise)
     this.subscriptions.add(await this.pundle.loadComponents([
       [cliReporter, {
         log: (text, error) => {
@@ -135,8 +140,8 @@ class Server {
           }
         },
         ready: () => {
-          booted = true
           this.report('Server initialized successfully')
+          booted = true
         },
         compile: async (_: Object, chunks: Array<FileChunk>, files: Map<string, File>) => {
           this.state.files = files
@@ -145,6 +150,7 @@ class Server {
             // TODO: Uncomment this
             // await this.generateForHMR()
           }
+          boot.resolve()
         },
       }),
     ]))
@@ -154,6 +160,8 @@ class Server {
     this.state.changed.clear()
     const generated = await this.pundle.generate([chunk], {
       wrapper: 'hmr',
+      bundlePath: this.config.bundlePath,
+      publicRoot: Path.dirname(this.config.bundlePath),
       sourceMap: this.config.sourceMap,
       sourceMapPath: this.config.sourceMapPath,
       sourceNamespace: 'app',
@@ -172,6 +180,8 @@ class Server {
     const generated = await this.pundle.generate(this.state.files.filter(entry => ~changedFilePaths.indexOf(entry.filePath)), {
       entry: [],
       wrapper: 'none',
+      bundlePath: this.config.bundlePath,
+      publicRoot: Path.dirname(this.config.bundlePath),
       sourceMap: this.config.sourceMap,
       sourceMapPath: 'inline',
       sourceNamespace: 'app',
@@ -184,6 +194,8 @@ class Server {
     this.filesChanged.clear()
   }
   async generateChunk(url: string): Promise<?GeneratorResult> {
+    await this.state.queue
+
     const chunkId = Helpers.getChunkId(url, this.config.bundlePath)
     const chunk = this.state.chunks.find(entry => entry.id.toString() === chunkId || entry.label === chunkId)
     if (!chunk) {
@@ -209,7 +221,7 @@ class Server {
     this.pundle.context.report(new MessageIssue(contents, severity))
   }
   enqueue(callback: Function): void {
-    this.state.queue = this.state.queue.then(() => callback()).catch(e => this.pundle.context.report(e))
+    this.state.queue = this.state.queue.then(callback).catch(e => this.pundle.context.report(e))
   }
   writeToConnections(contents: Object): void {
     const stringifiedContents = JSON.stringify(contents)

@@ -22,6 +22,7 @@
     "express": "^4.14.0",
     "lodash.difference": "^4.5.0",
     "lodash.uniq": "^4.5.0",
+    "promise.defer": "^1.0.0",
     "pundle": "2.0.0-beta16",
     "pundle-api": "2.0.0-beta16",
     "pundle-reporter-cli": "2.0.0-beta16",

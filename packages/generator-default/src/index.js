@@ -74,11 +74,12 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
   }
 }, {
   label: '',
-  entry: null,
   wrapper: 'normal',
   pathType: 'filePath',
   mappings: {},
   sourceMap: false,
+  bundlePath: '',
+  publicRoot: '',
   sourceMapPath: null,
   sourceNamespace: 'app',
   sourceMapNamespace: 'app',
