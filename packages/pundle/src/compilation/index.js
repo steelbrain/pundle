@@ -132,7 +132,7 @@ export default class Compilation {
   async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<Chunk>> {
     const files: Map<string, File> = new Map()
     let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
-      id: this.context.getNextUniqueID(),
+      id: this.context.getUIDForChunk(),
       entry: [this.context.getImportRequest(request)],
       imports: [],
     }))
@@ -159,7 +159,7 @@ export default class Compilation {
   async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<void> {
     const files: Map<string, File> = new Map()
     let fileChunks: Array<FileChunk> = this.context.config.entry.map(request => ({
-      id: this.context.getNextUniqueID(),
+      id: this.context.getUIDForChunk(),
       entry: [this.context.getImportRequest(request)],
       imports: [],
     }))

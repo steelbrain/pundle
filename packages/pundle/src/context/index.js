@@ -9,13 +9,13 @@ import Chunk from '../chunk'
 import * as Helpers from './helpers'
 import type { ComponentEntry, PundleConfig } from '../../types'
 
-let uniqueID = 0
-
 export default class Context {
+  uid: Map<string, number>;
   config: PundleConfig;
   components: Set<ComponentEntry>;
 
   constructor(config: PundleConfig) {
+    this.uid = new Map()
     this.config = config
     this.components = new Set()
   }
@@ -81,17 +81,43 @@ export default class Context {
 
     return results
   }
-  setUniqueID(newUniqueID: number): void {
-    uniqueID = newUniqueID
+  serialize() {
+    const serializedUID = {}
+    this.uid.forEach(function(value, key) {
+      serializedUID[key] = value
+    })
+
+    return JSON.stringify({
+      UID: serializedUID,
+    })
   }
-  getUniqueID(): number {
-    return uniqueID
+  unserialize(contents: string, force: boolean = false) {
+    if (this.uid.size && !force) {
+      throw new Error('Cannot unserialize into non-empty state without force parameter')
+    }
+
+    const parsed = JSON.parse(contents)
+
+    // Unserializing UID
+    this.uid.clear()
+    for (const key in parsed) {
+      if (!{}.hasOwnProperty.call(parsed, key)) continue
+      this.uid.set(key, parsed[key])
+    }
   }
-  getNextUniqueID(): number {
-    return ++uniqueID
+  getUID(label: string): number {
+    const uid = (this.uid.get(label) || 0) + 1
+    this.uid.set(label, uid)
+    return uid
+  }
+  getUIDForImport(): number {
+    return this.getUID('import')
+  }
+  getUIDForChunk(): number {
+    return this.getUID('chunk')
   }
   getImportRequest(request: string, from: ?string = null): FileImport {
-    return { id: this.getNextUniqueID(), request, resolved: null, from }
+    return { id: this.getUIDForImport(), request, resolved: null, from }
   }
   addComponent(component: ComponentAny, config: Object): void {
     if (!component) {

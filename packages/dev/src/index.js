@@ -61,7 +61,8 @@ class Server {
       createIfNonExistent: true,
     })
     if (this.config.useCache) {
-      this.pundle.context.setUniqueID(await this.cache.get('uniqueId'))
+      // TODO: Fix this
+      // this.pundle.context.setUniqueID(await this.cache.get('uniqueId'))
       const oldFilesArray = await this.cache.get('files')
       oldFilesArray.forEach(function(file) {
         oldFiles.set(file.filePath, file)
@@ -187,7 +188,8 @@ class Server {
     if (!this.subscriptions.disposed) {
       Helpers.unregisterCompilation(this.pundle.context)
       this.cache.setSync('files', this.state.files)
-      this.cache.setSync('uniqueId', this.pundle.context.getUniqueID())
+      // TODO: Fix this
+      // this.cache.setSync('uniqueId', this.pundle.context.getUniqueID())
     }
     this.subscriptions.dispose()
   }
