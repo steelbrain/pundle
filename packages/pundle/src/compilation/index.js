@@ -10,7 +10,6 @@ import type { File, FileChunk, FileImport } from 'pundle-api/types'
 
 import Watcher from './watcher'
 import * as Helpers from '../context/helpers'
-import type Chunk from '../chunk'
 import type Context from '../context'
 
 export default class Compilation {

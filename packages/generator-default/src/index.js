@@ -5,7 +5,7 @@ import invariant from 'assert'
 import sourceMapToComment from 'source-map-to-comment'
 import { createGenerator } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
-import type { Chunk, GeneratorResult } from 'pundle-api/types'
+import type { FileChunk, GeneratorResult } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 // Spec:
@@ -24,12 +24,11 @@ import * as Helpers from './helpers'
 // - Push sourceMap stringified or it's path (depending on config) (if enabled)
 // - Return all chunks joined, and sourceMap (if enabled)
 
-export default createGenerator(async function(config: Object, chunk: Chunk): Promise<GeneratorResult> {
-  const entries = chunk.getEntry()
+export default createGenerator(async function(config: Object, chunk: FileChunk): Promise<GeneratorResult> {
+  const entries = chunk.entries
   const wrapperContents = await Helpers.getWrapperContents(this, config)
 
   const chunks = [';(function() {', wrapperContents]
-  const outputName = Helpers.getOutputName(chunk.id)
   const chunksMap = new SourceMapGenerator({
     skipValidation: true,
   })
@@ -50,7 +49,8 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
     }
   }
 
-  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(outputName.toString())}, ${JSON.stringify(Helpers.getMappings(this, chunk, config))})`)
+  // TODO: Supply a way to label the chunks
+  chunks.push(`__sbPundle.registerMappings(${JSON.stringify(chunk.id)}, ${JSON.stringify(Helpers.getFileMappings(this, chunk, config))})`)
 
   const externalEntries = []
   entries.forEach(function(entry) {
@@ -81,7 +81,8 @@ export default createGenerator(async function(config: Object, chunk: Chunk): Pro
   return {
     contents: chunks.join('\n'),
     sourceMap,
-    outputName,
+    // TODO: Use the new chunk label here
+    outputName: '',
     filesGenerated: Array.from(chunk.files.keys()),
   }
 }, {

@@ -2,10 +2,9 @@
 
 import Path from 'path'
 import slash from 'slash'
-import Crypto from 'crypto'
 import fileSystem from 'sb-fs'
 import { SourceMapConsumer } from 'source-map'
-import type { Chunk } from 'pundle-api/types'
+import type { FileChunk } from 'pundle-api/types'
 
 export const LINE_BREAK = /\r\n|\n|\r/
 export function getLinesCount(text: string): number {
@@ -59,47 +58,22 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     .replace('SB_PUNDLE_PUBLIC_POST', JSON.stringify(outputPathExt))
 }
 
-export function getOutputName(chunkId: number): string {
-  return Crypto.createHash('sha1').update(chunkId.toString()).digest('hex')
-}
-
-export function getMappings(compilation: Object, chunk: Chunk, config: Object, chunksProcessed: Set<number> = new Set()) : Object {
-  const chunks = {}
-  const imports = {}
-
-  function mergeResolutions(resolved: string, id: number, chunkId: number) {
-    const filePath = getFilePath(compilation, config, resolved)
-    if (!imports[chunkId]) {
-      imports[chunkId] = {}
-    }
-    if (!imports[chunkId][filePath]) {
-      imports[chunkId][filePath] = []
-    }
-    imports[chunkId][filePath].push(id)
-  }
+// TODO: Return a list of labels or aliases for each chunk id from generator invoker in context
+export function getFileMappings(compilation: Object, chunk: FileChunk, config: Object) : Object {
+  const mappings = {}
 
   chunk.files.forEach(function(file) {
-    // $FlowIgnore: For God's sake, import::resolved is a string here
-    file.imports.forEach(entry => mergeResolutions(entry.resolved, entry.id, chunk.id))
-    file.chunks.forEach(function(childChunk) {
-      if (chunksProcessed.has(childChunk.id)) {
-        return
-      }
-      chunksProcessed.add(childChunk.id)
+    file.imports.forEach(entry => {
       // $FlowIgnore: For God's sake, import::resolved is a string here
-      childChunk.imports.forEach(entry => mergeResolutions(entry.resolved, entry.id, childChunk.id))
+      const filePath = getFilePath(compilation, config, entry.resolved)
+      if (!mappings[filePath]) {
+        mappings[filePath] = []
+      }
+      mappings[filePath].push(entry.id)
     })
   })
-  config.chunkMappings.forEach(mapping =>
-    mergeResolutions(mapping.filePath, mapping.module, mapping.chunk)
-  )
 
-  for (const key in imports) {
-    if (!{}.hasOwnProperty.call(imports, key)) continue
-    chunks[key] = getOutputName(parseInt(key, 10))
-  }
-
-  return { chunks, imports }
+  return mappings
 }
 
 export function mergeSourceMap(sourceMap: Object, target: Object, filePath: string, sourceContents: string, offset: number): void {

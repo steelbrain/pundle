@@ -3,7 +3,7 @@
 import unique from 'lodash.uniq'
 import invariant from 'assert'
 import sourceMap from 'source-map'
-import type { Chunk, File, ChunkMappings } from 'pundle-api/types'
+import type { File } from 'pundle-api/types'
 import type { ComponentEntry } from '../../types'
 
 export function filterComponents(components: Set<ComponentEntry>, type: string): Array<ComponentEntry> {
@@ -103,36 +103,4 @@ export function mergeResult(file: File, result: ?{ contents: string, sourceMap: 
     file.sourceMap = result.sourceMap
   }
   file.contents = result.contents
-}
-
-export function getChunksMappings(chunks: Array<Chunk>): Array<ChunkMappings> {
-  const importsMap = {}
-
-  chunks.forEach(function(chunk) {
-    chunk.files.forEach(function(file) {
-      importsMap[file.filePath] = chunk
-    })
-  })
-
-  return chunks.map(function(chunk) {
-    const external = new Set()
-
-    function handleImport(entry) {
-      // $FlowIgnore: Rest assured, it's not null
-      const resolved = importsMap[entry.resolved]
-      if (resolved !== chunk) {
-        // $FlowIgnore: Rest assured, it's not null
-        external.add(`${resolved.id}:${entry.id}:${entry.resolved}`)
-      }
-    }
-    chunk.entry.forEach(handleImport)
-    chunk.files.forEach(function(file) {
-      file.imports.forEach(handleImport)
-    })
-
-    return Array.from(external).map(entry => {
-      const parts = entry.split(/:/g)
-      return { chunk: parseInt(parts[0], 10), module: parseInt(parts[1], 10), filePath: parts[2] }
-    })
-  })
 }

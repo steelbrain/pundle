@@ -37,7 +37,7 @@ export type FileChunk = {
   id: number,
   // eslint-disable-next-line no-use-before-define
   files: Map<string, File>,
-  entry: Array<FileImport>,
+  entries: Array<FileImport>,
   parents: Array<FileChunk>,
   imports: Array<FileImport>,
 }
@@ -53,12 +53,6 @@ export type File = {
   lastModified: number,
   // ^ in seconds not miliseconds aka Date.now()/1000
 }
-
-export type ChunkMappings = Array<{
-  chunk: number,
-  module: number,
-  filePath: string,
-}>
 
 export type LoaderResult = {
   chunks: Array<FileChunk>,

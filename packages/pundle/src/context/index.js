@@ -5,7 +5,6 @@ import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
 
-import Chunk from '../chunk'
 import * as Helpers from './helpers'
 import type { ComponentEntry, PundleConfig } from '../../types'
 
@@ -48,17 +47,15 @@ export default class Context {
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     return (await this.resolveAdvanced(request, from, cached)).filePath
   }
-  async generate(given: Array<Chunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult>> {
+  async generate(given: Array<FileChunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult>> {
     const chunks: Array<Object> = given.slice()
-    const mappings = Helpers.getChunksMappings(chunks)
     const results = []
 
     for (let i = 0, length = chunks.length; i < length; i++) {
-      const chunk: Chunk = chunks[i]
-      const chunkMappings = mappings[i]
+      const chunk: FileChunk = chunks[i]
       let result
       for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-        result = await Helpers.invokeComponent(this, entry, 'callback', [{ chunkMappings }, generateConfig], chunk)
+        result = await Helpers.invokeComponent(this, entry, 'callback', [generateConfig], chunk)
         if (result) {
           break
         }
@@ -105,11 +102,11 @@ export default class Context {
     this.uid.set(label, uid)
     return uid
   }
-  getChunk(entry: ?Array<FileImport> = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null, parents: ?Array<FileChunk> = null): FileChunk {
+  getChunk(entries: ?Array<FileImport> = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null, parents: ?Array<FileChunk> = null): FileChunk {
     return {
       id: this.getUID('chunk'),
       files: files || new Map(),
-      entry: entry || [],
+      entries: entries || [],
       parents: parents || [],
       imports: imports || [],
     }
