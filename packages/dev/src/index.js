@@ -40,7 +40,6 @@ class Server {
       files: new Map(),
       chunks: [],
       changed: new Map(),
-      generated: new Map(),
     }
     this.pundle = pundle
     this.config = Helpers.fillConfig(config)
@@ -200,22 +199,12 @@ class Server {
       return null
     }
 
-    let chunkIsModified = !this.state.generated.has(chunk)
-    for (const filePath of this.state.changed.keys()) {
-      const fileMatches = chunk.files.has(filePath)
-      if (fileMatches) {
-        chunkIsModified = true
-        break
-      }
-    }
-
-    if (chunkIsModified) {
-      this.enqueue(() => this.generate(chunk).then(generated => {
-        this.state.generated.set(chunk, generated)
-      }))
-      await this.state.queue
-    }
-    return this.state.generated.get(chunk)
+    let generated
+    this.enqueue(() => this.generate(chunk).then(result => {
+      generated = result
+    }))
+    await this.state.queue
+    return generated
   }
   report(contents: string, severity: 'info' | 'error' | 'warning' = 'info') {
     this.pundle.context.report(new MessageIssue(contents, severity))

@@ -213,6 +213,7 @@ export default class Compilation {
       const newChunks = file.chunks
       const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
       const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
+      const unchangedChunks = oldChunks.filter(chunk => !~removedChunks.indexOf(chunk))
 
       const oldImports = oldFile ? oldFile.imports : []
       const newImports = file.imports
@@ -238,6 +239,19 @@ export default class Compilation {
       })
       removedImports.forEach(function(entry) {
         watcher.unwatch(entry.resolved)
+      })
+      // NOTE: This is required for incremental HMR
+      file.chunks.forEach(function(chunk) {
+        const matchingChunk = unchangedChunks.find(entry => serializeChunk(entry) === serializeChunk(chunk))
+        if (matchingChunk) {
+          chunk.files = matchingChunk.files
+          chunk.label = matchingChunk.label
+          const index = chunks.indexOf(matchingChunk)
+          if (index !== -1) {
+            chunks.splice(index, 1)
+            chunks.push(chunk)
+          }
+        }
       })
 
       for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
