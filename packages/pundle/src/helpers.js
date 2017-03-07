@@ -2,16 +2,49 @@
 /* eslint-disable no-underscore-dangle */
 
 import FS from 'sb-fs'
+import OS from 'os'
 import Path from 'path'
+import Crypto from 'crypto'
 import promisify from 'sb-promisify'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
+import type { File } from 'pundle-api/types'
 import type { PundleConfig, Loadable, Loaded } from '../types'
 
 const resolve = promisify(require('resolve'))
-function getResolveError(request: string): Error {
-  const error = new Error(`Unable to resolve '${request}' from root directory. Make sure it's installed correctly`)
-  error.code = 'MODULE_NOT_FOUND'
-  return error
+
+export async function getCacheFilePath(directory: string): Promise<string> {
+  const stateDirectory = Path.join(OS.homedir(), '.pundle')
+  try {
+    await FS.stat(stateDirectory)
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      await FS.mkdir(stateDirectory)
+    } else throw error
+  }
+
+  const inputHash = Crypto.createHash('sha1').update(directory).digest('hex')
+  return Path.join(stateDirectory, `${inputHash}.json`)
+}
+export function unserializeFiles(files: Array<File>, oldFiles: Map<string, File>): Map<string, File> {
+  files.forEach(function(file) {
+    file.chunks = file.chunks.map(chunk => ({
+      ...chunk,
+      files: new Map(),
+    }))
+    oldFiles.set(file.filePath, file)
+  })
+  return oldFiles
+}
+export function serializeFiles(files: Map<string, File>) {
+  return Array.from(files.values()).map(file => ({
+    ...file,
+    chunks: file.chunks.map(chunk => ({
+      id: chunk.id,
+      label: chunk.label,
+      entries: chunk.entries,
+      imports: chunk.imports,
+    })),
+  }))
 }
 
 export async function load(request: string | Object, rootDirectory: string): Promise<Object> {
@@ -22,7 +55,9 @@ export async function load(request: string | Object, rootDirectory: string): Pro
       resolved = await resolve(request, { basedir: rootDirectory })
     } catch (error) {
       if (error.message.startsWith('Cannot find module')) {
-        throw getResolveError(request)
+        const newError = new Error(`Unable to resolve '${request}' from root directory. Make sure it's installed correctly`)
+        newError.code = 'MODULE_NOT_FOUND'
+        throw newError
       }
       throw error
     }

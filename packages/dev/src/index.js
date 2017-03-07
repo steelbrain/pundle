@@ -5,7 +5,6 @@ import Path from 'path'
 import unique from 'lodash.uniq'
 import express from 'express'
 import promiseDefer from 'promise.defer'
-import ConfigFile from 'sb-config-file'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
 import type Pundle from 'pundle/src'
@@ -19,7 +18,7 @@ const cliReporter: Object = require('pundle-reporter-cli')
 
 class Server {
   state: ServerState;
-  cache: ConfigFile;
+  cache: Object;
   config: ServerConfig;
   pundle: Pundle;
   connections: Set<Object>;
@@ -44,29 +43,11 @@ class Server {
   }
   async activate() {
     const app = express()
-    const oldFiles: Map<string, File> = new Map()
-    const rootDirectory = this.pundle.config.rootDirectory
 
-    this.cache = await ConfigFile.get(await Helpers.getCacheFilePath(rootDirectory), {
-      directory: rootDirectory,
-      files: [],
-    }, {
-      prettyPrint: false,
-      createIfNonExistent: true,
-    })
-    if (this.config.useCache) {
-      this.pundle.context.unserialize(await this.cache.get('state'))
-      const oldFilesArray = await this.cache.get('files')
-      oldFilesArray.forEach(function(file) {
-        file.chunks = file.chunks.map(chunk => ({
-          ...chunk,
-          files: new Map(),
-        }))
-        oldFiles.set(file.filePath, file)
-      })
-    }
-    if (oldFiles.size) {
-      this.report(`Restoring ${oldFiles.size} files from cache`)
+    this.cache = await this.pundle.getCache()
+    const oldFiles = await this.cache.get('files')
+    if (oldFiles.length) {
+      this.report(`Restoring ${oldFiles.length} files from cache`)
     }
 
     await this.attachRoutes(app)
@@ -83,7 +64,7 @@ class Server {
     this.subscriptions.add(function() {
       server.close()
     })
-    this.subscriptions.add(await this.pundle.watch(this.config.useCache, oldFiles))
+    this.subscriptions.add(await this.pundle.watch(this.config.useCache))
   }
   attachRoutes(app: Object): void {
     const bundlePathExt = Path.extname(this.config.bundlePath)
@@ -216,17 +197,7 @@ class Server {
   }
   dispose() {
     if (!this.subscriptions.disposed) {
-      const files = Array.from(this.state.files.values()).map(file => ({
-        ...file,
-        chunks: file.chunks.map(chunk => ({
-          id: chunk.id,
-          label: chunk.label,
-          entries: chunk.entries,
-          imports: chunk.imports,
-        })),
-      }))
-
-      this.cache.setSync('files', files)
+      this.pundle.setCachedFiles(this.cache, this.state.files)
       this.cache.setSync('state', this.pundle.context.serialize())
       Helpers.unregisterPundle(this.pundle)
     }

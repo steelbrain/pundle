@@ -2,6 +2,7 @@
 
 import Path from 'path'
 import invariant from 'assert'
+import ConfigFile from 'sb-config-file'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
 import type { File, FileChunk } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
@@ -70,14 +71,37 @@ class Pundle {
     subscriptions.add(...components.map(([component, config]) => this.context.addComponent(component, config)))
     return subscriptions
   }
+  async getCache(): Promise<ConfigFile> {
+    return ConfigFile.get(await Helpers.getCacheFilePath(this.config.rootDirectory), {
+      directory: this.config.rootDirectory,
+      files: [],
+    }, {
+      prettyPrint: false,
+      createIfNonExistent: true,
+    })
+  }
+  getCachedFiles(cache: ConfigFile, oldFiles: Map<string, File> = new Map()): Map<string, File> {
+    return Helpers.unserializeFiles(cache.getSync('files'), oldFiles)
+  }
+  setCachedFiles(cache: ConfigFile, files: Map<string, File>): void {
+    cache.setSync('files', Helpers.serializeFiles(files))
+  }
   // $FlowIgnore: TODO: Remove these when fixed in dev package
   async generate(chunks: ?Array<FileChunk> = null, runtimeConfig: Object = {}): Promise<Object> {
     return this.context.generate(chunks || await this.build(), runtimeConfig)
   }
-  async build(cached: boolean = true, oldFiles: Map<string, File> = new Map()): Promise<Array<FileChunk>> {
-    return this.compilation.build(cached, oldFiles)
+  async build(useCache: boolean = true): Promise<Array<FileChunk>> {
+    const oldFiles = new Map()
+    if (useCache) {
+      await this.getCachedFiles(await this.getCache(), oldFiles)
+    }
+    return this.compilation.build(useCache, oldFiles)
   }
-  async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
+  async watch(useCache: boolean = true): Promise<Disposable> {
+    const oldFiles = new Map()
+    if (useCache) {
+      await this.getCachedFiles(await this.getCache(), oldFiles)
+    }
     return this.compilation.watch(useCache, oldFiles)
   }
   fill(html: string, chunks: Array<FileChunk>, config: { publicRoot: string, bundlePath: string }): string {
