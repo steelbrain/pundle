@@ -11,7 +11,7 @@ import Installer from './installer'
 // Do not attempt to install if request doesn't pass inclusion/exclusion requirements
 // Do not attempt to install if moduleName/package.json can be resolved
 // Invoke beforeInstall before installing the package
-// Try spawning npm and await on it, pass it's stdout/stderr to afterInstall callback
+// Try spawning npm and await on it, then invoke afterInstall callback
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
 export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string) {
@@ -39,7 +39,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
   } catch (_) {
     error = _
   }
-  config.afterInstall(moduleName, error)
+  config.afterInstall(moduleName)
   if (error) {
     this.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
   } else {

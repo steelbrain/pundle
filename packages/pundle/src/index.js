@@ -72,10 +72,13 @@ class Pundle {
   }
   // $FlowIgnore: TODO: Remove these when fixed in dev package
   async generate(chunks: ?Array<FileChunk> = null, runtimeConfig: Object = {}): Promise<Object> {
-    return await this.context.generate(chunks || await this.build(), runtimeConfig)
+    return this.context.generate(chunks || await this.build(), runtimeConfig)
   }
-  async build(cached: boolean = true): Promise<Array<FileChunk>> {
-    return this.compilation.build(cached)
+  async build(cached: boolean = true, oldFiles: Map<string, File> = new Map()): Promise<Array<FileChunk>> {
+    return this.compilation.build(cached, oldFiles)
+  }
+  async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
+    return this.compilation.watch(useCache, oldFiles)
   }
   fill(html: string, chunks: Array<FileChunk>, config: { publicRoot: string, bundlePath: string }): string {
     const primaryChunks = []
@@ -88,9 +91,6 @@ class Pundle {
     })
 
     return html.replace('<!-- pundle scripts -->', primaryChunks.join('\n').trim())
-  }
-  watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
-    return this.compilation.watch(useCache, oldFiles)
   }
   dispose() {
     this.subscriptions.dispose()
