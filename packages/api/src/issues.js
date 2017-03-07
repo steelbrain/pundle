@@ -14,28 +14,37 @@ export class FileIssue {
   message: string;
   severity: string;
 
+  // For compatibility with Error object
+  stack: string;
+
   constructor(contents: string, line: number, column: number, message: string, severity: string = 'error') {
-    this.contents = contents
+    invariant(typeof contents === 'string' && contents, 'Contents must be a valid string')
+    invariant(typeof line === 'number' && line, 'Line must be a valid number')
+    invariant(typeof column === 'number' && column, 'Column must be a valid number')
+    invariant(typeof message === 'string' && message, 'Message must be a valid string')
+    invariant(VALID_SEVERITIES.has(severity), 'Severity must be valid')
+
     this.line = line
     this.column = column
+    this.contents = contents
     this.message = message
     this.severity = severity.toLowerCase()
-
-    invariant(typeof this.contents === 'string' && this.contents, 'Contents must be a valid string')
-    invariant(typeof this.line === 'number' && this.line, 'Line must be a valid number')
-    invariant(typeof this.column === 'number' && this.column, 'Column must be a valid number')
-    invariant(typeof this.message === 'string' && this.message, 'Message must be a valid string')
-    invariant(VALID_SEVERITIES.has(this.severity), 'Severity must be valid')
+    this.stack = `FileIssue: ${message}`
   }
 }
 
 export class MessageIssue {
   message: string;
   severity: string;
+
+  // For backward compatibility with Error object
+  stack: string;
   constructor(message: string, severity: string = 'error') {
+    invariant(typeof message === 'string' && message, 'Message must be a valid string')
+    invariant(VALID_SEVERITIES.has(severity), 'Severity must be valid')
+
     this.message = message
     this.severity = severity
-    invariant(typeof this.message === 'string' && this.message, 'Message must be a valid string')
-    invariant(VALID_SEVERITIES.has(this.severity), 'Severity must be valid')
+    this.stack = `MessageIssue: ${severity.toUpperCase()}: ${message}`
   }
 }
