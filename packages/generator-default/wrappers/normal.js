@@ -5,6 +5,7 @@ import type { ModuleNormal } from '../types'
 const global = (typeof window !== 'undefined' && window) || (typeof self !== 'undefined' && self) || {}
 const GLOBAL = global
 const root = global
+global.process = global.process || require('process')
 global.__sbPundle = global.__sbPundle || {
   cache: {},
   chunks: {},

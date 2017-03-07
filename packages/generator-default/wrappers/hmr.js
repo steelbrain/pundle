@@ -1,12 +1,11 @@
 /* @flow */
 
-import __sbPundle_hmrSort from '../../lib/wrappers/dep-hmr-sort.js'
-import __sbPundle_hmrAnsi from '../../lib/wrappers/dep-hmr-ansi.js'
 import type { ModuleNormal } from '../types'
 
 const global = (typeof window !== 'undefined' && window) || (typeof self !== 'undefined' && self) || {}
 const GLOBAL = global
 const root = global
+global.process = global.process || require('process')
 
 class __sbPundle_HMR {
   data: Object;
@@ -153,8 +152,8 @@ global.__sbPundle = global.__sbPundle || {
       return this.chunks[chunkId].promise.then(loadedCallback, errorCallback)
     })
   },
-  hmrSort: eval(__sbPundle_hmrSort),
-  ansiToHtml: eval(__sbPundle_hmrAnsi),
+  hmrSort: require('toposort'),
+  ansiToHtml: require('ansi-html'),
   hmrIsAccepted(moduleId: string, matchAgainst: string = moduleId): 'no' | 'direct' | 'parent' {
     const module = this.cache[moduleId]
     if (module.hot.accepts.has('*') || module.hot.accepts.has(matchAgainst)) {

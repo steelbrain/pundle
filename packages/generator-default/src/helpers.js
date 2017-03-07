@@ -29,8 +29,8 @@ export function getFilePath(compilation: Object, config: Object, filePath: strin
   return slash(toReturn)
 }
 
-export const wrapperHMR = require.resolve('./wrappers/hmr')
-export const wrapperNormal = require.resolve('./wrappers/normal')
+export const wrapperHMR = require.resolve('../wrappers/dist/hmr')
+export const wrapperNormal = require.resolve('../wrappers/dist/normal')
 export async function getWrapperContents(context: Object, config: Object): Promise<string> {
   let wrapper = config.wrapper
   if (wrapper === 'normal') {
@@ -44,11 +44,6 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     wrapper = await context.resolve(wrapper)
   }
   let fileContents = await fileSystem.readFile(wrapper)
-  if (fileContents.slice(1, 11) === 'use strict') {
-    // Trim off first line in case it starts with use strict, this is to allow
-    // unsafe modules to work inside of Pundle
-    fileContents = fileContents.slice(13)
-  }
 
   if (config.publicRoot && config.bundlePath) {
     const outputPath = Path.join(config.publicRoot, Path.basename(config.bundlePath))

@@ -5,7 +5,10 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "apm test",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepublish": "npm run wrappers-compile",
+    "wrappers-compile": "PUNDLE_WRAPPER=hmr rollup -c; PUNDLE_WRAPPER=normal rollup -c",
+    "wrappers-watch": "PUNDLE_WRAPPER=hmr rollup -c -w & PUNDLE_WRAPPER=normal rollup -c -w & wait"
   },
   "repository": {
     "type": "git",
@@ -18,7 +21,6 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "babel-plugin-inline-import": "2.0.4",
     "pundle-api": "2.0.0-beta16",
     "sb-fs": "^2.0.0",
     "slash": "^1.0.0",
@@ -26,6 +28,14 @@
     "source-map-to-comment": "^1.1.0"
   },
   "devDependencies": {
-    "babel-preset-babili": "0.0.8"
+    "ansi-html": "0.0.7",
+    "process": "^0.11.9",
+    "rollup": "^0.41.4",
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^7.0.0",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-uglify": "^1.0.1",
+    "rollup-watch": "^3.2.2",
+    "toposort": "^1.0.3"
   }
 }
