@@ -3,7 +3,5 @@ scripts
 flow-decls
 node_modules
 packages/dev/browser.js
-packages/generator/wrappers/dist
 packages/browser/src/index.js
-packages/generator-default/src/wrappers/dep-hmr-ansi.js
-packages/generator-default/src/wrappers/dep-hmr-sort.js
+packages/generator-default/wrappers/dist
