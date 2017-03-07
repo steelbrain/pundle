@@ -63,7 +63,7 @@ class Pundle {
       if (presetConfig[entry.name] === false) {
         return false
       }
-      return [entry.component, Object.assign({}, entry.config, presetConfig[entry.name])]
+      return [entry.component, Object.assign({}, entry.config, presetConfig.common, presetConfig[entry.name])]
     }).filter(i => i)
     const components = await Helpers.getLoadables(loadables, this.config.rootDirectory)
     const subscriptions = new CompositeDisposable()
