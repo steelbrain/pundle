@@ -32,6 +32,7 @@ export default createReporter(async function(config: Object, error: Error | File
   const generatedType = chalk.bold[severity.background][severity.color](severity.title)
   let stack = ''
   if (error.constructor.name === 'FileIssue') {
+    // TODO: Also use error.file here
     stack = codeFrame(error.contents, error.line, error.column, {
       highlightCode: chalk.supportsColor,
       linesAbove: 4,

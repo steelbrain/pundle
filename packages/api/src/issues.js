@@ -8,6 +8,7 @@ const VALID_SEVERITIES = new Set(['info', 'warning', 'error'])
 // Babel by default has locs with 0-indexed columns, you'll have to
 // +1 them before feeding to this Class
 export class FileIssue {
+  file: string;
   line: number;
   column: number;
   contents: string;
@@ -17,19 +18,21 @@ export class FileIssue {
   // For compatibility with Error object
   stack: string;
 
-  constructor(contents: string, line: number, column: number, message: string, severity: string = 'error') {
+  constructor(file: string, contents: string, line: number, column: number, message: string, severity: string = 'error') {
+    invariant(typeof file === 'string' && file, 'File must be a valid string')
     invariant(typeof contents === 'string' && contents, 'Contents must be a valid string')
     invariant(typeof line === 'number' && line, 'Line must be a valid number')
     invariant(typeof column === 'number' && column, 'Column must be a valid number')
     invariant(typeof message === 'string' && message, 'Message must be a valid string')
     invariant(VALID_SEVERITIES.has(severity), 'Severity must be valid')
 
+    this.file = file
     this.line = line
     this.column = column
     this.contents = contents
     this.message = message
     this.severity = severity.toLowerCase()
-    this.stack = `FileIssue: ${message}`
+    this.stack = `FileIssue: ${message}\n    at ${file}:${line}:${column}`
   }
 }
 
