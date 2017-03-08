@@ -51,7 +51,7 @@ class Server {
         this.pundle.context.unserialize(state)
       }
       const oldFiles = await this.cache.get('files')
-      this.report(`Number of files in cache pool ${oldFiles.length}`)
+      this.report(`Number of files in cache pool: ${oldFiles.length}`)
     }
 
     await this.attachRoutes(app)
