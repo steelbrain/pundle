@@ -1,5 +1,5 @@
 {
-  "name": "pundle-reporter-cli",
+  "name": "pundle-reporter-default",
   "version": "2.0.0-beta16",
   "description": "CLI reporter for Pundle",
   "main": "lib/index.js",

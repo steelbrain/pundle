@@ -14,7 +14,7 @@ import * as Helpers from './helpers'
 import type { ServerConfig, ServerState, ServerConfigInput } from '../types'
 
 const WssServer = Helpers.getWssServer()
-const cliReporter: Object = require('pundle-reporter-cli')
+const cliReporter: Object = require('pundle-reporter-default')
 
 class Server {
   state: ServerState;

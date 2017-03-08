@@ -24,7 +24,7 @@
     "promise.defer": "^1.0.0",
     "pundle": "2.0.0-beta16",
     "pundle-api": "2.0.0-beta16",
-    "pundle-reporter-cli": "2.0.0-beta16",
+    "pundle-reporter-default": "2.0.0-beta16",
     "sb-event-kit": "^3.0.0",
     "sb-fs": "^2.0.0",
     "ws": "^1.1.1"

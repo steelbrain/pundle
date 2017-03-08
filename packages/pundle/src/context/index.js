@@ -1,6 +1,6 @@
 /* @flow */
 
-import reporterCli from 'pundle-reporter-cli'
+import reporterCli from 'pundle-reporter-default'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { File, FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'

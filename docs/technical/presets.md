@@ -16,7 +16,7 @@ module.exports = [
   {
     name: 'reporter'
     config: {},
-    component: require.resolve('pundle-reporter-cli'),
+    component: require.resolve('pundle-reporter-default'),
   },
 ]
 ```

@@ -8,7 +8,7 @@ import chalk from 'chalk'
 import command from 'sb-command'
 import fileSize from 'filesize'
 import difference from 'lodash.difference'
-import reporterCLI from 'pundle-reporter-cli'
+import reporterCLI from 'pundle-reporter-default'
 import PundleDevServer from 'pundle-dev'
 import { CompositeDisposable } from 'sb-event-kit'
 
