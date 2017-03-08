@@ -44,9 +44,9 @@ class Server {
   async activate() {
     const app = express()
 
-    this.cache = await this.pundle.getCache()
-    const oldFiles = await this.cache.get('files')
-    if (oldFiles.length) {
+    if (this.config.useCache) {
+      this.cache = await this.pundle.getCache()
+      const oldFiles = await this.cache.get('files')
       this.report(`Restoring ${oldFiles.length} files from cache`)
     }
 
