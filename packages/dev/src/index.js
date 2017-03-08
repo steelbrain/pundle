@@ -46,8 +46,9 @@ class Server {
 
     this.cache = await this.pundle.getCache()
     if (this.config.useCache) {
+      this.pundle.context.unserialize(await this.cache.get('state'))
       const oldFiles = await this.cache.get('files')
-      this.report(`Restoring ${oldFiles.length} files from cache`)
+      this.report(`Number of files in cache pool ${oldFiles.length}`)
     }
 
     await this.attachRoutes(app)

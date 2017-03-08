@@ -101,12 +101,11 @@ export default class Context {
     }
 
     const parsed = JSON.parse(contents)
-
     // Unserializing UID
     this.uid.clear()
-    for (const key in parsed) {
-      if (!{}.hasOwnProperty.call(parsed, key)) continue
-      this.uid.set(key, parsed[key])
+    for (const key in parsed.UID) {
+      if (!{}.hasOwnProperty.call(parsed.UID, key)) continue
+      this.uid.set(key, parsed.UID[key])
     }
   }
   getUID(label: string): number {
