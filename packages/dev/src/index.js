@@ -149,7 +149,13 @@ class Server {
       sourceNamespace: 'app',
       ...config,
     })
-    return generated[0]
+    const output = generated[0]
+    if (this.config.sourceMap && this.config.sourceMapPath !== 'inline') {
+      const bundlePathExt = Path.extname(this.config.bundlePath)
+      const bundlePathPrefix = this.config.bundlePath.slice(0, -1 * bundlePathExt.length)
+      output.contents += `//# sourceMappingURL=${bundlePathPrefix}.${output.chunk.label}${bundlePathExt}.map\n`
+    }
+    return output
   }
   async generateForHMR() {
     const rootDirectory = this.pundle.config.rootDirectory
