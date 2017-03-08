@@ -4,7 +4,7 @@ import Path from 'path'
 import invariant from 'assert'
 import ConfigFile from 'sb-config-file'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
-import type { File, FileChunk } from 'pundle-api/types'
+import type { File, FileChunk, GeneratorResult } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
@@ -86,8 +86,7 @@ class Pundle {
   setCachedFiles(cache: ConfigFile, files: Map<string, File>): void {
     cache.setSync('files', Helpers.serializeFiles(files))
   }
-  // $FlowIgnore: TODO: Remove these when fixed in dev package
-  async generate(chunks: ?Array<FileChunk> = null, runtimeConfig: Object = {}): Promise<Object> {
+  async generate(chunks: ?Array<FileChunk> = null, runtimeConfig: Object = {}): Promise<Array<GeneratorResult>> {
     return this.context.generate(chunks || await this.build(), runtimeConfig)
   }
   async build(useCache: boolean = true): Promise<Array<FileChunk>> {

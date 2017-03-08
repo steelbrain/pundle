@@ -47,7 +47,7 @@ export default class Context {
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     return (await this.resolveAdvanced(request, from, cached)).filePath
   }
-  async generate(given: Array<FileChunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult & { label: string }>> {
+  async generate(given: Array<FileChunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult>> {
     const chunks: Array<Object> = given.slice()
     const results = []
 
@@ -80,7 +80,6 @@ export default class Context {
         const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
         Helpers.mergeResult(result, postTransformerResults)
       }
-      result.label = chunk.label
       results.push(result)
     }
 
