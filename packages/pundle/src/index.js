@@ -73,8 +73,10 @@ class Pundle {
   }
   async getCache(): Promise<ConfigFile> {
     return ConfigFile.get(await Helpers.getCacheFilePath(this.config.rootDirectory), {
-      files: [],
+      // NOTE: Keeping directory above files on purpose so we can get the directory
+      // when debugging state file without having to go to end of file
       directory: this.config.rootDirectory,
+      files: [],
     }, {
       prettyPrint: false,
       createIfNonExistent: true,
