@@ -46,7 +46,10 @@ class Server {
 
     this.cache = await this.pundle.getCache()
     if (this.config.useCache) {
-      this.pundle.context.unserialize(await this.cache.get('state'))
+      const state = await this.cache.get('state')
+      if (state) {
+        this.pundle.context.unserialize(state)
+      }
       const oldFiles = await this.cache.get('files')
       this.report(`Number of files in cache pool ${oldFiles.length}`)
     }
