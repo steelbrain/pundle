@@ -44,8 +44,8 @@ class Server {
   async activate() {
     const app = express()
 
+    this.cache = await this.pundle.getCache()
     if (this.config.useCache) {
-      this.cache = await this.pundle.getCache()
       const oldFiles = await this.cache.get('files')
       this.report(`Restoring ${oldFiles.length} files from cache`)
     }
@@ -156,7 +156,7 @@ class Server {
 
     const changedFilePaths = unique(Array.from(this.state.changed.keys()))
     const relativeChangedFilePaths = changedFilePaths.map(i => getRelativeFilePath(i, rootDirectory))
-    this.report(`Sending HMR to ${this.connections.size} clients of [ ${
+    this.report(`Sending HMR to ${this.connections.size} client${this.connections.size > 1 ? 's' : ''} of [ ${
       relativeChangedFilePaths.length > 4 ? `${relativeChangedFilePaths.length} files` : relativeChangedFilePaths.join(', ')
     } ]`)
     this.writeToConnections({ type: 'report-clear' })

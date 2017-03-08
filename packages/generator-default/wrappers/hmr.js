@@ -249,7 +249,7 @@ global.__sbPundle = global.__sbPundle || {
       newModule.parents = oldModule.parents
       try {
         newModule.invoked = true
-        newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(null), newModule, newModule.exports)
+        newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(newModule.id), newModule, newModule.exports)
       } catch (error) {
         // NOTE: In case of error, copy last HMR info
         Object.assign(newModule.hot, {
