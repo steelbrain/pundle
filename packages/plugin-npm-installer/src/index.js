@@ -1,7 +1,9 @@
 /* @flow */
 
 import Path from 'path'
+import promiseDefer from 'promise.defer'
 import { createResolver, shouldProcess, MessageIssue } from 'pundle-api'
+
 import { getModuleName } from './helpers'
 import Installer from './installer'
 
@@ -14,6 +16,7 @@ import Installer from './installer'
 // Try spawning npm and await on it, then invoke afterInstall callback
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
+const locks = new Map()
 export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string) {
   if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
     return null
@@ -31,23 +34,37 @@ export default createResolver(async function(config: Object, givenRequest: strin
     await this.resolve(`${moduleName}/package.json`, fromFile)
     return null
   } catch (_) { /* No Op */ }
-  if (!config.silent) {
-    this.report(new MessageIssue(`Installing '${moduleName}' in ${this.config.rootDirectory}`, 'info'))
+
+  const lock = locks.get(moduleName)
+  if (lock) {
+    return lock
   }
-  config.beforeInstall(moduleName)
-  let error = null
+  const deferred = promiseDefer()
+  locks.set(moduleName, deferred.promise)
+
   try {
-    await Installer.install(moduleName, config.save, this.config.rootDirectory)
-  } catch (_) {
-    error = _
+    if (!config.silent) {
+      this.report(new MessageIssue(`Installing '${moduleName}' in ${this.config.rootDirectory}`, 'info'))
+    }
+    config.beforeInstall(moduleName)
+    let error = null
+    try {
+      await Installer.install(moduleName, config.save, this.config.rootDirectory)
+    } catch (_) {
+      error = _
+    }
+    config.afterInstall(moduleName, error)
+    if (error && !config.silent) {
+      this.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
+    } else if (!error && !config.silent) {
+      this.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
+    }
+  } finally {
+    deferred.resolve(this.resolve(givenRequest, fromFile, false))
   }
-  config.afterInstall(moduleName, error)
-  if (error && !config.silent) {
-    this.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
-  } else if (!error && !config.silent) {
-    this.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
-  }
-  return await this.resolve(givenRequest, fromFile, false)
+  // This is, unfortunately, required. Making it wait on all installations saves us from a few race conditions
+  await Promise.all(locks.values())
+  return deferred.promise
 }, {
   save: false,
   silent: false,

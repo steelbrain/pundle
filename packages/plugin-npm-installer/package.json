@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
+    "promise.defer": "^1.0.0",
     "pundle-api": "2.0.0-beta16",
     "sb-exec": "^3.1.0"
   }
