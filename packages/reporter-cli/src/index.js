@@ -41,7 +41,7 @@ export default createReporter(async function(config: Object, error: Error | File
   } else if (error.constructor.name === 'SyntaxError') {
     const lastLine = error.stack.split(/\n/).shift()
     errorMessage += ` in ${lastLine}`
-  } else if (process.env.PUNDLE_DEBUG_REPORTS) {
+  } else if (this.config.debug) {
     stack = error.stack
   }
 

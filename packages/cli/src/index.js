@@ -55,10 +55,6 @@ command
     const successful = new Set()
     const everything = new Set()
 
-    if (options.debug) {
-      process.env.PUNDLE_DEBUG_REPORTS = '1'
-    }
-
     try {
       const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
       const configTarget = Path.resolve(options.rootDirectory, options.configFileName)
@@ -108,10 +104,6 @@ command
     }
   })
   .default(function(options, ...commands) {
-    if (options.debug) {
-      process.env.PUNDLE_DEBUG_REPORTS = '1'
-    }
-
     if (commands.length !== 0) {
       command.showHelp()
       process.exit(0)
@@ -126,6 +118,7 @@ command
     const Pundle = require('pundle')
 
     Pundle.create({
+      debug: options.debug,
       rootDirectory: options.rootDirectory,
       configFileName: options.configFileName,
     }).then(function(pundle) {
