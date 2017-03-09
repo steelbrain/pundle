@@ -1,8 +1,7 @@
 /* @flow */
 
 import * as t from 'babel-types'
-import type Context from 'pundle/src/context'
-import type { File, FileChunk } from 'pundle-api/types'
+import type { File, Context, FileChunk } from 'pundle-api/types'
 
 export function getName(obj: Object): string {
   if (typeof obj.name === 'string') {
