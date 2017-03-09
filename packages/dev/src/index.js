@@ -121,7 +121,7 @@ class Server {
         },
       }],
       createWatcher({
-        tick: (_: Object, file: File) => {
+        tick: (_: Object, __: Object, file: File) => {
           if (booted && file.filePath !== Helpers.browserFile) {
             this.state.changed.set(file.filePath, file)
           }
@@ -129,7 +129,7 @@ class Server {
         ready: () => {
           this.report('Server initialized successfully')
         },
-        compile: async (_: Object, chunks: Array<FileChunk>, files: Map<string, File>) => {
+        compile: async (_: Object, __: Object, chunks: Array<FileChunk>, files: Map<string, File>) => {
           this.state.files = files
           this.state.chunks = chunks
           if (this.connections.size && this.state.changed.size) {
