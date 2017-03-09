@@ -4,7 +4,7 @@ import Path from 'path'
 import slash from 'slash'
 import fileSystem from 'sb-fs'
 import { SourceMapConsumer } from 'source-map'
-import type { FileChunk } from 'pundle-api/types'
+import type { Context, FileChunk } from 'pundle-api/types'
 
 export const LINE_BREAK = /\r\n|\n|\r/
 export function getLinesCount(text: string): number {
@@ -15,10 +15,10 @@ export function getLinesCount(text: string): number {
 // TODO: Persist these numeric paths when resuming from cache
 let nextNumericPath = 1
 export const numericPaths: Map<string, string> = new Map()
-export function getFilePath(compilation: Object, config: Object, filePath: string): string {
+export function getFilePath(context: Context, config: Object, filePath: string): string {
   let toReturn
   if (config.pathType === 'filePath') {
-    toReturn = Path.join(`$${config.sourceNamespace}`, Path.relative(compilation.config.rootDirectory, filePath))
+    toReturn = Path.join(`$${config.sourceNamespace}`, Path.relative(context.config.rootDirectory, filePath))
   } else {
     toReturn = numericPaths.get(filePath)
     if (!toReturn) {
@@ -31,7 +31,7 @@ export function getFilePath(compilation: Object, config: Object, filePath: strin
 
 export const wrapperHMR = require.resolve('../wrappers/dist/hmr')
 export const wrapperNormal = require.resolve('../wrappers/dist/normal')
-export async function getWrapperContents(context: Object, config: Object): Promise<string> {
+export async function getWrapperContents(context: Context, config: Object): Promise<string> {
   let wrapper = config.wrapper
   if (wrapper === 'normal') {
     wrapper = wrapperNormal
@@ -41,7 +41,7 @@ export async function getWrapperContents(context: Object, config: Object): Promi
     return ''
   }
   if (!Path.isAbsolute(wrapper)) {
-    wrapper = await context.resolve(wrapper)
+    wrapper = await context.resolve(wrapper, null, false)
   }
   let fileContents = await fileSystem.readFile(wrapper)
 
@@ -55,11 +55,11 @@ export async function getWrapperContents(context: Object, config: Object): Promi
   return fileContents
 }
 
-export function getFileMappings(compilation: Object, chunk: FileChunk, config: Object) : Object {
+export function getFileMappings(context: Context, chunk: FileChunk, config: Object) : Object {
   const mappings = {}
 
   function processImport(entry) {
-    const filePath = getFilePath(compilation, config, entry.resolved || '')
+    const filePath = getFilePath(context, config, entry.resolved || '')
     if (!mappings[filePath]) {
       mappings[filePath] = []
     }

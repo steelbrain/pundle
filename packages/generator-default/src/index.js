@@ -5,7 +5,7 @@ import invariant from 'assert'
 import sourceMapToComment from 'source-map-to-comment'
 import { createGenerator } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
-import type { FileChunk, GeneratorResult } from 'pundle-api/types'
+import type { Context, FileChunk, GeneratorResult } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 // Spec:
@@ -24,10 +24,10 @@ import * as Helpers from './helpers'
 // - Push sourceMap stringified or it's path (depending on config) (if enabled)
 // - Return all chunks joined, and sourceMap (if enabled)
 
-export default createGenerator(async function(config: Object, chunk: FileChunk): Promise<GeneratorResult> {
+export default createGenerator(async function(context: Context, config: Object, chunk: FileChunk): Promise<GeneratorResult> {
   const entries = chunk.entries
   const filesGenerated = []
-  const wrapperContents = await Helpers.getWrapperContents(this, config)
+  const wrapperContents = await Helpers.getWrapperContents(context, config)
 
   const chunks = [';(function() {', wrapperContents]
   const chunksMap = new SourceMapGenerator({
@@ -37,7 +37,7 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
   let linesCount = Helpers.getLinesCount(chunks.join('\n')) + 1
 
   for (const file of chunk.files.values()) {
-    const publicPath = Helpers.getFilePath(this, config, file.filePath)
+    const publicPath = Helpers.getFilePath(context, config, file.filePath)
     const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
     const fileSourceMap = file.sourceMap
 
@@ -46,7 +46,7 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
 
     if (config.sourceMap) {
       if (fileSourceMap) {
-        const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(this.config.rootDirectory, file.filePath))
+        const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(context.config.rootDirectory, file.filePath))
         Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.source, linesCount)
       }
       linesCount += Helpers.getLinesCount(fileContents)
@@ -54,13 +54,13 @@ export default createGenerator(async function(config: Object, chunk: FileChunk):
   }
 
   const mappings = Object.assign({}, config.mappings, {
-    files: Object.assign({}, Helpers.getFileMappings(this, chunk, config), config.mappings.files),
+    files: Object.assign({}, Helpers.getFileMappings(context, chunk, config), config.mappings.files),
   })
   chunks.push(`__sbPundle.registerMappings(${JSON.stringify(mappings)})`)
   chunks.push(`__sbPundle.registerLoaded(${JSON.stringify(config.label)})`)
   for (let i = 0, length = entries.length; i < length; i++) {
     invariant(entries[i].resolved, `Entry file '${entries[i].request}' was not resolved`)
-    chunks.push(`__sbPundle.require('${Helpers.getFilePath(this, config, entries[i].resolved)}')`)
+    chunks.push(`__sbPundle.require('${Helpers.getFilePath(context, config, entries[i].resolved)}')`)
   }
   chunks.push('})();\n')
 
