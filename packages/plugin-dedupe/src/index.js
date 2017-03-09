@@ -30,7 +30,7 @@ export default createResolver(async function(context: Context, config: Object, g
       } else if (!matched) {
         matched = entry
       }
-    } else if (process.env.DEBUG_PUNDLE_PLUGIN_DEDUPE) {
+    } else if (config.debug) {
       context.report(new MessageIssue(`${moduleName} v${entry.version} did not match ${cacheVersion} from ${getRelativeFilePath(fromFile, context.config.rootDirectory)}`, 'info'))
     }
   }
@@ -44,4 +44,6 @@ export default createResolver(async function(context: Context, config: Object, g
     targetManifest: matched,
   }
   return newResult
-}, {}, false)
+}, {
+  debug: false,
+}, false)
