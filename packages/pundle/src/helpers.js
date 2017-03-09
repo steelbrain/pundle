@@ -54,7 +54,7 @@ export async function load(request: string | Object, rootDirectory: string): Pro
     try {
       resolved = await resolve(request, { basedir: rootDirectory })
     } catch (error) {
-      if (error.message.startsWith('Cannot find module')) {
+      if (error.code === 'MODULE_NOT_FOUND') {
         const newError = new Error(`Unable to resolve '${request}' from root directory. Make sure it's installed correctly`)
         newError.code = 'MODULE_NOT_FOUND'
         throw newError
