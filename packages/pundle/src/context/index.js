@@ -3,10 +3,10 @@
 import reporterCli from 'pundle-reporter-default'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { File, FileChunk, ComponentAny, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
+import type { File, FileChunk, ComponentAny, PundleConfig, FileImport, ResolverResult, GeneratorResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
-import type { ComponentEntry, PundleConfig } from '../../types'
+import type { ComponentEntry } from '../../types'
 
 export default class Context {
   uid: Map<string, number>;

@@ -7,8 +7,7 @@ import Path from 'path'
 import Crypto from 'crypto'
 import promisify from 'sb-promisify'
 import { getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { File } from 'pundle-api/types'
-import type { PundleConfig, Loadable, Loaded } from '../types'
+import type { File, PundleConfig, Loadable, Loaded } from 'pundle-api/types'
 
 const resolve = promisify(require('resolve'))
 
