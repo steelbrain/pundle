@@ -2,7 +2,6 @@
 
 import chalk from 'chalk'
 import codeFrame from 'babel-code-frame'
-import invariant from 'assert'
 import { createReporter } from 'pundle-api'
 import type { Context, FileIssue, MessageIssue } from 'pundle-api/types'
 
@@ -25,7 +24,9 @@ const SEVERITIES = {
 }
 
 export default createReporter(async function(context: Context, config: Object, error: Error | FileIssue | MessageIssue) {
-  invariant(typeof error === 'object' && error, 'Error must be an object')
+  if (typeof error !== 'object' || !error) {
+    throw new Error(`Expected Error to be an object, got ${typeof error}:${String(error)}`)
+  }
 
   let errorMessage = error.message
   const severity = SEVERITIES[typeof error.severity === 'string' ? error.severity : 'error']
