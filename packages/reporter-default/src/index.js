@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import codeFrame from 'babel-code-frame'
 import invariant from 'assert'
 import { createReporter } from 'pundle-api'
-import type { FileIssue, MessageIssue } from 'pundle-api/types'
+import type { Context, FileIssue, MessageIssue } from 'pundle-api/types'
 
 const SEVERITIES = {
   info: {
@@ -24,7 +24,7 @@ const SEVERITIES = {
   },
 }
 
-export default createReporter(async function(config: Object, error: Error | FileIssue | MessageIssue) {
+export default createReporter(async function(context: Context, config: Object, error: Error | FileIssue | MessageIssue) {
   invariant(typeof error === 'object' && error, 'Error must be an object')
 
   let errorMessage = error.message
@@ -41,7 +41,7 @@ export default createReporter(async function(config: Object, error: Error | File
   } else if (error.constructor.name === 'SyntaxError') {
     const lastLine = error.stack.split(/\n/).shift()
     errorMessage += ` in ${lastLine}`
-  } else if (this.config.debug) {
+  } else if (context.config.debug) {
     stack = error.stack
   }
 
