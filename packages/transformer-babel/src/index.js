@@ -1,16 +1,16 @@
 /* @flow */
 
 import { createTransformer, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import type { File, Context } from 'pundle-api/types'
 
-export default createTransformer(async function(config: Object, file: File) {
-  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
+export default createTransformer(async function(context: Context, config: Object, file: File) {
+  if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
   }
 
   let babelPath = config.babelPath
   try {
-    babelPath = await this.resolve(babelPath)
+    babelPath = await context.resolve(babelPath, null)
   } catch (_) {
     throw new MessageIssue('Unable to find babel-core', 'error')
   }
@@ -27,7 +27,7 @@ export default createTransformer(async function(config: Object, file: File) {
       sourceFileName: file.filePath,
     }))
   } catch (error) {
-    const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, this.config.rootDirectory)}`
+    const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, context.config.rootDirectory)}`
     if (error.loc) {
       throw new FileIssue(file.filePath, file.contents, error.loc.line, error.loc.column + 1, errorMessage, 'error')
     } else {
