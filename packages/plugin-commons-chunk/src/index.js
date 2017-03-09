@@ -1,9 +1,9 @@
 /* @flow */
 
 import { createChunkTransformer } from 'pundle-api'
-import type { File, FileChunk, ChunkTransformerResult } from 'pundle-api/types'
+import type { File, FileChunk, Context, ChunkTransformerResult } from 'pundle-api/types'
 
-export default createChunkTransformer(function(config: Object, chunks: Array<FileChunk>): ChunkTransformerResult {
+export default createChunkTransformer(function(context: Context, config: Object, chunks: Array<FileChunk>): ChunkTransformerResult {
   const known: Set<string> = new Set()
   const newChunkFiles: Map<string, File> = new Map()
 
@@ -27,8 +27,7 @@ export default createChunkTransformer(function(config: Object, chunks: Array<Fil
     // No common files found
     return
   }
-  // NOTE: Order is important, commons should be loaded before others
-  chunks.unshift(this.getChunk(null, config.name, null, newChunkFiles))
+  chunks.push(context.getChunk(null, config.name, null, newChunkFiles))
 }, {
   name: 'common',
 })
