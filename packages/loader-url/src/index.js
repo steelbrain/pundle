@@ -2,10 +2,10 @@
 
 import fileSystem from 'sb-fs'
 import { createLoader, shouldProcess } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import type { Context, File } from 'pundle-api/types'
 
-export default createLoader(async function(config: Object, file: File) {
-  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
+export default createLoader(async function(context: Context, config: Object, file: File) {
+  if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
   }
   const contents = await fileSystem.readFile(file.filePath)
