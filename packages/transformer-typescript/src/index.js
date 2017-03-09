@@ -1,17 +1,17 @@
 /* @flow */
 
 import { createTransformer, shouldProcess, MessageIssue } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import type { File, Context } from 'pundle-api/types'
 
 // TODO: Implement watching and everything
-export default createTransformer(async function(config: Object, file: File) {
-  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
+export default createTransformer(async function(context: Context, config: Object, file: File) {
+  if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
   }
 
   let typescriptPath = config.typescriptPath
   try {
-    typescriptPath = await this.resolve(typescriptPath)
+    typescriptPath = await context.resolve(typescriptPath, null)
   } catch (_) {
     throw new MessageIssue('Unable to find typescript in project root', 'error')
   }
