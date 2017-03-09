@@ -162,7 +162,6 @@ export type Context = {
   generate(chunks: Array<FileChunk>, generateConfig: Object): Promise<Array<GeneratorResult>>,
   serialize(): string,
   unserialize(contents: string, force: boolean): void,
-  getUID(label: string): number,
   getChunk(entries: ?Array<FileImport>, label: ?string, imports: ?Array<FileImport>, files: ?Map<string, File>): FileChunk,
   getImportRequest(request: string, from: ?string): FileImport,
 }

@@ -10,7 +10,7 @@ export default createTransformer(async function(context: Context, config: Object
 
   let babelPath = config.babelPath
   try {
-    babelPath = await context.resolve(babelPath, null)
+    babelPath = await context.resolve(babelPath, null, true)
   } catch (_) {
     throw new MessageIssue('Unable to find babel-core', 'error')
   }

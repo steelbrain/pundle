@@ -3,7 +3,7 @@
 import Path from 'path'
 import semver from 'semver'
 import { createResolver, getRelativeFilePath, MessageIssue } from 'pundle-api'
-import type { Context } from 'pundle-api'
+import type { Context } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 const memoryCache = new Map()

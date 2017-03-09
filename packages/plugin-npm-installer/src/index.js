@@ -3,7 +3,7 @@
 import Path from 'path'
 import promiseDefer from 'promise.defer'
 import { createResolver, shouldProcess, MessageIssue } from 'pundle-api'
-import type { Context } from 'pundle-api'
+import type { Context } from 'pundle-api/types'
 
 import { getModuleName } from './helpers'
 import Installer from './installer'
@@ -24,7 +24,7 @@ export default createResolver(async function(context: Context, config: Object, g
   }
 
   try {
-    return await context.resolve(givenRequest, fromFile)
+    return await context.resolve(givenRequest, fromFile, true)
   } catch (_) { /* No Op */ }
   if (!shouldProcess(context.config.rootDirectory, fromFile, config)) {
     return null

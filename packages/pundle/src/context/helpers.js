@@ -28,7 +28,7 @@ export function invokeComponent(context: Context, entry: ComponentEntry, method:
     }
     return item
   })
-  return entry.component[method]([context, Object.assign({}, entry.component.defaultConfig, entry.config, ...configs)].concat(parameters))
+  return entry.component[method].apply(null, [context, Object.assign({}, entry.component.defaultConfig, entry.config, ...configs)].concat(parameters))
 }
 
 // NOTE: The reason we only count in loaders and not transformers even though they could be useful

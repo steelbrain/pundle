@@ -11,7 +11,7 @@ export default createTransformer(async function(context: Context, config: Object
 
   let typescriptPath = config.typescriptPath
   try {
-    typescriptPath = await context.resolve(typescriptPath, null)
+    typescriptPath = await context.resolve(typescriptPath, null, true)
   } catch (_) {
     throw new MessageIssue('Unable to find typescript in project root', 'error')
   }

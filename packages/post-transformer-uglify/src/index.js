@@ -6,7 +6,7 @@ import type { Context } from 'pundle-api/types'
 export default createPostTransformer(async function(context: Context, config: Object, contents: string) {
   let uglifyPath
   try {
-    uglifyPath = await this.resolve('uglify-js')
+    uglifyPath = await context.resolve('uglify-js', null, true)
   } catch (_) {
     throw new MessageIssue('Unable to find uglify-js in project root', 'error')
   }
