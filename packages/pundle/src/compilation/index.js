@@ -210,7 +210,7 @@ export default class Compilation {
       }
       for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
         try {
-          await Helpers.invokeComponent(this, entry, 'compile', [], cloned, files)
+          await Helpers.invokeComponent(this.context, entry, 'compile', [], cloned, files)
         } catch (error) {
           this.context.report(error)
         }
@@ -282,7 +282,7 @@ export default class Compilation {
 
     for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
       try {
-        await Helpers.invokeComponent(this, entry, 'ready', [])
+        await Helpers.invokeComponent(this.context, entry, 'ready', [])
       } catch (error) {
         this.context.report(error)
       }

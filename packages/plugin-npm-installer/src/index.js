@@ -3,6 +3,7 @@
 import Path from 'path'
 import promiseDefer from 'promise.defer'
 import { createResolver, shouldProcess, MessageIssue } from 'pundle-api'
+import type { Context } from 'pundle-api/types'
 
 import { getModuleName } from './helpers'
 import Installer from './installer'
@@ -17,21 +18,21 @@ import Installer from './installer'
 // If invocation was successful, try resolving again and output whatever you get (do not catch)
 
 const locks = new Map()
-export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string) {
+export default createResolver(async function(context: Context, config: Object, givenRequest: string, fromFile: ?string) {
   if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
     return null
   }
 
   try {
-    return await this.resolve(givenRequest, fromFile)
+    return await context.resolve(givenRequest, fromFile, true)
   } catch (_) { /* No Op */ }
-  if (!shouldProcess(this.config.rootDirectory, fromFile, config)) {
+  if (!shouldProcess(context.config.rootDirectory, fromFile, config)) {
     return null
   }
 
   const moduleName = getModuleName(givenRequest)
   try {
-    await this.resolve(`${moduleName}/package.json`, fromFile)
+    await context.resolve(`${moduleName}/package.json`, fromFile)
     return null
   } catch (_) { /* No Op */ }
 
@@ -44,23 +45,23 @@ export default createResolver(async function(config: Object, givenRequest: strin
 
   try {
     if (!config.silent) {
-      this.report(new MessageIssue(`Installing '${moduleName}' in ${this.config.rootDirectory}`, 'info'))
+      context.report(new MessageIssue(`Installing '${moduleName}' in ${context.config.rootDirectory}`, 'info'))
     }
     config.beforeInstall(moduleName)
     let error = null
     try {
-      await Installer.install(moduleName, config.save, this.config.rootDirectory)
+      await Installer.install(moduleName, config.save, context.config.rootDirectory)
     } catch (_) {
       error = _
     }
     config.afterInstall(moduleName, error)
     if (error && !config.silent) {
-      this.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
+      context.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
     } else if (!error && !config.silent) {
-      this.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
+      context.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
     }
   } finally {
-    deferred.resolve(this.resolve(givenRequest, fromFile, false))
+    deferred.resolve(context.resolve(givenRequest, fromFile, false))
   }
   // This is, unfortunately, required. Making it wait on all installations saves us from a few race conditions
   await Promise.all(locks.values())

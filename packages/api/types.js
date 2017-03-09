@@ -122,4 +122,48 @@ export type Watcher = {
   defaultConfig: Object,
 }
 
+export type Preset = Array<{ component: string | Object, config: Object, name: string }>
+export type Loaded = [Object, Object]
+export type Loadable = string | [string, Object] | [Object, Object]
+// NOTE: This is the config is after transformation, not what Pundle accepts
+export type PundleConfig = {
+  debug: boolean,
+  entry: Array<string>,
+  output: {
+    sourceMap?: boolean,
+    publicRoot?: string,
+    bundlePath?: string,
+    sourceMapPath?: string,
+    rootDirectory?: string,
+  },
+  server: {
+    port?: number,
+    hmrHost?: string,
+    hmrPath?: string,
+    bundlePath?: string,
+    sourceMapPath?: string,
+    rootDirectory: string,
+    redirectNotFoundToIndex?: boolean,
+  },
+  presets: Array<Loadable>,
+  watcher: {
+    usePolling: boolean,
+  },
+  components: Array<Loadable>,
+  rootDirectory: string,
+  replaceVariables: Object, // <string, Object>
+}
+
+export type Context = {
+  config: PundleConfig,
+  report(content: Error | FileIssue | MessageIssue): Promise<void>,
+  resolveAdvanced(request: string, from: ?string, cached: boolean): Promise<ResolverResult>,
+  resolve(request: string, from: ?string, cached: boolean): Promise<string>,
+  generate(chunks: Array<FileChunk>, generateConfig: Object): Promise<Array<GeneratorResult>>,
+  serialize(): string,
+  unserialize(contents: string, force: boolean): void,
+  getChunk(entries: ?Array<FileImport>, label: ?string, imports: ?Array<FileImport>, files: ?Map<string, File>): FileChunk,
+  getImportRequest(request: string, from: ?string): FileImport,
+}
+
 export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher | ChunkTransformer

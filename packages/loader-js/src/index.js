@@ -4,7 +4,7 @@ import { parse } from 'babylon'
 import traverse from 'babel-traverse'
 import generate from 'babel-generator'
 import { createLoader, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
-import type { File, FileImport, FileChunk, LoaderResult } from 'pundle-api/types'
+import type { Context, File, FileImport, FileChunk, LoaderResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 
@@ -20,8 +20,8 @@ const RESOLVE_NAMES_SENSITIVE = new Set([
   'require.resolve',
 ])
 
-export default createLoader(function(config: Object, file: File): ?LoaderResult {
-  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
+export default createLoader(function(context: Context, config: Object, file: File): ?LoaderResult {
+  if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
   }
 
@@ -36,7 +36,7 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
       plugins: ['jsx', 'flow', '*'],
     })
   } catch (error) {
-    const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, this.config.rootDirectory)}`
+    const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, context.config.rootDirectory)}`
     if (error.loc) {
       throw new FileIssue(file.filePath, file.contents, error.loc.line, error.loc.column + 1, errorMessage, 'error')
     } else {
@@ -45,15 +45,15 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
   }
 
   const processResolve = node => {
-    const request = this.getImportRequest(node.value, file.filePath)
+    const request = context.getImportRequest(node.value, file.filePath)
     imports.push(request)
     node.value = request.id.toString()
     // NOTE: ^ Casting it to string is VERY VERY important, it breaks everything otherwise
   }
   const processReplaceable = path => {
     const name = Helpers.getName(path.node)
-    if ({}.hasOwnProperty.call(this.config.replaceVariables, name)) {
-      path.replaceWith(Helpers.getParsedReplacement(this.config.replaceVariables[name]))
+    if ({}.hasOwnProperty.call(context.config.replaceVariables, name)) {
+      path.replaceWith(Helpers.getParsedReplacement(context.config.replaceVariables[name]))
     }
   }
   traverse(ast, {
@@ -62,7 +62,7 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
     },
     CallExpression: (path) => {
       if (path.node.callee.type === 'Import') {
-        Helpers.processImport(this, file, chunks, path)
+        Helpers.processImport(context, file, chunks, path)
         return
       }
       const name = Helpers.getName(path.node.callee)
@@ -77,7 +77,7 @@ export default createLoader(function(config: Object, file: File): ?LoaderResult 
         return
       }
       if (name === 'require.ensure') {
-        Helpers.processEnsure(this, file, chunks, path)
+        Helpers.processEnsure(context, file, chunks, path)
       } else {
         processResolve(parameter)
       }

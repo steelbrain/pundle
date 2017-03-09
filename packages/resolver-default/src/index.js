@@ -4,6 +4,7 @@ import Path from 'path'
 import fileSystem from 'sb-fs'
 import pundleBrowser from 'pundle-browser'
 import { createResolver } from 'pundle-api'
+import type { Context } from 'pundle-api/types'
 import { MODULE_SEPARATOR_REGEX, getManifest, isModuleRequested, isModuleOnly, promisedResolve } from './helpers'
 
 // Spec:
@@ -69,16 +70,16 @@ function resolveInManifestAndAlias(request: string, alias: Object, manifest: Obj
 // If module was whole, resolve it with target browser field
 // If module was relative, resolve it with source browser field
 
-export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string, cached: boolean) {
+export default createResolver(async function(context: Context, config: Object, givenRequest: string, fromFile: ?string, cached: boolean) {
   let request = givenRequest
   let fromDirectory = ''
-  const manifest = { rootDirectory: this.config.rootDirectory }
+  const manifest = { rootDirectory: context.config.rootDirectory }
   const extensions = config.extensions || config.knownExtensions
   const targetManifest = {}
 
   if (fromFile) {
     fromDirectory = Path.dirname(fromFile)
-    Object.assign(manifest, await getManifest(fromDirectory, config, cached, this.config))
+    Object.assign(manifest, await getManifest(fromDirectory, config, cached, context.config))
   }
 
   if (isModuleRequested(request)) {
@@ -90,7 +91,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
     return { filePath: pundleBrowser[request], sourceManifest: manifest, targetManifest: null }
   }
   let resolved = await promisedResolve(request, {
-    basedir: fromDirectory || this.config.rootDirectory,
+    basedir: fromDirectory || context.config.rootDirectory,
     extensions: extensions.map(i => `.${i}`),
     readFile: (path, callback) => {
       fileSystem.readFile(path).then(function(result) {

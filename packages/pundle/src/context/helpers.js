@@ -3,7 +3,7 @@
 import unique from 'lodash.uniq'
 import invariant from 'assert'
 import sourceMap from 'source-map'
-import type { File } from 'pundle-api/types'
+import type { Context, File } from 'pundle-api/types'
 import type { ComponentEntry } from '../../types'
 
 export function filterComponents(components: Set<ComponentEntry>, type: string): Array<ComponentEntry> {
@@ -20,7 +20,7 @@ export function filterComponents(components: Set<ComponentEntry>, type: string):
 // - Validate method to exist on component
 // - Clone all Objects in the parameters to make sure components can't override originals
 // - Invoke the method requested on component with merged configs as first arg and params as others
-export function invokeComponent(thisArg: any, entry: ComponentEntry, method: string, configs: Array<Object>, ...givenParameters: Array<any>) {
+export function invokeComponent(context: Context, entry: ComponentEntry, method: string, configs: Array<Object>, ...givenParameters: Array<any>) {
   invariant(typeof entry.component[method] === 'function', `Component method '${method}' does not exist on given component`)
   const parameters = givenParameters.map(function(item) {
     if (item && item.constructor === Object) {
@@ -28,7 +28,7 @@ export function invokeComponent(thisArg: any, entry: ComponentEntry, method: str
     }
     return item
   })
-  return entry.component[method].apply(thisArg, [Object.assign({}, entry.component.defaultConfig, entry.config, ...configs)].concat(parameters))
+  return entry.component[method].apply(null, [context, Object.assign({}, entry.component.defaultConfig, entry.config, ...configs)].concat(parameters))
 }
 
 // NOTE: The reason we only count in loaders and not transformers even though they could be useful

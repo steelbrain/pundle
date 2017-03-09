@@ -1,10 +1,10 @@
 /* @flow */
 
 import { createLoader, shouldProcess, MessageIssue } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import type { Context, File } from 'pundle-api/types'
 
-export default createLoader(function(config: Object, file: File) {
-  if (!shouldProcess(this.config.rootDirectory, file.filePath, config)) {
+export default createLoader(function(context: Context, config: Object, file: File) {
+  if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
   }
 

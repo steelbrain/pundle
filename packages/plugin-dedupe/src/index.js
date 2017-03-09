@@ -3,15 +3,16 @@
 import Path from 'path'
 import semver from 'semver'
 import { createResolver, getRelativeFilePath, MessageIssue } from 'pundle-api'
+import type { Context } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
 const memoryCache = new Map()
 
-export default createResolver(async function(config: Object, givenRequest: string, fromFile: ?string, cached: boolean = false) {
+export default createResolver(async function(context: Context, config: Object, givenRequest: string, fromFile: ?string, cached: boolean = false) {
   if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
     return null
   }
-  const result = await this.resolveAdvanced(givenRequest, fromFile, cached)
+  const result = await context.resolveAdvanced(givenRequest, fromFile, cached)
   if (!result || !result.targetManifest || !result.targetManifest.version) {
     return null
   }
@@ -30,7 +31,7 @@ export default createResolver(async function(config: Object, givenRequest: strin
         matched = entry
       }
     } else if (process.env.DEBUG_PUNDLE_PLUGIN_DEDUPE) {
-      this.report(new MessageIssue(`${moduleName} v${entry.version} did not match ${cacheVersion} from ${getRelativeFilePath(fromFile, this.config.rootDirectory)}`, 'info'))
+      context.report(new MessageIssue(`${moduleName} v${entry.version} did not match ${cacheVersion} from ${getRelativeFilePath(fromFile, context.config.rootDirectory)}`, 'info'))
     }
   }
   if (!matched) {

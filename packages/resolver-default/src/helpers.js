@@ -4,6 +4,7 @@ import Path from 'path'
 import resolve from 'resolve'
 import memoize from 'sb-memoize'
 import fileSystem from 'sb-fs'
+import type { PundleConfig } from 'pundle-api/types'
 
 export const MODULE_SEPARATOR_REGEX = /\/|\\/
 
@@ -32,7 +33,7 @@ export function isModuleOnly(request: string): boolean {
 // Cut path into half based on module directories, and only use the right side of it
 // Cut path into half based on rootDirectory, do not search outside the root directory if item is INSIDE it
 
-const findManifestCached = memoize(async function (givenFileDirectory: string, config: Object, cached: boolean, pundleConfig: Object): Promise<?string> {
+const findManifestCached = memoize(async function (givenFileDirectory: string, config: Object, cached: boolean, pundleConfig: PundleConfig): Promise<?string> {
   let fileDirectory = givenFileDirectory
   if (fileDirectory.slice(-1) === '/') {
     fileDirectory = fileDirectory.slice(0, -1)
@@ -65,7 +66,7 @@ const findManifestCached = memoize(async function (givenFileDirectory: string, c
   return await findManifestCached(Path.dirname(fileDirectory), config, cached, pundleConfig)
 }, { async: true })
 
-export function findManifest(fileDirectory: string, config: Object, cached: boolean, pundleConfig: Object): Promise<?string> {
+export function findManifest(fileDirectory: string, config: Object, cached: boolean, pundleConfig: PundleConfig): Promise<?string> {
   if (!cached) {
     const cachedValue = findManifestCached.getCache([fileDirectory, config, cached, pundleConfig])
     if (typeof cachedValue === 'string') {
@@ -78,7 +79,7 @@ export function findManifest(fileDirectory: string, config: Object, cached: bool
 // Spec:
 // Keep a rootDirectory in manifest
 // Return empty object if manifest is not found, parsed manifest contents otherwise
-const getManifestCached = memoize(async function(fileDirectory: string, config: Object, cached: boolean, pundleConfig: Object): Promise<Object> {
+const getManifestCached = memoize(async function(fileDirectory: string, config: Object, cached: boolean, pundleConfig: PundleConfig): Promise<Object> {
   let manifest = {}
   const manifestPath = await findManifest(fileDirectory, config, cached, pundleConfig)
   if (manifestPath) {
@@ -88,7 +89,7 @@ const getManifestCached = memoize(async function(fileDirectory: string, config: 
   return manifest
 }, { async: true })
 
-export function getManifest(fileDirectory: string, config: Object, cached: boolean, pundleConfig: Object): Promise<Object> {
+export function getManifest(fileDirectory: string, config: Object, cached: boolean, pundleConfig: PundleConfig): Promise<Object> {
   if (!cached) {
     const cachedValue = getManifestCached.getCache([fileDirectory, config, cached, pundleConfig])
     if (typeof cachedValue === 'string') {
