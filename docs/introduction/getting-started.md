@@ -9,7 +9,7 @@ Pundle has very predictable configurations, every configuration is isolated and 
 You can install Pundle from npm
 
 ```
-npm install -g pundle@latest
+npm install -g pundle-cli@latest
 ```
 
 To get started with Pundle, simply create a new directory, cd into it and execute `pundle init`. It will setup an example app with a basic configuration file. If you want a configuration file with all possible fields shown do `pundle init full`.
