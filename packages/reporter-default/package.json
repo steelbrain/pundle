@@ -1,6 +1,6 @@
 {
   "name": "pundle-reporter-default",
-  "version": "2.0.0-beta16",
+  "version": "2.0.0-beta17",
   "description": "CLI reporter for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
     "babel-code-frame": "^6.16.0",
-    "pundle-api": "2.0.0-beta16"
+    "pundle-api": "2.0.0-beta17"
   },
   "devDependencies": {}
 }
