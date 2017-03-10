@@ -1,6 +1,6 @@
 {
   "name": "pundle",
-  "version": "2.0.0-beta17",
+  "version": "2.0.0-beta18",
   "description": "Creating peaceful bundles for everyone",
   "main": "lib/index.js",
   "scripts": {
@@ -27,9 +27,9 @@
     "chokidar": "^1.6.1",
     "lodash.differenceby": "^4.8.0",
     "lodash.uniq": "^4.5.0",
-    "pundle-api": "2.0.0-beta17",
-    "pundle-browser": "2.0.0-beta17",
-    "pundle-reporter-default": "2.0.0-beta17",
+    "pundle-api": "2.0.0-beta18",
+    "pundle-browser": "2.0.0-beta18",
+    "pundle-reporter-default": "2.0.0-beta18",
     "resolve": "^1.3.2",
     "sb-config-file": "^3.0.2",
     "sb-debounce": "^1.0.2",

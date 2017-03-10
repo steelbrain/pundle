@@ -1,6 +1,6 @@
 {
   "name": "pundle-preset-default",
-  "version": "2.0.0-beta17",
+  "version": "2.0.0-beta18",
   "description": "Default preset for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -18,11 +18,11 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-loader-js": "2.0.0-beta17",
-    "pundle-loader-json": "2.0.0-beta17",
-    "pundle-resolver-default": "2.0.0-beta17",
-    "pundle-generator-default": "2.0.0-beta17",
-    "pundle-reporter-default": "2.0.0-beta17"
+    "pundle-loader-js": "2.0.0-beta18",
+    "pundle-loader-json": "2.0.0-beta18",
+    "pundle-resolver-default": "2.0.0-beta18",
+    "pundle-generator-default": "2.0.0-beta18",
+    "pundle-reporter-default": "2.0.0-beta18"
   },
   "devDependencies": {}
 }

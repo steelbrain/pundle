@@ -1,6 +1,6 @@
 {
   "name": "pundle-plugin-commons-chunk",
-  "version": "2.0.0-beta17",
+  "version": "2.0.0-beta18",
   "description": "Pundle Plugin to group common modules in chunks",
   "main": "lib/index.js",
   "scripts": {
@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "2.0.0-beta17"
+    "pundle-api": "2.0.0-beta18"
   }
 }
