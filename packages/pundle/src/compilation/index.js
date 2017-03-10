@@ -247,7 +247,6 @@ export default class Compilation {
       })
       removedImports.forEach(function(entry) {
         if (entry.resolved) {
-          console.log('unwatching', entry)
           watcher.unwatch(entry.resolved)
         }
       })
