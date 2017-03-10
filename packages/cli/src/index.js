@@ -162,10 +162,12 @@ command
           const outputFilePathExt = Path.extname(outputFilePath)
           const outputSourceMapPathExt = outputSourceMapPath.endsWith('.js.map') ? '.js.map' : Path.extname(outputSourceMapPath)
 
+          await FS.mkdirp(outputDirectory)
+
           outputs.forEach(function(output) {
             let contents = output.contents
-            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + '.' + output.label + outputFilePathExt
-            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + '.' + output.label + outputSourceMapPathExt
+            const currentFilePath = outputFilePath.slice(0, -1 * outputFilePathExt.length) + '.' + output.chunk.label + outputFilePathExt
+            const currentSourceMapPath = outputSourceMapPath.slice(0, -1 * outputSourceMapPathExt.length) + '.' + output.chunk.label + outputSourceMapPathExt
 
             if (writeSourceMap) {
               contents += `//# sourceMappingURL=${Path.relative(outputDirectory, currentSourceMapPath)}\n`

@@ -1,6 +1,6 @@
 {
   "name": "pundle-cli",
-  "version": "2.0.0-beta18",
+  "version": "2.0.0-beta19",
   "description": "CLI for Pundle",
   "bin": {
     "pundle": "./lib/index.js"
