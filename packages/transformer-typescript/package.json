@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-typescript",
-  "version": "2.0.0-beta19",
+  "version": "2.0.0-beta20",
   "description": "TypeScript transformer for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "2.0.0-beta19"
+    "pundle-api": "2.0.0-beta20"
   }
 }

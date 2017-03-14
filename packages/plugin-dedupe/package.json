@@ -1,6 +1,6 @@
 {
   "name": "pundle-plugin-dedupe",
-  "version": "2.0.0-beta19",
+  "version": "2.0.0-beta20",
   "description": "Dedupe plugin for Plugin",
   "main": "lib/index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
-    "pundle-api": "2.0.0-beta19",
+    "pundle-api": "2.0.0-beta20",
     "semver": "^5.3.0"
   }
 }

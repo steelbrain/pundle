@@ -1,6 +1,6 @@
 {
   "name": "pundle-plugin-npm-installer",
-  "version": "2.0.0-beta19",
+  "version": "2.0.0-beta20",
   "description": "NPM Installer for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/motion/pundle#readme",
   "dependencies": {
     "promise.defer": "^1.0.0",
-    "pundle-api": "2.0.0-beta19",
+    "pundle-api": "2.0.0-beta20",
     "sb-exec": "^3.1.0"
   }
 }
