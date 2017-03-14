@@ -130,7 +130,9 @@ export default createResolver(async function(context: Context, config: Object, g
 
   const manifestToUse = isModuleRequested(request) ? targetManifest : manifest
   const relative = Path.relative(manifestToUse.rootDirectory, resolved)
-  if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\') {
+  // NOTE: We NEED the Path.isAbsolute check, otherwise this breaks on windows when
+  // files are on different drive than manifest root directory
+  if (relative.substr(0, 3) !== '../' && relative.substr(0, 3) !== '..\\' && !Path.isAbsolute(relative)) {
     resolved = resolveInManifestAndAlias(`./${relative}`, {}, manifestToUse, config.packageMains)
     resolved = Path.resolve(manifestToUse.rootDirectory, resolved)
   }
