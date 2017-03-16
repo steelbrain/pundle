@@ -157,7 +157,7 @@ class Server {
     if (this.config.sourceMap && this.config.sourceMapPath !== 'inline') {
       const bundlePathExt = Path.extname(this.config.bundlePath)
       const bundlePathPrefix = this.config.bundlePath.slice(0, -1 * bundlePathExt.length)
-      output.contents += `//# sourceMappingURL=${bundlePathPrefix}.${output.chunk.label}${bundlePathExt}.map\n`
+      output.contents += `\n//# sourceMappingURL=${bundlePathPrefix}.${output.chunk.label}${bundlePathExt}.map\n`
     }
     return output
   }
