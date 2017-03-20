@@ -143,8 +143,7 @@ class Server {
   }
   // NOTE: Stuff below this line is called at will and not excuted on activate or whatever
   async generate(chunk: FileChunk, config: Object = {}): Promise<GeneratorResult> {
-    this.state.changed.clear()
-    const generated = await this.pundle.generate([chunk], {
+    const merged = {
       wrapper: 'hmr',
       bundlePath: Path.basename(this.config.bundlePath),
       publicRoot: Path.dirname(this.config.bundlePath),
@@ -152,9 +151,12 @@ class Server {
       sourceMapPath: this.config.sourceMapPath,
       sourceNamespace: 'app',
       ...config,
-    })
+    }
+
+    this.state.changed.clear()
+    const generated = await this.pundle.generate([chunk], merged)
     const output = generated[0]
-    if (this.config.sourceMap && this.config.sourceMapPath !== 'inline') {
+    if (merged.sourceMap && merged.sourceMapPath !== 'inline') {
       const bundlePathExt = Path.extname(this.config.bundlePath)
       const bundlePathPrefix = this.config.bundlePath.slice(0, -1 * bundlePathExt.length)
       output.contents += `\n//# sourceMappingURL=${bundlePathPrefix}.${output.chunk.label}${bundlePathExt}.map\n`
