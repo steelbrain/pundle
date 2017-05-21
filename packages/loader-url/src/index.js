@@ -11,6 +11,7 @@ export default createLoader(async function(context: Context, config: Object, fil
   const contents = await fileSystem.readFile(file.filePath)
 
   return {
+    chunks: [],
     imports: [],
     sourceMap: {
       version: 3,

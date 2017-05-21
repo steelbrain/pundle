@@ -40,7 +40,7 @@ export class MessageIssue {
   message: string;
   severity: string;
 
-  // For backward compatibility with Error object
+  // For compatibility with Error object
   stack: string;
   constructor(message: string, severity: string = 'error') {
     invariant(typeof message === 'string' && message, 'Message must be a valid string')

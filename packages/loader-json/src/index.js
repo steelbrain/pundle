@@ -16,6 +16,7 @@ export default createLoader(function(context: Context, config: Object, file: Fil
   }
 
   return {
+    chunks: [],
     imports: [],
     sourceMap: {
       version: 3,
