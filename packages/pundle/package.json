@@ -27,6 +27,7 @@
     "chokidar": "^1.6.1",
     "lodash.differenceby": "^4.8.0",
     "lodash.uniq": "^4.5.0",
+    "merge-source-map": "^1.0.3",
     "pundle-api": "2.0.0-beta20",
     "pundle-browser": "2.0.0-beta20",
     "pundle-reporter-default": "2.0.0-beta20",
@@ -35,7 +36,6 @@
     "sb-debounce": "^1.0.2",
     "sb-event-kit": "^3.0.0",
     "sb-fs": "^2.0.0",
-    "sb-promisify": "^2.0.1",
-    "source-map": "^0.5.6"
+    "sb-promisify": "^2.0.1"
   }
 }
