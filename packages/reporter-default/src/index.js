@@ -23,7 +23,7 @@ const SEVERITIES = {
   },
 }
 
-export default createReporter(async function(context: Context, config: Object, error: Error | FileIssue | MessageIssue) {
+export default createReporter(async function(context: ?Context, config: Object, error: Error | FileIssue | MessageIssue) {
   if (typeof error !== 'object' || !error) {
     throw new Error(`Expected Error to be an object, got ${typeof error}:${String(error)}`)
   }
@@ -42,7 +42,7 @@ export default createReporter(async function(context: Context, config: Object, e
   } else if (error.constructor.name === 'SyntaxError') {
     const lastLine = error.stack.split(/\n/).shift()
     errorMessage += ` in ${lastLine}`
-  } else if (context.config.debug) {
+  } else if (context && context.config.debug) {
     stack = error.stack
   }
 

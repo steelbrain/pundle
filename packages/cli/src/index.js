@@ -206,7 +206,7 @@ command
       })
     }).catch(function(error) {
       process.exitCode = 1
-      reporterCLI.callback(reporterCLI.defaultConfig, error)
+      reporterCLI.callback(null, reporterCLI.defaultConfig, error)
     })
   })
   .parse(process.argv)
