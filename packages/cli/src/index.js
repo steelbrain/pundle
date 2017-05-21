@@ -7,6 +7,7 @@ import copy from 'sb-copy'
 import chalk from 'chalk'
 import command from 'sb-command'
 import fileSize from 'filesize'
+import promisify from 'sb-promisify'
 import difference from 'lodash.difference'
 import reporterCLI from 'pundle-reporter-default'
 import PundleDevServer from 'pundle-dev'
@@ -18,6 +19,7 @@ import manifestCLI from '../package.json'
 
 import * as Helpers from './helpers'
 
+const mkdirp = promisify(require('mkdirp'))
 const subscriptions = new CompositeDisposable()
 let pundleIsAlive = true
 function killPundle() {
@@ -47,23 +49,29 @@ command
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
   .option('--disable-cache', 'Disable use of dev server cache', false)
   .option('--debug', 'Enable stack traces of errors, useful for debugging', false)
-  .command('init [type]', 'Copy default Pundle configuration into root directory (type can be full or basic, defaults to basic)', async function(options, givenType) {
+  .command('new <name> [type]', 'Copy default Pundle configuration into new directory (type can be full or basic, defaults to basic)', async function(options, name, givenType) {
     const configType = givenType === 'full' ? 'full' : 'basic'
     Helpers.colorsIfAppropriate(chalk.cyan(`Using configuration type '${configType}'`))
 
+    const rootDirectory = Path.join(options.rootDirectory, name)
     const vendorDirectory = Path.normalize(Path.join(__dirname, '..', 'vendor'))
     const successful = new Set()
     const everything = new Set()
 
+    if (await FS.exists(rootDirectory)) {
+      throw new Error(`Target directory '${name}' already exists`)
+    }
+    await mkdirp(rootDirectory)
+
     try {
       const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
-      const configTarget = Path.resolve(options.rootDirectory, options.configFileName)
+      const configTarget = Path.resolve(rootDirectory, options.configFileName)
       if (!await FS.exists(configTarget)) {
         successful.add(Path.join(vendorDirectory, options.configFileName))
         await FS.writeFile(configTarget, await FS.readFile(configSource))
       }
 
-      await copy(vendorDirectory, options.rootDirectory, {
+      await copy(vendorDirectory, rootDirectory, {
         dotFiles: false,
         overwrite: false,
         failIfExists: false,
@@ -83,6 +91,7 @@ command
           }
         },
       })
+      Helpers.colorsIfAppropriate(`Initializing new app ${chalk.yellow(`'${name}'`)}`)
     } catch (error) {
       console.log(error)
       process.exitCode = 1
@@ -162,7 +171,7 @@ command
           const outputFilePathExt = Path.extname(outputFilePath)
           const outputSourceMapPathExt = outputSourceMapPath.endsWith('.js.map') ? '.js.map' : Path.extname(outputSourceMapPath)
 
-          await FS.mkdirp(outputDirectory)
+          await mkdirp(outputDirectory)
 
           outputs.forEach(function(output) {
             let contents = output.contents
