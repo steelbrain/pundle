@@ -20,6 +20,7 @@ import manifestCLI from '../package.json'
 import * as Helpers from './helpers'
 
 const mkdirp = promisify(require('mkdirp'))
+
 const subscriptions = new CompositeDisposable()
 let pundleIsAlive = true
 function killPundle() {

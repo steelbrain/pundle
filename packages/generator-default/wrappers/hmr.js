@@ -136,7 +136,7 @@ global.__sbPundle = global.__sbPundle || {
     }
 
     const requestedChunks = [].concat(requestedChunk)
-    requestedChunks.forEach(entry => {
+    requestedChunks.forEach((entry) => {
       const chunkId = this.mapChunks[entry]
       if (!this.chunks[chunkId]) {
         let resolve

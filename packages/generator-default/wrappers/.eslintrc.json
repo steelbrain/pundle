@@ -6,7 +6,8 @@
     "guard-for-in": "off",
     "no-unused-vars": "off",
     "no-use-before-define": "off",
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "import/no-dynamic-require": "off"
   },
   "globals": {
     "SB_PUNDLE_PUBLIC_PRE": true,

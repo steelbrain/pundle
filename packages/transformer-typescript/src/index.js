@@ -22,7 +22,7 @@ export default createTransformer(async function(context: Context, config: Object
   const typescript = require(typescriptPath)
   const processed = typescript.transpileModule(
     file.contents,
-    Object.assign({}, config.config)
+    Object.assign({}, config.config),
   )
 
   const contents = processed.outputText

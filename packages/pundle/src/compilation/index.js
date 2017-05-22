@@ -83,7 +83,7 @@ export default class Compilation {
     oldFiles: Map<string, File>,
     useCache: boolean,
     forceOverwrite: boolean = false,
-    tickCallback: ((oldFile: ?File, file: File) => any)
+    tickCallback: ((oldFile: ?File, file: File) => any),
   ): Promise<boolean> {
     let resolved
     if (typeof entry === 'string') {
@@ -124,12 +124,12 @@ export default class Compilation {
     }
     try {
       await Promise.all(file.imports.map(item =>
-        this.processFileTree(item, files, oldFiles, useCache, false, tickCallback)
+        this.processFileTree(item, files, oldFiles, useCache, false, tickCallback),
       ))
       await Promise.all(file.chunks.map(item =>
         Promise.all(item.imports.map(importEntry =>
-          this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback)
-        ))
+          this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback),
+        )),
       ))
     } catch (error) {
       if (oldFile) {
@@ -175,8 +175,8 @@ export default class Compilation {
           if (file.chunks.length) {
             chunks = chunks.concat(file.chunks)
           }
-        })
-      ))
+        }),
+      )),
     ))
     chunks.forEach(chunk => this.processChunk(chunk, files))
     for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
@@ -221,7 +221,7 @@ export default class Compilation {
       const newChunks = file.chunks
       const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
       const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
-      const unchangedChunks = oldChunks.filter(chunk => !~removedChunks.indexOf(chunk))
+      const unchangedChunks = oldChunks.filter(chunk => removedChunks.indexOf(chunk) !== -1)
 
       const oldImports = oldFile ? oldFile.imports : []
       const newImports = file.imports
@@ -275,8 +275,8 @@ export default class Compilation {
 
     await Promise.all(chunks.map(chunk =>
       Promise.all(chunk.entries.map(chunkEntry =>
-        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, tickCallback)
-      ))
+        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, tickCallback),
+      )),
     ))
 
     for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
@@ -302,7 +302,7 @@ export default class Compilation {
           }
         })
         return Promise.all(filesDepending.map(file =>
-          this.processFileTree(file.filePath, files, oldFiles, useCache, true, tickCallback)
+          this.processFileTree(file.filePath, files, oldFiles, useCache, true, tickCallback),
         ))
       })
       debounceRecompile()

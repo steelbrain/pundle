@@ -3,10 +3,11 @@
   "extends": "steelbrain",
   "rules": {
     "global-require": "off",
-    "no-param-reassign": 0,
-    "no-duplicate-imports": 0,
-    "import/no-duplicates": 0,
-    "import/prefer-default-export": 0
+    "no-param-reassign": "off",
+    "no-duplicate-imports": "off",
+    "import/no-duplicates": "off",
+    "import/prefer-default-export": "off",
+    "import/no-dynamic-require": "off"
   },
   "globals": {
     "Generator": true

@@ -89,7 +89,7 @@ class Server {
     })
 
     const serveFilledHtml = (req, res, next) => {
-      this.state.queue.then(() => FS.readFile(Path.join(this.pundle.config.rootDirectory, 'index.html'), 'utf8')).then(contents => {
+      this.state.queue.then(() => FS.readFile(Path.join(this.pundle.config.rootDirectory, 'index.html'), 'utf8')).then((contents) => {
         res.set('content-type', 'text/html')
         res.end(this.pundle.fill(contents, this.state.chunks, {
           publicRoot: Path.dirname(this.config.bundlePath),
@@ -191,7 +191,7 @@ class Server {
     }
 
     let generated
-    this.enqueue(() => this.generate(chunk).then(result => {
+    this.enqueue(() => this.generate(chunk).then((result) => {
       generated = result
     }))
     await this.state.queue

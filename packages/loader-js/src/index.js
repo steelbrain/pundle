@@ -44,13 +44,13 @@ export default createLoader(function(context: Context, config: Object, file: Fil
     }
   }
 
-  const processResolve = node => {
+  const processResolve = (node) => {
     const request = context.getImportRequest(node.value, file.filePath)
     imports.push(request)
     node.value = request.id.toString()
     // NOTE: ^ Casting it to string is VERY VERY important, it breaks everything otherwise
   }
-  const processReplaceable = path => {
+  const processReplaceable = (path) => {
     const name = Helpers.getName(path.node)
     if ({}.hasOwnProperty.call(context.config.replaceVariables, name)) {
       path.replaceWith(Helpers.getParsedReplacement(context.config.replaceVariables[name]))

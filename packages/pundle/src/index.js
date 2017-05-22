@@ -59,7 +59,7 @@ class Pundle {
     }
 
     // TODO: Resolve components relative of their preset path
-    const loadables = preset.map(entry => {
+    const loadables = preset.map((entry) => {
       if (presetConfig[entry.name] === false) {
         return false
       }

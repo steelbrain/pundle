@@ -63,7 +63,7 @@ const findManifestCached = memoize(async function (givenFileDirectory: string, c
   if (fileDirectory === limitPath || fileDirectory === '/' || fileDirectory.slice(-2) === ':\\') {
     return null
   }
-  return await findManifestCached(Path.dirname(fileDirectory), config, cached, pundleConfig)
+  return findManifestCached(Path.dirname(fileDirectory), config, cached, pundleConfig)
 }, { async: true })
 
 export function findManifest(fileDirectory: string, config: Object, cached: boolean, pundleConfig: PundleConfig): Promise<?string> {
