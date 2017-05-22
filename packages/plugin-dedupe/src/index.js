@@ -13,7 +13,8 @@ export default createResolver(async function(context: Context, config: Object, g
     return null
   }
   const result = await context.resolveAdvanced(givenRequest, fromFile, cached)
-  if (!result || !result.targetManifest || !result.targetManifest.version) {
+  const resultTargetManifest = result.targetManifest
+  if (!result || !resultTargetManifest || !resultTargetManifest.version) {
     return null
   }
   const moduleName = Helpers.getModuleName(givenRequest)
@@ -21,7 +22,7 @@ export default createResolver(async function(context: Context, config: Object, g
   const requestedVersion = Helpers.getRequiredVersion(result.sourceManifest, moduleName)
 
   // NOTE: if requestedVersion exists, use that, otherwise use targetManifest key to cache and then quit, caching will help for future resolves
-  const cacheVersion = requestedVersion || result.targetManifest.version
+  const cacheVersion = requestedVersion || resultTargetManifest.version
   let matched = null
   for (const entry of versions) {
     if (semver.satisfies(entry.version, cacheVersion)) {
@@ -31,15 +32,19 @@ export default createResolver(async function(context: Context, config: Object, g
         matched = entry
       }
     } else if (config.debug) {
+      if (!fromFile) {
+        // TODO: Handle this gracefully
+        throw new Error(`${moduleName} v${entry.version} did not match ${cacheVersion}`)
+      }
       context.report(new MessageIssue(`${moduleName} v${entry.version} did not match ${cacheVersion} from ${getRelativeFilePath(fromFile, context.config.rootDirectory)}`, 'info'))
     }
   }
   if (!matched) {
-    matched = result.targetManifest
+    matched = resultTargetManifest
     versions.add(matched)
   }
   const newResult = {
-    filePath: Path.join(matched.rootDirectory, Path.relative(result.targetManifest.rootDirectory, result.filePath)),
+    filePath: Path.join(matched.rootDirectory, Path.relative(resultTargetManifest.rootDirectory, result.filePath)),
     sourceManifest: result.sourceManifest,
     targetManifest: matched,
   }

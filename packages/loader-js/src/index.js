@@ -20,7 +20,7 @@ const RESOLVE_NAMES_SENSITIVE = new Set([
   'require.resolve',
 ])
 
-export default createLoader(function(context: Context, config: Object, file: File): ?LoaderResult {
+export default createLoader(async function(context: Context, config: Object, file: File): Promise<?LoaderResult> {
   if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
   }

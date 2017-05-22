@@ -2,9 +2,9 @@
 
 // TODO: Store loc in import requests so we can show that in not found errors
 
-import type { FileIssue, MessageIssue } from './src/issues'
+import type { FileIssue, MessageIssue } from './lib/issues'
 
-export type { FileIssue, MessageIssue } from './src/issues'
+export type { FileIssue, MessageIssue } from './lib/issues'
 
 export type ComponentRule = string | RegExp
 export type ComponentRules = {
@@ -61,23 +61,23 @@ export type LoaderResult = {
   contents: string,
   sourceMap: ?Object,
 }
-export type LoaderCallback = ((config: Object, file: File) => Promise<?LoaderResult>)
+export type LoaderCallback = ((context: Object, config: Object, file: File) => Promise<?LoaderResult>)
 export type Loader = Component<'loader', LoaderCallback>
 
 export type PluginResult = void
-export type PluginCallback = ((config: Object, file: File) => Promise<?PluginResult>)
+export type PluginCallback = ((context: Object, config: Object, file: File) => Promise<?PluginResult>)
 export type Plugin = Component<'plugin', PluginCallback>
 
 export type ResolverResult = {
   filePath: string,
   sourceManifest: Object,
-  targetManifest: Object,
+  targetManifest: ?Object,
 }
-export type ResolverCallback = ((config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?ResolverResult>)
+export type ResolverCallback = ((context: Object, config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?ResolverResult>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
 export type ReporterResult = void
-export type ReporterCallback = ((config: Object, error: Error | FileIssue | MessageIssue) => Promise<ReporterResult>)
+export type ReporterCallback = ((context: Object, config: Object, error: Error | FileIssue | MessageIssue) => Promise<ReporterResult>)
 export type Reporter = Component<'reporter', ReporterCallback>
 
 export type GeneratorResult = {
@@ -86,46 +86,46 @@ export type GeneratorResult = {
   sourceMap: Object,
   filesGenerated: Array<string>,
 }
-export type GeneratorCallback = ((config: Object, chunk: FileChunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
+export type GeneratorCallback = ((context: Object, config: Object, chunk: FileChunk, runtimeConfig: Object) => Promise<?GeneratorResult>)
 export type Generator = Component<'generator', GeneratorCallback>
 
 export type TransformerResult = {
   contents: string,
   sourceMap: ?Object,
 }
-export type TransformerCallback = ((config: Object, file: File) => Promise<?TransformerResult>)
+export type TransformerCallback = ((context: Object, config: Object, file: File) => Promise<?TransformerResult>)
 export type Transformer = Component<'transformer', TransformerCallback>
 
 export type PostTransformerResult = {
   contents: string,
   sourceMap: ?Object,
 }
-export type PostTransformerCallback = ((config: Object, contents: string) => Promise<?PostTransformerResult>)
+export type PostTransformerCallback = ((context: Object, config: Object, contents: string) => Promise<?PostTransformerResult>)
 export type PostTransformer = Component<'post-transformer', PostTransformerCallback>
 
 export type ChunkTransformerResult = void
-export type ChunkTransformerCallback = ((config: Object, chunks: Array<FileChunk>) => Promise<?ChunkTransformerResult>)
+export type ChunkTransformerCallback = ((context: Object, config: Object, chunks: Array<FileChunk>) => Promise<?ChunkTransformerResult>)
 export type ChunkTransformer = Component<'chunk-transformer', ChunkTransformerCallback>
 
 export type WatcherCallbacks = {
-  tick?: ((file: File) => Promise<void> | void),
-  ready?: ((chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
-  compile?: ((chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
+  tick?: ((context: Object, config: Object, file: File) => Promise<void> | void),
+  ready?: ((context: Object, config: Object, chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
+  compile?: ((context: Object, config: Object, chunks: Array<FileChunk>, files: Map<string, File>) => Promise<void> | void),
 }
 export type Watcher = {
   $type: 'watcher',
   $apiVersion: number,
   activate(config: Object): void,
-  tick(file: File): Promise<void> | void,
-  ready(chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
-  compile(chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
+  tick(context: Object, config: Object, file: File): Promise<void> | void,
+  ready(context: Object, config: Object, chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
+  compile(context: Object, config: Object, chunks: Array<FileChunk>, files: Map<string, File>): Promise<void> | void,
   dispose(config: Object): void,
   defaultConfig: Object,
 }
 
 export type Preset = Array<{ component: string | Object, config: Object, name: string }>
 export type Loaded = [Object, Object]
-export type Loadable = string | [string, Object] | [Object, Object]
+export type Loadable = string | Object | [string, Object] | [Object, Object]
 // NOTE: This is the config is after transformation, not what Pundle accepts
 export type PundleConfig = {
   debug: boolean,

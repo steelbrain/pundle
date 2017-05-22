@@ -5,7 +5,7 @@ import FS from 'sb-fs'
 import Path from 'path'
 import Crypto from 'crypto'
 import invariant from 'assert'
-import type Pundle from 'pundle/src'
+import type Pundle from 'pundle'
 
 import type { ServerConfig, ServerConfigInput } from '../types'
 

@@ -3,7 +3,7 @@
 import { createLoader, shouldProcess, MessageIssue } from 'pundle-api'
 import type { Context, File } from 'pundle-api/types'
 
-export default createLoader(function(context: Context, config: Object, file: File) {
+export default createLoader(async function(context: Context, config: Object, file: File) {
   if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
   }

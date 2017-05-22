@@ -7,7 +7,7 @@ import express from 'express'
 import promiseDefer from 'promise.defer'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
-import type Pundle from 'pundle/src'
+import type Pundle from 'pundle'
 import type { File, FileChunk, GeneratorResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'

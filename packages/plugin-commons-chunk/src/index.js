@@ -3,7 +3,7 @@
 import { createChunkTransformer } from 'pundle-api'
 import type { File, FileChunk, Context, ChunkTransformerResult } from 'pundle-api/types'
 
-export default createChunkTransformer(function(context: Context, config: Object, chunks: Array<FileChunk>): ChunkTransformerResult {
+export default createChunkTransformer(async function(context: Context, config: Object, chunks: Array<FileChunk>): Promise<ChunkTransformerResult> {
   const known: Set<string> = new Set()
   const newChunkFiles: Map<string, File> = new Map()
 

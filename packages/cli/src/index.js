@@ -193,9 +193,16 @@ command
 
           const indexHtmlSource = Path.join(pundle.config.rootDirectory, 'index.html')
           const indexHtmlTarget = Path.join(outputDirectory, 'index.html')
+
+          const publicRoot = pundle.config.output.publicRoot
+          const bundlePath = pundle.config.output.bundlePath
+          if (!bundlePath || !publicRoot) {
+            // TODO: Make bundlePath and publicRoot required options
+            throw new Error('Config.output.bundlePath and config.output.publicRoot must not be null')
+          }
           const indexHtml = pundle.fill(await FS.readFile(indexHtmlSource, 'utf8'), outputs.map(o => o.chunk), {
-            publicRoot: pundle.config.output.publicRoot,
-            bundlePath: pundle.config.output.bundlePath,
+            publicRoot,
+            bundlePath,
           })
           await FS.writeFile(indexHtmlTarget, indexHtml)
           Helpers.colorsIfAppropriate(`Wrote ${chalk.red(fileSize(indexHtml.length))} to '${chalk.blue(Path.relative(options.rootDirectory, indexHtmlTarget))}'`)
@@ -207,7 +214,7 @@ command
       })
     }).catch(function(error) {
       process.exitCode = 1
-      reporterCLI.callback(null, reporterCLI.defaultConfig, error)
+      reporterCLI.callback({ config: { debug: false } }, reporterCLI.defaultConfig, error)
     })
   })
   .parse(process.argv)

@@ -69,6 +69,10 @@ export async function load(request: string | Object, rootDirectory: string): Pro
   if ((typeof mainModule === 'object' && mainModule) || typeof request === 'object') {
     return mainModule
   }
+  if (!resolved) {
+    // TODO: Structure this differently
+    throw new Error(`Request '${request}' not resolved correctly`)
+  }
   throw new MessageIssue(`Module '${request.toString()}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
 }
 

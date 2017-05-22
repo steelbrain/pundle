@@ -24,7 +24,7 @@ export default createResolver(async function(context: Context, config: Object, g
   }
 
   try {
-    return await context.resolve(givenRequest, fromFile, true)
+    return context.resolveAdvanced(givenRequest, fromFile, true)
   } catch (_) { /* No Op */ }
   if (!shouldProcess(context.config.rootDirectory, fromFile, config)) {
     return null
