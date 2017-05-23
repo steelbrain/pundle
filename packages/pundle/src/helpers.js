@@ -55,6 +55,7 @@ export async function load(request: string | Object, rootDirectory: string): Pro
     } catch (error) {
       if (error.code === 'MODULE_NOT_FOUND') {
         const newError = new Error(`Unable to resolve '${request}' from root directory. Make sure it's installed correctly`)
+        // $FlowIgnore: Custom prop
         newError.code = 'MODULE_NOT_FOUND'
         throw newError
       }

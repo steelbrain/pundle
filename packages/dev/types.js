@@ -3,7 +3,7 @@
 import type { File, FileChunk } from 'pundle-api/types'
 
 export type ServerConfig = {
-  hmrHost: ?string,
+  hmrHost?: ?string,
   hmrPath: string,
   useCache: boolean,
   hmrReports: boolean,
@@ -16,7 +16,7 @@ export type ServerConfig = {
 }
 
 export type ServerConfigInput = {
-  hmrHost: ?string,
+  hmrHost?: ?string,
   // NOTE: Must specify protocol, for example "https://google.com"
   hmrPath: ?string,
   // NOTE: ^ Set to null to disable hmr

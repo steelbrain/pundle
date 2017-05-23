@@ -71,7 +71,7 @@ export default class Compilation {
     await FS.writeFile(indexHtmlTarget, indexHtml)
   }
   async getPundle(development: boolean = false): Promise<Object> {
-    return await Pundle.create({
+    return Pundle.create({
       entry: ['./'],
       debug: this.options.debug,
 
@@ -116,7 +116,7 @@ export default class Compilation {
           config: await normalizeBabelConfig(this.projectPath, this.config.babel),
           extensions: ['js'],
         }],
-        createPlugin((_: Object, __: Object, file: Object) => {
+        createPlugin(async (_: Object, __: Object, file: Object) => {
           if (!development) {
             return
           }

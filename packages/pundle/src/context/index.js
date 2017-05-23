@@ -41,6 +41,7 @@ export default class Context {
       }
     }
     const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
+    // $FlowIgnore: Custom prop
     error.code = 'MODULE_NOT_FOUND'
     throw error
   }

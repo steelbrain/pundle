@@ -7,7 +7,6 @@ declare function describe(name: string, callback: (() => void)): void;
 
 declare class Error {
   name: string;
-  code: string;
   stack: string;
   message: string;
   fileName: string;

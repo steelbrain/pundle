@@ -3,13 +3,6 @@
   "version": "5.0.0-beta20-3",
   "description": "motion - moving development forward",
   "main": "lib/index.js",
-  "scripts": {
-    "clean": "rm -rf lib",
-    "compile": "npm run clean; babel src --out-dir lib --source-maps",
-    "watch": "npm run compile -- -w",
-    "lint": "eslint .",
-    "test": "apm test"
-  },
   "author": "Motion",
   "license": "MIT",
   "repository": "https://github.com/steelbrain/pundle",
@@ -46,11 +39,6 @@
   },
   "devDependencies": {
     "babel-cli": "^6.5.1",
-    "babel-eslint": "^6.0.0",
-    "babel-preset-steelbrain": "^5.0.2",
-    "eslint": "^2.4.0",
-    "eslint-config-airbnb": "^6.0.2",
-    "eslint-plugin-react": "^4.3.0",
-    "flow-bin": "^0.31.1"
+    "babel-preset-steelbrain": "^5.0.2"
   }
 }
