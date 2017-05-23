@@ -11,8 +11,8 @@
 <p align="center">
   <a href="http://badge.fury.io/js/motion"><img alt="npm version" src="https://badge.fury.io/js/motion.svg"></a>
   <a href="https://npmjs.org/package/motion"><img alt="Downloads" src="http://img.shields.io/npm/dm/motion.svg"></a>
-  <a href="https://circleci.com/gh/motion/motion/tree/master">
-    <img src="https://img.shields.io/circleci/project/motion/motion/master.svg" alt="CircleCI Build Status">
+  <a href="https://circleci.com/gh/steelbrain/pundle/tree/master">
+    <img src="https://img.shields.io/circleci/project/steelbrain/pundle/master.svg" alt="CircleCI Build Status">
   </a><br/>
   <a href="https://app.fossa.io/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmotion%2Fmotion?ref=badge_large" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmotion%2Fmotion.svg?size=large"/></a>
 </p>
@@ -58,7 +58,7 @@ Motion is a lightweight CLI for running any javascript. No configuration to mess
 
 Comes with:
 
-- Hot reloads - Hot reloads come out of the box, powered by [pundle](https://github.com/motion/pundle)
+- Hot reloads - Hot reloads come out of the box, powered by [pundle](https://github.com/steelbrain/pundle)
 - Automatic NPM installs - typing an import installs packages and works with HMR
 - Cached startup for really fast resuming of development
 
@@ -132,7 +132,7 @@ Motion is not opinionated on these but also doesn't get in your way. You can eas
 
 ## More information
 
-Motion uses pundle behind the scenes to provide lightning fast hot module reloads and a nice foundation for adding really advancted features. [Read more about pundle here](https://github.com/motion/pundle).
+Motion uses pundle behind the scenes to provide lightning fast hot module reloads and a nice foundation for adding really advancted features. [Read more about pundle here](https://github.com/steelbrain/pundle).
 
 ## Contributing
 

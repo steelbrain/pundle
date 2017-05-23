@@ -1,5 +1,5 @@
 <p align="center">
-  <img height="100px" src="https://raw.githubusercontent.com/motion/pundle/master/pundle-words.png">
+  <img height="100px" src="https://raw.githubusercontent.com/steelbrain/pundle/master/pundle-words.png">
 </p>
 
 <p align="center">
@@ -9,8 +9,8 @@
 <p align="center">
   <a href="http://badge.fury.io/js/pundle"><img alt="npm version" src="https://badge.fury.io/js/pundle.svg"></a>
   <a href="https://npmjs.org/package/pundle"><img alt="Downloads" src="http://img.shields.io/npm/dm/pundle.svg"></a>
-  <a href="https://circleci.com/gh/motion/pundle/tree/master">
-    <img src="https://img.shields.io/circleci/project/motion/pundle/master.svg" alt="CircleCI Build Status">
+  <a href="https://circleci.com/gh/steelbrain/pundle/tree/master">
+    <img src="https://img.shields.io/circleci/project/steelbrain/pundle/master.svg" alt="CircleCI Build Status">
   </a>
 </p>
 

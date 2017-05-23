@@ -12,7 +12,7 @@
   },
   "author": "Motion",
   "license": "MIT",
-  "repository": "https://github.com/motion/motion",
+  "repository": "https://github.com/steelbrain/pundle",
   "bin": {
     "motion": "./lib/bin/index.js"
   },

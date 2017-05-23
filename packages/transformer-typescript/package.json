@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/motion/pundle.git"
+    "url": "git+ssh://git@github.com/steelbrain/pundle.git"
   },
   "contributors": [
     "appsforartists",
@@ -17,9 +17,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/motion/pundle/issues"
+    "url": "https://github.com/steelbrain/pundle/issues"
   },
-  "homepage": "https://github.com/motion/pundle#readme",
+  "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
     "pundle-api": "2.0.0-beta20"
   }
