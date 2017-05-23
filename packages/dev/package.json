@@ -30,6 +30,6 @@
     "ws": "^1.1.1"
   },
   "optionalDependencies": {
-    "uws": "^0.12.0"
+    "uws": "^0.14.5"
   }
 }
