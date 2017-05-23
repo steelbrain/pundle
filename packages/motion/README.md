@@ -1,4 +1,4 @@
-![Motion](https://raw.githubusercontent.com/motion/motion/master/o.jpg)
+![Motion](https://cloud.githubusercontent.com/assets/4278113/26378558/832d15e2-402e-11e7-9d06-7facf12466bf.jpg)
 
 <p align="center">
   A simple CLI for running React projects.
