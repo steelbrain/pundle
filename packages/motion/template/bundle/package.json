@@ -4,5 +4,9 @@
   "license": "",
   "author": "",
   "private": true,
-  "dependencies": { }
+  "dependencies": {},
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-preset-steelbrain": "^5.0.2"
+  }
 }
