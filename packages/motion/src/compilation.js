@@ -10,7 +10,7 @@ import { CompositeDisposable } from 'sb-event-kit'
 import type { GeneratorResult } from 'pundle-api/types'
 
 import CLI from './cli'
-import { TICK, normalizeBabelConfig, getNpmErrorMessage } from './helpers'
+import { TICK, getNpmErrorMessage } from './helpers'
 import type { Config, Options } from './types'
 
 export default class Compilation {
@@ -113,7 +113,7 @@ export default class Compilation {
         }],
         [require.resolve('pundle-transformer-babel'), {
           babelPath: require.resolve('babel-core'),
-          config: await normalizeBabelConfig(this.projectPath, this.config.babel),
+          config: this.config.babel,
           extensions: ['js'],
         }],
         createPlugin(async (_: Object, __: Object, file: Object) => {
