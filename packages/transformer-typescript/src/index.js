@@ -21,7 +21,7 @@ export default createTransformer(async function(context: Context, config: Object
   // $FlowIgnore: Flow doesn't like dynamic requires
   const typescript = require(typescriptPath)
   const processed = typescript.transpileModule(
-    file.contents,
+    file.getContents(),
     Object.assign({}, config.config),
   )
 

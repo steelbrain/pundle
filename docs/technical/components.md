@@ -43,7 +43,7 @@ module.exports = createLoader(function(config, file) {
 
   let parsed
   try {
-    parsed = JSON.parse(file.contents)
+    parsed = JSON.parse(file.getContents())
   } catch (_) {
     throw new MessageIssue(`Malformed JSON found at '${file.filePath}'`, 'error')
   }

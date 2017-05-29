@@ -30,7 +30,7 @@ export default createLoader(async function(context: Context, config: Object, fil
 
   let ast
   try {
-    ast = parse(file.contents, {
+    ast = parse(file.getContents(), {
       sourceType: 'module',
       sourceFilename: file.filePath,
       plugins: ['jsx', 'flow', '*'],

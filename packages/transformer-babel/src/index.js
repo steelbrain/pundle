@@ -20,7 +20,7 @@ export default createTransformer(async function(context: Context, config: Object
 
   let processed
   try {
-    processed = babel.transform(file.contents, Object.assign({}, config.config, {
+    processed = babel.transform(file.getContents(), Object.assign({}, config.config, {
       filename: file.filePath,
       sourceMap: true,
       highlightCode: false,
