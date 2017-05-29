@@ -69,7 +69,7 @@ class Context {
 
       const childChunks: Map<number, FileChunk> = new Map()
       chunk.files.forEach(function(file) {
-        file.chunks.forEach(function(entry) {
+        file.getChunks().forEach(function(entry) {
           childChunks.set(entry.id, entry)
         })
       })
@@ -130,12 +130,12 @@ class Context {
     this.uid.set(label, uid)
     return uid
   }
-  getChunk(entries: ?Array<FileImport> = null, label: ?string = null, imports: ?Array<FileImport> = null, files: ?Map<string, File> = null): FileChunk {
+  getChunk(entries: ?Array<FileImport> = null, label: ?string = null, imports: ?Array<FileImport> = null): FileChunk {
     const id = this.getUID('chunk')
     return {
       id,
       label: label || id.toString(),
-      files: files || new Map(),
+      files: new Map(),
       entries: entries || [],
       imports: imports || [],
     }

@@ -214,7 +214,7 @@ command
       })
     }).catch(function(error) {
       process.exitCode = 1
-      reporterCLI.callback({ config: { debug: false } }, reporterCLI.defaultConfig, error)
+      console.error(error)
     })
   })
   .parse(process.argv)

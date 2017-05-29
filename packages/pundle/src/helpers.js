@@ -10,6 +10,7 @@ import { getRelativeFilePath, MessageIssue } from 'pundle-api'
 import type { File, PundleConfig, Loadable, Loaded } from 'pundle-api/types'
 
 const resolve = promisify(require('resolve'))
+const mkdirp = promisify(require('mkdirp'))
 
 export async function getCacheFilePath(directory: string): Promise<string> {
   const stateDirectory = Path.join(OS.homedir(), '.pundle')
@@ -17,7 +18,7 @@ export async function getCacheFilePath(directory: string): Promise<string> {
     await FS.stat(stateDirectory)
   } catch (error) {
     if (error.code === 'ENOENT') {
-      await FS.mkdir(stateDirectory)
+      await mkdirp(stateDirectory)
     } else throw error
   }
 
@@ -26,10 +27,10 @@ export async function getCacheFilePath(directory: string): Promise<string> {
 }
 export function unserializeFiles(files: Array<File>, oldFiles: Map<string, File>): Map<string, File> {
   files.forEach(function(file) {
-    file.chunks = file.chunks.map(chunk => ({
+    file.setChunks(file.getChunks().map(chunk => ({
       ...chunk,
       files: new Map(),
-    }))
+    })))
     oldFiles.set(file.filePath, file)
   })
   return oldFiles
@@ -37,7 +38,7 @@ export function unserializeFiles(files: Array<File>, oldFiles: Map<string, File>
 export function serializeFiles(files: Map<string, File>) {
   return Array.from(files.values()).map(file => ({
     ...file,
-    chunks: file.chunks.map(chunk => ({
+    chunks: file.getChunks().map(chunk => ({
       id: chunk.id,
       label: chunk.label,
       entries: chunk.entries,

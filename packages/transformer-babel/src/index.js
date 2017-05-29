@@ -29,7 +29,7 @@ export default createTransformer(async function(context: Context, config: Object
   } catch (error) {
     const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, context.config.rootDirectory)}`
     if (error.loc) {
-      throw new FileIssue(file.filePath, file.contents, error.loc.line, error.loc.column + 1, errorMessage, 'error')
+      throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column + 1, errorMessage, 'error')
     } else {
       throw new MessageIssue(errorMessage, 'error')
     }

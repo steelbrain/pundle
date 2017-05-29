@@ -3,7 +3,8 @@
 import unique from 'lodash.uniq'
 import invariant from 'assert'
 import mergeSourceMap from 'merge-source-map'
-import type { File, Context, ComponentConfigured } from '../../types'
+import type File from '../file'
+import type { ComponentConfigured } from '../../types'
 
 // NOTE: The reason we only count in loaders and not transformers even though they could be useful
 // in cases like typescript is because the typescript preset includes it's own resolver.
@@ -25,7 +26,7 @@ export function getAllKnownExtensions(components: Set<ComponentConfigured>): Arr
 
 // Notes:
 // - If we have sourceMap of previous steps but not of latest one, nuke previous sourceMap, it's invalid now
-export function mergeResult(file: File, result: ?{ contents: string, sourceMap: ?Object }): void {
+export function mergeResult(file: { contents: string, sourceMap: ?Object }, result: ?{ contents: string, sourceMap: ?Object }): void {
   if (!result) {
     return
   }

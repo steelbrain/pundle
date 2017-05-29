@@ -8,7 +8,8 @@ import promiseDefer from 'promise.defer'
 import { CompositeDisposable } from 'sb-event-kit'
 import { getRelativeFilePath, createWatcher, MessageIssue } from 'pundle-api'
 import type Pundle from 'pundle'
-import type { File, FileChunk, GeneratorResult } from 'pundle-api/types'
+import type { File } from 'pundle-api'
+import type { FileChunk, GeneratorResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
 import type { ServerConfig, ServerState, ServerConfigInput } from '../types'
@@ -174,7 +175,8 @@ class Server {
     this.writeToConnections({ type: 'report-clear' })
 
     const label = `hmr-${Date.now()}`
-    const chunk = this.pundle.context.getChunk(null, label, null, new Map(this.state.changed))
+    const chunk = this.pundle.context.getChunk(null, label, null)
+    chunk.files = new Map(this.state.changed)
     const generated = await this.generate(chunk, {
       sourceMapPath: 'inline',
       sourceMapNamespace: `hmr-${Date.now()}`,

@@ -16,7 +16,6 @@ const FEATURES = {
 const features = new Set(Object.values(FEATURES))
 
 class File {
-  id: number;
   filePath: string;
   contents: Buffer | string;
   sourceMap: ?Object;
@@ -26,8 +25,7 @@ class File {
   dependencyChunks: Array<FileChunk>;
   dependencyImports: Array<FileImport>;
 
-  constructor(id: number, filePath: string, contents: Buffer, lastModified: Date) {
-    this.id = id
+  constructor(filePath: string, contents: Buffer, lastModified: Date) {
     this.filePath = filePath
     this.contents = contents
     this.sourceMap = null
@@ -43,11 +41,20 @@ class File {
     }
     this.featuresUsed.add(feature)
   }
+  getFilePath(): string {
+    return this.filePath
+  }
+  getSource(): Buffer {
+    return this.sourceContents
+  }
   getContents(): string {
     return this.contents.toString()
   }
   getSourceMap(): ?Object {
     return this.sourceMap
+  }
+  getLastModified(): Date {
+    return this.lastModified
   }
   getChunks(): Array<FileChunk> {
     return this.dependencyChunks

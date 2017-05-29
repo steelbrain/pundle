@@ -38,7 +38,7 @@ export default createGenerator(async function(context: Context, config: Object, 
 
   for (const file of chunk.files.values()) {
     const publicPath = Helpers.getFilePath(context, config, file.filePath)
-    const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
+    const fileContents = `__sbPundle.registerModule("${publicPath}", function(__filename, __dirname, require, module, exports) {\n${file.getContents()}\n});`
     const fileSourceMap = file.sourceMap
 
     chunks.push(fileContents)
@@ -47,7 +47,7 @@ export default createGenerator(async function(context: Context, config: Object, 
     if (config.sourceMap) {
       if (fileSourceMap) {
         const sourceMapPath = Path.join(`$${config.sourceMapNamespace}`, Path.relative(context.config.rootDirectory, file.filePath))
-        Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.source, linesCount)
+        Helpers.mergeSourceMap(fileSourceMap, chunksMap, `pundle:///${sourceMapPath}`, file.getSource().toString(), linesCount)
       }
       linesCount += Helpers.getLinesCount(fileContents)
     }

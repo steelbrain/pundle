@@ -4,11 +4,11 @@ import Path from 'path'
 import invariant from 'assert'
 import ConfigFile from 'sb-config-file'
 import { CompositeDisposable, Emitter } from 'sb-event-kit'
+import { Context } from 'pundle-api'
 import type { File, FileChunk, PundleConfig, Loadable, GeneratorResult } from 'pundle-api/types'
 import type { Disposable } from 'sb-event-kit'
 
 import * as Helpers from './helpers'
-import Context from './context'
 import Compilation from './compilation'
 
 const UNIQUE_SIGNATURE_OBJ = {}

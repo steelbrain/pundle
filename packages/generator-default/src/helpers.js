@@ -66,8 +66,8 @@ export function getFileMappings(context: Context, chunk: FileChunk, config: Obje
     mappings[filePath].push(entry.id)
   }
   chunk.files.forEach(function(file) {
-    file.imports.forEach(processImport)
-    file.chunks.forEach(function(childChunk) {
+    file.getImports().forEach(processImport)
+    file.getChunks().forEach(function(childChunk) {
       childChunk.imports.forEach(processImport)
     })
   })

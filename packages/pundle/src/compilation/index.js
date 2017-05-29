@@ -4,9 +4,9 @@ import Path from 'path'
 import debounce from 'sb-debounce'
 import fileSystem from 'sb-fs'
 import differenceBy from 'lodash.differenceby'
-import { Context, MessageIssue } from 'pundle-api'
+import { File, Context, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
-import type { File, FileChunk, FileImport } from 'pundle-api/types'
+import type { FileChunk, FileImport } from 'pundle-api/types'
 
 import Watcher from './watcher'
 import { serializeImport, serializeChunk } from './helpers'
@@ -35,22 +35,16 @@ export default class Compilation {
       throw new Error('compilation.processFile() expects path to be an absolute path')
     }
 
-    const source = await fileSystem.readFile(filePath)
+    const contents = await fileSystem.readFile(filePath)
     const sourceStat = await fileSystem.stat(filePath)
-    const file = {
-      source,
-      chunks: [],
-      imports: [],
-      filePath,
-      contents: source,
-      sourceMap: null,
-      lastModified: sourceStat.mtime.getTime() / 1000,
-    }
+    const file = new File(filePath, contents, sourceStat.mtime)
 
     // Transformer
     for (const entry of this.context.getComponents('transformer')) {
       const transformerResult = await this.context.invokeComponent(entry, 'callback', [], [file])
-      Helpers.mergeResult(file, transformerResult)
+      if (transformerResult) {
+        file.mergeTransformation(transformerResult.contents, transformerResult.sourceMap)
+      }
     }
 
     // Loader
@@ -58,9 +52,9 @@ export default class Compilation {
     for (const entry of this.context.getComponents('loader')) {
       loaderResult = await this.context.invokeComponent(entry, 'callback', [], [file])
       if (loaderResult) {
-        Helpers.mergeResult(file, loaderResult)
-        file.chunks = file.chunks.concat(loaderResult.chunks)
-        file.imports = file.imports.concat(loaderResult.imports)
+        file.mergeTransformation(loaderResult.contents, loaderResult.sourceMap)
+        file.setChunks(file.getChunks().concat(loaderResult.chunks))
+        file.setImports(file.getImports().concat(loaderResult.imports))
         break
       }
     }
@@ -121,10 +115,10 @@ export default class Compilation {
       file = await this.processFile(resolved)
     }
     try {
-      await Promise.all(file.imports.map(item =>
+      await Promise.all(file.getImports().map(item =>
         this.processFileTree(item, files, oldFiles, useCache, false, tickCallback),
       ))
-      await Promise.all(file.chunks.map(item =>
+      await Promise.all(file.getChunks().map(item =>
         Promise.all(item.imports.map(importEntry =>
           this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback),
         )),
@@ -157,7 +151,7 @@ export default class Compilation {
         throw new Error(`${filePath} was not processed`)
       }
       chunk.files.set(filePath, file)
-      file.imports.forEach(entry => iterate(entry))
+      file.getImports().forEach(entry => iterate(entry))
     }
 
     chunk.entries.forEach(entry => iterate(entry))
@@ -170,8 +164,9 @@ export default class Compilation {
     await Promise.all(chunks.map(chunk =>
       Promise.all(chunk.entries.map(chunkEntry =>
         this.processFileTree(chunkEntry, files, oldFiles, useCache, false, function(_: ?File, file: File) {
-          if (file.chunks.length) {
-            chunks = chunks.concat(file.chunks)
+          const fileChunks = file.getChunks()
+          if (fileChunks.length) {
+            chunks = chunks.concat(fileChunks)
           }
         }),
       )),
@@ -215,14 +210,14 @@ export default class Compilation {
       }
     }
     const tickCallback = async (oldFile: ?File, file: File) => {
-      const oldChunks = oldFile ? oldFile.chunks : []
-      const newChunks = file.chunks
+      const oldChunks = oldFile ? oldFile.getChunks : []
+      const newChunks = file.getChunks()
       const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
       const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
       const unchangedChunks = oldChunks.filter(chunk => removedChunks.indexOf(chunk) !== -1)
 
-      const oldImports = oldFile ? oldFile.imports : []
-      const newImports = file.imports
+      const oldImports = oldFile ? oldFile.getImports : []
+      const newImports = file.getImports()
       const addedImports = differenceBy(newImports, oldImports, serializeImport)
       const removedImports = differenceBy(oldImports, newImports, serializeImport)
 
@@ -249,7 +244,7 @@ export default class Compilation {
         }
       })
       // NOTE: This is required for incremental HMR
-      file.chunks.forEach(function(chunk) {
+      file.getChunks().forEach(function(chunk) {
         const matchingChunk = unchangedChunks.find(entry => serializeChunk(entry) === serializeChunk(chunk))
         if (matchingChunk) {
           chunk.files = matchingChunk.files
@@ -295,7 +290,7 @@ export default class Compilation {
       enqueue(() => {
         const filesDepending = []
         files.forEach(function(file) {
-          if (file.imports.some(entry => entry.resolved === filePath)) {
+          if (file.getImports().some(entry => entry.resolved === filePath)) {
             filesDepending.push(file)
           }
         })
