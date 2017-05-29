@@ -170,3 +170,7 @@ export type Context = {
 }
 
 export type ComponentAny = Loader | Plugin | Resolver | Reporter | Generator | Transformer | PostTransformer | Watcher | ChunkTransformer
+export type ComponentConfigured = {
+  config: Object,
+  component: ComponentAny,
+}
