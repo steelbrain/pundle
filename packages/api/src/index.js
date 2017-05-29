@@ -6,6 +6,7 @@ export { version } from './helpers'
 export * from './rules'
 export * from './issues'
 export * from './components'
+export * from './file'
 
 export function getRelativeFilePath(filePath: string, rootDirectory: string): string {
   const relative = Path.relative(rootDirectory, filePath)

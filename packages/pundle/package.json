@@ -27,7 +27,6 @@
     "chokidar": "^1.6.1",
     "lodash.differenceby": "^4.8.0",
     "lodash.uniq": "^4.5.0",
-    "merge-source-map": "^1.0.3",
     "pundle-api": "2.0.0-beta20",
     "pundle-browser": "2.0.0-beta20",
     "pundle-reporter-default": "2.0.0-beta20",
