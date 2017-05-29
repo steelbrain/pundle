@@ -71,7 +71,7 @@ export class FileMessageIssue {
     this.column = column
     this.message = message
 
-    this.stack = `FileMessageIssue: ${message} in ${file}`
+    this.stack = `FileMessageIssue: ${message} at ${file}`
     if (line !== null) {
       this.stack += `${line}:${column || 0}`
     }

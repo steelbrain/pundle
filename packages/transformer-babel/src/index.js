@@ -1,6 +1,6 @@
 /* @flow */
 
-import { createTransformer, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
+import { createTransformer, shouldProcess, FileIssue, FileMessageIssue, MessageIssue } from 'pundle-api'
 import type { File, Context } from 'pundle-api/types'
 
 export default createTransformer(async function(context: Context, config: Object, file: File) {
@@ -27,11 +27,10 @@ export default createTransformer(async function(context: Context, config: Object
       sourceFileName: file.filePath,
     }))
   } catch (error) {
-    const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, context.config.rootDirectory)}`
     if (error.loc) {
-      throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column + 1, errorMessage, 'error')
+      throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column + 1, error.message, 'error')
     } else {
-      throw new MessageIssue(errorMessage, 'error')
+      throw new FileMessageIssue(file.getFilePath(), error.message)
     }
   }
   const contents = processed.code

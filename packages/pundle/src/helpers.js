@@ -6,7 +6,7 @@ import OS from 'os'
 import Path from 'path'
 import Crypto from 'crypto'
 import promisify from 'sb-promisify'
-import { getRelativeFilePath, MessageIssue } from 'pundle-api'
+import { MessageIssue, FileMessageIssue } from 'pundle-api'
 import type { File, PundleConfig, Loadable, Loaded } from 'pundle-api/types'
 
 const resolve = promisify(require('resolve'))
@@ -72,10 +72,9 @@ export async function load(request: string | Object, rootDirectory: string): Pro
     return mainModule
   }
   if (!resolved) {
-    // TODO: Structure this differently
-    throw new Error(`Request '${request}' not resolved correctly`)
+    throw new FileMessageIssue('$root', `Unable to resolve '${request}'`)
   }
-  throw new MessageIssue(`Module '${request.toString()}' (at '${getRelativeFilePath(resolved, rootDirectory)}') exported incorrectly`)
+  throw new FileMessageIssue(resolved, 'Module exported incorrectly')
 }
 
 export async function getLoadables(loadables: Array<Loadable>, rootDirectory: string): Promise<Array<Loaded>> {

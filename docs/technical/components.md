@@ -107,11 +107,10 @@ Plugin Components are general purpose components. They don't affect the output i
 Here's an example of a plugin that outputs the number of imports each file has
 
 ```js
-const { getRelativeFilePath, createPlugin, MessageIssue } = require('pundle-api')
+const { createPlugin, FileMessageIssue } = require('pundle-api')
 
 module.exports = createPlugin(function(config, file) {
-  const relativeFilePath = getRelativeFilePath(file.filePath, this.config.rootDirectory)
-  this.report(new MessageIssue(`File '${relativeFilePath}' has ${file.imports.length} imports`, 'info'))
+  this.report(new FileMessageIssue(file.getFilePath(), `File has ${file.imports.length} imports`, 'info'))
 }, {})
 ```
 

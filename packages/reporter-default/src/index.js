@@ -33,7 +33,7 @@ export default createReporter(async function(context: Context, config: Object, e
   const generatedType = chalk.bold[severity.background][severity.color](severity.title)
   let stack = ''
   if (error.constructor.name === 'FileIssue') {
-    // TODO: Also use error.file here
+    errorMessage += ` at ${error.file}`
     stack = codeFrame(error.contents, error.line, error.column, {
       highlightCode: chalk.supportsColor,
       linesAbove: 4,
@@ -41,10 +41,10 @@ export default createReporter(async function(context: Context, config: Object, e
     })
   } else if (error.constructor.name === 'SyntaxError') {
     const lastLine = error.stack.split(/\n/).shift()
-    errorMessage += ` in ${lastLine}`
+    errorMessage += ` at ${lastLine}`
   } else if (error.constructor.name === 'FileMessageIssue') {
     const relativePath = error.file === '$root' ? '$root' : getRelativeFilePath(error.file, this.config.rootDirectory)
-    errorMessage += ` in ${relativePath}`
+    errorMessage += ` at ${relativePath}`
     if (error.line !== null) {
       errorMessage += `:${error.line}:${error.column || 0}`
     }

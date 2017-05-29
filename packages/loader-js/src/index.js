@@ -3,7 +3,7 @@
 import { parse } from 'babylon'
 import traverse from 'babel-traverse'
 import generate from 'babel-generator'
-import { createLoader, shouldProcess, getRelativeFilePath, FileIssue, MessageIssue } from 'pundle-api'
+import { createLoader, shouldProcess, FileIssue, FileMessageIssue } from 'pundle-api'
 import type { Context, File, FileImport, FileChunk, LoaderResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
@@ -36,11 +36,10 @@ export default createLoader(async function(context: Context, config: Object, fil
       plugins: ['jsx', 'flow', '*'],
     })
   } catch (error) {
-    const errorMessage = `${error.message} in ${getRelativeFilePath(file.filePath, context.config.rootDirectory)}`
     if (error.loc) {
-      throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column + 1, errorMessage, 'error')
+      throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column + 1, error.message, 'error')
     } else {
-      throw new MessageIssue(errorMessage, 'error')
+      throw new FileMessageIssue(file.getFilePath(), error.message)
     }
   }
 

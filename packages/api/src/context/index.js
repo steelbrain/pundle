@@ -3,7 +3,7 @@
 import invariant from 'assert'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION } from '../helpers'
-import { MessageIssue } from '../issues'
+import { MessageIssue, FileMessageIssue } from '../issues'
 
 import File from '../file'
 import * as Helpers from './helpers'
@@ -49,11 +49,7 @@ class Context {
         return result
       }
     }
-    throw new Error('Module not found')
-    // TODO: Uncomment this
-    // const error = new Error(`Cannot find module '${request}'${from ? ` from '${getRelativeFilePath(from, this.config.rootDirectory)}'` : ''}`)
-    // error.code = 'MODULE_NOT_FOUND'
-    // throw error
+    throw new FileMessageIssue(from || this.config.rootDirectory, `Cannot find module '${request}'`)
   }
   async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
     const resolved = await this.resolveAdvanced(request, from, cached)
@@ -186,7 +182,7 @@ class Context {
 
     const mergedConfigs = Object.assign({}, entry.component.defaultConfig, entry.config, ...configs)
 
-    return entry.component[method](this, configs, ...parameters)
+    return entry.component[method](this, mergedConfigs, ...parameters)
   }
 }
 
