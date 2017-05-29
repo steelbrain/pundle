@@ -39,13 +39,21 @@ class Motion {
     if (!await this.exists()) {
       throw new Error('Unable to run, directory is not a motion app')
     }
-    await this.compilation.watch(this.options.useCache)
+    try {
+      await this.compilation.watch(this.options.useCache)
+    } catch (error) {
+      (await this.compilation.getPundle(true)).context.report(error)
+    }
   }
   async build(): Promise<void> {
     if (!await this.exists()) {
       throw new Error('Unable to run, directory is not a motion app')
     }
-    await this.compilation.build(this.options.useCache)
+    try {
+      await this.compilation.build(this.options.useCache)
+    } catch (error) {
+      (await this.compilation.getPundle(false)).context.report(error)
+    }
   }
   async init(overwrite: boolean = true): Promise<void> {
     if (await this.exists()) {
