@@ -51,3 +51,29 @@ export class MessageIssue {
     this.stack = `MessageIssue: ${severity.toUpperCase()}: ${message}`
   }
 }
+
+export class FileMessageIssue {
+  file: string;
+  line: ?number;
+  column: ?number;
+  message: string;
+
+  // For compatibility with Error object
+  stack: string;
+  constructor(file: string, message: string, line: ?number = null, column: ?number = null) {
+    invariant(typeof file === 'string' && file, 'File must be a valid string')
+    invariant(typeof message === 'string' && message, 'Message must be a valid string')
+    invariant(typeof line === 'number' || line === null, 'Line must be a valid number or null')
+    invariant(typeof column === 'number' || column === null, 'Column must be a valid number or null')
+
+    this.file = file
+    this.line = line
+    this.column = column
+    this.message = message
+
+    this.stack = `FileMessageIssue: ${message} in ${file}`
+    if (line !== null) {
+      this.stack += `${line}:${column || 0}`
+    }
+  }
+}

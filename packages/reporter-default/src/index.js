@@ -2,7 +2,7 @@
 
 import chalk from 'chalk'
 import codeFrame from 'babel-code-frame'
-import { createReporter } from 'pundle-api'
+import { createReporter, getRelativeFilePath } from 'pundle-api'
 import type { Context, FileIssue, MessageIssue } from 'pundle-api/types'
 
 const SEVERITIES = {
@@ -42,6 +42,12 @@ export default createReporter(async function(context: Context, config: Object, e
   } else if (error.constructor.name === 'SyntaxError') {
     const lastLine = error.stack.split(/\n/).shift()
     errorMessage += ` in ${lastLine}`
+  } else if (error.constructor.name === 'FileMessageIssue') {
+    const relativePath = error.file === '$root' ? '$root' : getRelativeFilePath(error.file, this.config.rootDirectory)
+    errorMessage += ` in ${relativePath}`
+    if (error.line !== null) {
+      errorMessage += `:${error.line}:${error.column || 0}`
+    }
   } else if (context.config.debug) {
     stack = error.stack
   }
