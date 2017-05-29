@@ -33,6 +33,8 @@ export type FileImport = {
   from: ?string,
   request: string,
   resolved: ?string,
+  type: 'es' | 'cjs',
+  namespaces: Array<string>,
 }
 export type FileChunk = {
   id: number,

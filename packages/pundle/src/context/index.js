@@ -125,7 +125,14 @@ export default class Context {
     }
   }
   getImportRequest(request: string, from: ?string = null): FileImport {
-    return { id: this.getUID('import'), request, resolved: null, from }
+    return {
+      id: this.getUID('import'),
+      request,
+      resolved: null,
+      from,
+      type: 'cjs',
+      namespaces: [],
+    }
   }
   addComponent(component: ComponentAny, config: Object): void {
     if (!component) {
