@@ -81,8 +81,16 @@ export default class Compilation {
     if (typeof entry === 'string') {
       resolved = entry
     } else {
-      resolved = await this.context.resolve(entry.request, entry.from, useCache)
-      entry.resolved = resolved
+      try {
+        resolved = await this.context.resolve(entry.request, entry.from, useCache)
+        entry.resolved = resolved
+      } catch (error) {
+        if (error.message.startsWith('Cannot find module') && error.file === entry.from) {
+          error.line = entry.line
+          error.column = entry.column
+        }
+        throw error
+      }
     }
     if (files.has(resolved) && !forceOverwrite) {
       return true

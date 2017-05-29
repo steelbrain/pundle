@@ -44,7 +44,7 @@ export default createLoader(async function(context: Context, config: Object, fil
   }
 
   const processResolve = (node) => {
-    const request = context.getImportRequest(node.value, file.filePath)
+    const request = context.getImportRequest(node.value, file.filePath, node.loc)
     imports.push(request)
     node.value = request.id.toString()
     // NOTE: ^ Casting it to string is VERY VERY important, it breaks everything otherwise

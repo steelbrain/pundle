@@ -1,7 +1,5 @@
 /* @flow */
 
-// TODO: Store loc in import requests so we can show that in not found errors
-
 import type { File, FileIssue, MessageIssue, Context } from './lib'
 
 export type { FileIssue, MessageIssue } from './lib/issues'
@@ -30,9 +28,11 @@ export type CallbackOrConfig<T> = T | {
 
 export type FileImport = {
   id: number,
-  from: ?string,
   request: string,
   resolved: ?string,
+  from: ?string,
+  line: ?number,
+  column: ?number,
   type: 'es' | 'cjs',
   namespaces: Array<string>,
 }

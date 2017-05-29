@@ -135,12 +135,22 @@ class Context {
       imports: imports || [],
     }
   }
-  getImportRequest(request: string, from: ?string = null): FileImport {
+  getImportRequest(request: string, from: ?string = null, loc: ?Object): FileImport {
+    let line = null
+    let column = null
+
+    if (loc) {
+      line = loc.start.line
+      column = loc.start.column
+    }
+
     return {
       id: this.getUID('import'),
       request,
       resolved: null,
       from,
+      line,
+      column,
       type: 'cjs',
       namespaces: [],
     }
