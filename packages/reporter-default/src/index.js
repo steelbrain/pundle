@@ -43,7 +43,7 @@ export default createReporter(async function(context: Context, config: Object, e
     const lastLine = error.stack.split(/\n/).shift()
     errorMessage += ` at ${lastLine}`
   } else if (error.constructor.name === 'FileMessageIssue') {
-    const relativePath = error.file === '$root' ? '$root' : getRelativeFilePath(error.file, this.config.rootDirectory)
+    const relativePath = error.file === '$root' ? '$root' : getRelativeFilePath(error.file, context.config.rootDirectory)
     errorMessage += ` at ${relativePath}`
     if (error.line !== null) {
       errorMessage += `:${error.line}:${error.column || 0}`
