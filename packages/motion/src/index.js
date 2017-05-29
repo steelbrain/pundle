@@ -33,7 +33,7 @@ class Motion {
     this.subscriptions.add(this.compilation)
   }
   async exists(): Promise<boolean> {
-    return await FS.exists(Path.join(this.projectPath, CONFIG_FILE_NAME))
+    return FS.exists(Path.join(this.projectPath, CONFIG_FILE_NAME))
   }
   async watch(): Promise<Disposable> {
     if (!await this.exists()) {

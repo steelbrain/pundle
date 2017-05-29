@@ -60,8 +60,7 @@ export async function normalizeBabelConfig(rootDirectory: string, config: Object
       }
       if (options) {
         presets.push([name, options])
-      }
-      else {
+      } else {
         presets.push([name])
       }
     }
@@ -80,6 +79,6 @@ export async function normalizeBabelConfig(rootDirectory: string, config: Object
   return {
     ...config,
     presets,
-    plugins
+    plugins,
   }
 }

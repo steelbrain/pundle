@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /* @flow */
 
-require('process-bootstrap')('motion')
-
 import Path from 'path'
 import command from 'sb-command'
 import manifest from '../../package.json'
 import { getMotion, messageNew, messageInit, messageBuild } from './helpers'
+
+require('process-bootstrap')('motion')
 
 const currentDirectory = process.cwd()
 

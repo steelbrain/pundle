@@ -5,7 +5,6 @@ import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION } from '../helpers'
 import { MessageIssue, FileMessageIssue } from '../issues'
 
-import File from '../file'
 import * as Helpers from './helpers'
 import type {
   FileChunk,
@@ -186,5 +185,4 @@ class Context {
   }
 }
 
-export { Context }
 export default Context

@@ -8,9 +8,9 @@ import unique from 'lodash.uniq'
 import stripAnsi from 'strip-ansi'
 import { exec } from 'sb-exec'
 import { Emitter, CompositeDisposable } from 'sb-event-kit'
+import type { Disposable } from 'sb-event-kit'
 
 import Vorpal from './vorpal'
-import type { Disposable } from 'sb-event-kit'
 import type { Config } from '../types'
 
 const SPINNER_GLUE = ' & '
@@ -99,11 +99,11 @@ export default class CLI {
     } else {
       const instance = new Ora({
         text,
-        color: 'yellow'
+        color: 'yellow',
       })
       this.spinner = {
         texts: [text],
-        instance
+        instance,
       }
       instance.start()
     }

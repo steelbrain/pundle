@@ -9,7 +9,6 @@ import command from 'sb-command'
 import fileSize from 'filesize'
 import promisify from 'sb-promisify'
 import difference from 'lodash.difference'
-import reporterCLI from 'pundle-reporter-default'
 import PundleDevServer from 'pundle-dev'
 import { CompositeDisposable } from 'sb-event-kit'
 

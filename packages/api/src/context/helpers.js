@@ -1,9 +1,7 @@
 /* @flow */
 
 import unique from 'lodash.uniq'
-import invariant from 'assert'
 import mergeSourceMap from 'merge-source-map'
-import type File from '../file'
 import type { ComponentConfigured } from '../../types'
 
 // NOTE: The reason we only count in loaders and not transformers even though they could be useful

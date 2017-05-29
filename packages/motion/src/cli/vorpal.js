@@ -47,10 +47,10 @@ export default class CLI {
     }
     this.addCommand(name, helpText, callback)
   }
-  log() {
+  log(...args: Array<any>) {
     const contents = []
-    for (let i = 0; i < arguments.length; ++i) {
-      const value = arguments[i]
+    for (let i = 0; i < args.length; ++i) {
+      const value = args[i]
       if (typeof value === 'string') {
         contents.push(value)
       } else if (value && value.constructor.name.endsWith('Error')) {
