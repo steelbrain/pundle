@@ -1,11 +1,11 @@
 /* @flow */
 
 import Path from 'path'
+import Context from './context'
+import { File, FEATURES } from './file'
 
 export { version } from './helpers'
 export * from './components'
-export * from './file'
-export * from './context'
 export * from './issues'
 export * from './rules'
 
@@ -15,4 +15,10 @@ export function getRelativeFilePath(filePath: string, rootDirectory: string): st
     return filePath
   }
   return relative
+}
+
+export {
+  File,
+  Context,
+  FEATURES,
 }

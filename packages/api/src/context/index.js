@@ -1,12 +1,13 @@
 /* @flow */
 
+import invariant from 'assert'
 import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION } from '../helpers'
 import { MessageIssue } from '../issues'
 
+import File from '../file'
 import * as Helpers from './helpers'
 import type {
-  File,
   FileChunk,
   FileImport,
   PundleConfig,
@@ -16,7 +17,7 @@ import type {
   ComponentConfigured,
 } from '../../types'
 
-export default class Context {
+class Context {
   uid: Map<string, number>;
   config: PundleConfig;
   components: Set<ComponentConfigured>;
@@ -28,8 +29,8 @@ export default class Context {
   }
   async report(report: Object): Promise<void> {
     let tried = false
-    for (const entry of Helpers.filterComponents(this.components, 'reporter')) {
-      await Helpers.invokeComponent(this, entry, 'callback', [], report)
+    for (const entry of this.getComponents('reporter')) {
+      await this.invokeComponent(entry, 'callback', [], [report])
       tried = true
     }
     if (!tried) {
@@ -38,12 +39,12 @@ export default class Context {
   }
   async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<ResolverResult> {
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
-    const filteredComponents = Helpers.filterComponents(this.components, 'resolver')
+    const filteredComponents = this.getComponents('resolver')
     if (!filteredComponents.length) {
       throw new MessageIssue('No module resolver configured in Pundle. Try adding pundle-resolver-default to your configuration', 'error')
     }
     for (const entry of filteredComponents) {
-      const result = await Helpers.invokeComponent(this, entry, 'callback', [{ knownExtensions }], request, from, cached)
+      const result = await this.invokeComponent(entry, 'callback', [{ knownExtensions }], [request, from, cached])
       if (result && result.filePath) {
         return result
       }
@@ -77,8 +78,13 @@ export default class Context {
       })
 
       let result
-      for (const entry of Helpers.filterComponents(this.components, 'generator')) {
-        result = await Helpers.invokeComponent(this, entry, 'callback', [this.config.output, { mappings: chunkMappings, label: chunk.label }, generateConfig], chunk)
+      for (const entry of this.getComponents('generator')) {
+        result = await this.invokeComponent(entry, 'callback', [this.config.output, {
+          label: chunk.label,
+          mappings: chunkMappings,
+        }, generateConfig], [
+          chunk,
+        ])
         if (result) {
           break
         }
@@ -87,8 +93,8 @@ export default class Context {
         throw new MessageIssue('No generator returned generated contents. Try adding pundle-generator-default to your configuration', 'error')
       }
       // Post-Transformer
-      for (const entry of Helpers.filterComponents(this.components, 'post-transformer')) {
-        const postTransformerResults = await Helpers.invokeComponent(this, entry, 'callback', [], result.contents)
+      for (const entry of this.getComponents('post-transformer')) {
+        const postTransformerResults = await this.invokeComponent(entry, 'callback', [], [result.contents])
         Helpers.mergeResult(result, postTransformerResults)
       }
       results.push(result)
@@ -144,6 +150,13 @@ export default class Context {
       namespaces: [],
     }
   }
+  getComponents(type: ?string = null): Array<ComponentConfigured> {
+    const entries = Array.from(this.components)
+    if (type) {
+      return entries.filter(i => i.component.$type === type)
+    }
+    return entries
+  }
   addComponent(component: ComponentAny, config: Object): void {
     if (!component) {
       throw new Error('Invalid component provided')
@@ -152,7 +165,7 @@ export default class Context {
       throw new Error('API version of component mismatches')
     }
     this.components.add({ component, config })
-    Helpers.invokeComponent(this, { component, config }, 'activate', [])
+    this.invokeComponent({ component, config }, 'activate', [], [])
     return new Disposable(() => {
       this.deleteComponent(component, config)
     })
@@ -161,10 +174,21 @@ export default class Context {
     for (const entry of this.components) {
       if (entry.config === config && entry.component === component) {
         this.components.delete(entry)
-        Helpers.invokeComponent(this, entry, 'dispose', [])
+        this.invokeComponent(entry, 'dispose', [], [])
         return true
       }
     }
     return false
   }
+  async invokeComponent(entry: ComponentConfigured, method: string, configs: Array<Object>, parameters: Array<any>): Promise<any> {
+    invariant(typeof entry === 'object' && entry, 'Component must be a valid object')
+    invariant(typeof entry.component[method] === 'function', `Component method '${method}' does not exist on given component`)
+
+    const mergedConfigs = Object.assign({}, entry.component.defaultConfig, entry.config, ...configs)
+
+    return entry.component[method](this, configs, ...parameters)
+  }
 }
+
+export { Context }
+export default Context

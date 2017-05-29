@@ -4,14 +4,12 @@ import Path from 'path'
 import debounce from 'sb-debounce'
 import fileSystem from 'sb-fs'
 import differenceBy from 'lodash.differenceby'
-import { MessageIssue } from 'pundle-api'
+import { Context, MessageIssue } from 'pundle-api'
 import { CompositeDisposable, Disposable } from 'sb-event-kit'
 import type { File, FileChunk, FileImport } from 'pundle-api/types'
 
 import Watcher from './watcher'
-import * as Helpers from '../context/helpers'
 import { serializeImport, serializeChunk } from './helpers'
-import type Context from '../context'
 
 export default class Compilation {
   context: Context;
@@ -50,15 +48,15 @@ export default class Compilation {
     }
 
     // Transformer
-    for (const entry of Helpers.filterComponents(this.context.components, 'transformer')) {
-      const transformerResult = await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
+    for (const entry of this.context.getComponents('transformer')) {
+      const transformerResult = await this.context.invokeComponent(entry, 'callback', [], [file])
       Helpers.mergeResult(file, transformerResult)
     }
 
     // Loader
     let loaderResult
-    for (const entry of Helpers.filterComponents(this.context.components, 'loader')) {
-      loaderResult = await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
+    for (const entry of this.context.getComponents('loader')) {
+      loaderResult = await this.context.invokeComponent(entry, 'callback', [], [file])
       if (loaderResult) {
         Helpers.mergeResult(file, loaderResult)
         file.chunks = file.chunks.concat(loaderResult.chunks)
@@ -71,8 +69,8 @@ export default class Compilation {
     }
 
     // Plugin
-    for (const entry of Helpers.filterComponents(this.context.components, 'plugin')) {
-      await Helpers.invokeComponent(this.context, entry, 'callback', [], file)
+    for (const entry of this.context.getComponents('plugin')) {
+      await this.context.invokeComponent(entry, 'callback', [], [file])
     }
 
     return file
@@ -179,8 +177,8 @@ export default class Compilation {
       )),
     ))
     chunks.forEach(chunk => this.processChunk(chunk, files))
-    for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
-      await Helpers.invokeComponent(this.context, entry, 'callback', [], chunks)
+    for (const entry of this.context.getComponents('chunk-transformer')) {
+      await this.context.invokeComponent(entry, 'callback', [], [chunks])
     }
 
     return chunks
@@ -205,12 +203,12 @@ export default class Compilation {
         // The user already knows the error from other callbacks
         return
       }
-      for (const entry of Helpers.filterComponents(this.context.components, 'chunk-transformer')) {
-        await Helpers.invokeComponent(this.context, entry, 'callback', [], cloned)
+      for (const entry of this.context.getComponents('chunk-transformer')) {
+        await this.context.invokeComponent(entry, 'callback', [], [cloned])
       }
-      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
+      for (const entry of this.context.getComponents('watcher')) {
         try {
-          await Helpers.invokeComponent(this.context, entry, 'compile', [], cloned, files)
+          await this.context.invokeComponent(entry, 'compile', [], [cloned, files])
         } catch (error) {
           this.context.report(error)
         }
@@ -264,9 +262,9 @@ export default class Compilation {
         }
       })
 
-      for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
+      for (const entry of this.context.getComponents('watcher')) {
         try {
-          await Helpers.invokeComponent(this.context, entry, 'tick', [], file)
+          await this.context.invokeComponent(entry, 'tick', [], [file])
         } catch (error) {
           this.context.report(error)
         }
@@ -279,9 +277,9 @@ export default class Compilation {
       )),
     ))
 
-    for (const entry of Helpers.filterComponents(this.context.components, 'watcher')) {
+    for (const entry of this.context.getComponents('watcher')) {
       try {
-        await Helpers.invokeComponent(this.context, entry, 'ready', [])
+        await this.context.invokeComponent(entry, 'ready', [], [])
       } catch (error) {
         this.context.report(error)
       }
