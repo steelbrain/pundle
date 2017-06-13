@@ -1,6 +1,6 @@
 {
   "name": "pundle-plugin-npm-installer",
-  "version": "2.0.0-beta21",
+  "version": "2.0.0-beta22",
   "description": "NPM Installer for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
     "promise.defer": "^1.0.0",
-    "pundle-api": "2.0.0-beta21",
+    "pundle-api": "2.0.0-beta22",
     "sb-exec": "^3.1.0"
   }
 }
