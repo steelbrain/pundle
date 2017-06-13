@@ -82,7 +82,9 @@ class Pundle {
     })
   }
   getCachedFiles(cache: ConfigFile, oldFiles: Map<string, File> = new Map()): Map<string, File> {
-    return Helpers.unserializeFiles(cache.getSync('files'), oldFiles)
+    // return Helpers.unserializeFiles(cache.getSync('files'), oldFiles)
+    // TODO: This is temporary because resuming from cache is broken with new File split to pundle-api
+    return new Map()
   }
   setCachedFiles(cache: ConfigFile, files: Map<string, File>): void {
     cache.setSync('files', Helpers.serializeFiles(files))
