@@ -19,6 +19,8 @@ import Installer from './installer'
 
 const locks = new Map()
 export default createResolver(async function(context: Context, config: Object, givenRequest: string, fromFile: ?string) {
+  // TODO: Temporarily disabling plugin-npm-installer in this release because it doesn't work
+  return null
   if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
     return null
   }
