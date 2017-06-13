@@ -1,6 +1,6 @@
 {
   "name": "pundle-generator-default",
-  "version": "2.0.0-beta20",
+  "version": "2.0.0-beta21",
   "description": "Default output generator for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "pundle-api": "2.0.0-beta20",
+    "pundle-api": "2.0.0-beta21",
     "sb-fs": "^2.0.0",
     "slash": "^1.0.0",
     "source-map": "^0.5.6",
