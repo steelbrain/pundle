@@ -218,7 +218,7 @@ export default class Compilation {
       }
     }
     const tickCallback = async (oldFile: ?File, file: File) => {
-      const oldChunks = oldFile ? oldFile.getChunks : []
+      const oldChunks = oldFile ? oldFile.getChunks() : []
       const newChunks = file.getChunks()
       const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
       const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
