@@ -6,7 +6,7 @@
   "scripts": {
     "test": "apm test",
     "lint": "eslint .",
-    "prepublish": "npm run wrappers-compile",
+    "prepare": "npm run wrappers-compile",
     "wrappers-compile": "PUNDLE_WRAPPER=hmr rollup -c; PUNDLE_WRAPPER=normal rollup -c",
     "wrappers-watch": "PUNDLE_WRAPPER=hmr rollup -c -w & PUNDLE_WRAPPER=normal rollup -c -w & wait"
   },
