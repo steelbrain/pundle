@@ -12,7 +12,7 @@ export default createTransformer(async function(context: Context, config: Object
   try {
     babelPath = await context.resolve(babelPath, null, true)
   } catch (_) {
-    throw new MessageIssue('Unable to find babel-core', 'error')
+    throw new MessageIssue('Unable to find babel-core. Please install it in your project root (transformer-babel)', 'error')
   }
 
   // $FlowIgnore: Flow doesn't like dynamic requires

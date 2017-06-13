@@ -8,7 +8,7 @@ export default createPostTransformer(async function(context: Context, config: Ob
   try {
     uglifyPath = await context.resolve('uglify-js', null, true)
   } catch (_) {
-    throw new MessageIssue('Unable to find uglify-js in project root', 'error')
+    throw new MessageIssue('Unable to find uglify-js. Please install it in your project root (post-transformer-uglify)', 'error')
   }
 
   // $FlowIgnore: Flow doesn't like dynamic requires

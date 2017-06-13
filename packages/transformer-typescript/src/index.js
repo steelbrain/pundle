@@ -13,7 +13,7 @@ export default createTransformer(async function(context: Context, config: Object
   try {
     typescriptPath = await context.resolve(typescriptPath, null, true)
   } catch (_) {
-    throw new MessageIssue('Unable to find typescript in project root', 'error')
+    throw new MessageIssue('Unable to find typescript. Please install it in your project root (transformer-typescript)', 'error')
   }
 
   // NOTE: Docs at
