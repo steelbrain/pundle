@@ -34,14 +34,14 @@ export const messageNew = (name: string) => coolTrim`
   ${chalk.yellow('To run motion in your new app, do')}
     $ cd ${name}
     $ npm install
-    $ motion
+    $ motion watch
 `
 
 export const messageInit = () => coolTrim`
   ${chalk.green('Motion initialized successfully! Enjoy')}
   ${chalk.yellow('To run motion in your new app, do')}
     $ npm install babel-preset-steelbrain babel-core
-    $ motion
+    $ motion watch
 `
 export const messageBuild = (distDirectory: string) => coolTrim`
   ${chalk.green('App built successfully')}

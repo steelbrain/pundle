@@ -42,9 +42,4 @@ command
       return motion.watch()
     })
   })
-  .default(function(options: Object) {
-    getMotion(options, currentDirectory, function(motion) {
-      return motion.watch()
-    })
-  })
   .process(process.argv)
