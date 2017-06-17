@@ -1,7 +1,8 @@
 /* @flow */
 
 import invariant from 'assert'
-import type { File, FileImport } from '../types'
+import { File } from './file'
+import type { FileImport } from '../types'
 
 export default class FileChunk {
   id: number;
@@ -88,5 +89,38 @@ export default class FileChunk {
   }
   clearImports(): void {
     this.imports = []
+  }
+  serialize(): Object {
+    const {
+      id,
+      label,
+      imports,
+      entries,
+    } = this
+
+    return {
+      version: 1,
+      id,
+      label,
+      imports,
+      entries,
+    }
+  }
+
+  static unserialize(serialized: Object): FileChunk {
+    invariant(serialized && typeof serialized === 'object', 'Serialized FileChunk must be an object')
+    invariant(serialized.version === 1, 'Serialized FileChunk version mismatch')
+
+    const {
+      id,
+      label,
+      imports,
+      entries,
+    } = serialized
+
+    const fileChunk = new FileChunk(id, label)
+    fileChunk.imports = imports
+    fileChunk.entries = entries
+    return fileChunk
   }
 }

@@ -6,8 +6,8 @@ import OS from 'os'
 import Path from 'path'
 import Crypto from 'crypto'
 import promisify from 'sb-promisify'
-import { MessageIssue, FileMessageIssue } from 'pundle-api'
-import type { File, PundleConfig, Loadable, Loaded } from 'pundle-api/types'
+import { File, MessageIssue, FileMessageIssue } from 'pundle-api'
+import type { PundleConfig, Loadable, Loaded } from 'pundle-api/types'
 
 const resolve = promisify(require('resolve'))
 const mkdirp = promisify(require('mkdirp'))
@@ -25,26 +25,15 @@ export async function getCacheFilePath(directory: string): Promise<string> {
   const inputHash = Crypto.createHash('sha1').update(directory).digest('hex')
   return Path.join(stateDirectory, `${inputHash}.json`)
 }
-export function unserializeFiles(files: Array<File>, oldFiles: Map<string, File>): Map<string, File> {
-  files.forEach(function(file) {
-    file.setChunks(file.getChunks().map(chunk => ({
-      ...chunk,
-      files: new Map(),
-    })))
-    oldFiles.set(file.filePath, file)
+export function unserializeFiles(unserializedFiles: Array<File>, filesMap: Map<string, File>): Map<string, File> {
+  unserializedFiles.forEach(function(serializedFile) {
+    const file = File.unserialize(serializedFile)
+    filesMap.set(file.filePath, file)
   })
-  return oldFiles
+  return filesMap
 }
 export function serializeFiles(files: Map<string, File>) {
-  return Array.from(files.values()).map(file => ({
-    ...file,
-    chunks: file.getChunks().map(chunk => ({
-      id: chunk.id,
-      label: chunk.label,
-      entries: chunk.entries,
-      imports: chunk.imports,
-    })),
-  }))
+  return Array.from(files.values()).map(file => file.serialize())
 }
 
 export async function load(request: string | Object, rootDirectory: string): Promise<Object> {

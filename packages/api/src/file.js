@@ -2,7 +2,8 @@
 
 import invariant from 'assert'
 import mergeSourceMap from 'merge-source-map'
-import type { FileChunk, FileImport } from '../types'
+import FileChunk from './file-chunk'
+import type { FileImport } from '../types'
 
 const FEATURES = {
   ES_IMPORT: 'ES_IMPORT',
@@ -109,6 +110,58 @@ class File {
       this.sourceMap = mergeSourceMap(this.sourceMap, sourceMap)
     }
     this.contents = contents
+  }
+  serialize(): Object {
+    const {
+      filePath,
+      contents,
+      sourceMap,
+      lastModified,
+      featuresUsed,
+      sourceContents,
+      dependencyChunks,
+      dependencyImports,
+    } = this
+
+    const chunks = dependencyChunks.map(c => c.serialize())
+    const imports = dependencyImports
+
+    return {
+      version: 1,
+      filePath,
+      contents: contents.toString(),
+      sourceMap,
+      lastModified,
+      featuresUsed,
+      sourceContents,
+      dependencyChunks: chunks,
+      dependencyImports: imports,
+    }
+  }
+
+  static unserialize(serialized: Object): File {
+    invariant(serialized && typeof serialized === 'object', 'Serialized File must be an object')
+    invariant(serialized.version === 1, 'Serialized File version mismatch')
+
+    const {
+      filePath,
+      contents,
+      sourceMap,
+      lastModified,
+      featuresUsed,
+      sourceContents,
+      dependencyChunks,
+      dependencyImports,
+    } = serialized
+
+    const file = new File(filePath, sourceContents, lastModified)
+    file.contents = Buffer.from(contents)
+    file.sourceMap = sourceMap
+    file.featuresUsed = featuresUsed
+    file.dependencyChunks = dependencyChunks.map(c => FileChunk.unserialize(c))
+    file.dependencyImports = dependencyImports
+
+    return file
   }
 }
 
