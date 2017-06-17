@@ -23,13 +23,13 @@ class File {
   filePath: string;
   contents: Buffer | string;
   sourceMap: ?Object;
-  lastModified: Date;
+  lastModified: number;
   featuresUsed: Set<string>;
   sourceContents: Buffer;
   dependencyChunks: Array<FileChunk>;
   dependencyImports: Array<FileImport>;
 
-  constructor(filePath: string, contents: Buffer, lastModified: Date) {
+  constructor(filePath: string, contents: Buffer, lastModified: number) {
     this.filePath = filePath
     this.contents = contents
     this.sourceMap = null
@@ -57,7 +57,7 @@ class File {
   getSourceMap(): ?Object {
     return this.sourceMap
   }
-  getLastModified(): Date {
+  getLastModified(): number {
     return this.lastModified
   }
   getChunks(): Array<FileChunk> {
@@ -123,9 +123,6 @@ class File {
       dependencyImports,
     } = this
 
-    const chunks = dependencyChunks.map(c => c.serialize())
-    const imports = dependencyImports
-
     return {
       version: 1,
       filePath,
@@ -133,9 +130,9 @@ class File {
       sourceMap,
       lastModified,
       featuresUsed,
-      sourceContents,
-      dependencyChunks: chunks,
-      dependencyImports: imports,
+      sourceContents: sourceContents.toString('utf8'),
+      dependencyChunks: dependencyChunks.map(c => c.serialize()),
+      dependencyImports,
     }
   }
 
@@ -154,7 +151,7 @@ class File {
       dependencyImports,
     } = serialized
 
-    const file = new File(filePath, sourceContents, lastModified)
+    const file = new File(filePath, Buffer.from(sourceContents), lastModified)
     file.contents = Buffer.from(contents)
     file.sourceMap = sourceMap
     file.featuresUsed = featuresUsed

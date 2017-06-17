@@ -37,7 +37,7 @@ export default class Compilation {
 
     const contents = await fileSystem.readFile(filePath)
     const sourceStat = await fileSystem.stat(filePath)
-    const file = new File(filePath, contents, sourceStat.mtime)
+    const file = new File(filePath, contents, sourceStat.mtime.getTime() / 1000)
 
     // Transformer
     for (const entry of this.context.getComponents('transformer')) {
@@ -96,13 +96,13 @@ export default class Compilation {
       return true
     }
 
-    let file
-    const oldFile = files.get(resolved)
-    if (oldFile === null) {
+    let newFile
+    const currentFile = files.get(resolved)
+    if (currentFile === null) {
       // It's locked and therefore in progress
       return true
     }
-    if (!oldFile && oldFiles.has(resolved) && useCache) {
+    if (!currentFile && oldFiles.has(resolved) && useCache) {
       // $FlowIgnore: It's a temp lock
       files.set(resolved, null)
       // ^ Lock the cache early to avoid double-processing because we await below
@@ -114,33 +114,33 @@ export default class Compilation {
       }
       const lastStateFile = oldFiles.get(resolved)
       if (lastStateFile && fileStat && (fileStat.mtime.getTime() / 1000) === lastStateFile.lastModified) {
-        file = lastStateFile
+        newFile = lastStateFile
       }
     }
-    if (!file) {
+    if (!newFile) {
       // $FlowIgnore: It's a temp lock
       files.set(resolved, null)
-      file = await this.processFile(resolved)
+      newFile = await this.processFile(resolved)
     }
     try {
-      await Promise.all(file.getImports().map(item =>
+      await Promise.all(newFile.getImports().map(item =>
         this.processFileTree(item, files, oldFiles, useCache, false, tickCallback),
       ))
-      await Promise.all(file.getChunks().map(item =>
+      await Promise.all(newFile.getChunks().map(item =>
         Promise.all(item.imports.map(importEntry =>
           this.processFileTree(importEntry, files, oldFiles, useCache, false, tickCallback),
         )),
       ))
     } catch (error) {
-      if (oldFile) {
-        files.set(resolved, oldFile)
+      if (currentFile) {
+        files.set(resolved, currentFile)
       } else {
         files.delete(resolved)
       }
       throw error
     }
-    await tickCallback(oldFile, file)
-    files.set(resolved, file)
+    await tickCallback(currentFile, newFile)
+    files.set(resolved, newFile)
     return true
   }
   // Helper method to attach files to a chunk from a files pool
@@ -169,7 +169,7 @@ export default class Compilation {
     const files: Map<string, File> = new Map()
     let chunks = this.context.config.entry.map((request) => {
       const chunk = this.context.getChunk()
-      chunk.addImport(this.context.getImportRequest(request))
+      chunk.addEntry(this.context.getImportRequest(request))
       return chunk
     })
 
@@ -194,7 +194,7 @@ export default class Compilation {
     let queue = Promise.resolve()
     const chunks: Array<FileChunk> = this.context.config.entry.map((request) => {
       const chunk = this.context.getChunk()
-      chunk.addImport(this.context.getImportRequest(request))
+      chunk.addEntry(this.context.getImportRequest(request))
       return chunk
     })
 
