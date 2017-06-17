@@ -3,6 +3,7 @@
 import Path from 'path'
 import Context from './context'
 import { File, FEATURES } from './file'
+import FileChunk from './file-chunk'
 
 export { version } from './helpers'
 export * from './components'
@@ -19,6 +20,7 @@ export function getRelativeFilePath(filePath: string, rootDirectory: string): st
 
 export {
   File,
+  FileChunk,
   Context,
   FEATURES,
 }
