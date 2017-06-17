@@ -16,6 +16,8 @@ const FEATURES = {
 const features = new Set(Object.values(FEATURES))
 
 class File {
+  static $pundle = true;
+
   filePath: string;
   contents: Buffer | string;
   sourceMap: ?Object;
