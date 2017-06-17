@@ -85,10 +85,6 @@ export default class Compilation {
         resolved = await this.context.resolve(entry.request, entry.from, useCache)
         entry.resolved = resolved
       } catch (error) {
-        if (error.message.startsWith('Cannot find module') && error.file === entry.from) {
-          error.line = entry.line
-          error.column = entry.column
-        }
         throw error
       }
     }

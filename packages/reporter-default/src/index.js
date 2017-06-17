@@ -34,7 +34,7 @@ export default createReporter(async function(context: Context, config: Object, e
   let stack = ''
   if (error.constructor.name === 'FileIssue') {
     errorMessage += ` at ${error.file}`
-    stack = codeFrame(error.contents, error.line, error.column, {
+    stack = codeFrame(error.contents, error.line, error.column + 1, {
       highlightCode: chalk.supportsColor,
       linesAbove: 4,
       linesBelow: 3,

@@ -31,8 +31,6 @@ export type FileImport = {
   request: string,
   resolved: ?string,
   from: ?string,
-  line: ?number,
-  column: ?number,
   type: 'es' | 'cjs',
   namespaces: Array<string>,
 }

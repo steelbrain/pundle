@@ -41,9 +41,7 @@ export function processEnsure(context: Context, file: File, chunks: Array<FileCh
 
   const chunk = context.getChunk(null, nodeName && nodeName.type === 'StringLiteral' ? nodeName.value : null)
   nodeEntry.elements.forEach((element) => {
-    chunk.imports.push(context.getImportRequest(
-      element.value, file.filePath, element.loc,
-    ))
+    chunk.imports.push(context.getImportRequest(element.value, file.filePath))
   })
   if (nodeCallback && nodeCallback.params.length) {
     const nodeCallbackParam = nodeCallback.params[0]
@@ -51,9 +49,7 @@ export function processEnsure(context: Context, file: File, chunks: Array<FileCh
       CallExpression({ node, scope }) {
         if (getName(node.callee) === nodeCallbackParam.name && !scope.getBinding(nodeCallbackParam.name)) {
           const argument = node.arguments[0]
-          const request = context.getImportRequest(
-            argument.value, file.filePath, argument.loc,
-          )
+          const request = context.getImportRequest(argument.value, file.filePath)
           chunk.imports.push(request)
           node.arguments[0].value = request.id.toString()
         }
@@ -74,9 +70,7 @@ export function processImport(context: Context, file: File, chunks: Array<FileCh
   if (!argument || argument.type !== 'StringLiteral') {
     return
   }
-  const importRequest = context.getImportRequest(
-    argument.value, file.filePath, argument.loc,
-  )
+  const importRequest = context.getImportRequest(argument.value, file.filePath)
   chunk.imports.push(importRequest)
 
   path.replaceWith(t.callExpression(

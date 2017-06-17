@@ -37,7 +37,7 @@ export default createLoader(async function(context: Context, config: Object, fil
     })
   } catch (error) {
     if (error.loc) {
-      throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column + 1, error.message, 'error')
+      throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column, error.message, 'error')
     } else {
       throw new FileMessageIssue(file.getFilePath(), error.message)
     }

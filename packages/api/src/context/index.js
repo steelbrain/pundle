@@ -129,22 +129,12 @@ class Context {
     const id = this.getUID('chunk')
     return new FileChunk(id, label)
   }
-  getImportRequest(request: string, from: ?string = null, loc: ?Object): FileImport {
-    let line = null
-    let column = null
-
-    if (loc) {
-      line = loc.start.line
-      column = loc.start.column
-    }
-
+  getImportRequest(request: string, from: ?string = null): FileImport {
     return {
       id: this.getUID('import'),
       request,
       resolved: null,
       from,
-      line,
-      column,
       type: 'cjs',
       namespaces: [],
     }

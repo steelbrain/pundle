@@ -4,9 +4,7 @@ import invariant from 'assert'
 
 const VALID_SEVERITIES = new Set(['info', 'warning', 'error'])
 
-// NOTE: This function accepts both lines and columns as 1-indexed
-// Babel by default has lines as 1-indexed and columns as 0-indexed,
-// you'll have to +1 them before feeding to FileIssue
+// NOTE: This function accepts lines as 1-indexed and columns as 0-indexed
 export class FileIssue {
   file: string;
   line: number;
@@ -32,7 +30,10 @@ export class FileIssue {
     this.contents = contents
     this.message = message
     this.severity = severity.toLowerCase()
-    this.stack = `FileIssue: ${message}\n    at ${file}:${line}:${column}`
+    this.$updateStack()
+  }
+  $updateStack() {
+    this.stack = `FileIssue: ${this.message}\n    at ${this.file}:${this.line}:${this.column}`
   }
 }
 
@@ -52,6 +53,7 @@ export class MessageIssue {
   }
 }
 
+// NOTE: This function accepts lines as 1-indexed and columns as 0-indexed
 export class FileMessageIssue {
   file: string;
   line: ?number;
@@ -71,9 +73,12 @@ export class FileMessageIssue {
     this.column = column
     this.message = message
 
-    this.stack = `FileMessageIssue: ${message} at ${file}`
-    if (line !== null) {
-      this.stack += `${line}:${column || 0}`
+    this.$updateStack()
+  }
+  $updateStack() {
+    this.stack = `FileMessageIssue: ${this.message} at ${this.file}`
+    if (this.line) {
+      this.stack += `${this.line}:${this.column || 0}`
     }
   }
 }
