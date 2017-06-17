@@ -5,9 +5,9 @@ import { Disposable } from 'sb-event-kit'
 import { version as API_VERSION } from '../helpers'
 import { MessageIssue, FileMessageIssue } from '../issues'
 
+import FileChunk from '../file-chunk'
 import * as Helpers from './helpers'
 import type {
-  FileChunk,
   FileImport,
   PundleConfig,
   ComponentAny,
@@ -55,7 +55,7 @@ class Context {
     return resolved.filePath
   }
   async generate(given: Array<FileChunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult>> {
-    const chunks: Array<Object> = given.slice()
+    const chunks: Array<FileChunk> = given.slice()
     const results = []
 
     for (let i = 0, length = chunks.length; i < length; i++) {
@@ -69,7 +69,7 @@ class Context {
         })
       })
       childChunks.forEach(function(entry) {
-        chunkMappings.chunks[entry.id] = entry.label
+        chunkMappings.chunks[entry.getId()] = entry.getLabel()
       })
 
       let result
@@ -125,15 +125,9 @@ class Context {
     this.uid.set(label, uid)
     return uid
   }
-  getChunk(entries: ?Array<FileImport> = null, label: ?string = null, imports: ?Array<FileImport> = null): FileChunk {
+  getChunk(label: ?string = null): FileChunk {
     const id = this.getUID('chunk')
-    return {
-      id,
-      label: label || id.toString(),
-      files: new Map(),
-      entries: entries || [],
-      imports: imports || [],
-    }
+    return new FileChunk(id, label)
   }
   getImportRequest(request: string, from: ?string = null, loc: ?Object): FileImport {
     let line = null

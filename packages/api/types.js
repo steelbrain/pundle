@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { File, FileIssue, MessageIssue, Context } from './lib'
+import type { File, FileChunk, FileIssue, MessageIssue, Context } from './lib'
 
 export type { FileIssue, MessageIssue } from './lib/issues'
 
@@ -35,13 +35,6 @@ export type FileImport = {
   column: ?number,
   type: 'es' | 'cjs',
   namespaces: Array<string>,
-}
-export type FileChunk = {
-  id: number,
-  label: string,
-  files: Map<string, File>,
-  entries: Array<FileImport>,
-  imports: Array<FileImport>,
 }
 
 export type LoaderResult = {
@@ -152,5 +145,6 @@ export type ComponentConfigured = {
 
 export type {
   File,
+  FileChunk,
   Context,
 }

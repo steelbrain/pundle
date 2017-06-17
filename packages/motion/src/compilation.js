@@ -59,7 +59,7 @@ export default class Compilation {
 
     await FS.mkdirp(Path.join(outputDirectory, '_'))
     await Promise.all(outputs.map(function(output) {
-      return FS.writeFile(Path.join(outputDirectory, '_', `bundle.${output.chunk.label}.js`), output.contents)
+      return FS.writeFile(Path.join(outputDirectory, '_', `bundle.${output.chunk.getIdOrLabel()}.js`), output.contents)
     }))
 
     const indexHtmlSource = Path.join(this.projectPath, 'index.html')

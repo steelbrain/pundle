@@ -1,5 +1,6 @@
 /* @flow */
 
+import invariant from 'assert'
 import mergeSourceMap from 'merge-source-map'
 import type { FileChunk, FileImport } from '../types'
 
@@ -68,19 +69,36 @@ class File {
     this.dependencyChunks = chunks
   }
   addChunk(chunk: FileChunk): void {
+    invariant(chunk && typeof chunk === 'object', 'chunk must be a valid object')
+
     this.dependencyChunks.push(chunk)
+  }
+  removeChunk(chunk: FileChunk): void {
+    invariant(chunk && typeof chunk === 'object', 'chunk must be a valid object')
+
+    const index = this.dependencyChunks.indexOf(chunk)
+    if (index !== -1) {
+      this.dependencyChunks.splice(index, 1)
+    }
   }
   getImports(): Array<FileImport> {
     return this.dependencyImports
   }
   setImports(imports: Array<FileImport>): void {
-    if (!Array.isArray(imports)) {
-      throw new Error('Imports must be an array')
-    }
+    invariant(Array.isArray(imports), 'Imports must be an array')
+
     this.dependencyImports = imports
   }
   addImport(entry: FileImport): void {
     this.dependencyImports.push(entry)
+  }
+  removeImport(fileImport: FileImport): void {
+    invariant(fileImport && typeof fileImport === 'object', 'chunk must be a valid object')
+
+    const index = this.dependencyImports.indexOf(fileImport)
+    if (index !== -1) {
+      this.dependencyImports.splice(index, 1)
+    }
   }
   mergeTransformation(contents: string, sourceMap: ?Object): void {
     if (this.sourceMap && !sourceMap) {

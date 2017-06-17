@@ -1,8 +1,7 @@
 /* @flow */
 
 import invariant from 'assert'
-import type { File } from './file'
-import type { FileImport } from '../types'
+import type { File, FileImport } from '../types'
 
 export default class FileChunk {
   id: number;
@@ -21,6 +20,15 @@ export default class FileChunk {
     this.entries = []
     this.imports = []
   }
+  getId(): number {
+    return this.id
+  }
+  getLabel(): ?string {
+    return this.label
+  }
+  getIdOrLabel(): string {
+    return this.label || this.id.toString()
+  }
   setFile(filePath: string, file: File): void {
     invariant(filePath && typeof filePath === 'string', 'filePath must be a string')
     invariant(file && typeof file === 'object' && file.constructor.$pundle, 'file must be a valid Pundle File')
@@ -38,7 +46,7 @@ export default class FileChunk {
     return this.files.get(filePath)
   }
   getFiles(): Map<string, File> {
-    return new Map(this.files)
+    return this.files
   }
   clearFiles(): void {
     this.files.clear()
@@ -57,7 +65,7 @@ export default class FileChunk {
     }
   }
   getEntries(): Array<FileImport> {
-    return this.entries.slice()
+    return this.entries
   }
   clearEntries(): void {
     this.entries = []
@@ -76,7 +84,7 @@ export default class FileChunk {
     }
   }
   getImports(): Array<FileImport> {
-    return this.imports.slice()
+    return this.imports
   }
   clearImports(): void {
     this.imports = []

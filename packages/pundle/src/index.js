@@ -112,7 +112,7 @@ class Pundle {
     const bundlePathWithoutExt = config.bundlePath.slice(0, -1 * bundlePathExt.length)
     chunks.forEach(function(chunk) {
       if (chunk.entries.length || (!chunk.imports.length && chunk.files.size)) {
-        primaryChunks.push(`  <script src="${Path.join(config.publicRoot, `${bundlePathWithoutExt}.${chunk.label}.js`)}"></script>`)
+        primaryChunks.push(`  <script src="${Path.join(config.publicRoot, `${bundlePathWithoutExt}.${chunk.getIdOrLabel()}.js`)}"></script>`)
       }
     })
 

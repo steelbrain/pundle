@@ -167,7 +167,11 @@ export default class Compilation {
   }
   async build(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Array<FileChunk>> {
     const files: Map<string, File> = new Map()
-    let chunks = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
+    let chunks = this.context.config.entry.map((request) => {
+      const chunk = this.context.getChunk()
+      chunk.addImport(this.context.getImportRequest(request))
+      return chunk
+    })
 
     await Promise.all(chunks.map(chunk =>
       Promise.all(chunk.entries.map(chunkEntry =>
@@ -188,7 +192,11 @@ export default class Compilation {
   }
   async watch(useCache: boolean, oldFiles: Map<string, File> = new Map()): Promise<Disposable> {
     let queue = Promise.resolve()
-    const chunks: Array<FileChunk> = this.context.config.entry.map(request => this.context.getChunk([this.context.getImportRequest(request)]))
+    const chunks: Array<FileChunk> = this.context.config.entry.map((request) => {
+      const chunk = this.context.getChunk()
+      chunk.addImport(this.context.getImportRequest(request))
+      return chunk
+    })
 
     const files: Map<string, File> = new Map()
     const watcher = new Watcher({

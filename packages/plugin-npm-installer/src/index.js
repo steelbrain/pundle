@@ -21,53 +21,6 @@ const locks = new Map()
 export default createResolver(async function(context: Context, config: Object, givenRequest: string, fromFile: ?string) {
   // TODO: Temporarily disabling plugin-npm-installer in this release because it doesn't work
   return null
-  if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
-    return null
-  }
-
-  try {
-    return context.resolveAdvanced(givenRequest, fromFile, true)
-  } catch (_) { /* No Op */ }
-  if (!shouldProcess(context.config.rootDirectory, fromFile, config)) {
-    return null
-  }
-
-  const moduleName = getModuleName(givenRequest)
-  try {
-    await context.resolve(`${moduleName}/package.json`, fromFile)
-    return null
-  } catch (_) { /* No Op */ }
-
-  const lock = locks.get(moduleName)
-  if (lock) {
-    return lock
-  }
-  const deferred = promiseDefer()
-  locks.set(moduleName, deferred.promise)
-
-  try {
-    if (!config.silent) {
-      context.report(new MessageIssue(`Installing '${moduleName}' in ${context.config.rootDirectory}`, 'info'))
-    }
-    config.beforeInstall(moduleName)
-    let error = null
-    try {
-      await Installer.install(moduleName, config.save, context.config.rootDirectory)
-    } catch (_) {
-      error = _
-    }
-    config.afterInstall(moduleName, error)
-    if (error && !config.silent) {
-      context.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
-    } else if (!error && !config.silent) {
-      context.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
-    }
-  } finally {
-    deferred.resolve(context.resolve(givenRequest, fromFile, false))
-  }
-  // This is, unfortunately, required. Making it wait on all installations saves us from a few race conditions
-  await Promise.all(locks.values())
-  return deferred.promise
 }, {
   save: false,
   silent: false,
