@@ -86,7 +86,7 @@ export default createResolver(async function(context: Context, config: Object, g
     request = resolveInManifestAndAlias(request, config.alias, manifest, config.packageMains)
   }
 
-  // NOTE: Empty is our special property in pundle-browser
+  // NOTE: Empty is our special property in pundle-browser exports
   if (isModuleOnly(request) && request !== 'empty' && pundleBrowser[request]) {
     return { filePath: pundleBrowser[request], sourceManifest: manifest, targetManifest: null }
   }
