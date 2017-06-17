@@ -39,7 +39,11 @@ command
   })
   .command('watch', 'Make the Motion CLI run Dev server and watch the files for changes', function(options: Object) {
     getMotion(options, currentDirectory, function(motion) {
-      return motion.watch()
+      return motion.watch().then(function(exitStatus) {
+        if (!exitStatus) {
+          process.exit(1)
+        }
+      })
     })
   })
   .process(process.argv)

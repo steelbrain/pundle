@@ -198,18 +198,17 @@ export default class Compilation {
     const watcher = new Watcher({
       usePolling: this.context.config.watcher.usePolling,
     })
+    const disposable = new Disposable(() => {
+      watcher.dispose()
+      this.subscriptions.delete(disposable)
+    })
+    this.subscriptions.add(disposable)
 
     const enqueue = callback => (queue = queue.then(callback).catch(e => this.context.report(e)))
     const triggerRecompile = async () => {
       await queue
       const cloned = chunks.slice()
-      try {
-        cloned.forEach(chunk => this.processChunk(chunk, files))
-      } catch (_) {
-        // In case of a missing import, quit silently
-        // The user already knows the error from other callbacks
-        return
-      }
+      cloned.forEach(chunk => this.processChunk(chunk, files))
       for (const entry of this.context.getComponents('chunk-transformer')) {
         await this.context.invokeComponent(entry, 'callback', [], [cloned])
       }
@@ -278,11 +277,16 @@ export default class Compilation {
       }
     }
 
-    await Promise.all(chunks.map(chunk =>
-      Promise.all(chunk.entries.map(chunkEntry =>
-        this.processFileTree(chunkEntry, files, oldFiles, useCache, false, tickCallback),
-      )),
-    ))
+    try {
+      await Promise.all(chunks.map(chunk =>
+        Promise.all(chunk.entries.map(chunkEntry =>
+          this.processFileTree(chunkEntry, files, oldFiles, useCache, false, tickCallback),
+        )),
+      ))
+    } catch (error) {
+      disposable.dispose()
+      throw error
+    }
 
     for (const entry of this.context.getComponents('watcher')) {
       try {
@@ -313,11 +317,6 @@ export default class Compilation {
       debounceRecompile()
     })
 
-    const disposable = new Disposable(() => {
-      watcher.dispose()
-      this.subscriptions.delete(disposable)
-    })
-    this.subscriptions.add(disposable)
     return disposable
   }
   dispose() {

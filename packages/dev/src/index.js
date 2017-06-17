@@ -66,10 +66,15 @@ class Server {
         this.connections.add(connection)
       })
     }
+    try {
+      this.subscriptions.add(await this.pundle.watch(this.config.useCache))
+    } catch (error) {
+      server.close()
+      throw error
+    }
     this.subscriptions.add(function() {
       server.close()
     })
-    this.subscriptions.add(await this.pundle.watch(this.config.useCache))
   }
   attachRoutes(app: Object): void {
     const bundlePathExt = Path.extname(this.config.bundlePath)

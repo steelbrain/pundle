@@ -26,6 +26,7 @@ export default class Compilation {
     this.projectPath = projectPath
     this.subscriptions = new CompositeDisposable()
 
+    this.subscriptions.add(this.cli)
     this.cli.onShouldBuild(() => this.build(this.options.useCache))
   }
   async watch(useCache: boolean): Promise<void> {

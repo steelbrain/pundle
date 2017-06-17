@@ -4,7 +4,7 @@ import FS from 'sb-fs'
 import copy from 'sb-copy'
 import Path from 'path'
 import ConfigFile from 'sb-config-file'
-import { CompositeDisposable, Disposable } from 'sb-event-kit'
+import { CompositeDisposable } from 'sb-event-kit'
 
 import Compilation from './compilation'
 import type { Config, Options } from './types'
@@ -35,7 +35,7 @@ class Motion {
   async exists(): Promise<boolean> {
     return FS.exists(Path.join(this.projectPath, CONFIG_FILE_NAME))
   }
-  async watch(): Promise<Disposable> {
+  async watch(): Promise<boolean> {
     if (!await this.exists()) {
       throw new Error('Unable to run, directory is not a motion app')
     }
@@ -43,7 +43,9 @@ class Motion {
       await this.compilation.watch(this.options.useCache)
     } catch (error) {
       (await this.compilation.getPundle(true)).context.report(error)
+      return false
     }
+    return true
   }
   async build(): Promise<void> {
     if (!await this.exists()) {

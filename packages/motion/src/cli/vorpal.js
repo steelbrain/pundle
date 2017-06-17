@@ -67,9 +67,9 @@ export default class CLI {
   }
   dispose() {
     if (this.active) {
-      this.instance.log(BYE_MESSAGE)
       this.instance.hide()
       this.active = false
+      this.log(BYE_MESSAGE)
     }
   }
 }
