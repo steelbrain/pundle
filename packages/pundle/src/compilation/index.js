@@ -117,17 +117,12 @@ export default class Compilation {
         newFile = lastStateFile
       }
     }
-    if (!newFile) {
-      try {
+    try {
+      if (!newFile) {
         // $FlowIgnore: It's a temp lock
         files.set(resolved, null)
         newFile = await this.processFile(resolved)
-      } catch (_) {
-        files.delete(resolved)
-        throw _
       }
-    }
-    try {
       await Promise.all(newFile.getImports().map(item =>
         this.processFileTree(item, files, oldFiles, useCache, false, tickCallback),
       ))
