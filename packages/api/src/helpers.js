@@ -22,3 +22,12 @@ export function makePromisedLock(callback: Function, keyCallback: Function): Fun
     })
   }
 }
+
+const PATH_EXTRACTION_REGEXP = /(.*?): /
+export function extractMessage(raw: string): string {
+  const matches = PATH_EXTRACTION_REGEXP.exec(raw)
+  if (matches) {
+    return raw.slice(matches[0].length)
+  }
+  return raw
+}

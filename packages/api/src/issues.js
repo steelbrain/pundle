@@ -1,6 +1,7 @@
 /* @flow */
 
 import invariant from 'assert'
+import { extractMessage } from './helpers'
 
 const VALID_SEVERITIES = new Set(['info', 'warning', 'error'])
 
@@ -19,8 +20,8 @@ export class FileIssue {
   constructor(file: string, contents: string, line: number, column: number, message: string, severity: string = 'error') {
     invariant(typeof file === 'string' && file, 'File must be a valid string')
     invariant(typeof contents === 'string' && contents, 'Contents must be a valid string')
-    invariant(typeof line === 'number' && line, 'Line must be a valid number')
-    invariant(typeof column === 'number' && column, 'Column must be a valid number')
+    invariant(typeof line === 'number' && line > -1, 'Line must be a valid number')
+    invariant(typeof column === 'number' && column > -1, 'Column must be a valid number')
     invariant(typeof message === 'string' && message, 'Message must be a valid string')
     invariant(VALID_SEVERITIES.has(severity), 'Severity must be valid')
 
@@ -28,7 +29,7 @@ export class FileIssue {
     this.line = line
     this.column = column
     this.contents = contents
-    this.message = message
+    this.message = extractMessage(message)
     this.severity = severity.toLowerCase()
     this.$updateStack()
   }
@@ -71,7 +72,7 @@ export class FileMessageIssue {
     this.file = file
     this.line = line
     this.column = column
-    this.message = message
+    this.message = extractMessage(message)
 
     this.$updateStack()
   }
