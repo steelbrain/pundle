@@ -118,9 +118,14 @@ export default class Compilation {
       }
     }
     if (!newFile) {
-      // $FlowIgnore: It's a temp lock
-      files.set(resolved, null)
-      newFile = await this.processFile(resolved)
+      try {
+        // $FlowIgnore: It's a temp lock
+        files.set(resolved, null)
+        newFile = await this.processFile(resolved)
+      } catch (_) {
+        files.delete(resolved)
+        throw _
+      }
     }
     try {
       await Promise.all(newFile.getImports().map(item =>
