@@ -1,6 +1,6 @@
 {
   "name": "pundle-reporter-default",
-  "version": "2.0.0-beta22",
+  "version": "2.0.0-beta23",
   "description": "CLI reporter for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
     "babel-code-frame": "^6.16.0",
-    "pundle-api": "2.0.0-beta22"
+    "pundle-api": "2.0.0-beta23"
   },
   "devDependencies": {}
 }

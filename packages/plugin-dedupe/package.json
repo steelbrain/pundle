@@ -1,6 +1,6 @@
 {
   "name": "pundle-plugin-dedupe",
-  "version": "2.0.0-beta22",
+  "version": "2.0.0-beta23",
   "description": "Dedupe plugin for Plugin",
   "main": "lib/index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "pundle-api": "2.0.0-beta22",
+    "pundle-api": "2.0.0-beta23",
     "semver": "^5.3.0"
   }
 }
