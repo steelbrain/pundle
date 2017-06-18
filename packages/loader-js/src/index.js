@@ -138,7 +138,7 @@ export default createLoader(async function(context: Context, config: Object, fil
     const requires = injections.imports.map(entry => `require(${entry})`).join(', ')
     const args = injections.names.join(', ')
     contents = `(function(${args}){\n${contents}\n})(${requires})`
-    // TODO: Add +1 to all lines in souremap
+    sourceMap = Helpers.incrementSourceMapLines(sourceMap, file.getFilePath(), contents, 1)
   }
 
   return {

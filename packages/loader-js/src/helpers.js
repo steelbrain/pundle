@@ -2,6 +2,7 @@
 
 import * as t from 'babel-types'
 import type { File, Context, FileChunk } from 'pundle-api/types'
+import { SourceMapGenerator, SourceMapConsumer } from 'source-map'
 
 export function getName(obj: Object): string {
   if (typeof obj.name === 'string') {
@@ -78,4 +79,19 @@ export function processImport(context: Context, file: File, chunks: Array<FileCh
     [t.stringLiteral(chunk.getId().toString()), t.stringLiteral(importRequest.id.toString())],
   ))
   chunks.push(chunk)
+}
+
+export function incrementSourceMapLines(sourceMap: Object, filePath: string, contents: string, linesToIncrement: number): Object {
+  const newMap = new SourceMapGenerator()
+  const entryMap = new SourceMapConsumer(sourceMap)
+  for (let i = 0, length = entryMap._generatedMappings.length; i < length; i++) {
+    const mapping = entryMap._generatedMappings[i]
+    newMap.addMapping({
+      source: filePath,
+      original: { line: mapping.originalLine, column: mapping.originalColumn },
+      generated: { line: mapping.generatedLine + linesToIncrement, column: mapping.generatedColumn },
+    })
+  }
+  newMap.setSourceContent(filePath, contents)
+  return newMap.toJSON()
 }
