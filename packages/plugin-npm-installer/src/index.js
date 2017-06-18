@@ -8,19 +8,63 @@ import type { Context } from 'pundle-api/types'
 import { getModuleName } from './helpers'
 import Installer from './installer'
 
-// Spec:
-// Do not attempt to install local modules
-// Do not attempt to install if request is resolvable
-// Do not attempt to install if request doesn't pass inclusion/exclusion requirements
-// Do not attempt to install if moduleName/package.json can be resolved
-// Invoke beforeInstall before installing the package
-// Try spawning npm and await on it, then invoke afterInstall callback
-// If invocation was successful, try resolving again and output whatever you get (do not catch)
-
 const locks = new Map()
-export default createResolver(async function(context: Context, config: Object, givenRequest: string, fromFile: ?string) {
-  // TODO: Temporarily disabling plugin-npm-installer in this release because it doesn't work
-  return null
+const name = '$steelbrain$npm$installer'
+export default createResolver({
+  name,
+  async callback(context: Context, config: Object, givenRequest: string, fromFile: ?string, cached: boolean, excluded: Array<string>) {
+    if (givenRequest.slice(0, 1) === '.' || Path.isAbsolute(givenRequest)) {
+      return null
+    }
+    const newExcluded = excluded.concat([name])
+
+    try {
+      // NOTE: Awaiting and then returning is VERY important
+      const result = await context.resolveAdvanced(givenRequest, fromFile, true, newExcluded)
+      return result
+    } catch (_) { /* No Op */ }
+
+    // NOTE: Make SURE the lock checking is BEFORE should process
+    const moduleName = getModuleName(givenRequest)
+    const lock = locks.get(moduleName)
+    if (lock) {
+      await lock
+      return context.resolveAdvanced(givenRequest, fromFile, false, newExcluded)
+    }
+    if (!shouldProcess(context.config.rootDirectory, fromFile, config)) {
+      return null
+    }
+
+    const deferred = promiseDefer()
+    locks.set(moduleName, deferred.promise)
+    try {
+      await context.resolveAdvanced(`${moduleName}/package.json`, fromFile, true, newExcluded)
+      deferred.promise.resolve()
+      return null
+    } catch (_) { /* No Op */ }
+
+    try {
+      if (!config.silent) {
+        context.report(new MessageIssue(`Installing '${moduleName}' in ${context.config.rootDirectory}`, 'info'))
+      }
+      config.beforeInstall(moduleName)
+      let error = null
+      try {
+        await Installer.install(moduleName, config.save, context.config.rootDirectory)
+      } catch (_) {
+        error = _
+      }
+      config.afterInstall(moduleName, error)
+      if (error && !config.silent) {
+        context.report(new MessageIssue(`Failed to install '${moduleName}'`, 'error'))
+      } else if (!error && !config.silent) {
+        context.report(new MessageIssue(`Installed '${moduleName}' successfully`, 'info'))
+      }
+    } finally {
+      deferred.resolve()
+    }
+    return context.resolveAdvanced(givenRequest, fromFile, true, newExcluded)
+  },
 }, {
   save: false,
   silent: false,

@@ -36,22 +36,22 @@ class Context {
       console.error(report)
     }
   }
-  async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true): Promise<ResolverResult> {
+  async resolveAdvanced(request: string, from: ?string = null, cached: boolean = true, exclude: Array<string> = []): Promise<ResolverResult> {
     const knownExtensions = Helpers.getAllKnownExtensions(this.components)
-    const filteredComponents = this.getComponents('resolver')
+    const filteredComponents = this.getComponents('resolver', exclude)
     if (!filteredComponents.length) {
       throw new MessageIssue('No module resolver configured in Pundle. Try adding pundle-resolver-default to your configuration', 'error')
     }
     for (const entry of filteredComponents) {
-      const result = await this.invokeComponent(entry, 'callback', [{ knownExtensions }], [request, from, cached])
+      const result = await this.invokeComponent(entry, 'callback', [{ knownExtensions }], [request, from, cached, exclude])
       if (result && result.filePath) {
         return result
       }
     }
     throw new FileMessageIssue(from || this.config.rootDirectory, `Cannot find module '${request}'`)
   }
-  async resolve(request: string, from: ?string = null, cached: boolean = true): Promise<string> {
-    const resolved = await this.resolveAdvanced(request, from, cached)
+  async resolve(request: string, from: ?string = null, cached: boolean = true, exclude: Array<string> = []): Promise<string> {
+    const resolved = await this.resolveAdvanced(request, from, cached, exclude)
     return resolved.filePath
   }
   async generate(given: Array<FileChunk>, generateConfig: Object = {}): Promise<Array<GeneratorResult>> {
@@ -139,10 +139,17 @@ class Context {
       namespaces: [],
     }
   }
-  getComponents(type: ?string = null): Array<ComponentConfigured> {
-    const entries = Array.from(this.components)
+  getComponents(type: ?string = null, exclude: Array<string> = []): Array<ComponentConfigured> {
+    let entries = Array.from(this.components)
     if (type) {
-      return entries.filter(i => i.component.$type === type)
+      entries = entries.filter(i => i.component.$type === type)
+    }
+    if (exclude.length) {
+      entries = entries.filter((entry) => {
+        // $FlowIgnore: I have no idea why name is an unknown property here
+        const name: ?string = entry.component.name
+        return !name || !exclude.includes(name)
+      })
     }
     return entries
   }

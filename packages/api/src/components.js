@@ -1,7 +1,7 @@
 /* @flow */
 
 import invariant from 'assert'
-import { version, makePromisedLock } from './helpers'
+import { version } from './helpers'
 import type {
   Component,
   CallbackOrConfig,
@@ -30,6 +30,7 @@ const noOp: any = function() { /* No Op */ }
 
 function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, type: T1): Component<T1, T2> {
   let callback
+  let name = null
   let activate = noOp
   let dispose = noOp
   if (typeof config === 'function') {
@@ -44,7 +45,11 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
       invariant(typeof config.dispose === 'function', 'config.dispose must be a function')
       dispose = config.dispose
     }
-    invariant(config.callback === 'function', 'config.callback must be a function')
+    if (config.name) {
+      invariant(typeof config.name === 'string', 'config.name must be a string')
+      name = config.name
+    }
+    invariant(typeof config.callback === 'function', 'config.callback must be a function')
     callback = config.callback
   } else {
     throw new Error('Parameter 1 must be a function or config object')
@@ -55,6 +60,7 @@ function create<T1, T2>(config: CallbackOrConfig<T2>, defaultConfig: Object, typ
     $type: type,
     $apiVersion: version,
     activate,
+    name,
     callback,
     dispose,
     defaultConfig,
@@ -69,22 +75,7 @@ export function createPlugin(options: CallbackOrConfig<PluginCallback>, defaultC
   return create(options, defaultConfig, 'plugin')
 }
 
-// NOTE:
-// The reason why we have the option allowRecursive is to allow external resolvers to keep their logic simple
-// For example, default resolver would allow recusion and npm-installer wouldn't. NPM installer would try to
-// resolve different types of requests when determining wether it should or should not install the requested
-// dependency (while not processing them itself), such requests are to the default module resolver.
-// Doing this in the npm installer requires rewriting and wrapping it all in a try/finally block and making it
-// unnecessarily complex. Keeping the logic here allows reuse.
-export function createResolver(givenOptions: CallbackOrConfig<ResolverCallback>, defaultConfig: Object = {}, allowRecursive: boolean = true): Resolver {
-  let options = givenOptions
-  if (!allowRecursive) {
-    if (typeof options === 'function') {
-      options = makePromisedLock(options, (_, __, request, fromFile) => `${request}$${fromFile}`)
-    } else if (typeof options === 'object' && options) {
-      options.callback = makePromisedLock(options.callback, (_, __, request, fromFile) => `${request}$${fromFile}`)
-    }
-  }
+export function createResolver(options: CallbackOrConfig<ResolverCallback>, defaultConfig: Object = {}): Resolver {
   return create(options, defaultConfig, 'resolver')
 }
 

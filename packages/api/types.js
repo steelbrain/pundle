@@ -14,6 +14,7 @@ export type ComponentRules = {
 export type Component<T1, T2> = {
   $type: T1,
   $apiVersion: number,
+  name: ?string,
   activate(config: Object): void,
   callback: T2,
   dispose(config: Object): void,
@@ -53,7 +54,7 @@ export type ResolverResult = {
   sourceManifest: Object,
   targetManifest: ?Object,
 }
-export type ResolverCallback = ((context: Context, config: Object, request: string, fromFile: ?string, cached: boolean) => Promise<?ResolverResult>)
+export type ResolverCallback = ((context: Context, config: Object, request: string, fromFile: ?string, cached: boolean, excluded: Array<string>) => Promise<?ResolverResult>)
 export type Resolver = Component<'resolver', ResolverCallback>
 
 export type ReporterResult = void
