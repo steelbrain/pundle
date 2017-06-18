@@ -2,7 +2,7 @@
 
 import Path from 'path'
 import semver from 'semver'
-import { createResolver, getRelativeFilePath, MessageIssue } from 'pundle-api'
+import { createResolver, FileMessageIssue } from 'pundle-api'
 import type { Context } from 'pundle-api/types'
 import * as Helpers from './helpers'
 
@@ -45,7 +45,7 @@ export default createResolver({
           // TODO: Handle this gracefully
           throw new Error(`${moduleName} v${entry.version} did not match ${cacheVersion}`)
         }
-        context.report(new MessageIssue(`${moduleName} v${entry.version} did not match ${cacheVersion} from ${getRelativeFilePath(fromFile, context.config.rootDirectory)}`, 'info'))
+        context.report(new FileMessageIssue(fromFile, `${moduleName} v${entry.version} did not match ${cacheVersion}`))
       }
     }
     if (!matched) {
