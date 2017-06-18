@@ -42,7 +42,7 @@ export default class CLI {
     const manifest = {}
     try {
       // $FlowIgnore: Flow doesn't like dynamic requires
-      Object.assign({}, require(Path.join(this.projectPath), 'package.json'))
+      Object.assign({}, require(Path.join(this.projectPath, 'package.json')))
     } catch (_) { /* No Op */ }
 
     this.vorpal.activate(manifest.name || Path.basename(this.projectPath))
