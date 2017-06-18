@@ -19,6 +19,11 @@ const REQUIRE_NAMES = new Set([
   'require',
   'require.resolve',
 ])
+const TIMER_NAMES = new Set([
+  'clearImmediate',
+  'setImmediate',
+])
+console.log('up2date 1')
 
 export default createLoader(async function(context: Context, config: Object, file: File): Promise<?LoaderResult> {
   if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
@@ -27,6 +32,11 @@ export default createLoader(async function(context: Context, config: Object, fil
 
   const chunks: Array<FileChunk> = []
   const imports: Array<FileImport> = []
+  const injections = {
+    unique: new Set(),
+    imports: [],
+    names: [],
+  }
 
   let ast
   try {
@@ -53,6 +63,30 @@ export default createLoader(async function(context: Context, config: Object, fil
     const name = Helpers.getName(path.node)
     if ({}.hasOwnProperty.call(context.config.replaceVariables, name)) {
       path.replaceWith(Helpers.getParsedReplacement(context.config.replaceVariables[name]))
+      return
+    }
+
+    if (TIMER_NAMES.has(name) && !injections.unique.has('timers') && !path.scope.hasBinding(name)) {
+     // console.log('found timer')
+      injections.unique.add('timers')
+      const fileImport = context.getImportRequest('timers', file.filePath)
+      injections.imports.push(fileImport.id.toString())
+      file.addImport(fileImport)
+      injections.names.push('pundle$import$setimmediate')
+    } else if (name === 'Buffer' && !path.scope.hasBinding(name)) {
+      // console.log('found buffer')
+      injections.unique.add('buffer')
+      const fileImport = context.getImportRequest('buffer', file.filePath)
+      injections.imports.push(fileImport.id.toString())
+      file.addImport(fileImport)
+      injections.names.push('Buffer')
+    } else if ((name === 'process' || name.startsWith('process.')) && !path.scope.hasBinding('process')) {
+      // console.log('found process')
+      injections.unique.add('process')
+      const fileImport = context.getImportRequest('_process', file.filePath)
+      injections.imports.push(fileImport.id.toString())
+      file.addImport(fileImport)
+      injections.names.push('process')
     }
   }
   traverse(ast, {
@@ -94,18 +128,24 @@ export default createLoader(async function(context: Context, config: Object, fil
 
   const compiled = generate(ast, {
     quotes: 'single',
-    compact: true,
-    comments: false,
     filename: file.filePath,
     sourceMaps: true,
     sourceFileName: file.filePath,
   })
+  let contents = compiled.code
+  let sourceMap = compiled.map
+  if (injections.imports.length) {
+    const requires = injections.imports.map(entry => `require(${entry})`).join(', ')
+    const args = injections.names.join(', ')
+    contents = `(function(${args}){\n${contents}\n})(${requires})`
+    // TODO: Add +1 to all lines in souremap
+  }
 
   return {
     chunks,
     imports,
-    contents: compiled.code,
-    sourceMap: compiled.map,
+    contents,
+    sourceMap,
   }
 }, {
   extensions: ['js', 'jsx'],
