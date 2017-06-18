@@ -29,7 +29,7 @@ export default createTransformer(async function(context: Context, config: Object
       highlightCode: false,
       sourceFileName: file.filePath,
     }
-    if (!checkedRootDirectories.has(context.config.rootDirectory)) {
+    if (!checkedRootDirectories.has(context.config.rootDirectory) && false) {
       const check = babel.transform('export default class Foo {}', {
         ...mergedConfigs,
         filename: Path.join(context.config.rootDirectory, 'test.js'),
