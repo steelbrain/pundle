@@ -23,7 +23,6 @@ const TIMER_NAMES = new Set([
   'clearImmediate',
   'setImmediate',
 ])
-console.log('up2date 1')
 
 export default createLoader(async function(context: Context, config: Object, file: File): Promise<?LoaderResult> {
   if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
@@ -67,21 +66,18 @@ export default createLoader(async function(context: Context, config: Object, fil
     }
 
     if (TIMER_NAMES.has(name) && !injections.unique.has('timers') && !path.scope.hasBinding(name)) {
-     // console.log('found timer')
       injections.unique.add('timers')
       const fileImport = context.getImportRequest('timers', file.filePath)
       injections.imports.push(fileImport.id.toString())
       file.addImport(fileImport)
       injections.names.push('pundle$import$setimmediate')
     } else if (name === 'Buffer' && !path.scope.hasBinding(name)) {
-      // console.log('found buffer')
       injections.unique.add('buffer')
       const fileImport = context.getImportRequest('buffer', file.filePath)
       injections.imports.push(fileImport.id.toString())
       file.addImport(fileImport)
       injections.names.push('Buffer')
     } else if ((name === 'process' || name.startsWith('process.')) && !path.scope.hasBinding('process')) {
-      // console.log('found process')
       injections.unique.add('process')
       const fileImport = context.getImportRequest('_process', file.filePath)
       injections.imports.push(fileImport.id.toString())
