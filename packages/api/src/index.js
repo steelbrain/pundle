@@ -22,5 +22,5 @@ export {
   File,
   FileChunk,
   Context,
-  FEATURES,
+  FEATURES as FILE_FEATURES,
 }

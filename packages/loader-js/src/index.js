@@ -3,7 +3,7 @@
 import { parse } from 'babylon'
 import traverse from 'babel-traverse'
 import generate from 'babel-generator'
-import { createLoader, shouldProcess, FileIssue, FileMessageIssue } from 'pundle-api'
+import { FILE_FEATURES, createLoader, shouldProcess, FileIssue, FileMessageIssue } from 'pundle-api'
 import type { Context, File, FileImport, FileChunk, LoaderResult } from 'pundle-api/types'
 
 import * as Helpers from './helpers'
@@ -15,7 +15,7 @@ const RESOLVE_NAMES = new Set([
   'module.hot.accept',
   'module.hot.decline',
 ])
-const RESOLVE_NAMES_SENSITIVE = new Set([
+const REQUIRE_NAMES = new Set([
   'require',
   'require.resolve',
 ])
@@ -56,10 +56,14 @@ export default createLoader(async function(context: Context, config: Object, fil
     }
   }
   traverse(ast, {
-    ImportDeclaration: (path) => {
+    ImportDeclaration(path) {
       processResolve(path.node.source)
+      file.useFeature(FILE_FEATURES.ES_IMPORT)
     },
-    CallExpression: (path) => {
+    ExportDeclaration() {
+      file.useFeature(FILE_FEATURES.ES_EXPORT)
+    },
+    CallExpression(path) {
       if (path.node.callee.type === 'Import') {
         Helpers.processImport(context, file, chunks, path)
         return
@@ -72,8 +76,11 @@ export default createLoader(async function(context: Context, config: Object, fil
       if (!parameter || parameter.type !== (name === 'require.ensure' ? 'ArrayExpression' : 'StringLiteral')) {
         return
       }
-      if (RESOLVE_NAMES_SENSITIVE.has(name) && path.scope.hasBinding('require')) {
-        return
+      if (REQUIRE_NAMES.has(name)) {
+        if (path.scope.hasBinding('require')) {
+          return
+        }
+        file.useFeature(FILE_FEATURES.CJS_IMPORT)
       }
       if (name === 'require.ensure') {
         Helpers.processEnsure(context, file, chunks, path)
