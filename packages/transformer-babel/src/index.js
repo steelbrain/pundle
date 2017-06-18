@@ -1,8 +1,10 @@
 /* @flow */
 
+import Path from 'path'
 import { createTransformer, shouldProcess, FileIssue, FileMessageIssue, MessageIssue } from 'pundle-api'
 import type { File, Context } from 'pundle-api/types'
 
+const checkedRootDirectories = new Set()
 export default createTransformer(async function(context: Context, config: Object, file: File) {
   if (!shouldProcess(context.config.rootDirectory, file.filePath, config)) {
     return null
@@ -20,12 +22,25 @@ export default createTransformer(async function(context: Context, config: Object
 
   let processed
   try {
-    processed = babel.transform(file.getContents(), Object.assign({}, config.config, {
+    const mergedConfigs = {
+      ...config.config,
       filename: file.filePath,
       sourceMap: true,
       highlightCode: false,
       sourceFileName: file.filePath,
-    }))
+    }
+    if (!checkedRootDirectories.has(context.config.rootDirectory)) {
+      const check = babel.transform('export default class Foo {}', {
+        ...mergedConfigs,
+        filename: Path.join(context.config.rootDirectory, 'test.js'),
+      }).code
+      if (!check.includes('export default') && !check.includes('export { Foo as default }')) {
+        // TODO: Link it to pundle docs instead
+        throw new MessageIssue('Your Babel configuration specifies a module transformer. Please disable it. See https://github.com/rollup/rollup-plugin-babel#configuring-babel for more information')
+      }
+      checkedRootDirectories.add(context.config.rootDirectory)
+    }
+    processed = babel.transform(file.getContents(), mergedConfigs)
   } catch (error) {
     if (error.loc) {
       throw new FileIssue(file.getFilePath(), file.getContents(), error.loc.line, error.loc.column, error.message, 'error')
