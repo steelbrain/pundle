@@ -12,7 +12,7 @@ const FEATURES = {
   CJS_EXPORT: 'CJS_EXPORT',
 }
 
-const features = new Set(Object.values(FEATURES))
+const features = new Set(Object.keys(FEATURES))
 
 class File {
   static $pundle = true;
