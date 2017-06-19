@@ -77,7 +77,7 @@ export default createLoader(async function(context: Context, config: Object, fil
       injections.imports.push(fileImport.id.toString())
       file.addImport(fileImport)
       injections.names.push('Buffer')
-    } else if ((name === 'process' || name.startsWith('process.')) && !path.scope.hasBinding('process')) {
+    } else if ((name === 'process' || name.startsWith('process.')) && !injections.unique.has('process') && !path.scope.hasBinding('process')) {
       injections.unique.add('process')
       const fileImport = context.getImportRequest('_process', file.filePath)
       injections.imports.push(fileImport.id.toString())
