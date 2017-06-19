@@ -1,6 +1,6 @@
 {
   "name": "pundle-loader-js",
-  "version": "2.0.0-beta24",
+  "version": "2.0.0-beta25",
   "description": "Javascript loader for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "babel-traverse": "^6.25.0",
     "babel-types": "^6.25.0",
     "babylon": "^6.17.4",
-    "pundle-api": "2.0.0-beta24",
+    "pundle-api": "2.0.0-beta25",
     "source-map": "^0.5.6"
   }
 }
