@@ -1,6 +1,6 @@
 {
   "name": "pundle-cli",
-  "version": "2.0.0-beta23",
+  "version": "2.0.0-beta24",
   "description": "CLI for Pundle",
   "bin": {
     "pundle": "./lib/index.js"
@@ -24,8 +24,8 @@
     "filesize": "^3.3.0",
     "lodash.difference": "^4.5.0",
     "mkdirp": "^0.5.1",
-    "pundle": "2.0.0-beta23",
-    "pundle-dev": "2.0.0-beta23",
+    "pundle": "2.0.0-beta24",
+    "pundle-dev": "2.0.0-beta24",
     "sb-command": "1.0.0",
     "sb-copy": "^1.0.1",
     "sb-event-kit": "^3.0.0",

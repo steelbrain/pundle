@@ -1,6 +1,6 @@
 {
   "name": "pundle-preset-typescript",
-  "version": "2.0.0-beta23",
+  "version": "2.0.0-beta24",
   "description": "Typescript preset for Pundle",
   "main": "lib/index.js",
   "scripts": {
@@ -18,9 +18,9 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "pundle-loader-js": "2.0.0-beta23",
-    "pundle-transformer-typescript": "2.0.0-beta23",
-    "pundle-resolver-default": "2.0.0-beta23"
+    "pundle-loader-js": "2.0.0-beta24",
+    "pundle-transformer-typescript": "2.0.0-beta24",
+    "pundle-resolver-default": "2.0.0-beta24"
   },
   "devDependencies": {}
 }
