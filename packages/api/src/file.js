@@ -126,7 +126,7 @@ class File {
       contents: contents.toString(),
       sourceMap,
       lastModified,
-      featuresUsed,
+      featuresUsed: Array.from(featuresUsed),
       sourceContents: sourceContents.toString('utf8'),
       dependencyChunks: dependencyChunks.map(c => c.serialize()),
       dependencyImports,
@@ -151,7 +151,7 @@ class File {
     const file = new File(filePath, Buffer.from(sourceContents), lastModified)
     file.contents = Buffer.from(contents)
     file.sourceMap = sourceMap
-    file.featuresUsed = featuresUsed
+    file.featuresUsed = new Set(featuresUsed)
     file.dependencyChunks = dependencyChunks.map(c => FileChunk.unserialize(c))
     file.dependencyImports = dependencyImports
 
