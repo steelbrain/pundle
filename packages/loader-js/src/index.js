@@ -131,13 +131,13 @@ export default createLoader(async function(context: Context, config: Object, fil
   let contents = compiled.code
   let sourceMap = compiled.map
   if (injections.imports.length) {
-    const requires = injections.imports.map((entry, i) => (Array.isArray(entry) ? `i${i}` : `require(${entry})`)).join(', ')
-    const declarations = injections.imports.reduce((decls, item, i) => {
+    const requires = injections.imports.map(entry => `require(${entry})`).join(', ')
+    const declarations = injections.names.reduce((decls, item, i) => {
       if (!Array.isArray(item)) return decls
       return decls.concat(item.map(e => `${e} = i${i}.${e}`))
     }, []).join(',')
-    const args = injections.names.join(', ')
-    contents = `(function(${args}){${declarations.length ? `var ${declarations}` : ''}\n${contents}\n})(${requires})`
+    const args = injections.names.map((entry, i) => (Array.isArray(entry) ? `i${i}` : entry)).join(', ')
+    contents = `(function(${args}){${declarations.length ? `var ${declarations};` : ''}\n${contents}\n})(${requires})`
     sourceMap = Helpers.incrementSourceMapLines(sourceMap, file.getFilePath(), contents, 1)
   }
 

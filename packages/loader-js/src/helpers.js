@@ -86,6 +86,7 @@ export function incrementSourceMapLines(sourceMap: Object, filePath: string, con
   const entryMap = new SourceMapConsumer(sourceMap)
   for (let i = 0, length = entryMap._generatedMappings.length; i < length; i++) {
     const mapping = entryMap._generatedMappings[i]
+    if (mapping.source === null) continue
     newMap.addMapping({
       source: filePath,
       original: { line: mapping.originalLine, column: mapping.originalColumn },
