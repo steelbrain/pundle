@@ -1,6 +1,6 @@
 {
   "name": "pundle-browser",
-  "version": "2.0.0-beta25",
+  "version": "2.0.0-beta26",
   "description": "Browser compatible core module polyfills for Pundle",
   "main": "lib/index.js",
   "scripts": {
