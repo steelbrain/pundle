@@ -71,7 +71,7 @@ export default createLoader(async function(context: Context, config: Object, fil
       injections.imports.push(fileImport.id.toString())
       file.addImport(fileImport)
       injections.names.push('pundle$import$setimmediate')
-    } else if (name === 'Buffer' && !path.scope.hasBinding(name)) {
+    } else if (name === 'Buffer' && !injections.unique.has('buffer') && !path.scope.hasBinding(name)) {
       injections.unique.add('buffer')
       const fileImport = context.getImportRequest('buffer', file.filePath)
       injections.imports.push(fileImport.id.toString())
