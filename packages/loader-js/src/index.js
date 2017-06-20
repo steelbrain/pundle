@@ -70,13 +70,13 @@ export default createLoader(async function(context: Context, config: Object, fil
       const fileImport = context.getImportRequest('timers', file.filePath)
       injections.imports.push(fileImport.id.toString())
       file.addImport(fileImport)
-      injections.names.push('pundle$import$setimmediate')
+      injections.names.push(['setImmediate', 'clearImmediate'])
     } else if (name === 'Buffer' && !injections.unique.has('buffer') && !path.scope.hasBinding(name)) {
       injections.unique.add('buffer')
       const fileImport = context.getImportRequest('buffer', file.filePath)
       injections.imports.push(fileImport.id.toString())
       file.addImport(fileImport)
-      injections.names.push('Buffer')
+      injections.names.push(['Buffer'])
     } else if ((name === 'process' || name.startsWith('process.')) && !injections.unique.has('process') && !path.scope.hasBinding('process')) {
       injections.unique.add('process')
       const fileImport = context.getImportRequest('_process', file.filePath)
@@ -131,9 +131,13 @@ export default createLoader(async function(context: Context, config: Object, fil
   let contents = compiled.code
   let sourceMap = compiled.map
   if (injections.imports.length) {
-    const requires = injections.imports.map(entry => `require(${entry})`).join(', ')
+    const requires = injections.imports.map((entry, i) => (Array.isArray(entry) ? `i${i}` : `require(${entry})`)).join(', ')
+    const declarations = injections.imports.reduce((decls, item, i) => {
+      if (!Array.isArray(item)) return decls
+      return decls.concat(item.map(e => `${e} = i${i}.${e}`))
+    }, []).join(',')
     const args = injections.names.join(', ')
-    contents = `(function(${args}){\n${contents}\n})(${requires})`
+    contents = `(function(${args}){${declarations.length ? `var ${declarations}` : ''}\n${contents}\n})(${requires})`
     sourceMap = Helpers.incrementSourceMapLines(sourceMap, file.getFilePath(), contents, 1)
   }
 
