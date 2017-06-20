@@ -135,7 +135,7 @@ class File {
 
   static unserialize(serialized: Object): File {
     invariant(serialized && typeof serialized === 'object', 'Serialized File must be an object')
-    invariant(serialized.version === 1, 'Serialized File version mismatch')
+    invariant(serialized.version === 1, 'Serialized File version mismatch. Try disabling cache and trying again')
 
     const {
       filePath,

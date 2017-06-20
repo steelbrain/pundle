@@ -109,7 +109,7 @@ export default class FileChunk {
 
   static unserialize(serialized: Object): FileChunk {
     invariant(serialized && typeof serialized === 'object', 'Serialized FileChunk must be an object')
-    invariant(serialized.version === 1, 'Serialized FileChunk version mismatch')
+    invariant(serialized.version === 1, 'Serialized FileChunk version mismatch. Try disabling cache and trying again')
 
     const {
       id,
