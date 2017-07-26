@@ -46,6 +46,7 @@ function openHMRConnection() {
       socket.send('ping')
     }
   }, 2000)
+  let retryTime = 2000
   socket.addEventListener('open', function() {
     connectedOnce = true
     hadNetworkError = false
@@ -55,14 +56,11 @@ function openHMRConnection() {
     clearInterval(interval)
     if (connectedOnce) {
       console.log('[HMR] Disconnected')
-      console.log('[HMR] Retrying in 2 seconds')
-      setTimeout(openHMRConnection, 2000)
-    } else if (!hadNetworkError) {
-      console.log('[HMR] Server seems down. Retrying in 10 seconds')
-      hadNetworkError = true
-      setTimeout(openHMRConnection, 10000)
-    } else {
-      console.log('[HMR] Server seems down, giving up')
+      console.log('[HMR] Retrying in ${retryTime / 1000} seconds')
+      setTimeout(openHMRConnection, retryTime)
+      if (retryTime < 16000) {
+        retryTime += 2000
+      }
     }
   })
   socket.addEventListener('message', function(event) {

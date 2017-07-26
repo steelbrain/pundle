@@ -76,10 +76,22 @@ class Server {
       server.close()
     })
   }
+  async generateChunkForUrl(url: string): Promise<Object> {
+    const chunk = await this.generateChunk(url)
+    this.state.lastChunk[url] = chunk
+    this.state.hasChanged = false
+    return chunk
+  }
   attachRoutes(app: Object): void {
     const bundlePathExt = Path.extname(this.config.bundlePath)
-    app.get([this.config.bundlePath, `${this.config.bundlePath.slice(0, -1 * bundlePathExt.length)}*`], (req, res, next) => {
-      this.generateChunk(req.url).then(function(chunk) {
+    app.get([this.config.bundlePath, `${this.config.bundlePath.slice(0, -1 * bundlePathExt.length)}*`], async (req, res, next) => {
+      try {
+        let chunk
+        if (!this.state.hasChanged && this.state.lastChunk[req.url]) {
+          chunk = this.state.lastChunk[req.url]
+        } else {
+          chunk = await this.generateChunkForUrl(req.url)
+        }
         if (!chunk) {
           next()
           return
@@ -91,7 +103,9 @@ class Server {
           res.set('content-type', 'application/javascript')
           res.end(chunk.contents)
         }
-      }).catch(next)
+      catch(e) {
+        next()
+      }
     })
 
     const serveFilledHtml = (req, res, next) => {
@@ -130,6 +144,7 @@ class Server {
         tick: (_: Object, __: Object, file: File) => {
           if (booted && file.filePath !== Helpers.browserFile) {
             this.state.changed.set(file.filePath, file)
+            this.state.hasChanged = true
           }
         },
         ready: () => {
