@@ -204,7 +204,10 @@ export default class Compilation {
     })
     this.subscriptions.add(disposable)
 
-    const enqueue = callback => (queue = queue.then(callback).catch(e => this.context.report(e)))
+    const enqueue = (callback) => {
+      queue = queue.then(callback).catch(e => this.context.report(e))
+      return queue
+    }
     const triggerRecompile = async () => {
       await queue
       const cloned = chunks.slice()

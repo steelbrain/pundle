@@ -29,6 +29,7 @@ export default createTransformer(async function(context: Context, config: Object
       highlightCode: false,
       sourceFileName: file.filePath,
     }
+    // eslint-disable-next-line
     if (!checkedRootDirectories.has(context.config.rootDirectory) && false) {
       const check = babel.transform('export default class Foo {}', {
         ...mergedConfigs,
