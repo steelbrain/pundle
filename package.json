@@ -9,8 +9,8 @@
   "scripts": {
     "bootstrap": "lerna bootstrap; npm install; npm run compile",
     "clean": "rm -rf packages/*/lib",
-    "compile": "npm run clean; npm run link-flow; lerna exec --concurrency 999 -- babel src --out-dir lib; (cd packages/generator-default; npm run wrappers-compile)",
-    "watch": "npm run clean; npm run link-flow; lerna exec --concurrency 999 -- babel src --out-dir lib --watch & (cd packages/generator-default; npm run wrappers-watch) & wait",
+    "compile": "npm run clean; npm run link-flow; lerna exec --parallel -- babel src --out-dir lib; (cd packages/generator-default; npm run wrappers-compile)",
+    "watch": "npm run clean; npm run link-flow; lerna exec --parallel -- babel src --out-dir lib --watch & (cd packages/generator-default; npm run wrappers-watch) & wait",
     "prepare": "npm run compile",
     "lint": "eslint .",
     "link": "lerna exec -- npm link",
