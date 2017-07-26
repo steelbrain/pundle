@@ -7,7 +7,7 @@
     "lerna": "^2.0.0"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap; npm run compile",
+    "bootstrap": "lerna bootstrap; npm install; npm run compile",
     "clean": "rm -rf packages/*/lib",
     "compile": "npm run clean; npm run link-flow; lerna exec --concurrency 999 -- babel src --out-dir lib; (cd packages/generator-default; npm run wrappers-compile)",
     "watch": "npm run clean; npm run link-flow; lerna exec --concurrency 999 -- babel src --out-dir lib --watch & (cd packages/generator-default; npm run wrappers-watch) & wait",
