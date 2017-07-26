@@ -24,6 +24,7 @@ export default createTransformer(async function(context: Context, config: Object
   try {
     const mergedConfigs = {
       ...config.config,
+      babelrc: file.filePath.startsWith(context.config.rootDirectory),
       filename: file.filePath,
       sourceMap: true,
       highlightCode: false,
