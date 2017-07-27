@@ -34,6 +34,7 @@ class Server {
       files: new Map(),
       chunks: [],
       changed: new Map(),
+      lastChunk: {},
     }
     this.pundle = pundle
     this.config = Helpers.fillConfig(config)
