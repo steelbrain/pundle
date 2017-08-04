@@ -12,6 +12,7 @@ import difference from 'lodash.difference'
 import PundleDevServer from 'pundle-dev'
 import { CompositeDisposable } from 'sb-event-kit'
 
+import createPundleApp from './createPundleApp'
 import manifestPundle from 'pundle/package.json'
 import manifestPundleDev from 'pundle-dev/package.json'
 import manifestCLI from '../package.json'
@@ -49,68 +50,16 @@ command
   .option('--server-root-directory <dir>', 'Directory to use as root for dev server')
   .option('--disable-cache', 'Disable use of dev server cache', false)
   .option('--debug', 'Enable stack traces of errors, useful for debugging', false)
+  .command('init [type]', 'Initialize current directory', function pundleInit(options, givenType) {
+    createPundleApp(options.rootDirectory, options, givenType)
+  })
   .command('new <name> [type]', 'Copy default Pundle configuration into new directory (type can be full or basic, defaults to basic)', async function(options, name, givenType) {
-    const configType = givenType === 'full' ? 'full' : 'basic'
-    Helpers.colorsIfAppropriate(chalk.cyan(`Using configuration type '${configType}'`))
-
     const rootDirectory = Path.join(options.rootDirectory, name)
-    const vendorDirectory = Path.normalize(Path.join(__dirname, '..', 'vendor'))
-    const successful = new Set()
-    const everything = new Set()
-
     if (await FS.exists(rootDirectory)) {
       throw new Error(`Target directory '${name}' already exists`)
     }
     await mkdirp(rootDirectory)
-
-    try {
-      const configSource = Path.join(vendorDirectory, `config-${configType}.js`)
-      const configTarget = Path.resolve(rootDirectory, options.configFileName)
-      if (!await FS.exists(configTarget)) {
-        successful.add(Path.join(vendorDirectory, options.configFileName))
-        await FS.writeFile(configTarget, await FS.readFile(configSource))
-      }
-
-      await copy(vendorDirectory, rootDirectory, {
-        dotFiles: false,
-        overwrite: false,
-        failIfExists: false,
-        filter(source) {
-          const basename = Path.basename(source)
-          if (basename === 'config-basic.js' || basename === 'config-full.js') {
-            return false
-          }
-          if (FS.statSync(source).isFile()) {
-            everything.add(source)
-          }
-          return true
-        },
-        tickCallback(source) {
-          if (FS.statSync(source).isFile()) {
-            successful.add(source)
-          }
-        },
-      })
-      Helpers.colorsIfAppropriate(`Initializing new app ${chalk.yellow(`'${name}'`)}`)
-    } catch (error) {
-      console.log(error)
-      process.exitCode = 1
-    } finally {
-      if (successful.size) {
-        console.log('These files were successfully copied into the project')
-        console.log(Array.from(successful).map(e => `- ${Path.relative(vendorDirectory, e)}`).join('\n'))
-      }
-
-      const skippedFiles = difference(Array.from(everything), Array.from(successful))
-      if (skippedFiles.length) {
-        console.log('These files were skipped')
-        console.log(skippedFiles.map(e => `- ${Path.relative(vendorDirectory, e)}`).join('\n'))
-      }
-
-      if (successful.has(Path.join(vendorDirectory, '.pundle.js'))) {
-        console.log('\nNOTE: Remember to install the presets that you use\nin your configuration file in your project')
-      }
-    }
+    await createPundleApp(rootDirectory, options, givenType)
   })
   .default(function(options, ...commands) {
     if (commands.length !== 0) {
