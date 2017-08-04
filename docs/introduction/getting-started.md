@@ -32,6 +32,8 @@ To compile your files statically, for deployment purposes use
 ```
 pundle
 # or
+pundle build
+# or
 npm run compile
 ```
 
@@ -45,7 +47,9 @@ npm run dev
 
 **Note**: The npm scripts above will only work if the `package.json` file in your root directory was created by Pundle.
 
+That's it! You can now build and develop your app using Pundle. If you're looking for a more full-featured environment that includes more presets and helpers by default (a bit like create-react-app or similar projects), Pundle includes it's own version of this under the `motion` CLI tool. [Check out docs for that here](motion.md).
+
 
 ---
 
-[Documentation Home](../) | [Configuration](configuration.md) | [CLI Usage](cli-usage.md)
+[Documentation Home](../) | [Configuration](configuration.md) | [CLI Usage](cli-usage.md) | [Motion](motion.md)
