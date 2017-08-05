@@ -7,12 +7,11 @@ import fileSize from 'filesize'
 import invariant from 'assert'
 import Pundle from 'pundle'
 import promisify from 'sb-promisify'
-import type { CLIConfig } from './types'
-import type { GeneratorResult } from 'pundle-api/types'
+import type { CLIConfig, CLIOptions } from './types'
 
 export const mkdirp = promisify(require('mkdirp'))
 
-export function getPundle(options) {
+export function getPundle(options: CLIOptions) {
   return Pundle.create({
     debug: options.debug,
     rootDirectory: options.rootDirectory,
@@ -20,26 +19,9 @@ export function getPundle(options) {
     output: {
       bundlePath: 'bundle.js',
       publicRoot: '/_/',
-      ...options.output,
     },
   })
 }
-
-export async function writeToDisk(pundle, options, outputs: Array<GeneratorResult>): Promise<void> {
-  await FS.mkdirp(Path.join(options.outputDirectory, '_'))
-  await Promise.all(outputs.map(function(output) {
-    return FS.writeFile(Path.join(options.outputDirectory, '_', `bundle.${output.chunk.getIdOrLabel()}.js`), output.contents)
-  }))
-
-  const indexHtmlSource = Path.join(options.rootDirectory, 'index.html')
-  const indexHtmlTarget = Path.join(options.outputDirectory, 'index.html')
-  const indexHtml = pundle.fill(await FS.readFile(indexHtmlSource, 'utf8'), outputs.map(o => o.chunk), {
-    publicRoot: pundle.config.output.publicRoot,
-    bundlePath: pundle.config.output.bundlePath,
-  })
-  await FS.writeFile(indexHtmlTarget, indexHtml)
-}
-
 export function colorsIfAppropriate(content: string): void {
   if (chalk.supportsColor) {
     console.log(content)
@@ -106,7 +88,7 @@ export function fillCLIConfig(config: Object): CLIConfig {
   return toReturn
 }
 
-export function build(pundle, options, config) {
+export function build(pundle: Pundle, options: CLIOptions, config: CLIConfig) {
   return pundle.generate(null, {
     sourceMap: config.output.sourceMap,
     sourceMapPath: config.output.sourceMapPath,

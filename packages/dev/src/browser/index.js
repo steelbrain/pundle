@@ -2,7 +2,6 @@
 
 let overlay
 let numUpdate = 1
-let hadNetworkError = false
 const overlayStyle = {
   position: 'fixed',
   boxSizing: 'border-box',
@@ -49,14 +48,13 @@ function openHMRConnection() {
   let retryTime = 2000
   socket.addEventListener('open', function() {
     connectedOnce = true
-    hadNetworkError = false
     console.log('[HMR] Connected')
   })
   socket.addEventListener('close', function() {
     clearInterval(interval)
     if (connectedOnce) {
       console.log('[HMR] Disconnected')
-      console.log('[HMR] Retrying in ${retryTime / 1000} seconds')
+      console.log(`[HMR] Retrying in ${retryTime / 1000} seconds`)
       setTimeout(openHMRConnection, retryTime)
       if (retryTime < 16000) {
         retryTime += 2000

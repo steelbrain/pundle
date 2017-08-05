@@ -3,15 +3,14 @@
 
 import FS from 'sb-fs'
 import Path from 'path'
-import copy from 'sb-copy'
 import chalk from 'chalk'
 import command from 'sb-command'
 import PundleDevServer from 'pundle-dev'
 import { CompositeDisposable } from 'sb-event-kit'
 
-import createPundleApp from './createPundleApp'
 import manifestPundle from 'pundle/package.json'
 import manifestPundleDev from 'pundle-dev/package.json'
+import createPundleApp from './createPundleApp'
 import manifestCLI from '../package.json'
 
 import * as Helpers from './helpers'
@@ -56,7 +55,7 @@ command
     await Helpers.mkdirp(rootDirectory)
     await createPundleApp(rootDirectory, options, givenType)
   })
-  .command('build [outputDirectory]', 'Build your app to outputDirectory', async function(options, outDir) {
+  .command('build', 'Build your app to outputDirectory', async function(options) {
     const pundle = await Helpers.getPundle(options)
     const config = Helpers.fillCLIConfig(pundle.config)
     Helpers.build(pundle, options, config)
@@ -106,12 +105,11 @@ command
       } else {
         promise = Helpers.build(pundle, options, config)
       }
-      return promise.catch(function(error) {
+      await promise.catch(function(error) {
         process.exitCode = 1
         pundle.context.report(error)
       })
-    }
-    catch (error) {
+    } catch (error) {
       process.exitCode = 1
       console.error(error)
     }

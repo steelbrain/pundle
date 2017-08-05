@@ -1,5 +1,16 @@
 /* @flow */
 
+export type CLIOptions = {
+  dev: boolean,
+  port?: number,
+  debug: boolean,
+
+  disableCache: boolean,
+  rootDirectory: string,
+  configFileName: string,
+  serverRootDirectory?: string,
+}
+
 export type CLIConfig = {
   output: {
     bundlePath: string,
