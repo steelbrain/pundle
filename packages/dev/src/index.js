@@ -35,6 +35,7 @@ class Server {
       chunks: [],
       changed: new Map(),
       lastChunk: {},
+      hasChanged: true,
     }
     this.pundle = pundle
     this.config = Helpers.fillConfig(config)
@@ -77,10 +78,12 @@ class Server {
       server.close()
     })
   }
-  async generateChunkForUrl(url: string): Promise<Object> {
+  async generateChunkForUrl(url: string): Promise<?GeneratorResult> {
     const chunk = await this.generateChunk(url)
-    this.state.lastChunk[url] = chunk
-    this.state.hasChanged = false
+    if (chunk) {
+      this.state.lastChunk[url] = chunk
+      this.state.hasChanged = false
+    }
     return chunk
   }
   attachRoutes(app: Object): void {
@@ -104,8 +107,7 @@ class Server {
           res.set('content-type', 'application/javascript')
           res.end(chunk.contents)
         }
-      }
-      catch(e) {
+      } catch (e) {
         next()
       }
     })
