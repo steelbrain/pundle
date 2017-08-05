@@ -1,20 +1,19 @@
 {
   "dependencies": {
-    "babel-cli": "^6.16.0",
+    "babel-cli-flow": "^1.0.0",
     "babel-preset-steelbrain": "^5.0.1",
     "eslint-config-steelbrain": "^3.0.1",
     "flow-bin": "^0.46.0",
     "lerna": "^2.0.0"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap; npm install; npm run compile",
+    "bootstrap": "npm install; lerna bootstrap; npm run compile",
     "clean": "rm -rf packages/*/lib",
-    "compile": "npm run clean; npm run link-flow; lerna exec --parallel -- babel src --out-dir lib; (cd packages/generator-default; npm run wrappers-compile)",
-    "watch": "npm run clean; npm run link-flow; lerna exec --parallel -- babel src --out-dir lib --watch & (cd packages/generator-default; npm run wrappers-watch) & wait",
+    "compile": "npm run clean; lerna exec --parallel -- babel-flow src --out-dir lib; (cd packages/generator-default; npm run wrappers-compile)",
+    "watch": "npm run clean; lerna exec --parallel -- babel-flow src --out-dir lib --watch & (cd packages/generator-default; npm run wrappers-watch) & wait",
     "prepare": "npm run compile",
     "lint": "eslint .",
     "link": "lerna exec -- npm link",
-    "link-flow": "./scripts/link-flow.sh",
     "publish": "npm run compile; lerna exec -- npm publish",
     "publish-lerna": "npm run compile; lerna publish",
     "test": "lerna exec --concurrency 1 -- apm test"
