@@ -34,7 +34,7 @@ class Server {
       files: new Map(),
       chunks: [],
       changed: new Map(),
-      lastChunk: {},
+      lastChunk: new Map(),
       hasChanged: true,
     }
     this.pundle = pundle
@@ -81,7 +81,7 @@ class Server {
   async generateChunkForUrl(url: string): Promise<?GeneratorResult> {
     const chunk = await this.generateChunk(url)
     if (chunk) {
-      this.state.lastChunk[url] = chunk
+      this.state.lastChunk.set(url, chunk)
       this.state.hasChanged = false
     }
     return chunk
@@ -91,8 +91,9 @@ class Server {
     app.get([this.config.bundlePath, `${this.config.bundlePath.slice(0, -1 * bundlePathExt.length)}*`], async (req, res, next) => {
       try {
         let chunk
-        if (!this.state.hasChanged && this.state.lastChunk[req.url]) {
-          chunk = this.state.lastChunk[req.url]
+        const lastChunk = this.state.lastChunk.get(req.url)
+        if (!this.state.hasChanged && lastChunk) {
+          chunk = lastChunk
         } else {
           chunk = await this.generateChunkForUrl(req.url)
         }

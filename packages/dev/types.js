@@ -39,6 +39,6 @@ export type ServerState = {
   files: Map<string, File>,
   chunks: Array<FileChunk>,
   changed: Map<string, File>,
-  lastChunk: Object<string, GeneratorResult>,
+  lastChunk: Map<string, GeneratorResult>,
   hasChanged: boolean,
 }
