@@ -104,6 +104,7 @@ class Server {
           res.set('content-type', 'application/javascript')
           res.end(chunk.contents)
         }
+      }
       catch(e) {
         next()
       }

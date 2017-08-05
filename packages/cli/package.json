@@ -26,6 +26,7 @@
     "mkdirp": "^0.5.1",
     "pundle": "2.0.0-beta26",
     "pundle-dev": "2.0.0-beta26",
+    "pundle-api": "2.0.0-beta26",
     "sb-command": "1.0.0",
     "sb-copy": "^1.0.1",
     "sb-event-kit": "^3.0.0",
