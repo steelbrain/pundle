@@ -111,7 +111,7 @@ command
         pundle.context.report(error)
       })
     }
-    catch (e) {
+    catch (error) {
       process.exitCode = 1
       console.error(error)
     }

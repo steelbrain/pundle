@@ -8,10 +8,6 @@ export function getRandomNumber(min: number, max: number): number {
 export const TICK = '✓'
 export const CONFIG_FILE_NAME = '.motion.json'
 export const CONFIG_FILE_DEFAULT = {
-  babel: {
-    plugins: [],
-    presets: ['babel-preset-steelbrain'],
-  },
   pundle: {
     presets: [],
     components: [],
