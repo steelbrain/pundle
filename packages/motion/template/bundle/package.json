@@ -1,12 +1,12 @@
 {
   "main": "index.js",
-  "name": "",
+  "name": "your-app-name",
   "license": "",
   "author": "",
   "private": true,
   "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.18.2",
-    "babel-preset-steelbrain": "^5.0.2"
+    "babel-preset-env": "^1.6.0"
   }
 }
