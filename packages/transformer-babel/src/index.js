@@ -23,14 +23,19 @@ export default createTransformer(async function(context: Context, config: Object
   let processed
   try {
     const mergedConfigs = {
-      ...config.config,
-      babelrc: file.filePath.startsWith(context.config.rootDirectory),
+      babelrc: false,
       filename: file.filePath,
       sourceMap: true,
       highlightCode: false,
       sourceFileName: file.filePath,
     }
-    // eslint-disable-next-line
+    if (file.filePath.startsWith(context.config.rootDirectory)) {
+      Object.assign(mergedConfigs, {
+        babelrc: true,
+        ...config.config,
+      })
+    }
+    // eslint-disable-next-line no-constant-condition
     if (!checkedRootDirectories.has(context.config.rootDirectory) && false) {
       const check = babel.transform('export default class Foo {}', {
         ...mergedConfigs,
