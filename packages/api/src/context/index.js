@@ -69,13 +69,13 @@ class Context {
         })
       })
       childChunks.forEach(function(entry) {
-        chunkMappings.chunks[entry.getId()] = entry.getLabel()
+        chunkMappings.chunks[entry.getId()] = entry.getIdOrLabel()
       })
 
       let result
       for (const entry of this.getComponents('generator')) {
         result = await this.invokeComponent(entry, 'callback', [this.config.output, {
-          label: chunk.label,
+          label: chunk.getIdOrLabel(),
           mappings: chunkMappings,
         }, generateConfig], [
           chunk,

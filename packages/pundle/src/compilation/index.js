@@ -228,7 +228,7 @@ export default class Compilation {
       const newChunks = file.getChunks()
       const addedChunks = differenceBy(newChunks, oldChunks, serializeChunk)
       const removedChunks = differenceBy(oldChunks, newChunks, serializeChunk)
-      const unchangedChunks = oldChunks.filter(chunk => removedChunks.indexOf(chunk) !== -1)
+      const unchangedChunks = oldChunks.filter(chunk => removedChunks.indexOf(chunk) === -1)
 
       const oldImports = oldFile ? oldFile.getImports : []
       const newImports = file.getImports()
