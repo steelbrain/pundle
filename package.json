@@ -1,0 +1,24 @@
+{
+  "name": "pundle",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Pundle root repository",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steelbrain/pundle/issues"
+  },
+  "homepage": "https://github.com/steelbrain/pundle#readme",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-steelbrain": "^5.0.3",
+    "eslint-config-steelbrain": "^4.0.0-5",
+    "flow-bin": "^0.56.0",
+    "lerna": "^2.4.0"
+  }
+}

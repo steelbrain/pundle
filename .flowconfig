@@ -1,0 +1,10 @@
+[ignore]
+
+[include]
+
+[libs]
+flow-decls
+
+[options]
+module.system=node
+suppress_comment= \\(.\\|\n\\)*\\$FlowIgnore
