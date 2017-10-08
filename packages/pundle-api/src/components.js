@@ -11,13 +11,23 @@ export class Components {
   constructor() {
     this.registered = []
   }
-  get(name: string): ?Component {
+  getByName(name: string): ?Component {
     invariant(
       typeof name === 'string',
-      `get() expects first parameter to be string, given: ${typeof name}`,
+      `getByName() expects first parameter to be string, given: ${typeof name}`,
     )
 
     return this.registered.find(c => c.name === name)
+  }
+  getByHookName(hookName: HookName): Array<Component> {
+    invariant(
+      Hooks.includes(hookName),
+      `getByHookName() expects first parameter to be valid hook name, given: ${String(
+        hookName,
+      )}`,
+    )
+
+    return this.registered.filter(c => c.hookName === hookName)
   }
   register(component: Component) {
     invariant(
