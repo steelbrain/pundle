@@ -1,0 +1,11 @@
+{
+  "name": "create-pundle-react-app",
+  "version": "0.0.0",
+  "description": "TODO",
+  "bin": "lib/index.js",
+  "scripts": {
+
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}

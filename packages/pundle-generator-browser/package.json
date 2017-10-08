@@ -1,0 +1,11 @@
+{
+  "name": "pundle-generator-browser",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {
+
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}
