@@ -32,7 +32,7 @@ export class Components {
   register(component: Component) {
     invariant(
       component && typeof component === 'object',
-      `register() expects first parameter to be object, given: ${typeof component}`,
+      `register() expects first parameter to be non-null object, given: ${typeof component}`,
     )
 
     const {
@@ -63,25 +63,21 @@ export class Components {
     )
     invariant(
       defaultOptions && typeof defaultOptions === 'object',
-      `register() expects component.defaultOptions to be object, given: ${typeof defaultOptions}`,
+      `register() expects component.defaultOptions to be non-null object, given: ${typeof defaultOptions}`,
     )
     invariant(
       componentApiVersion === apiVersion,
       `register() expects component.apiVersion to be ${apiVersion}, given: ${componentApiVersion}`,
     )
 
-    this.registered.push(component)
-  }
-  unregister(name: string) {
-    invariant(
-      typeof name === 'string',
-      `unregister() expects first parameter to be string, given: ${typeof name}`,
-    )
-
-    const index = this.registered.findIndex(c => c.name === name)
-    if (index !== -1) {
-      this.registered.splice(index, 1)
-    }
+    this.registered.push({
+      name,
+      version,
+      hookName,
+      callback,
+      defaultOptions,
+      apiVersion: componentApiVersion,
+    })
   }
 }
 
@@ -112,7 +108,7 @@ export function registerComponent(
   )
   invariant(
     defaultOptions && typeof defaultOptions === 'object',
-    `registerComponent() expects fifth component to be object, given: ${typeof defaultOptions}`,
+    `registerComponent() expects fifth component to be non-null object, given: ${typeof defaultOptions}`,
   )
 
   return {

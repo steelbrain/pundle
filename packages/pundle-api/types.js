@@ -6,7 +6,7 @@ export type ComponentRules = {
   extensions?: Array<string>,
 }
 
-export type HookName = 'resolve'
+export type HookName = 'resolve' | 'report'
 
 export type Component = {
   name: string,
@@ -17,4 +17,9 @@ export type Component = {
 
   // Automatically added
   apiVersion: number,
+}
+// TODO: When implementing merging, make sure order is respected
+export type ComponentOptionsEntry = {
+  name: string,
+  config: Object,
 }

@@ -8,6 +8,7 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "ignore": "^3.3.5"
+    "ignore": "^3.3.5",
+    "p-each-series": "^1.0.0"
   }
 }
