@@ -5,7 +5,9 @@
   "description": "Pundle root repository",
   "scripts": {
     "lint-staged": "lint-staged",
-    "bootstrap": "npm install; lerna bootstrap"
+    "bootstrap": "npm install; lerna bootstrap",
+    "build": "lerna exec --parallel -- babel src --out-dir lib",
+    "watch": "npm run build -- --watch"
   },
   "repository": {
     "type": "git",
