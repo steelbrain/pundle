@@ -37,11 +37,17 @@ export default class Context {
     this.config = config
   }
   getUID(label: string): number {
+    invariant(
+      typeof label === 'string' && label,
+      `getUID() expects first parameter to be non-null string, given: ${typeof label}`,
+    )
+
     const uid = (this.uid.get(label) || 0) + 1
     this.uid.set(label, uid)
     return uid
   }
   async report(report: Object): Promise<void> {
+    // TODO: validation?
     let tried = false
     await pEachSeries(this.components.getByHookName('report'), async entry => {
       await entry.callback(this, this.options.get(entry), report)
@@ -56,6 +62,20 @@ export default class Context {
     requestSourceFile: ?string = null,
     ignoredResolvers: Array<string> = [],
   ): Promise<ResolveResult> {
+    invariant(
+      typeof request === 'string' && request,
+      `resolve() expects first parameter to be non-null string, given: ${typeof request}`,
+    )
+    invariant(
+      requestSourceFile === null ||
+        (typeof requestSourceFile === 'string' && requestSourceFile),
+      `resolve() expects second parameter to be nullable string, given: ${typeof requestSourceFile}`,
+    )
+    invariant(
+      Array.isArray(ignoredResolvers),
+      `resolve() expects third parameter to be Array, given: ${typeof ignoredResolvers}`,
+    )
+
     const resolvers = this.components
       .getByHookName('resolve')
       .filter(c => !ignoredResolvers.includes(c.name))
