@@ -101,8 +101,8 @@ export class FileMessageIssue {
   }: {
     file: string,
     message: string,
-    line: ?number,
-    column: ?number,
+    line?: ?number,
+    column?: ?number,
   }) {
     invariant(
       typeof file === 'string' && file,

@@ -23,3 +23,15 @@ export type ComponentOptionsEntry = {
   name: string,
   config: Object,
 }
+
+export type BaseConfig = {
+  rootDirectory: string,
+}
+export type ResolveResult = {
+  request: string,
+  requestSourceFile: ?string,
+  requestManifest: ?Object,
+  resolved: ?string,
+  resolvedManifest: ?Object,
+  ignoredResolvers: Array<string>,
+}
