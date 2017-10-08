@@ -6,6 +6,7 @@ import { Components } from './components'
 import { ComponentOptions } from './component-options'
 
 export default class Context {
+  uid: Map<string, number>
   components: Components
   options: ComponentOptions
 
@@ -18,8 +19,15 @@ export default class Context {
       options instanceof ComponentOptions,
       'new Context() expects second parameter to be a ComponentOptions instance',
     )
+
+    this.uid = new Map()
     this.components = components
     this.options = options
+  }
+  getUID(label: string): number {
+    const uid = (this.uid.get(label) || 0) + 1
+    this.uid.set(label, uid)
+    return uid
   }
   async report(report: Object) {
     let tried = false
