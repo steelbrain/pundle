@@ -6,7 +6,7 @@ import type { ComponentRules } from '../types'
 
 export function matchesRules(
   relativePath: string,
-  rules: Array<string>
+  rules: Array<string>,
 ): boolean {
   const fileName = Path.basename(relativePath)
   const fancyRules = []
@@ -33,7 +33,7 @@ export function matchesRules(
 export function shouldProcess(
   sourceRoot: string,
   filePath: string,
-  config: ComponentRules
+  config: ComponentRules,
 ): boolean {
   const relativePath = Path.relative(sourceRoot, filePath)
 

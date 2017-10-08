@@ -22,31 +22,31 @@ export class FileIssue {
     line,
     column,
     message,
-    severity = 'error'
+    severity = 'error',
   }: {
     file: string,
     contents: string,
     line: number,
     column: number,
     message: string,
-    severity: string
+    severity: string,
   }) {
     invariant(typeof file === 'string' && file, 'File must be a valid string')
     invariant(
       typeof contents === 'string' && contents,
-      'options.contents must be a valid string'
+      'options.contents must be a valid string',
     )
     invariant(
       typeof line === 'number' && line > -1,
-      'options.line must be a valid number'
+      'options.line must be a valid number',
     )
     invariant(
       typeof column === 'number' && column > -1,
-      'options.column must be a valid number'
+      'options.column must be a valid number',
     )
     invariant(
       typeof message === 'string' && message,
-      'options.message must be a valid string'
+      'options.message must be a valid string',
     )
     invariant(VALID_SEVERITIES.has(severity), 'options.severity must be valid')
 
@@ -72,7 +72,7 @@ export class MessageIssue {
   constructor(message: string, severity: string = 'error') {
     invariant(
       typeof message === 'string' && message,
-      'options.message must be a valid string'
+      'options.message must be a valid string',
     )
     invariant(VALID_SEVERITIES.has(severity), 'options.severity must be valid')
 
@@ -97,28 +97,28 @@ export class FileMessageIssue {
     file,
     message,
     line,
-    column
+    column,
   }: {
     file: string,
     message: string,
     line: ?number,
-    column: ?number
+    column: ?number,
   }) {
     invariant(
       typeof file === 'string' && file,
-      'options.file must be a valid string'
+      'options.file must be a valid string',
     )
     invariant(
       typeof message === 'string' && message,
-      'options.message must be a valid string'
+      'options.message must be a valid string',
     )
     invariant(
       ['undefined', 'number'].includes(typeof line),
-      'options.line must be a valid number or null'
+      'options.line must be a valid number or null',
     )
     invariant(
       ['undefined', 'number'].includes(typeof column),
-      'options.column must be a valid number or null'
+      'options.column must be a valid number or null',
     )
 
     this.file = file

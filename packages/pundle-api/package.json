@@ -1,6 +1,7 @@
 {
   "name": "pundle-api",
   "version": "0.0.0",
+  "apiVersion": "2",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
