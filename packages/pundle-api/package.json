@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "author": "steelbrain",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ignore": "^3.3.5"
+  }
 }
