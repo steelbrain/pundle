@@ -1,4 +1,10 @@
 {
   "root": true,
-  "extends": "steelbrain"
+  "extends": ["steelbrain", "prettier"],
+  "plugins": [
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": "error"
+  }
 }
