@@ -3,12 +3,11 @@
   "version": "0.0.0",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "pundle-api": "0.0.0"
+    "pundle-api": "0.0.0",
+    "resolve": "^1.4.0"
   }
 }

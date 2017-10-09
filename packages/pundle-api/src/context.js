@@ -5,7 +5,7 @@ import pEachSeries from 'p-each-series'
 import { Components } from './components'
 import ComponentOptions from './component-options'
 import { MessageIssue, FileMessageIssue } from './issues'
-import type { BaseConfig, ResolveResult } from '../types'
+import type { BaseConfig, ResolvePayload } from '../types'
 
 export default class Context {
   uid: Map<string, number>
@@ -59,32 +59,31 @@ export default class Context {
   }
   async resolve(
     request: string,
-    requestSourceFile: ?string = null,
+    requestRoot: ?string = null,
     ignoredResolvers: Array<string> = [],
-  ): Promise<ResolveResult> {
+  ): Promise<ResolvePayload> {
     invariant(
       typeof request === 'string' && request,
       `resolve() expects first parameter to be non-null string, given: ${typeof request}`,
     )
     invariant(
-      requestSourceFile === null ||
-        (typeof requestSourceFile === 'string' && requestSourceFile),
-      `resolve() expects second parameter to be nullable string, given: ${typeof requestSourceFile}`,
+      requestRoot === null || (typeof requestRoot === 'string' && requestRoot),
+      `resolve() expects second parameter to be nullable string, given: ${typeof requestRoot}`,
     )
     invariant(
       Array.isArray(ignoredResolvers),
       `resolve() expects third parameter to be Array, given: ${typeof ignoredResolvers}`,
     )
 
+    const resolutionRoot = requestRoot || this.config.rootDirectory
     const resolvers = this.components
       .getByHookName('resolve')
       .filter(c => !ignoredResolvers.includes(c.name))
-    const resolveRequest = {
+    const resolveRequest: ResolvePayload = {
       request,
-      requestSourceFile,
-      requestManifest: null,
+      requestRoot: resolutionRoot,
       resolved: null,
-      resolvedManifest: null,
+      resolvedRoot: null,
       ignoredResolvers,
     }
     let tried = false
@@ -99,7 +98,7 @@ export default class Context {
       return resolveRequest
     }
     throw new FileMessageIssue({
-      file: requestSourceFile || this.config.rootDirectory,
+      file: resolutionRoot,
       message: `Cannot find module '${request}'`,
     })
   }

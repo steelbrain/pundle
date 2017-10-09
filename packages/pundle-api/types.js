@@ -18,7 +18,6 @@ export type Component = {
   // Automatically added
   apiVersion: number,
 }
-// TODO: When implementing merging, make sure order is respected
 export type ComponentOptionsEntry = {
   options: Object,
   component: Component,
@@ -28,11 +27,10 @@ export type BaseConfig = {
   entry: Array<string>,
   rootDirectory: string,
 }
-export type ResolveResult = {
+export type ResolvePayload = {
   request: string,
-  requestSourceFile: ?string,
-  requestManifest: ?Object,
+  requestRoot: string,
   resolved: ?string,
-  resolvedManifest: ?Object,
+  resolvedRoot: ?string,
   ignoredResolvers: Array<string>,
 }
