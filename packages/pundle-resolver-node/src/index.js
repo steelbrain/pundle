@@ -2,6 +2,8 @@
 
 import path from 'path'
 import resolve from 'resolve'
+import browserResolve from 'browser-resolve'
+import browserAliases from 'pundle-resolver-aliases-browser'
 import { registerComponent } from 'pundle-api'
 import type { ResolvePayload } from 'pundle-api/types'
 
@@ -12,9 +14,14 @@ function isModuleDefault(request: string): boolean {
   const chunks = request.split(MODULE_SEPARATOR_REGEX)
   return chunks.length === 1
 }
-function promisedResolve(request: string, options: Object): Promise<?string> {
+function promisedResolve(
+  browserEnv: boolean,
+  request: string,
+  options: Object,
+): Promise<?string> {
   return new Promise(function(resolvePromise, rejectPromise) {
-    resolve(request, options, function(error, resolved) {
+    const resolver = browserEnv ? browserResolve : resolve
+    resolver(request, options, function(error, resolved) {
       if (error && error.code !== 'MODULE_NOT_FOUND') {
         rejectPromise(error)
       } else {
@@ -30,7 +37,8 @@ export default function() {
     version,
     hookName: 'resolve',
     async callback(context, options, payload: ResolvePayload) {
-      const resolved = await promisedResolve(payload.request, {
+      const browserEnv = context.config.target === 'browser'
+      const resolved = await promisedResolve(browserEnv, payload.request, {
         basedir: payload.requestRoot,
         moduleDirectory: options.moduleDirectories,
         packageFilter(packageManifest, manifestPath) {
@@ -46,6 +54,7 @@ export default function() {
             })
           }
         },
+        ...(browserEnv ? { modules: browserAliases } : {}),
       })
       if (resolved) {
         if (!payload.resolvedRoot) {
@@ -53,7 +62,6 @@ export default function() {
         }
         payload.resolved = resolved
       }
-      // TODO: Implement aliases
     },
     defaultOptions: {
       packageMains: ['main'],

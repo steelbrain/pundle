@@ -7,6 +7,8 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
+    "browser-resolve": "^1.11.2",
+    "pundle-resolver-aliases-browser": "0.0.0",
     "pundle-api": "0.0.0",
     "resolve": "^1.4.0"
   }
