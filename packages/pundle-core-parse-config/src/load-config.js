@@ -32,6 +32,11 @@ function validate(
     `Pundle expects config to be non null object ${postfix}`,
   )
   invariant(
+    ['undefined', 'string'].includes(typeof config.entry) ||
+      Array.isArray(config.entry),
+    `Pundle expects config.entry to be either undefined, string or Array ${postfix}`,
+  )
+  invariant(
     typeof config.presets === 'undefined' || Array.isArray(config.presets),
     `Pundle expects config.presets to be either undefined or Array ${postfix}`,
   )
@@ -57,6 +62,15 @@ export default function loadConfig(
     throw error
   }
   validate(config, configFilePath, parsed)
+
+  const givenEntry = get(config, 'entry', [])
+  if (givenEntry) {
+    if (Array.isArray(givenEntry)) {
+      parsed.config.entry.push(...givenEntry)
+    } else {
+      parsed.config.entry.push(givenEntry)
+    }
+  }
 
   const configDirectory = path.dirname(configFilePath)
   get(config, 'components', []).forEach(function(entry) {

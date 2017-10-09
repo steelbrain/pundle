@@ -44,7 +44,7 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
     )
   }
 
-  let entry = []
+  const entry = []
   const rootDirectory = fs.realpathSync(config.rootDirectory)
   const configFile = get(config, 'configFile', true)
   const configFileName = get(config, 'configFileName', '.pundlerc')
@@ -62,7 +62,11 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
 
   const givenEntry = get(config, 'entry', [])
   if (givenEntry) {
-    entry = entry.concat(givenEntry)
+    if (Array.isArray(givenEntry)) {
+      parsed.config.entry.push(...givenEntry)
+    } else {
+      parsed.config.entry.push(givenEntry)
+    }
   }
 
   if (configFile) {

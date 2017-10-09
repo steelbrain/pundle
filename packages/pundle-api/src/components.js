@@ -4,7 +4,7 @@ import invariant from 'assert'
 import { apiVersion } from '../package.json'
 import type { HookName, Component } from '../types'
 
-const Hooks: Array<HookName> = ['resolve']
+const Hooks: Array<HookName> = ['resolve', 'report']
 
 export class Components {
   registered: Array<Component>
@@ -81,34 +81,40 @@ export class Components {
   }
 }
 
-export function registerComponent(
+export function registerComponent({
+  name,
+  version,
+  hookName,
+  callback,
+  defaultOptions = {},
+}: {
   name: string,
   version: string,
   hookName: HookName,
   callback: Function,
-  defaultOptions: Object = {},
-): Component {
+  defaultOptions: Object,
+}): Component {
   invariant(
     typeof name === 'string',
-    `registerComponent() expects first parameter to be string, given: ${typeof name}`,
+    `registerComponent() expects options.name to be string, given: ${typeof name}`,
   )
   invariant(
     typeof version === 'string',
-    `registerComponent() expects second parameter to be string, given: ${typeof version}`,
+    `registerComponent() expects options.version to be string, given: ${typeof version}`,
   )
   invariant(
     Hooks.includes(hookName),
-    `registerComponent() expects third parameter to be valid hook name, given: ${String(
+    `registerComponent() expects options.hookName to be valid hook name, given: ${String(
       hookName,
     )}`,
   )
   invariant(
     typeof callback === 'function',
-    'registerComponent() expects forth parameter to be function',
+    'registerComponent() expects options.callback to be function',
   )
   invariant(
     defaultOptions && typeof defaultOptions === 'object',
-    `registerComponent() expects fifth component to be non-null object, given: ${typeof defaultOptions}`,
+    `registerComponent() expects options.defaultOptions to be non-null object, given: ${typeof defaultOptions}`,
   )
 
   return {
