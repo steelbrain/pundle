@@ -1,0 +1,14 @@
+{
+  "name": "example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "pundle-core": "0.0.0",
+    "pundle-reporter-console": "0.0.0"
+  }
+}
