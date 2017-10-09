@@ -96,10 +96,9 @@ export default function loadConfig(
     }
     if (typeof component === 'function') {
       component = component()
-    }
-    if (!component) {
+    } else {
       throw new Error(
-        `Resolved value for component '${entryComponent}' referenced ${postfix} is invalid`,
+        `Resolved value for component '${entryComponent}' referenced ${postfix} is not function`,
       )
     }
 
@@ -109,7 +108,7 @@ export default function loadConfig(
       error.message = `Error registering component '${entryComponent}' referenced ${postfix}: ${error.message}`
       throw error
     }
-    parsed.options.register(component.name, options)
+    parsed.options.register(component, options)
   })
 
   get(config, 'presets', []).forEach(function(entry) {
@@ -161,10 +160,9 @@ export default function loadConfig(
       }
       if (typeof component === 'function') {
         component = component()
-      }
-      if (!component) {
+      } else {
         throw new Error(
-          `Resolved value for component '${entryComponent}' referenced in preset '${entryPreset}' ${postfix} is invalid`,
+          `Resolved value for component '${entryComponent}' referenced in preset '${entryPreset}' ${postfix} is not function`,
         )
       }
 
@@ -174,7 +172,7 @@ export default function loadConfig(
         error.message = `Error registering component '${entryComponent}' referenced in preset '${entryPreset}' ${postfix}: ${error.message}`
         throw error
       }
-      parsed.options.register(component.name, options)
+      parsed.options.register(component, options)
     })
   })
 }

@@ -1,6 +1,7 @@
 module.exports = {
   entry: ['./index'],
   components: [
-    'pundle-reporter-console'
+    'pundle-reporter-console',
+    'pundle-resolver-node',
   ],
 }

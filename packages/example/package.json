@@ -9,6 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "pundle-core": "0.0.0",
-    "pundle-reporter-console": "0.0.0"
+    "pundle-reporter-console": "0.0.0",
+    "pundle-resolver-node": "0.0.0"
   }
 }
