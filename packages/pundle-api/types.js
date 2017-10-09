@@ -20,8 +20,8 @@ export type Component = {
 }
 // TODO: When implementing merging, make sure order is respected
 export type ComponentOptionsEntry = {
-  name: string,
   options: Object,
+  component: Component,
 }
 
 export type BaseConfig = {

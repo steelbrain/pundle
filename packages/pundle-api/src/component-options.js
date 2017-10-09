@@ -8,16 +8,16 @@ export default class ComponentOptions {
   constructor() {
     this.registered = []
   }
-  register(name: string, options: Object): void {
+  register(component: Component, options: Object): void {
     invariant(
-      typeof name === 'string',
-      `register() expects first parameter to be string, given: ${typeof name}`,
+      typeof component === 'object',
+      `register() expects first parameter to be object, given: ${typeof component}`,
     )
     invariant(
       options && typeof options === 'object',
       `register() expects second parameter to be non-null object, given: ${typeof options}`,
     )
-    this.registered.push({ name, options })
+    this.registered.push({ component, options })
   }
   get(component: Component, overrideConfigs: Array<Object> = []): Object {
     invariant(
@@ -32,7 +32,7 @@ export default class ComponentOptions {
     return [component.defaultOptions]
       .concat(
         this.registered
-          .filter(c => c.name === component.name)
+          .filter(c => c.component === component)
           .map(c => c.options),
       )
       .concat(overrideConfigs)
