@@ -36,6 +36,13 @@ export default class Context {
     this.options = options
     this.config = config
   }
+  clone(): Context {
+    return new Context(
+      this.components.clone(),
+      this.options.clone(),
+      this.config,
+    )
+  }
   getUID(label: string): number {
     invariant(
       typeof label === 'string' && label,

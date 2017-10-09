@@ -8,6 +8,11 @@ export default class ComponentOptions {
   constructor() {
     this.registered = []
   }
+  clone(): ComponentOptions {
+    const options = new ComponentOptions()
+    options.registered = this.registered.slice()
+    return options
+  }
   register(name: string, options: Object): void {
     invariant(
       typeof name === 'string',
