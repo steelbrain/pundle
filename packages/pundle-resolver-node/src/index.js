@@ -9,11 +9,6 @@ import type { ResolvePayload } from 'pundle-api/types'
 
 import { version } from '../package.json'
 
-export const MODULE_SEPARATOR_REGEX = /\/|\\/
-function isModuleDefault(request: string): boolean {
-  const chunks = request.split(MODULE_SEPARATOR_REGEX)
-  return chunks.length === 1
-}
 function promisedResolve(
   browserEnv: boolean,
   request: string,
@@ -43,17 +38,9 @@ export default function() {
         moduleDirectory: options.moduleDirectories,
         packageFilter(packageManifest, manifestPath) {
           payload.resolvedRoot = path.dirname(manifestPath)
-          if (isModuleDefault(payload.request)) {
-            options.packageMains.some(function(packageMain) {
-              const value = packageManifest[packageMain]
-              if (value && typeof value === 'string') {
-                packageManifest.main = value
-                return true
-              }
-              return false
-            })
-          }
+          return packageManifest
         },
+        extensions: options.extensions,
         ...(browserEnv ? { modules: browserAliases } : {}),
       })
       if (resolved) {
@@ -64,7 +51,6 @@ export default function() {
       }
     },
     defaultOptions: {
-      packageMains: ['main'],
       extensions: ['', '.js', '.json'],
       moduleDirectories: ['node_modules'],
     },
