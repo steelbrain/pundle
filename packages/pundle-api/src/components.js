@@ -11,11 +11,6 @@ export class Components {
   constructor() {
     this.registered = []
   }
-  clone(): Components {
-    const options = new Components()
-    options.registered = this.registered.slice()
-    return options
-  }
   getByName(name: string): ?Component {
     invariant(
       typeof name === 'string',
