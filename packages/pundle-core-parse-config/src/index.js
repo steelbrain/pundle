@@ -46,6 +46,7 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
 
   const entry = []
   const rootDirectory = fs.realpathSync(config.rootDirectory)
+  const target = get(config, 'target', 'browser')
   const configFile = get(config, 'configFile', true)
   const configFileName = get(config, 'configFileName', '.pundlerc')
 
@@ -54,6 +55,7 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
   const parsed = {
     config: {
       entry,
+      target,
       rootDirectory,
     },
     options,

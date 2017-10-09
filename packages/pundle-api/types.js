@@ -25,6 +25,7 @@ export type ComponentOptionsEntry = {
 
 export type BaseConfig = {
   entry: Array<string>,
+  target: 'browser',
   rootDirectory: string,
 }
 export type ResolvePayload = {

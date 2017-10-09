@@ -7,6 +7,8 @@ import importFrom from 'import-from'
 import get from './get'
 import type { ParsedConfig } from '../types'
 
+const VALID_TARGETS = ['browser']
+
 function normalizeEsModules(module) {
   // eslint-disable-next-line no-underscore-dangle
   if (module && module.__esModule) {
@@ -30,6 +32,12 @@ function validate(
   invariant(
     config && typeof config === 'object',
     `Pundle expects config to be non null object ${postfix}`,
+  )
+  invariant(
+    !config.target || !VALID_TARGETS.includes(config.target),
+    `Pundle expects config.target to be either undefined or one of ${VALID_TARGETS.join(
+      ', ',
+    )} ${postfix}`,
   )
   invariant(
     ['undefined', 'string'].includes(typeof config.entry) ||
@@ -63,13 +71,15 @@ export default function loadConfig(
   }
   validate(config, configFilePath, parsed)
 
-  const givenEntry = get(config, 'entry', [])
-  if (givenEntry) {
-    if (Array.isArray(givenEntry)) {
-      parsed.config.entry.push(...givenEntry)
+  if (config.entry) {
+    if (Array.isArray(config.entry)) {
+      parsed.config.entry.push(...config.entry)
     } else {
-      parsed.config.entry.push(givenEntry)
+      parsed.config.entry.push(config.entry)
     }
+  }
+  if (config.target) {
+    parsed.config.target = config.target
   }
 
   const configDirectory = path.dirname(configFilePath)
