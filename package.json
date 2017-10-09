@@ -6,7 +6,8 @@
   "scripts": {
     "lint-staged": "lint-staged",
     "bootstrap": "npm install; lerna bootstrap",
-    "build": "lerna exec --parallel -- babel-flow src --out-dir lib",
+    "clean": "rm -rf packages/*/lib",
+    "build": "npm run clean; lerna exec --parallel -- babel-flow src --out-dir lib",
     "watch": "npm run build -- --watch"
   },
   "repository": {

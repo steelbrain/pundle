@@ -7,7 +7,6 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "import-fresh": "^2.0.0",
     "import-from": "^2.1.0",
     "pundle-api": "0.0.0"
   }

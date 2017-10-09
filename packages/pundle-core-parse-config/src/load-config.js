@@ -3,7 +3,8 @@
 import path from 'path'
 import invariant from 'assert'
 import importFrom from 'import-from'
-import importFresh from 'import-fresh'
+
+import get from './get'
 import type { ParsedConfig } from '../types'
 
 function normalizeEsModules(module) {
@@ -49,7 +50,8 @@ export default function loadConfig(
 
   let config = {}
   try {
-    config = normalizeEsModules(importFresh(configFilePath))
+    // $FlowIgnore: Dynamic require
+    config = normalizeEsModules(require(configFilePath)) // eslint-disable-line global-require,import/no-dynamic-require
   } catch (error) {
     error.message = `Error loading Pundle configuration file ${postfix}: ${error.message}`
     throw error
@@ -57,7 +59,7 @@ export default function loadConfig(
   validate(config, configFilePath, parsed)
 
   const configDirectory = path.dirname(configFilePath)
-  config.components.forEach(function(entry) {
+  get(config, 'components', []).forEach(function(entry) {
     const [entryComponent, options = {}] = Array.isArray(entry)
       ? entry
       : [entry]
@@ -93,10 +95,10 @@ export default function loadConfig(
       error.message = `Error registering component '${entryComponent}' referenced ${postfix}: ${error.message}`
       throw error
     }
-    parsed.options.register(component, options)
+    parsed.options.register(component.name, options)
   })
 
-  config.presets.forEach(function(entry) {
+  get(config, 'presets', []).forEach(function(entry) {
     const [entryPreset, options = {}] = Array.isArray(entry) ? entry : [entry]
     if (!options || typeof options !== 'object') {
       throw new Error(
@@ -158,7 +160,7 @@ export default function loadConfig(
         error.message = `Error registering component '${entryComponent}' referenced in preset '${entryPreset}' ${postfix}: ${error.message}`
         throw error
       }
-      parsed.options.register(component, options)
+      parsed.options.register(component.name, options)
     })
   })
 }

@@ -5,12 +5,10 @@ import path from 'path'
 import invariant from 'assert'
 import { Components, ComponentOptions } from 'pundle-api'
 
+import get from './get'
 import loadConfig from './load-config'
 import type { AcceptedConfig, ParsedConfig } from '../types'
 
-function get(obj: Object, key: string, defaultValue: any): any {
-  return typeof obj[key] === 'undefined' ? obj[key] : defaultValue
-}
 function fileAccessible(filePath: string): boolean {
   try {
     fs.accessSync(filePath, fs.R_OK)
@@ -46,8 +44,8 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
     )
   }
 
+  let entry = []
   const rootDirectory = fs.realpathSync(config.rootDirectory)
-  const entry = [].concat(get(config, 'entry', []))
   const configFile = get(config, 'configFile', true)
   const configFileName = get(config, 'configFileName', '.pundlerc')
 
@@ -60,6 +58,11 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
     },
     options,
     components,
+  }
+
+  const givenEntry = get(config, 'entry', [])
+  if (givenEntry) {
+    entry = entry.concat(givenEntry)
   }
 
   if (configFile) {
