@@ -21,10 +21,11 @@ export type Component = {
 // TODO: When implementing merging, make sure order is respected
 export type ComponentOptionsEntry = {
   name: string,
-  config: Object,
+  options: Object,
 }
 
 export type BaseConfig = {
+  entry: Array<string>,
   rootDirectory: string,
 }
 export type ResolveResult = {

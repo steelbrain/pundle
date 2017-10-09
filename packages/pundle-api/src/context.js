@@ -3,7 +3,7 @@
 import invariant from 'assert'
 import pEachSeries from 'p-each-series'
 import { Components } from './components'
-import { ComponentOptions } from './component-options'
+import ComponentOptions from './component-options'
 import { MessageIssue, FileMessageIssue } from './issues'
 import type { BaseConfig, ResolveResult } from '../types'
 

@@ -1,15 +1,14 @@
 {
-  "name": "pundle-core",
+  "name": "pundle-core-parse-config",
   "version": "0.0.0",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "pundle-api": "0.0.0",
-    "pundle-core-parse-config": "0.0.0"
+    "import-fresh": "^2.0.0",
+    "import-from": "^2.1.0",
+    "pundle-api": "0.0.0"
   }
 }
