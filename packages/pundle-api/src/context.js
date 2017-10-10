@@ -1,11 +1,17 @@
 // @flow
 
+import fs from 'fs'
 import invariant from 'assert'
 import pEachSeries from 'p-each-series'
+import { promisify } from 'util'
+
 import { Components } from './components'
 import ComponentOptions from './component-options'
 import { MessageIssue, FileMessageIssue } from './issues'
-import type { BaseConfig, ResolvePayload } from '../types'
+import type { File, Chunk, BaseConfig, ResolvePayload } from '../types'
+
+const asyncStat = promisify(fs.stat)
+const asyncReadFile = promisify(fs.readFile)
 
 export default class Context {
   uid: Map<string, number>
@@ -35,6 +41,31 @@ export default class Context {
     this.components = components
     this.options = options
     this.config = config
+  }
+  // NOTE: For internal use only
+  async getFile(filePath: string): Promise<File> {
+    const stats = await asyncStat(filePath)
+    const contents = await asyncReadFile(filePath, 'utf8')
+    return {
+      filePath,
+      lastModified: stats.mtime.getTime() / 1000,
+
+      sourceMap: null,
+      sourceContents: contents,
+      generatedContents: contents,
+
+      parsed: null,
+      imports: [],
+      chunks: [],
+    }
+  }
+  // Note: Public use allowed
+  async getChunk(entry: string, files: Array<string> = []): Promise<Chunk> {
+    // TODO: Validation
+    return {
+      entry,
+      files,
+    }
   }
   getUID(label: string): number {
     invariant(

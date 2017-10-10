@@ -5,3 +5,5 @@ export * from './rules'
 export * from './components'
 export { default as Context } from './context'
 export { default as ComponentOptions } from './component-options'
+
+export const RECOMMENDED_CONCURRENCY = 8

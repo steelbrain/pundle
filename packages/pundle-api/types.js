@@ -35,3 +35,23 @@ export type ResolvePayload = {
   resolvedRoot: ?string,
   ignoredResolvers: Array<string>,
 }
+
+export type Chunk = {
+  entry: string,
+  files: Array<string>,
+  // ^ RESOLVED file paths to include in the main output bundle
+}
+export type Import = string
+
+export type File = {
+  filePath: string,
+  lastModified: number,
+
+  sourceMap: ?Object,
+  sourceContents: string,
+  generatedContents: string,
+
+  parsed: ?Object,
+  imports: Array<Import>,
+  chunks: Array<Chunk>,
+}
