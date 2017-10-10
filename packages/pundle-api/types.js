@@ -6,7 +6,12 @@ export type ComponentRules = {
   extensions?: Array<string>,
 }
 
-export type HookName = 'resolve' | 'report'
+export type HookName =
+  | 'resolve'
+  | 'report'
+  | 'language-parse'
+  | 'language-plugin'
+  | 'language-generate'
 
 export type Component = {
   name: string,
@@ -47,8 +52,8 @@ export type File = {
   filePath: string,
   lastModified: number,
 
-  sourceMap: ?Object,
   sourceContents: string,
+  generatedMap: ?Object,
   generatedContents: string,
 
   parsed: ?Object,

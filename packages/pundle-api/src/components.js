@@ -4,7 +4,13 @@ import invariant from 'assert'
 import { apiVersion } from '../package.json'
 import type { HookName, Component } from '../types'
 
-const Hooks: Array<HookName> = ['resolve', 'report']
+const Hooks: Array<HookName> = [
+  'resolve',
+  'report',
+  'language-parse',
+  'language-plugin',
+  'language-generate',
+]
 
 export class Components {
   registered: Array<Component>
