@@ -51,8 +51,7 @@ export function shouldProcess(
   }
   const extensions = config.extensions
   if (extensions) {
-    const fileExtension = Path.extname(filePath).slice(1)
-    if (extensions.indexOf(fileExtension) === -1) {
+    if (![].concat(extensions).includes(Path.extname(filePath))) {
       return false
     }
   }

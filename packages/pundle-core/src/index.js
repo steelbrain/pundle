@@ -11,7 +11,7 @@ class Pundle {
   constructor(context: Context) {
     this.context = context
   }
-  async build(): Promise<Compilation> {
+  async build(): Promise<void> {
     return new Compilation(this.context).build()
   }
 }

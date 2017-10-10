@@ -3,7 +3,7 @@
 export type ComponentRules = {
   include?: string | Array<string>,
   exclude?: string | Array<string>,
-  extensions?: Array<string>,
+  extensions?: string | Array<string>,
 }
 
 export type HookName =

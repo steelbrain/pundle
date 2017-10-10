@@ -3,5 +3,6 @@ module.exports = {
   components: [
     'pundle-reporter-console',
     'pundle-resolver-node',
+    'pundle-language-js',
   ],
 }
