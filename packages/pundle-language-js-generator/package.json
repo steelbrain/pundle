@@ -1,5 +1,5 @@
 {
-  "name": "pundle-language-js-resolver",
+  "name": "pundle-language-js-generator",
   "version": "0.0.0",
   "description": "TODO",
   "main": "lib/index.js",

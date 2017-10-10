@@ -48,7 +48,9 @@ export default function() {
           })
         }
       }
-      console.log('ast', ast)
+      file.parsed = {
+        ast,
+      }
     },
     defaultOptions: {
       extensions: ['.js'],

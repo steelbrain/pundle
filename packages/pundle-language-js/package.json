@@ -7,8 +7,6 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "babel-traverse": "^6.26.0",
-    "babylon": "^6.18.0",
-    "pundle-api": "0.0.0"
+
   }
 }

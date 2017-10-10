@@ -11,6 +11,8 @@
     "pundle-core": "0.0.0",
     "pundle-reporter-console": "0.0.0",
     "pundle-resolver-node": "0.0.0",
-    "pundle-language-js": "0.0.0"
+    "pundle-language-js": "0.0.0",
+    "pundle-language-js-parser": "0.0.0",
+    "pundle-language-js-generator": "0.0.0"
   }
 }
