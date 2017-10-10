@@ -10,6 +10,7 @@ export type HookName =
   | 'resolve'
   | 'report'
   | 'language-parse'
+  | 'language-process'
   | 'language-plugin'
   | 'language-generate'
 

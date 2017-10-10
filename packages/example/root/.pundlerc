@@ -4,5 +4,6 @@ module.exports = {
     'pundle-reporter-console',
     'pundle-resolver-node',
     'pundle-language-js-parser',
+    'pundle-language-js-processor',
   ],
 }

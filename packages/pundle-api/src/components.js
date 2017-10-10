@@ -8,6 +8,7 @@ const Hooks: Array<HookName> = [
   'resolve',
   'report',
   'language-parse',
+  'language-process',
   'language-plugin',
   'language-generate',
 ]

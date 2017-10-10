@@ -50,8 +50,8 @@ export default class Context {
       filePath,
       lastModified: stats.mtime.getTime() / 1000,
 
-      sourceMap: null,
       sourceContents: contents,
+      generatedMap: null,
       generatedContents: contents,
 
       parsed: null,

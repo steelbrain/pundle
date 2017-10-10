@@ -1,5 +1,5 @@
 {
-  "name": "pundle-language-js-parser",
+  "name": "pundle-language-js-processor",
   "version": "0.0.0",
   "description": "TODO",
   "main": "lib/index.js",
@@ -7,7 +7,7 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "babylon": "^6.18.0",
+    "babel-traverse": "^6.26.0",
     "pundle-api": "0.0.0"
   }
 }

@@ -1,8 +1,6 @@
 // @flow
 
 import { parse } from 'babylon'
-// TODO: Traverse the ast
-// import traverse from 'babel-traverse'
 import {
   shouldProcess,
   registerComponent,
@@ -15,7 +13,7 @@ import { version } from '../package.json'
 
 export default function() {
   return registerComponent({
-    name: 'pundle-language-js',
+    name: 'pundle-language-js-parser',
     version,
     hookName: 'language-parse',
     async callback(context, options, file: File) {
