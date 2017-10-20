@@ -7,15 +7,14 @@ import { shouldProcess, registerComponent } from 'pundle-api'
 import type { ComponentLanguageProcessor } from 'pundle-api/lib/types'
 
 import { version } from '../package.json'
-import { getName, getInjectionName, getParsedReplacement } from './helpers'
+import { getName, getParsedReplacement } from './helpers'
 
-type Injection = 'timers' | 'buffer' | 'process' | 'global'
-const INJECTIONS: Array<{ key: Injection, names: Set<string> }> = [
-  { key: 'timers', names: new Set(['setImmediate', 'clearImmediate']) },
-  { key: 'buffer', names: new Set(['Buffer']) },
-  { key: 'process', names: new Set(['process']) },
-  { key: 'global', names: new Set(['global']) },
-]
+const INJECTIONS = {
+  timers: ['setImmediate', 'clearImmediate'],
+  buffer: ['Buffer'],
+  process: ['process'],
+  global: ['global'],
+}
 
 export default function() {
   return registerComponent({
@@ -31,7 +30,7 @@ export default function() {
       const parsed = file.parsed
       invariant(parsed, 'file.parsed is null, is the parser working?!')
 
-      const injections: Map<Injection, string> = new Map()
+      const injections: Map<string, any> = new Map()
       const resolveNode = (request: string, node: Object) =>
         context.resolveSimple(request, file.filePath, node.loc.start.line, node.loc.start.column)
       const processReplaceable = path => {
@@ -41,17 +40,16 @@ export default function() {
           return
         }
         if (context.config.target === 'browser') {
-          INJECTIONS.forEach(({ key, names }) => {
-            if (names.has(name) && !injections.has(key) && !path.scope.hasBinding(name)) {
-              // $FlowIgnore: It's temporary
-              injections.set(key, null)
-              promises.push(
-                resolveNode(key, path.node).then(resolved => {
-                  injections.set(key, resolved)
-                  file.imports.push(resolved)
-                }),
-              )
-            }
+          Object.keys(INJECTIONS).forEach(key => {
+            const names = INJECTIONS[key]
+            if (!names.includes(name) || injections.has(key) || path.scope.hasBinding(name)) return
+            injections.set(key, null)
+            promises.push(
+              resolveNode(key, path.node).then(resolved => {
+                injections.set(key, resolved)
+                file.imports.push(resolved)
+              }),
+            )
           })
         }
       }
@@ -105,26 +103,25 @@ export default function() {
 
       await Promise.all(promises)
       if (injections.size) {
-        const resolvedParams = Array.from(injections.values()).map(resolved => t.stringLiteral(resolved))
-        const functionArgs = Array.from(injections.keys()).map(name => t.identifier(getInjectionName(name)))
-        const wrapper = t.callExpression(
-          t.functionExpression(null, functionArgs, t.blockStatement([])),
-          Array.from(resolvedParams),
-        )
-        if (injections.has('timers')) {
-          parsed.ast.program.body.unshift(
-            t.variableDeclaration('var', [
-              t.variableDeclarator(
-                t.identifier('setImmediate'),
-                t.memberExpression(t.identifier(getInjectionName('timers')), t.identifier('setImmediate')),
+        const wrapper = t.callExpression(t.functionExpression(null, [], t.blockStatement([])), [])
+        injections.forEach((resolved, key) => {
+          wrapper.arguments.push(t.callExpression(t.identifier('require'), [t.stringLiteral(resolved)]))
+          const names = INJECTIONS[key]
+          if (names.length === 1) {
+            wrapper.callee.params.push(t.identifier(names[0]))
+          } else {
+            const refName = `__$sb$pundle${key}`
+            wrapper.callee.params.push(t.identifier(refName))
+            parsed.ast.program.body = [
+              t.variableDeclaration(
+                'var',
+                names.map(name =>
+                  t.variableDeclarator(t.identifier(name), t.memberExpression(t.identifier(refName), t.identifier(name))),
+                ),
               ),
-              t.variableDeclarator(
-                t.identifier('clearImmediate'),
-                t.memberExpression(t.identifier(getInjectionName('timers')), t.identifier('clearImmediate')),
-              ),
-            ]),
-          )
-        }
+            ].concat(parsed.ast.program.body)
+          }
+        })
         wrapper.callee.body.body = parsed.ast.program.body
         wrapper.callee.body.directives = parsed.ast.program.directives
         parsed.ast.program.body = [wrapper]
