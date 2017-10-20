@@ -18,10 +18,7 @@ function fileAccessible(filePath: string): boolean {
   }
 }
 function validateConfig(config: Object): void {
-  invariant(
-    config && typeof config === 'object',
-    'Pundle expects config to be non-null object',
-  )
+  invariant(config && typeof config === 'object', 'Pundle expects config to be non-null object')
   invariant(
     config.rootDirectory && typeof config.rootDirectory === 'string',
     'Pundle expects config.rootDirectory to be non-null string',
@@ -39,9 +36,7 @@ function validateConfig(config: Object): void {
 export default function getConfig(config: AcceptedConfig): ParsedConfig {
   validateConfig(config)
   if (!fileAccessible(config.rootDirectory)) {
-    throw new Error(
-      `Pundle root directory '${config.rootDirectory}' does not exist`,
-    )
+    throw new Error(`Pundle root directory '${config.rootDirectory}' does not exist`)
   }
 
   const entry = []
@@ -74,9 +69,7 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
   if (configFile) {
     const configFilePath = path.join(rootDirectory, configFileName)
     if (!fileAccessible(configFilePath)) {
-      throw new Error(
-        `Pundle cannot find configuration file '${configFileName}' in ${rootDirectory}`,
-      )
+      throw new Error(`Pundle cannot find configuration file '${configFileName}' in ${rootDirectory}`)
     }
     loadConfig(configFilePath, parsed)
   }

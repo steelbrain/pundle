@@ -9,11 +9,7 @@ import type { ComponentResolver } from 'pundle-api/lib/types'
 
 import { version } from '../package.json'
 
-function promisedResolve(
-  browserEnv: boolean,
-  request: string,
-  options: Object,
-): Promise<?string> {
+function promisedResolve(browserEnv: boolean, request: string, options: Object): Promise<?string> {
   return new Promise(function(resolvePromise, rejectPromise) {
     const resolver = browserEnv ? browserResolve : resolve
     resolver(request, options, function(error, resolved) {

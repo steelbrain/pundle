@@ -17,31 +17,18 @@ function normalizeEsModules(module) {
   return module
 }
 function getMessagePostfix(configFilePath: string, parsed: ParsedConfig) {
-  const relativeConfigPath = path.relative(
-    parsed.config.rootDirectory,
-    configFilePath,
-  )
+  const relativeConfigPath = path.relative(parsed.config.rootDirectory, configFilePath)
   return `at '${relativeConfigPath}'`
 }
-function validate(
-  config: Object,
-  configFilePath: string,
-  parsed: ParsedConfig,
-) {
+function validate(config: Object, configFilePath: string, parsed: ParsedConfig) {
   const postfix = getMessagePostfix(configFilePath, parsed)
-  invariant(
-    config && typeof config === 'object',
-    `Pundle expects config to be non null object ${postfix}`,
-  )
+  invariant(config && typeof config === 'object', `Pundle expects config to be non null object ${postfix}`)
   invariant(
     !config.target || !VALID_TARGETS.includes(config.target),
-    `Pundle expects config.target to be either undefined or one of ${VALID_TARGETS.join(
-      ', ',
-    )} ${postfix}`,
+    `Pundle expects config.target to be either undefined or one of ${VALID_TARGETS.join(', ')} ${postfix}`,
   )
   invariant(
-    ['undefined', 'string'].includes(typeof config.entry) ||
-      Array.isArray(config.entry),
+    ['undefined', 'string'].includes(typeof config.entry) || Array.isArray(config.entry),
     `Pundle expects config.entry to be either undefined, string or Array ${postfix}`,
   )
   invariant(
@@ -49,16 +36,12 @@ function validate(
     `Pundle expects config.presets to be either undefined or Array ${postfix}`,
   )
   invariant(
-    typeof config.components === 'undefined' ||
-      Array.isArray(config.components),
+    typeof config.components === 'undefined' || Array.isArray(config.components),
     `Pundle expects config.components to be either undefined or Array ${postfix}`,
   )
 }
 
-export default function loadConfig(
-  configFilePath: string,
-  parsed: ParsedConfig,
-) {
+export default function loadConfig(configFilePath: string, parsed: ParsedConfig) {
   const postfix = getMessagePostfix(configFilePath, parsed)
 
   let config = {}
@@ -84,21 +67,15 @@ export default function loadConfig(
 
   const configDirectory = path.dirname(configFilePath)
   get(config, 'components', []).forEach(function(entry) {
-    const [entryComponent, options = {}] = Array.isArray(entry)
-      ? entry
-      : [entry]
+    const [entryComponent, options = {}] = Array.isArray(entry) ? entry : [entry]
     if (!options || typeof options !== 'object') {
-      throw new Error(
-        `Resolved config for component '${entryComponent}' referenced ${postfix} is invalid`,
-      )
+      throw new Error(`Resolved config for component '${entryComponent}' referenced ${postfix} is invalid`)
     }
 
     let component = entryComponent
     if (typeof component === 'string') {
       try {
-        component = normalizeEsModules(
-          importFrom(configDirectory, entryComponent),
-        )
+        component = normalizeEsModules(importFrom(configDirectory, entryComponent))
       } catch (error) {
         error.message = `Error loading component '${entryComponent}' referenced ${postfix}: ${error.message}`
         throw error
@@ -107,9 +84,7 @@ export default function loadConfig(
     if (typeof component === 'function') {
       component = component()
     } else {
-      throw new Error(
-        `Resolved value for component '${entryComponent}' referenced ${postfix} is not function`,
-      )
+      throw new Error(`Resolved value for component '${entryComponent}' referenced ${postfix} is not function`)
     }
 
     try {
@@ -124,9 +99,7 @@ export default function loadConfig(
   get(config, 'presets', []).forEach(function(entry) {
     const [entryPreset, options = {}] = Array.isArray(entry) ? entry : [entry]
     if (!options || typeof options !== 'object') {
-      throw new Error(
-        `Resolved config for component '${entryPreset}' referenced ${postfix} is invalid`,
-      )
+      throw new Error(`Resolved config for component '${entryPreset}' referenced ${postfix} is invalid`)
     }
 
     let preset = entryPreset
@@ -142,15 +115,11 @@ export default function loadConfig(
       preset = preset(options)
     }
     if (!Array.isArray(preset)) {
-      throw new Error(
-        `Resolved value for preset '${entryPreset}' referenced ${postfix} is not an array`,
-      )
+      throw new Error(`Resolved value for preset '${entryPreset}' referenced ${postfix} is not an array`)
     }
 
     preset.forEach(function(presetEntry) {
-      const [entryComponent, componentOptions = {}] = Array.isArray(presetEntry)
-        ? presetEntry
-        : [presetEntry]
+      const [entryComponent, componentOptions = {}] = Array.isArray(presetEntry) ? presetEntry : [presetEntry]
       if (!componentOptions || typeof componentOptions !== 'object') {
         throw new Error(
           `Resolved config for component '${entryComponent}' referenced in preset '${entryPreset}' ${postfix} is invalid`,
@@ -160,9 +129,7 @@ export default function loadConfig(
       let component = entryComponent
       if (typeof component === 'string') {
         try {
-          component = normalizeEsModules(
-            importFrom(configDirectory, entryComponent),
-          )
+          component = normalizeEsModules(importFrom(configDirectory, entryComponent))
         } catch (error) {
           error.message = `Error loading component '${entryComponent}' referenced in preset '${entryPreset}' ${postfix}: ${error.message}`
           throw error

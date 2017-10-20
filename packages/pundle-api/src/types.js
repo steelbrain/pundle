@@ -8,13 +8,7 @@ export type ComponentRules = {
   extensions?: string | Array<string>,
 }
 
-export type HookName =
-  | 'resolve'
-  | 'report'
-  | 'language-parse'
-  | 'language-process'
-  | 'language-plugin'
-  | 'language-generate'
+export type HookName = 'resolve' | 'report' | 'language-parse' | 'language-process' | 'language-plugin' | 'language-generate'
 
 export type Component = {
   name: string,
@@ -52,6 +46,7 @@ export type Chunk = {
 export type Import = string
 
 export type File = {
+  fileName: string,
   filePath: string,
   lastModified: number,
   contents: string,
@@ -70,35 +65,15 @@ export type FileGenerated = {
   generatedContents: string,
 }
 
-export type ComponentResolver = (
-  context: Context,
-  options: Object,
-  payload: ResolvePayload,
-) => Promise<void>
+export type ComponentResolver = (context: Context, options: Object, payload: ResolvePayload) => Promise<void>
 
-export type ComponentReporter = (
-  context: Context,
-  options: Object,
-  error: any,
-) => Promise<void> | void
+export type ComponentReporter = (context: Context, options: Object, error: any) => Promise<void> | void
 
-export type ComponentLanguageParser = (
-  context: Context,
-  options: Object,
-  file: File,
-) => Promise<void> | void
+export type ComponentLanguageParser = (context: Context, options: Object, file: File) => Promise<void> | void
 
-export type ComponentLanguageProcessor = (
-  context: Context,
-  options: Object,
-  file: File,
-) => Promise<void> | void
+export type ComponentLanguageProcessor = (context: Context, options: Object, file: File) => Promise<void> | void
 
-export type ComponentLanguagePlugin = (
-  context: Context,
-  options: Object,
-  file: File,
-) => Promise<void> | void
+export type ComponentLanguagePlugin = (context: Context, options: Object, file: File) => Promise<void> | void
 
 export type ComponentLanguageGenerator = (
   context: Context,

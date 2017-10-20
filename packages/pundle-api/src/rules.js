@@ -4,10 +4,7 @@ import Path from 'path'
 import createIgnore from 'ignore'
 import type { ComponentRules } from './types'
 
-export function matchesRules(
-  relativePath: string,
-  rules: Array<string>,
-): boolean {
+export function matchesRules(relativePath: string, rules: Array<string>): boolean {
   const fileName = Path.basename(relativePath)
   const fancyRules = []
 
@@ -30,11 +27,7 @@ export function matchesRules(
   )
 }
 
-export function shouldProcess(
-  sourceRoot: string,
-  filePath: string,
-  config: ComponentRules,
-): boolean {
+export function shouldProcess(sourceRoot: string, filePath: string, config: ComponentRules): boolean {
   const relativePath = Path.relative(sourceRoot, filePath)
 
   const exclude = config.exclude

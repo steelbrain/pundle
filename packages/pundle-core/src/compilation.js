@@ -24,32 +24,21 @@ export default class Compilation {
     if (!file.parsed) {
       throw new FileMessageIssue({
         file: file.filePath,
-        message:
-          'File not parsed, did you configure a parser for this filetype? Are you sure this file is not excluded?',
+        message: 'File not parsed, did you configure a parser for this filetype? Are you sure this file is not excluded?',
       })
     }
     const processors = this.context.components.getByHookName('language-process')
-    await pEachSeries(processors, entry =>
-      entry.callback(this.context, this.context.options.get(entry), file),
-    )
+    await pEachSeries(processors, entry => entry.callback(this.context, this.context.options.get(entry), file))
     const plugins = this.context.components.getByHookName('language-plugin')
-    await pEachSeries(plugins, entry =>
-      entry.callback(this.context, this.context.options.get(entry), file),
-    )
+    await pEachSeries(plugins, entry => entry.callback(this.context, this.context.options.get(entry), file))
 
     return file
   }
   async generateFile(file: File): Promise<FileGenerated> {
-    const generators = this.context.components.getByHookName(
-      'language-generate',
-    )
+    const generators = this.context.components.getByHookName('language-generate')
     let fileGenerated
     await pOne(generators, entry => {
-      fileGenerated = entry.callback(
-        this.context,
-        this.context.options.get(entry),
-        file,
-      )
+      fileGenerated = entry.callback(this.context, this.context.options.get(entry), file)
       return !!fileGenerated
     })
     if (!fileGenerated) {
@@ -91,21 +80,13 @@ export default class Compilation {
   async build(): Promise<void> {
     const locks: Set<string> = new Set()
     const files: Map<string, File> = new Map()
-    const chunks = this.context.config.entry.map(entry =>
-      this.context.getChunk(entry, []),
-    )
+    const chunks = this.context.config.entry.map(entry => this.context.getChunk(entry, []))
     await pMap(
       chunks,
       chunk =>
-        this.processFileTree(
-          chunk.entry,
-          locks,
-          files,
-          false,
-          (oldFile, newFile) => {
-            console.log('oldFile', oldFile, 'newFile', newFile)
-          },
-        ),
+        this.processFileTree(chunk.entry, locks, files, false, (oldFile, newFile) => {
+          console.log('oldFile', oldFile, 'newFile', newFile)
+        }),
       { concurrency: RECOMMENDED_CONCURRENCY },
     )
   }

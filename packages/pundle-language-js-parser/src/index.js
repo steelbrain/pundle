@@ -1,12 +1,7 @@
 // @flow
 
 import { parse } from 'babylon'
-import {
-  shouldProcess,
-  registerComponent,
-  FileIssue,
-  FileMessageIssue,
-} from 'pundle-api'
+import { shouldProcess, registerComponent, FileIssue, FileMessageIssue } from 'pundle-api'
 import type { ComponentLanguageParser } from 'pundle-api/lib/types'
 
 import { version } from '../package.json'
@@ -17,9 +12,7 @@ export default function() {
     version,
     hookName: 'language-parse',
     callback: (async function(context, options, file) {
-      if (
-        !shouldProcess(context.config.rootDirectory, file.filePath, options)
-      ) {
+      if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
         return
       }
       let ast

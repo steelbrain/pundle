@@ -1,9 +1,10 @@
 // @flow
 
 import fs from 'fs'
+import path from 'path'
 import invariant from 'assert'
+import promisify from 'sb-promisify'
 import pEachSeries from 'p-each-series'
-import { promisify } from 'util'
 
 import ComponentOptions from './component-options'
 import { Components } from './components'
@@ -19,15 +20,8 @@ export default class Context {
   options: ComponentOptions
   config: BaseConfig
 
-  constructor(
-    components: Components,
-    options: ComponentOptions,
-    config: BaseConfig,
-  ) {
-    invariant(
-      components instanceof Components,
-      'new Context() expects first parameter to be a Components instance',
-    )
+  constructor(components: Components, options: ComponentOptions, config: BaseConfig) {
+    invariant(components instanceof Components, 'new Context() expects first parameter to be a Components instance')
     invariant(
       options instanceof ComponentOptions,
       'new Context() expects second parameter to be a ComponentOptions instance',
@@ -44,10 +38,13 @@ export default class Context {
   }
   // NOTE: For internal use only
   async getFile(filePath: string): Promise<File> {
-    const stats = await asyncStat(filePath)
-    const contents = await asyncReadFile(filePath, 'utf8')
+    const resolved = path.resolve(this.config.rootDirectory, filePath)
+
+    const stats = await asyncStat(resolved)
+    const contents = await asyncReadFile(resolved, 'utf8')
     return {
-      filePath,
+      fileName: path.relative(this.config.rootDirectory, resolved),
+      filePath: resolved,
       lastModified: stats.mtime.getTime() / 1000,
       contents,
 
@@ -92,7 +89,7 @@ export default class Context {
     request: string,
     requestRoot: ?string = null,
     ignoredResolvers: Array<string> = [],
-  ): Promise<ResolvePayload> {
+  ): Promise<?ResolvePayload> {
     invariant(
       typeof request === 'string' && request,
       `resolve() expects first parameter to be non-null string, given: ${typeof request}`,
@@ -107,9 +104,7 @@ export default class Context {
     )
 
     const resolutionRoot = requestRoot || this.config.rootDirectory
-    const resolvers = this.components
-      .getByHookName('resolve')
-      .filter(c => !ignoredResolvers.includes(c.name))
+    const resolvers = this.components.getByHookName('resolve').filter(c => !ignoredResolvers.includes(c.name))
     const resolveRequest: ResolvePayload = {
       request,
       requestRoot: resolutionRoot,
@@ -128,25 +123,32 @@ export default class Context {
     if (resolveRequest.resolved) {
       return resolveRequest
     }
-    throw new FileMessageIssue({
-      file: resolutionRoot,
-      message: `Cannot find module '${request}'`,
-    })
+    return null
   }
   async resolveSimple(
     request: string,
-    requestSourceFile: ?string = null,
+    fromFile: ?string = null,
+    fromLine: ?number = null,
+    fromColumn: ?number = null,
     ignoredResolvers: Array<string> = [],
   ): Promise<string> {
-    const result = await this.resolve(
-      request,
-      requestSourceFile,
-      ignoredResolvers,
-    )
-    invariant(
-      result.resolved,
-      'resolve() did not throw when module was not resolved. IMPOSSIBLE?!',
-    )
-    return result.resolved
+    const result = await this.resolve(request, fromFile ? path.dirname(fromFile) : null, ignoredResolvers)
+    if (!result || !result.resolved) {
+      if (fromFile) {
+        throw new FileMessageIssue({
+          file: fromFile,
+          line: fromLine,
+          column: fromColumn,
+          message: `Cannot find module '${request}'`,
+        })
+      } else {
+        throw new MessageIssue(`Cannot find module '${request}'`)
+      }
+    }
+    const relativePath = path.relative(this.config.rootDirectory, result.resolved)
+    if (relativePath.charAt(0) !== '.') {
+      return `./${relativePath}`
+    }
+    return relativePath
   }
 }

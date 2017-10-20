@@ -32,22 +32,10 @@ export class FileIssue {
     severity: string,
   }) {
     invariant(typeof file === 'string' && file, 'File must be a valid string')
-    invariant(
-      typeof contents === 'string' && contents,
-      'options.contents must be a valid string',
-    )
-    invariant(
-      typeof line === 'number' && line > -1,
-      'options.line must be a valid number',
-    )
-    invariant(
-      typeof column === 'number' && column > -1,
-      'options.column must be a valid number',
-    )
-    invariant(
-      typeof message === 'string' && message,
-      'options.message must be a valid string',
-    )
+    invariant(typeof contents === 'string' && contents, 'options.contents must be a valid string')
+    invariant(typeof line === 'number' && line > -1, 'options.line must be a valid number')
+    invariant(typeof column === 'number' && column > -1, 'options.column must be a valid number')
+    invariant(typeof message === 'string' && message, 'options.message must be a valid string')
     invariant(VALID_SEVERITIES.has(severity), 'options.severity must be valid')
 
     this.file = file
@@ -58,8 +46,7 @@ export class FileIssue {
     this.severity = severity
   }
   get stack(): string {
-    return `FileIssue: ${this.message}\n    at ${this.file}:${this.line}:${this
-      .column}`
+    return `FileIssue: ${this.message}\n    at ${this.file}:${this.line}:${this.column}`
   }
 }
 
@@ -70,10 +57,7 @@ export class MessageIssue {
   // For compatibility with Error object
   stack: string
   constructor(message: string, severity: string = 'error') {
-    invariant(
-      typeof message === 'string' && message,
-      'options.message must be a valid string',
-    )
+    invariant(typeof message === 'string' && message, 'options.message must be a valid string')
     invariant(VALID_SEVERITIES.has(severity), 'options.severity must be valid')
 
     this.message = message
@@ -93,33 +77,11 @@ export class FileMessageIssue {
 
   // For compatibility with Error object
   stack: string
-  constructor({
-    file,
-    message,
-    line,
-    column,
-  }: {
-    file: string,
-    message: string,
-    line?: ?number,
-    column?: ?number,
-  }) {
-    invariant(
-      typeof file === 'string' && file,
-      'options.file must be a valid string',
-    )
-    invariant(
-      typeof message === 'string' && message,
-      'options.message must be a valid string',
-    )
-    invariant(
-      ['undefined', 'number'].includes(typeof line),
-      'options.line must be a valid number or null',
-    )
-    invariant(
-      ['undefined', 'number'].includes(typeof column),
-      'options.column must be a valid number or null',
-    )
+  constructor({ file, message, line, column }: { file: string, message: string, line?: ?number, column?: ?number }) {
+    invariant(typeof file === 'string' && file, 'options.file must be a valid string')
+    invariant(typeof message === 'string' && message, 'options.message must be a valid string')
+    invariant(['undefined', 'number'].includes(typeof line), 'options.line must be a valid number or null')
+    invariant(['undefined', 'number'].includes(typeof column), 'options.column must be a valid number or null')
 
     this.file = file
     this.line = line

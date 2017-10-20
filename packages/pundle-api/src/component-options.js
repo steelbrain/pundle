@@ -9,10 +9,7 @@ export default class ComponentOptions {
     this.registered = []
   }
   register(component: Component, options: Object): void {
-    invariant(
-      typeof component === 'object',
-      `register() expects first parameter to be object, given: ${typeof component}`,
-    )
+    invariant(typeof component === 'object', `register() expects first parameter to be object, given: ${typeof component}`)
     invariant(
       options && typeof options === 'object',
       `register() expects second parameter to be non-null object, given: ${typeof options}`,
@@ -24,17 +21,10 @@ export default class ComponentOptions {
       component && typeof component === 'object',
       `get() expects first parameter to be Component, given: ${typeof component}`,
     )
-    invariant(
-      Array.isArray(overrideConfigs),
-      `get() expects second parameter to be Array, given: ${typeof overrideConfigs}`,
-    )
+    invariant(Array.isArray(overrideConfigs), `get() expects second parameter to be Array, given: ${typeof overrideConfigs}`)
 
     return [component.defaultOptions]
-      .concat(
-        this.registered
-          .filter(c => c.component === component)
-          .map(c => c.options),
-      )
+      .concat(this.registered.filter(c => c.component === component).map(c => c.options))
       .concat(overrideConfigs)
       .reduce(
         (prevConfig, newConfig) => ({
