@@ -5,7 +5,7 @@ import pMap from 'p-map'
 import pEachSeries from 'p-each-series'
 import { RECOMMENDED_CONCURRENCY, FileMessageIssue } from 'pundle-api'
 import type { Context } from 'pundle-api'
-import type { File, FileGenerated } from 'pundle-api/lib/types'
+import type { File, FileGenerated, Chunk } from 'pundle-api/lib/types'
 
 export default class Compilation {
   context: Context
@@ -29,8 +29,6 @@ export default class Compilation {
     }
     const processors = this.context.components.getByHookName('language-process')
     await pEachSeries(processors, entry => entry.callback(this.context, this.context.options.get(entry), file))
-    const plugins = this.context.components.getByHookName('language-plugin')
-    await pEachSeries(plugins, entry => entry.callback(this.context, this.context.options.get(entry), file))
 
     return file
   }
@@ -49,6 +47,9 @@ export default class Compilation {
       })
     }
     return fileGenerated
+  }
+  async generateChunk(chunk: Chunk, files: Map<string, File>): Promise<void> {
+    console.log('chunk', chunk, 'files', files)
   }
   async processFileTree(
     resolved: string,
@@ -87,9 +88,14 @@ export default class Compilation {
       chunks,
       chunk =>
         this.processFileTree(chunk.entry, locks, files, false, (oldFile, newFile) => {
-          console.log('oldFile', oldFile, 'newFile', newFile)
+          // TODO: Do some relevant magic here
+          console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
         }),
       { concurrency: RECOMMENDED_CONCURRENCY },
     )
+    const generated = await pMap(chunks, chunk => this.generateChunk(chunk, files), {
+      concurrency: RECOMMENDED_CONCURRENCY,
+    })
+    console.log('generated', generated)
   }
 }
