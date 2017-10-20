@@ -8,12 +8,12 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "pundle-core": "0.0.0",
-    "pundle-reporter-console": "0.0.0",
-    "pundle-resolver-node": "0.0.0",
-    "pundle-language-js": "0.0.0",
-    "pundle-language-js-parser": "0.0.0",
-    "pundle-language-js-processor": "0.0.0",
-    "pundle-language-js-generator": "0.0.0"
+    "pundle-core": "*",
+    "pundle-reporter-console": "*",
+    "pundle-resolver-node": "*",
+    "pundle-language-js": "*",
+    "pundle-language-js-parser": "*",
+    "pundle-language-js-processor": "*",
+    "pundle-language-js-generator": "*"
   }
 }

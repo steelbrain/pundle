@@ -8,6 +8,6 @@
   "license": "MIT",
   "dependencies": {
     "babylon": "^6.18.0",
-    "pundle-api": "0.0.0"
+    "pundle-api": "*"
   }
 }

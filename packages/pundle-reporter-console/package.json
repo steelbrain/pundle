@@ -9,7 +9,7 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "pundle-api": "0.0.0",
-    "pundle-reporter-base": "0.0.0"
+    "pundle-api": "*",
+    "pundle-reporter-base": "*"
   }
 }

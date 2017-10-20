@@ -10,7 +10,7 @@
     "p-each-series": "^1.0.0",
     "p-map": "^1.2.0",
     "p-one": "^1.0.0",
-    "pundle-api": "0.0.0",
-    "pundle-core-parse-config": "0.0.0"
+    "pundle-api": "*",
+    "pundle-core-parse-config": "*"
   }
 }
