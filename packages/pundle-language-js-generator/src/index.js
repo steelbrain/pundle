@@ -13,6 +13,7 @@ export default function() {
     version,
     hookName: 'language-generate',
     callback: (async function(context, options, file) {
+      // TODO: Error handling
       if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
         return null
       }
