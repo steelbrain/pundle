@@ -7,7 +7,7 @@ import { shouldProcess, registerComponent } from 'pundle-api'
 import type { ComponentLanguageProcessor } from 'pundle-api/lib/types'
 
 import { version } from '../package.json'
-import { getName, getParsedReplacement } from './helpers'
+import { getName, getInjectionName, getParsedReplacement } from './helpers'
 
 type Injection = 'timers' | 'buffer' | 'process' | 'global'
 const INJECTIONS: Array<{ key: Injection, names: Set<string> }> = [
@@ -18,7 +18,6 @@ const INJECTIONS: Array<{ key: Injection, names: Set<string> }> = [
 ]
 
 export default function() {
-  console.log('registering processor')
   return registerComponent({
     name: 'pundle-language-js-processor',
     version,
@@ -28,7 +27,11 @@ export default function() {
         return
       }
 
-      const injections: Set<Injection> = new Set()
+      const promises = []
+      const parsed = file.parsed
+      invariant(parsed, 'file.parsed is null, is the parser working?!')
+
+      const injections: Map<Injection, string> = new Map()
       const resolveNode = (request: string, node: Object) =>
         context.resolveSimple(request, file.filePath, node.loc.start.line, node.loc.start.column)
       const processReplaceable = path => {
@@ -37,16 +40,22 @@ export default function() {
           path.replaceWith(getParsedReplacement(options.replaceVariables[name]))
           return
         }
-        INJECTIONS.forEach(({ key, names }) => {
-          if (names.has(name) && !injections.has(key) && !path.scope.hasBinding(name)) {
-            injections.add(key)
-          }
-        })
+        if (context.config.target === 'browser') {
+          INJECTIONS.forEach(({ key, names }) => {
+            if (names.has(name) && !injections.has(key) && !path.scope.hasBinding(name)) {
+              // $FlowIgnore: It's temporary
+              injections.set(key, null)
+              promises.push(
+                resolveNode(key, path.node).then(resolved => {
+                  injections.set(key, resolved)
+                  file.imports.push(resolved)
+                }),
+              )
+            }
+          })
+        }
       }
 
-      const promises = []
-      const parsed = file.parsed
-      invariant(parsed, 'file.parsed is null, is the parser working?!')
       traverse(parsed.ast, {
         ImportDeclaration({ node }) {
           const source = node.source
@@ -95,7 +104,32 @@ export default function() {
       })
 
       await Promise.all(promises)
-      // TODO: handle all injections here
+      if (injections.size) {
+        const resolvedParams = Array.from(injections.values()).map(resolved => t.stringLiteral(resolved))
+        const functionArgs = Array.from(injections.keys()).map(name => t.identifier(getInjectionName(name)))
+        const wrapper = t.callExpression(
+          t.functionExpression(null, functionArgs, t.blockStatement([])),
+          Array.from(resolvedParams),
+        )
+        if (injections.has('timers')) {
+          parsed.ast.program.body.unshift(
+            t.variableDeclaration('var', [
+              t.variableDeclarator(
+                t.identifier('setImmediate'),
+                t.memberExpression(t.identifier(getInjectionName('timers')), t.identifier('setImmediate')),
+              ),
+              t.variableDeclarator(
+                t.identifier('clearImmediate'),
+                t.memberExpression(t.identifier(getInjectionName('timers')), t.identifier('clearImmediate')),
+              ),
+            ]),
+          )
+        }
+        wrapper.callee.body.body = parsed.ast.program.body
+        wrapper.callee.body.directives = parsed.ast.program.directives
+        parsed.ast.program.body = [wrapper]
+        parsed.ast.program.directives = []
+      }
     }: ComponentLanguageProcessor),
     defaultOptions: {
       extensions: ['.js'],

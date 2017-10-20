@@ -26,3 +26,7 @@ export function getParsedReplacement(templateString: string): Object {
   }
   return cachedValue
 }
+
+export function getInjectionName(name: string): string {
+  return `__$sb$pundle${name}`
+}
