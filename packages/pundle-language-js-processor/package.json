@@ -7,6 +7,7 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
+    "babel-template": "^7.0.0-beta.3",
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
     "pundle-api": "*"

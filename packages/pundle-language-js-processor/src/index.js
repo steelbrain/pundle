@@ -7,13 +7,18 @@ import { shouldProcess, registerComponent } from 'pundle-api'
 import type { ComponentLanguageProcessor } from 'pundle-api/lib/types'
 
 import { version } from '../package.json'
+import { getName, getParsedReplacement } from './helpers'
 
-// const NAMES_DEPENDENCY_TIMER = ['setImmediate', 'clearImmediate']
-// const NAMES_DEPENDENCY_BUFFER = ['Buffer']
-// const NAMES_DEPENDENCY_BROWSER = ['browser']
-// const NAMES_DEPENDENCY_GLOBALS = ['global']
+type Injection = 'timers' | 'buffer' | 'process' | 'global'
+const INJECTIONS: Array<{ key: Injection, names: Set<string> }> = [
+  { key: 'timers', names: new Set(['setImmediate', 'clearImmediate']) },
+  { key: 'buffer', names: new Set(['Buffer']) },
+  { key: 'process', names: new Set(['process']) },
+  { key: 'global', names: new Set(['global']) },
+]
 
 export default function() {
+  console.log('registering processor')
   return registerComponent({
     name: 'pundle-language-js-processor',
     version,
@@ -22,6 +27,23 @@ export default function() {
       if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
         return
       }
+
+      const injections: Set<Injection> = new Set()
+      const resolveNode = (request: string, node: Object) =>
+        context.resolveSimple(request, file.filePath, node.loc.start.line, node.loc.start.column)
+      const processReplaceable = path => {
+        const name = getName(path.node)
+        if ({}.hasOwnProperty.call(options.replaceVariables, name)) {
+          path.replaceWith(getParsedReplacement(options.replaceVariables[name]))
+          return
+        }
+        INJECTIONS.forEach(({ key, names }) => {
+          if (names.has(name) && !injections.has(key) && !path.scope.hasBinding(name)) {
+            injections.add(key)
+          }
+        })
+      }
+
       const promises = []
       const parsed = file.parsed
       invariant(parsed, 'file.parsed is null, is the parser working?!')
@@ -30,12 +52,10 @@ export default function() {
           const source = node.source
           if (t.isStringLiteral(source)) {
             promises.push(
-              context
-                .resolveSimple(source.value, file.filePath, node.loc.start.line, node.loc.start.column)
-                .then(resolved => {
-                  source.value = resolved
-                  file.imports.push(resolved)
-                }),
+              resolveNode(source.value, node).then(resolved => {
+                source.value = resolved
+                file.imports.push(resolved)
+              }),
             )
           }
         },
@@ -49,37 +69,37 @@ export default function() {
           if (t.isImport(callee)) {
             // Chunky async Import
             promises.push(
-              context.resolveSimple(arg.value, file.filePath, node.loc.start.line, node.loc.start.column).then(resolved => {
+              resolveNode(arg.value, node).then(resolved => {
                 arg.value = resolved
                 file.chunks.push(context.getChunk(resolved))
               }),
             )
             return
           }
+          const calleeName = getName(callee)
           // require + require.resolve handling below
-          const isRequire = t.isIdentifier(callee) && callee.name === 'require'
-          const isRequireResolve =
-            t.isMemberExpression(callee) && callee.object.name === 'require' && callee.property.name === 'resolve'
-          if (isRequire || isRequireResolve) {
+          if (calleeName === 'require' || calleeName === 'require.resolve') {
             if (path.scope.hasBinding('require')) return
             promises.push(
-              context.resolveSimple(arg.value, file.filePath, node.loc.start.line, node.loc.start.column).then(resolved => {
+              resolveNode(arg.value, node).then(resolved => {
                 arg.value = resolved
-                if (isRequire) {
+                if (calleeName === 'require') {
                   file.imports.push(resolved)
                 }
               }),
             )
           }
         },
-        // Identifier(path) {},
-        // MemberExpression(path) {},
+        Identifier: processReplaceable,
+        MemberExpression: processReplaceable,
       })
 
       await Promise.all(promises)
+      // TODO: handle all injections here
     }: ComponentLanguageProcessor),
     defaultOptions: {
       extensions: ['.js'],
+      replaceVariables: {},
     },
   })
 }

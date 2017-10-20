@@ -4,6 +4,10 @@ module.exports = {
     'pundle-reporter-console',
     'pundle-resolver-node',
     'pundle-language-js-parser',
-    'pundle-language-js-processor',
+    ['pundle-language-js-processor', {
+      replaceVariables: {
+        'process.env.NODE_ENV': JSON.stringify('development'),
+      }
+    }],
   ],
 }
