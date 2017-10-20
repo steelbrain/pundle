@@ -8,9 +8,6 @@ import type { ComponentLanguageProcessor } from 'pundle-api/lib/types'
 
 import { version } from '../package.json'
 
-// TODO: Should we bundle the require resolved ones in output? I think yes
-// const NAMES_RESOLVE_REQUIRE = ['require', 'require.resolve']
-// const NAMES_RESOLVE_MODULE = ['module.hot.accept', 'module.hot.decline']
 // const NAMES_DEPENDENCY_TIMER = ['setImmediate', 'clearImmediate']
 // const NAMES_DEPENDENCY_BUFFER = ['Buffer']
 // const NAMES_DEPENDENCY_BROWSER = ['browser']
@@ -42,20 +39,37 @@ export default function() {
             )
           }
         },
-        CallExpression({ node }) {
-          if (node.callee.type === 'Import') {
+        CallExpression(path) {
+          const { node } = path
+          const { callee } = node
+          const [arg] = node.arguments
+
+          if (!t.isStringLiteral(arg)) return
+
+          if (t.isImport(callee)) {
             // Chunky async Import
-            const [arg] = node.arguments
-            if (t.isStringLiteral(arg)) {
-              promises.push(
-                context
-                  .resolveSimple(arg.value, file.filePath, node.loc.start.line, node.loc.start.column)
-                  .then(resolved => {
-                    arg.value = resolved
-                    file.chunks.push(context.getChunk(resolved))
-                  }),
-              )
-            }
+            promises.push(
+              context.resolveSimple(arg.value, file.filePath, node.loc.start.line, node.loc.start.column).then(resolved => {
+                arg.value = resolved
+                file.chunks.push(context.getChunk(resolved))
+              }),
+            )
+            return
+          }
+          // require + require.resolve handling below
+          const isRequire = t.isIdentifier(callee) && callee.name === 'require'
+          const isRequireResolve =
+            t.isMemberExpression(callee) && callee.object.name === 'require' && callee.property.name === 'resolve'
+          if (isRequire || isRequireResolve) {
+            if (path.scope.hasBinding('require')) return
+            promises.push(
+              context.resolveSimple(arg.value, file.filePath, node.loc.start.line, node.loc.start.column).then(resolved => {
+                arg.value = resolved
+                if (isRequire) {
+                  file.imports.push(resolved)
+                }
+              }),
+            )
           }
         },
         // Identifier(path) {},
