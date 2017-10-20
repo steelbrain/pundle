@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "author": "steelbrain",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "babel-generator": "^6.26.0",
+    "pundle-api": "*"
+  }
 }

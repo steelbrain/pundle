@@ -49,6 +49,8 @@ export default class Compilation {
     return fileGenerated
   }
   async generateChunk(chunk: Chunk, files: Map<string, File>): Promise<void> {
+    // TODO: invoke chunk-generate
+    await pMap(files.values(), file => this.generateFile(file))
     console.log('chunk', chunk, 'files', files)
   }
   async processFileTree(
