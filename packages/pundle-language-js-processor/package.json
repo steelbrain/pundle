@@ -8,6 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "babel-traverse": "^6.26.0",
+    "babel-types": "^6.26.0",
     "pundle-api": "*"
   }
 }

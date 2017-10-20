@@ -53,14 +53,11 @@ export default class Context {
       chunks: [],
     }
   }
-  // Note: Public use allowed
-  // NOTE: Entry can be relative to root directory but files MUST be pre-resolved
-  async getChunk(entry: string, files: Array<string> = []): Promise<Chunk> {
-    // TODO: Validation
-    const resolvedEntry = await this.resolveSimple(entry)
-
+  // NOTE: Public use allowed
+  // NOTE: Everything must be pre-resolved
+  getChunk(entry: string, files: Array<string> = []): Chunk {
     return {
-      entry: resolvedEntry,
+      entry,
       files,
     }
   }

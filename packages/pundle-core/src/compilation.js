@@ -80,7 +80,9 @@ export default class Compilation {
   async build(): Promise<void> {
     const locks: Set<string> = new Set()
     const files: Map<string, File> = new Map()
-    const chunks = this.context.config.entry.map(entry => this.context.getChunk(entry, []))
+    const chunks = this.context.config.entry.map(async entry =>
+      this.context.getChunk(await this.context.resolveSimple(entry), []),
+    )
     await pMap(
       chunks,
       chunk =>
