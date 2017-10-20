@@ -5,7 +5,7 @@ import pMap from 'p-map'
 import pEachSeries from 'p-each-series'
 import { RECOMMENDED_CONCURRENCY, FileMessageIssue } from 'pundle-api'
 import type { Context } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import type { File, GeneratedFile } from 'pundle-api/types'
 
 export default class Compilation {
   context: Context
@@ -28,7 +28,10 @@ export default class Compilation {
           'File not parsed, did you configure a parser for this filetype? Are you sure this file is not excluded?',
       })
     }
-    // TODO: Add transformer here, make it return value and merge maps and stuff
+    const processors = this.context.components.getByHookName('language-process')
+    await pEachSeries(processors, entry =>
+      entry.callback(this.context, this.context.options.get(entry), file),
+    )
     const plugins = this.context.components.getByHookName('language-plugin')
     await pEachSeries(plugins, entry =>
       entry.callback(this.context, this.context.options.get(entry), file),
@@ -36,40 +39,36 @@ export default class Compilation {
 
     return file
   }
-  async generateFile(file: File): Promise<void> {
+  async generateFile(file: File): Promise<GeneratedFile> {
     const generators = this.context.components.getByHookName(
       'language-generate',
     )
-    const foundGenerator = await pOne(generators, entry => {
-      const generated = entry.callback(
+    let generatedFile
+    await pOne(generators, entry => {
+      generatedFile = entry.callback(
         this.context,
         this.context.options.get(entry),
         file,
       )
-      if (generated) {
-        file.generatedMap = generated.sourceMap
-        file.generatedContents = generated.contents
-      }
-      return !!generated
+      return !!generatedFile
     })
-    if (!foundGenerator) {
+    if (!generatedFile) {
       throw new FileMessageIssue({
         file: file.filePath,
         message:
           'File not generated, did you configure a generator for this filetype? Are you sure this file is not excluded?',
       })
     }
+    return generatedFile
   }
   async processFileTree(
-    request: string,
-    requestRoot: ?string,
+    resolved: string,
     locks: Set<string>,
     files: Map<string, File>,
     /* TODO: Add oldFiles here */
     forcedOverwite: boolean,
     tickCallback: (oldFile: ?File, newFile: File) => any,
   ): Promise<boolean> {
-    const resolved = await this.context.resolveSimple(request, requestRoot)
     const oldFile = files.get(resolved)
     if (oldFile && !forcedOverwite) {
       return true
@@ -100,7 +99,6 @@ export default class Compilation {
       chunk =>
         this.processFileTree(
           chunk.entry,
-          null,
           locks,
           files,
           false,

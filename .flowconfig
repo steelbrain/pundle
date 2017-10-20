@@ -8,4 +8,5 @@ flow-decls
 [options]
 module.system=node
 suppress_comment= \\(.\\|\n\\)*\\$FlowIgnore
+suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
 unsafe.enable_getters_and_setters=true

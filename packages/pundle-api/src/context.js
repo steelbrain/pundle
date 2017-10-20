@@ -5,8 +5,8 @@ import invariant from 'assert'
 import pEachSeries from 'p-each-series'
 import { promisify } from 'util'
 
-import { Components } from './components'
 import ComponentOptions from './component-options'
+import { Components } from './components'
 import { MessageIssue, FileMessageIssue } from './issues'
 import type { File, Chunk, BaseConfig, ResolvePayload } from '../types'
 
@@ -49,10 +49,7 @@ export default class Context {
     return {
       filePath,
       lastModified: stats.mtime.getTime() / 1000,
-
-      sourceContents: contents,
-      generatedMap: null,
-      generatedContents: contents,
+      contents,
 
       parsed: null,
       imports: [],
@@ -60,10 +57,13 @@ export default class Context {
     }
   }
   // Note: Public use allowed
+  // NOTE: Entry can be relative to root directory but files MUST be pre-resolved
   async getChunk(entry: string, files: Array<string> = []): Promise<Chunk> {
     // TODO: Validation
+    const resolvedEntry = await this.resolveSimple(entry)
+
     return {
-      entry,
+      entry: resolvedEntry,
       files,
     }
   }

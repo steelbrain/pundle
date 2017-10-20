@@ -24,7 +24,7 @@ export default function() {
       }
       let ast
       try {
-        ast = parse(file.sourceContents, {
+        ast = parse(file.contents, {
           sourceType: 'module',
           sourceFilename: file.filePath,
           plugins: ['jsx', 'flow', '*'],
@@ -33,7 +33,7 @@ export default function() {
         if (error.loc) {
           throw new FileIssue({
             file: file.filePath,
-            contents: file.sourceContents,
+            contents: file.contents,
             line: error.loc.line,
             column: error.loc.column,
             message: error.message,

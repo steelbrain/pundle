@@ -52,12 +52,18 @@ export type Import = string
 export type File = {
   filePath: string,
   lastModified: number,
-
-  sourceContents: string,
-  generatedMap: ?Object,
-  generatedContents: string,
+  contents: string,
 
   parsed: ?Object,
   imports: Array<Import>,
   chunks: Array<Chunk>,
+}
+
+export type GeneratedFile = {
+  filePath: string,
+  lastModified: number,
+  sourceContents: string,
+  sourceContents: string,
+  generatedMap: ?Object,
+  generatedContents: string,
 }
