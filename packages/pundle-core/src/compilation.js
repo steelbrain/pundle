@@ -5,7 +5,7 @@ import pMap from 'p-map'
 import pEachSeries from 'p-each-series'
 import { RECOMMENDED_CONCURRENCY, FileMessageIssue } from 'pundle-api'
 import type { Context } from 'pundle-api'
-import type { File, GeneratedFile } from 'pundle-api/types'
+import type { File, FileGenerated } from 'pundle-api/lib/types'
 
 export default class Compilation {
   context: Context
@@ -39,27 +39,27 @@ export default class Compilation {
 
     return file
   }
-  async generateFile(file: File): Promise<GeneratedFile> {
+  async generateFile(file: File): Promise<FileGenerated> {
     const generators = this.context.components.getByHookName(
       'language-generate',
     )
-    let generatedFile
+    let fileGenerated
     await pOne(generators, entry => {
-      generatedFile = entry.callback(
+      fileGenerated = entry.callback(
         this.context,
         this.context.options.get(entry),
         file,
       )
-      return !!generatedFile
+      return !!fileGenerated
     })
-    if (!generatedFile) {
+    if (!fileGenerated) {
       throw new FileMessageIssue({
         file: file.filePath,
         message:
           'File not generated, did you configure a generator for this filetype? Are you sure this file is not excluded?',
       })
     }
-    return generatedFile
+    return fileGenerated
   }
   async processFileTree(
     resolved: string,

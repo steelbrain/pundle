@@ -2,7 +2,7 @@
 
 import Path from 'path'
 import createIgnore from 'ignore'
-import type { ComponentRules } from '../types'
+import type { ComponentRules } from './types'
 
 export function matchesRules(
   relativePath: string,

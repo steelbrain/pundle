@@ -2,7 +2,7 @@
 
 import invariant from 'assert'
 import { apiVersion } from '../package.json'
-import type { HookName, Component } from '../types'
+import type { HookName, Component } from './types'
 
 const Hooks: Array<HookName> = [
   'resolve',

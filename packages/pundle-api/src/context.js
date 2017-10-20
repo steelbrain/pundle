@@ -8,7 +8,7 @@ import { promisify } from 'util'
 import ComponentOptions from './component-options'
 import { Components } from './components'
 import { MessageIssue, FileMessageIssue } from './issues'
-import type { File, Chunk, BaseConfig, ResolvePayload } from '../types'
+import type { File, Chunk, BaseConfig, ResolvePayload } from './types'
 
 const asyncStat = promisify(fs.stat)
 const asyncReadFile = promisify(fs.readFile)

@@ -1,7 +1,7 @@
 // @flow
 
 import type { Components, ComponentOptions } from 'pundle-api'
-import type { BaseConfig } from 'pundle-api/types'
+import type { BaseConfig } from 'pundle-api/lib/types'
 
 export type AcceptedConfig = {
   entry?: Array<string> | string,

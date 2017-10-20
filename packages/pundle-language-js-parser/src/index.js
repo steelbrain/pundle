@@ -7,7 +7,7 @@ import {
   FileIssue,
   FileMessageIssue,
 } from 'pundle-api'
-import type { File } from 'pundle-api/types'
+import type { ComponentLanguageParser } from 'pundle-api/lib/types'
 
 import { version } from '../package.json'
 
@@ -16,7 +16,7 @@ export default function() {
     name: 'pundle-language-js-parser',
     version,
     hookName: 'language-parse',
-    async callback(context, options, file: File) {
+    callback: (async function(context, options, file) {
       if (
         !shouldProcess(context.config.rootDirectory, file.filePath, options)
       ) {
@@ -49,7 +49,7 @@ export default function() {
       file.parsed = {
         ast,
       }
-    },
+    }: ComponentLanguageParser),
     defaultOptions: {
       extensions: ['.js'],
     },

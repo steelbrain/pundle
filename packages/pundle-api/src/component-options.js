@@ -1,7 +1,7 @@
 // @flow
 
 import invariant from 'assert'
-import type { Component, ComponentOptionsEntry } from '../types'
+import type { Component, ComponentOptionsEntry } from './types'
 
 export default class ComponentOptions {
   registered: Array<ComponentOptionsEntry>
