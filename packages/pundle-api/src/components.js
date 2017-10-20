@@ -53,15 +53,9 @@ export class Components {
       componentApiVersion === apiVersion,
       `register() expects component.apiVersion to be ${apiVersion}, given: ${componentApiVersion}`,
     )
+    component.apiVersion = componentApiVersion
 
-    this.registered.push({
-      name,
-      version,
-      hookName,
-      callback,
-      defaultOptions,
-      apiVersion: componentApiVersion,
-    })
+    this.registered.push(component)
   }
 }
 
