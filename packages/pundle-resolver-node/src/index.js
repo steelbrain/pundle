@@ -4,8 +4,7 @@ import path from 'path'
 import resolve from 'resolve'
 import browserResolve from 'browser-resolve'
 import browserAliases from 'pundle-resolver-aliases-browser'
-import { registerComponent } from 'pundle-api'
-import type { ComponentResolver } from 'pundle-api/lib/types'
+import { createResolver } from 'pundle-api'
 
 import { version } from '../package.json'
 
@@ -23,11 +22,10 @@ function promisedResolve(browserEnv: boolean, request: string, options: Object):
 }
 
 export default function() {
-  return registerComponent({
+  return createResolver({
     name: 'pundle-resolver-node',
     version,
-    hookName: 'resolve',
-    callback: (async function(context, options, payload) {
+    async callback(context, options, payload) {
       const browserEnv = context.config.target === 'browser'
       const resolved = await promisedResolve(browserEnv, payload.request, {
         basedir: payload.requestRoot,
@@ -45,7 +43,7 @@ export default function() {
         }
         payload.resolved = resolved
       }
-    }: ComponentResolver),
+    },
     defaultOptions: {
       extensions: ['', '.js', '.json'],
       moduleDirectories: ['node_modules'],
