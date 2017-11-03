@@ -1,6 +1,6 @@
 {
   "root": true,
-  "extends": ["steelbrain", "prettier"],
+  "extends": ["steelbrain", "prettier", "prettier/flowtype"],
   "plugins": [
     "prettier"
   ],

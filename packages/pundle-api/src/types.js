@@ -43,7 +43,7 @@ export type File = {|
 |}
 
 export type Severity = 'info' | 'warning' | 'error'
-export type ComponentType = 'resolver' | 'reporter' | 'loader'
+export type ComponentType = 'resolver' | 'reporter' | 'loader' | 'transformer'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
   options: Object,
@@ -66,10 +66,27 @@ export type ComponentResolver = Component<'resolver', ComponentResolverCallback>
 export type ComponentReporterCallback = ComponentCallback<[any], void>
 export type ComponentReporter = Component<'reporter', ComponentReporterCallback>
 
-export type ComponentLoaderCallback = ComponentCallback<[File], void>
+export type ComponentLoaderCallback = ComponentCallback<
+  [File],
+  {|
+    chunks: Array<Chunk>,
+    imports: Array<Import>,
+    contents: string,
+    sourceMap: ?Object,
+  |},
+>
 export type ComponentLoader = Component<'loader', ComponentLoaderCallback>
 
-export type ComponentAny = ComponentResolver | ComponentReporter | ComponentLoader
+export type ComponentTransformerCallback = ComponentCallback<
+  [File],
+  {|
+    contents: string,
+    sourceMap: ?Object,
+  |},
+>
+export type ComponentTransformer = Component<'transformer', ComponentTransformerCallback>
+
+export type ComponentAny = ComponentResolver | ComponentReporter | ComponentLoader | ComponentTransformer
 
 export type ComponentOptionsEntry = {|
   options: Object,

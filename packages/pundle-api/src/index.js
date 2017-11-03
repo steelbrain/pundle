@@ -12,6 +12,7 @@ import ComponentOptions from './ComponentOptions'
 import { createReporter, createResolver, createLoader } from './ComponentTypes'
 
 import Context from './Context'
+import { RECOMMENDED_CONCURRENCY } from './common'
 
 export {
   FileIssue,
@@ -25,4 +26,5 @@ export {
   createResolver,
   createLoader,
   Context,
+  RECOMMENDED_CONCURRENCY,
 }
