@@ -4,39 +4,23 @@ import invariant from 'assert'
 import { apiVersion } from '../package.json'
 import * as T from './types'
 
-const Hooks: Array<T.ComponentType> = ['resolver', 'reporter', 'loader']
+const TYPES: Array<T.ComponentType> = ['resolver', 'reporter', 'loader']
 
 export class Components {
-  registered: Array<Component>
+  registered: Array<T.ComponentAny>
   constructor() {
     this.registered = []
   }
-  getByName(name: string): ?Component {
-    invariant(typeof name === 'string', `getByName() expects first parameter to be string, given: ${typeof name}`)
-
-    return this.registered.find(c => c.name === name)
-  }
-  getByHookName(hookName: HookName): Array<Component> {
-    invariant(
-      Hooks.includes(hookName),
-      `getByHookName() expects first parameter to be valid hook name, given: ${String(hookName)}`,
-    )
-
-    return this.registered.filter(c => c.hookName === hookName)
-  }
-  register(component: Component) {
+  register(component: T.ComponentAny) {
     invariant(
       component && typeof component === 'object',
       `register() expects first parameter to be non-null object, given: ${typeof component}`,
     )
 
-    const { name, version, hookName, callback, defaultOptions, apiVersion: componentApiVersion } = component
+    const { name, version, type, callback, defaultOptions, apiVersion: componentApiVersion } = component
     invariant(typeof name === 'string', `register() expects component.name to be string, given: ${typeof name}`)
     invariant(typeof version === 'string', `register() expects component.version to be string, given: ${typeof version}`)
-    invariant(
-      Hooks.includes(hookName),
-      `register() expects component.hookName to be valid hook name, given: ${String(hookName)}`,
-    )
+    invariant(TYPES.includes(type), `register() expects component.type to be valid type, given: ${String(type)}`)
     invariant(typeof callback === 'function', 'register() expects component.callback to be function')
     invariant(
       defaultOptions && typeof defaultOptions === 'object',
@@ -54,14 +38,14 @@ export class Components {
 
 export function registerComponent({
   name,
+  type,
   version,
-  hookName,
   callback,
   defaultOptions = {},
 }: {
   name: string,
+  type: T.ComponentType,
   version: string,
-  hookName: HookName,
   callback: Function,
   defaultOptions: Object,
 }): Component {
@@ -70,10 +54,7 @@ export function registerComponent({
     typeof version === 'string',
     `registerComponent() expects options.version to be string, given: ${typeof version}`,
   )
-  invariant(
-    Hooks.includes(hookName),
-    `registerComponent() expects options.hookName to be valid hook name, given: ${String(hookName)}`,
-  )
+  invariant(TYPES.includes(type), `registerComponent() expects options.type to be valid type name, given: ${String(type)}`)
   invariant(typeof callback === 'function', 'registerComponent() expects options.callback to be function')
   invariant(
     defaultOptions && typeof defaultOptions === 'object',
@@ -83,7 +64,7 @@ export function registerComponent({
   return {
     name,
     version,
-    hookName,
+    type,
     callback,
     defaultOptions,
     apiVersion,
