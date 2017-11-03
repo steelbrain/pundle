@@ -6,8 +6,8 @@ import invariant from 'assert'
 import promisify from 'sb-promisify'
 import pEachSeries from 'p-each-series'
 
-import ComponentOptions from './component-options'
-import { Components } from './components'
+import Components from './Components'
+import ComponentOptions from './ComponentOptions'
 import { MessageIssue, FileMessageIssue } from './issues'
 import type { File, Chunk, BaseConfig, ResolvePayload } from './types'
 
