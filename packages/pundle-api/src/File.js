@@ -1,5 +1,6 @@
 // @flow
 
+import mergeSourceMap from 'merge-source-map'
 import type { Chunk, Import } from './types'
 
 export default class File {
@@ -11,8 +12,9 @@ export default class File {
   sourceContents: string
   sourceMap: ?Object
 
-  imports: Array<Import>
-  chunks: Array<Chunk>
+  // Private props
+  $chunks: Array<Chunk>
+  $imports: Array<Import>
 
   constructor({
     fileName,
@@ -32,7 +34,24 @@ export default class File {
 
     this.sourceContents = contents
     this.sourceMap = null
-    this.imports = []
-    this.chunks = []
+    this.$chunks = []
+    this.$imports = []
+  }
+  mergeTransformation(contents: string, sourceMap: ?Object): void {
+    if (this.sourceMap && !sourceMap) {
+      this.sourceMap = null
+    } else if (!this.sourceMap && sourceMap) {
+      this.sourceMap = sourceMap
+    } else if (this.sourceMap && sourceMap) {
+      this.sourceMap = mergeSourceMap(this.sourceMap, sourceMap)
+    }
+    this.contents = contents
+  }
+  addChunk(entry: Chunk): void {
+    // TODO: Dedupe
+    this.$chunks.push(entry)
+  }
+  addImport(entry: Import): void {
+    this.$imports.push(entry)
   }
 }
