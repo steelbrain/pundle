@@ -8,7 +8,7 @@ export type ComponentRules = {
   extensions?: string | Array<string>,
 }
 
-export type HookName = 'resolve' | 'report' | 'language-parse' | 'language-process' | 'language-generate'
+export type HookName = 'resolve' | 'report' | 'language'
 
 export type Component = {
   name: string,

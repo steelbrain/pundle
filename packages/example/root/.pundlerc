@@ -3,12 +3,12 @@ module.exports = {
   components: [
     'pundle-reporter-console',
     'pundle-resolver-node',
-    'pundle-language-js-parser',
-    ['pundle-language-js-processor', {
-      replaceVariables: {
-        'process.env.NODE_ENV': JSON.stringify('development'),
-      }
-    }],
-    'pundle-language-js-generator',
+    // 'pundle-language-js-parser',
+    // ['pundle-language-js-processor', {
+    //   replaceVariables: {
+    //     'process.env.NODE_ENV': JSON.stringify('development'),
+    //   }
+    // }],
+    // 'pundle-language-js-generator',
   ],
 }
