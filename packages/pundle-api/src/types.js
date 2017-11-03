@@ -8,23 +8,6 @@ export type ComponentRules = {
   extensions?: string | Array<string>,
 }
 
-export type HookName = 'resolve' | 'report' | 'language'
-
-export type Component = {
-  name: string,
-  version: string,
-  hookName: HookName,
-  callback: Function,
-  defaultOptions: Object,
-
-  // Automatically added
-  apiVersion: number,
-}
-export type ComponentOptionsEntry = {
-  options: Object,
-  component: Component,
-}
-
 export type BaseConfig = {
   entry: Array<string>,
   target: 'browser',
@@ -32,10 +15,13 @@ export type BaseConfig = {
 }
 export type ResolvePayload = {
   request: string,
-  requestRoot: string,
+  ignoredResolvers: Array<string>,
+
+  fromFile: ?string,
+  fromDirectory: ?string,
+
   resolved: ?string,
   resolvedRoot: ?string,
-  ignoredResolvers: Array<string>,
 }
 
 export type Chunk = {
@@ -49,34 +35,44 @@ export type File = {
   fileName: string,
   filePath: string,
   lastModified: number,
-  contents: string,
 
-  parsed: ?Object,
+  contents: string,
+  sourceContents: string,
+  sourceMap?: Object,
+
   imports: Array<Import>,
   chunks: Array<Chunk>,
 }
 
-export type FileGenerated = {
-  filePath: string,
-  lastModified: number,
-  sourceContents: string,
-  sourceContents: string,
-  generatedMap: ?Object,
-  generatedContents: string,
-}
-
-export type ComponentResolver = (context: Context, options: Object, payload: ResolvePayload) => Promise<void>
-
-export type ComponentReporter = (context: Context, options: Object, error: any) => Promise<void> | void
-
-export type ComponentLanguageParser = (context: Context, options: Object, file: File) => Promise<void> | void
-
-export type ComponentLanguageProcessor = (context: Context, options: Object, file: File) => Promise<void> | void
-
-export type ComponentLanguagePlugin = (context: Context, options: Object, file: File) => Promise<void> | void
-
-export type ComponentLanguageGenerator = (
+export type ComponentType = 'resolver' | 'reporter' | 'loader'
+export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
   options: Object,
-  file: File,
-) => Promise<?FileGenerated> | FileGenerated
+  ...TARGUMENTS
+) => Promise<?TRETURNVALUE> | ?TRETURNVALUE
+export type Component<TTYPE: ComponentType, TCALLBACK> = {
+  name: string,
+  version: string,
+  type: TTYPE,
+  callback: TCALLBACK,
+  defaultOptions: Object,
+
+  // Automatically added
+  apiVersion: number,
+}
+
+export type ComponentResolverCallback = ComponentCallback<[ResolvePayload], void>
+export type ComponentResolver = Component<'resolver', ComponentResolverCallback>
+
+export type ComponentReporterCallback = ComponentCallback<[any], void>
+export type ComponentReporter = Component<'reporter', ComponentReporterCallback>
+
+export type ComponentLoaderCallback = ComponentCallback<[File], void>
+export type ComponentLoader = Component<'loader', ComponentLoaderCallback>
+
+export type ComponentAny = ComponentResolver | ComponentReporter | ComponentLoader
+
+export type ComponentOptionsEntry = {
+  options: Object,
+  component: ComponentAny,
+}
