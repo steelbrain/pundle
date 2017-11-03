@@ -52,6 +52,7 @@ export default class File {
     this.$chunks.push(entry)
   }
   addImport(entry: Import): void {
+    // TODO: Dedupe
     this.$imports.push(entry)
   }
 }
