@@ -5,11 +5,12 @@ import path from 'path'
 import invariant from 'assert'
 import promisify from 'sb-promisify'
 
+import File from './File'
 import Components from './Components'
 import ComponentOptions from './ComponentOptions'
 import MessageIssue from './issues/MessageIssue'
 import FileMessageIssue from './issues/FileMessageIssue'
-import type { File, Chunk, BaseConfig, ResolvePayload } from './types'
+import type { Chunk, BaseConfig, ResolvePayload } from './types'
 
 const asyncStat = promisify(fs.stat)
 const asyncReadFile = promisify(fs.readFile)
@@ -42,18 +43,13 @@ export default class Context {
 
     const stats = await asyncStat(resolved)
     const contents = await asyncReadFile(resolved, 'utf8')
-    return {
+    return new File({
       fileName: path.relative(this.config.rootDirectory, resolved),
       filePath: resolved,
       lastModified: stats.mtime.getTime() / 1000,
 
       contents,
-      sourceContents: contents,
-      sourceMap: null,
-
-      imports: [],
-      chunks: [],
-    }
+    })
   }
   // NOTE: Public use allowed
   // NOTE: Both entry and imports MUST be pre-resolved

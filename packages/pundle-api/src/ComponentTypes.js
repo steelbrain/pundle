@@ -56,7 +56,6 @@ export function createResolver(params: CreationParameters<ComponentResolverCallb
 export function createLoader(params: CreationParameters<ComponentLoaderCallback>): ComponentLoader {
   return createComponent('loader', params)
 }
-
 export function createTransformer(params: CreationParameters<ComponentTransformerCallback>): ComponentTransformer {
   return createComponent('transformer', params)
 }

@@ -1,6 +1,9 @@
 // @flow
 
+import type TFile from './File'
 import type Context from './Context'
+
+export type File = TFile
 
 export type ComponentRules = {
   include?: string | Array<string>,
@@ -27,19 +30,6 @@ export type Chunk = {|
   entry: string,
   imports: Array<Import>,
   // ^ RESOLVED file paths to include in the main output bundle
-|}
-
-export type File = {|
-  fileName: string,
-  filePath: string,
-  lastModified: number,
-
-  contents: string,
-  sourceContents: string,
-  sourceMap: ?Object,
-
-  imports: Array<Import>,
-  chunks: Array<Chunk>,
 |}
 
 export type Severity = 'info' | 'warning' | 'error'
