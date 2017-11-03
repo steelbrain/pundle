@@ -10,6 +10,7 @@
   "dependencies": {
     "pundle-core": "*",
     "pundle-reporter-console": "*",
+    "pundle-loader-js": "*",
     "pundle-resolver-node": "*"
   }
 }

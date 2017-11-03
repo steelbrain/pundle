@@ -7,9 +7,7 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
-    "p-each-series": "^1.0.0",
     "p-map": "^1.2.0",
-    "p-one": "^1.0.0",
     "pundle-api": "*",
     "pundle-core-parse-config": "*"
   }

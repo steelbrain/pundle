@@ -1,9 +1,7 @@
 // @flow
 
-import type TFile from './File'
+import type File from './File'
 import type Context from './Context'
-
-export type File = TFile
 
 export type ComponentRules = {
   include?: string | Array<string>,
@@ -59,8 +57,6 @@ export type ComponentReporter = Component<'reporter', ComponentReporterCallback>
 export type ComponentLoaderCallback = ComponentCallback<
   [File],
   {|
-    chunks: Array<Chunk>,
-    imports: Array<Import>,
     contents: string,
     sourceMap: ?Object,
   |},

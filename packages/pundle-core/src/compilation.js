@@ -2,8 +2,8 @@
 
 import pMap from 'p-map'
 import { RECOMMENDED_CONCURRENCY, FileIssue } from 'pundle-api'
-import type { Context } from 'pundle-api'
-import type { File, Chunk } from 'pundle-api/lib/types'
+import type { Context, File } from 'pundle-api'
+import type { Chunk } from 'pundle-api/lib/types'
 
 export default class Compilation {
   context: Context
@@ -31,8 +31,6 @@ export default class Compilation {
       if (result) {
         loaderProcessed = true
         file.mergeTransformation(result.contents, result.sourceMap)
-        result.chunks.forEach(chunk => file.addChunk(chunk))
-        result.imports.forEach(chunk => file.addImport(chunk))
       }
     }
     if (!loaderProcessed) {

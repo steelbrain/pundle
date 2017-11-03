@@ -1,0 +1,17 @@
+{
+  "name": "pundle-loader-js",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "babel-generator": "^6.26.0",
+    "babel-template": "^6.26.0",
+    "babel-traverse": "^6.26.0",
+    "babel-types": "^6.26.0",
+    "babylon": "^6.18.0",
+    "pundle-api": "*"
+  }
+}
