@@ -13,6 +13,8 @@ import type {
   ComponentLoaderCallback,
   ComponentTransformer,
   ComponentTransformerCallback,
+  ComponentPlugin,
+  ComponentPluginCallback,
 } from './types'
 
 type CreationParameters<TCALLBACK> = {|
@@ -58,4 +60,7 @@ export function createLoader(params: CreationParameters<ComponentLoaderCallback>
 }
 export function createTransformer(params: CreationParameters<ComponentTransformerCallback>): ComponentTransformer {
   return createComponent('transformer', params)
+}
+export function createPlugin(params: CreationParameters<ComponentPluginCallback>): ComponentPlugin {
+  return createComponent('plugin', params)
 }

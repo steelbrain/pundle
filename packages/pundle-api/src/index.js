@@ -11,7 +11,7 @@ import File from './File'
 import Context from './Context'
 import Components from './Components'
 import ComponentOptions from './ComponentOptions'
-import { createReporter, createResolver, createLoader } from './ComponentTypes'
+import { createReporter, createResolver, createLoader, createTransformer, createPlugin } from './ComponentTypes'
 import { RECOMMENDED_CONCURRENCY } from './common'
 
 export {
@@ -25,6 +25,8 @@ export {
   createReporter,
   createResolver,
   createLoader,
+  createTransformer,
+  createPlugin,
   File,
   Context,
   RECOMMENDED_CONCURRENCY,

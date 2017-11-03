@@ -3,7 +3,14 @@
 import invariant from 'assert'
 import { apiVersion } from '../package.json'
 import { VALID_TYPES } from './common'
-import type { ComponentAny, ComponentReporter, ComponentResolver, ComponentLoader, ComponentTransformer } from './types'
+import type {
+  ComponentAny,
+  ComponentReporter,
+  ComponentResolver,
+  ComponentLoader,
+  ComponentTransformer,
+  ComponentPlugin,
+} from './types'
 
 export default class Components {
   registered: Array<ComponentAny>
@@ -59,6 +66,13 @@ export default class Components {
     const filtered = []
     this.registered.forEach(entry => {
       if (entry.type === 'transformer') filtered.push(entry)
+    })
+    return filtered
+  }
+  getPlugins(): Array<ComponentPlugin> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'plugin') filtered.push(entry)
     })
     return filtered
   }
