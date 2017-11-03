@@ -1,11 +1,9 @@
 // @flow
 
-import pOne from 'p-one'
 import pMap from 'p-map'
-import pEachSeries from 'p-each-series'
 import { RECOMMENDED_CONCURRENCY, FileMessageIssue } from 'pundle-api'
 import type { Context } from 'pundle-api'
-import type { File, FileGenerated, Chunk } from 'pundle-api/lib/types'
+import type { File, Chunk } from 'pundle-api/lib/types'
 
 export default class Compilation {
   context: Context
@@ -13,44 +11,44 @@ export default class Compilation {
   constructor(context: Context) {
     this.context = context
   }
-  async processFile(resolved: string): Promise<File> {
+  async loadFile(resolved: string): Promise<File> {
     const file = await this.context.getFile(resolved)
 
-    const parsers = this.context.components.getByHookName('language-parse')
-    await pOne(parsers, async entry => {
-      await entry.callback(this.context, this.context.options.get(entry), file)
-      return !!file.parsed
-    })
-    if (!file.parsed) {
+    const loaders = this.context.components.getLoaders()
+    const plugins = this.context.components.getPlugins()
+    const transformers = this.context.components.getTransformers()
+
+    for (const entry of transformers) {
+      const result = await entry.callback(this.context, this.context.options.get(entry), file)
+      if (result) {
+        file.mergeTransformation(result.contents, result.sourceMap)
+      }
+    }
+
+    let loaderProcessed = false
+    for (const entry of loaders) {
+      const result = await entry.callback(this.context, this.context.options.get(entry), file)
+      if (result) {
+        loaderProcessed = true
+        file.mergeTransformation(result.contents, result.sourceMap)
+        result.chunks.forEach(chunk => file.addChunk(chunk))
+        result.imports.forEach(chunk => file.addImport(chunk))
+      }
+    }
+    if (!loaderProcessed) {
       throw new FileMessageIssue({
         file: file.filePath,
-        message: 'File not parsed, did you configure a parser for this filetype? Are you sure this file is not excluded?',
+        message: 'File not loaded, did you configure a loader for this filetype? Are you sure this file is not excluded?',
       })
     }
-    const processors = this.context.components.getByHookName('language-process')
-    await pEachSeries(processors, entry => entry.callback(this.context, this.context.options.get(entry), file))
+    for (const entry of plugins) {
+      await entry.callback(this.context, this.context.options.get(entry), file)
+    }
 
     return file
   }
-  async generateFile(file: File): Promise<FileGenerated> {
-    const generators = this.context.components.getByHookName('language-generate')
-    let fileGenerated
-    await pOne(generators, entry => {
-      fileGenerated = entry.callback(this.context, this.context.options.get(entry), file)
-      return !!fileGenerated
-    })
-    if (!fileGenerated) {
-      throw new FileMessageIssue({
-        file: file.filePath,
-        message:
-          'File not generated, did you configure a generator for this filetype? Are you sure this file is not excluded?',
-      })
-    }
-    return fileGenerated
-  }
   async generateChunk(chunk: Chunk, files: Map<string, File>): Promise<void> {
     // TODO: invoke chunk-generate
-    await pMap(files.values(), file => this.generateFile(file))
     console.log('chunk', chunk, 'files', files)
   }
   async processFileTree(
@@ -71,7 +69,7 @@ export default class Compilation {
     locks.add(resolved)
     let newFile
     try {
-      newFile = await this.processFile(resolved)
+      newFile = await this.loadFile(resolved)
       // TODO: Go over all of it's imports and chunks here
     } finally {
       locks.delete(resolved)
@@ -88,7 +86,7 @@ export default class Compilation {
     )
     await pMap(
       chunks,
-      chunk =>
+      (chunk: Chunk) =>
         this.processFileTree(chunk.entry, locks, files, false, (oldFile, newFile) => {
           // TODO: Do some relevant magic here
           console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
