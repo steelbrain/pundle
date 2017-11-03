@@ -5,7 +5,7 @@
   "description": "Pundle root repository",
   "scripts": {
     "lint-staged": "lint-staged",
-    "bootstrap": "npm install; lerna bootstrap",
+    "bootstrap": "lerna bootstrap",
     "clean": "rm -rf packages/*/lib",
     "build": "npm run clean; lerna exec --parallel -- babel-flow src --out-dir lib",
     "watch": "npm run build -- --watch"
@@ -28,6 +28,7 @@
       "eslint"
     ]
   },
+  "workspaces": ["packages/*"],
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
     "babel-cli-flow": "^1.0.0",
