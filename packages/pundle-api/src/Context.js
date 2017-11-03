@@ -46,19 +46,21 @@ export default class Context {
       fileName: path.relative(this.config.rootDirectory, resolved),
       filePath: resolved,
       lastModified: stats.mtime.getTime() / 1000,
-      contents,
 
-      parsed: null,
+      contents,
+      sourceContents: contents,
+      sourceMap: null,
+
       imports: [],
       chunks: [],
     }
   }
   // NOTE: Public use allowed
-  // NOTE: Everything must be pre-resolved
-  getChunk(entry: string, files: Array<string> = []): Chunk {
+  // NOTE: Both entry and imports MUST be pre-resolved
+  getChunk(entry: string, imports: Array<string> = []): Chunk {
     return {
       entry,
-      files,
+      imports,
     }
   }
   getUID(label: string): number {
@@ -74,7 +76,7 @@ export default class Context {
   async report(report: Object): Promise<void> {
     // TODO: validation?
     let tried = false
-    await pEachSeries(this.components.getByHookName('report'), async entry => {
+    await pEachSeries(this.components.getReporters(), async entry => {
       await entry.callback(this, this.options.get(entry), report)
       tried = true
     })
@@ -101,7 +103,7 @@ export default class Context {
     )
 
     const resolutionRoot = requestRoot || this.config.rootDirectory
-    const resolvers = this.components.getByHookName('resolve').filter(c => !ignoredResolvers.includes(c.name))
+    const resolvers = this.components.getResolvers().filter(c => !ignoredResolvers.includes(c.name))
     const resolveRequest: ResolvePayload = {
       request,
       requestRoot: resolutionRoot,

@@ -3,7 +3,7 @@
 import invariant from 'assert'
 import { apiVersion } from '../package.json'
 import { VALID_TYPES } from './common'
-import type { ComponentAny } from './types'
+import type { ComponentAny, ComponentReporter, ComponentResolver, ComponentLoader } from './types'
 
 export default class Components {
   registered: Array<ComponentAny>
@@ -32,5 +32,27 @@ export default class Components {
     component.apiVersion = componentApiVersion
 
     this.registered.push(component)
+  }
+  // NOTE: Using forEach and push because flow hates arr.filter
+  getReporters(): Array<ComponentReporter> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'reporter') filtered.push(entry)
+    })
+    return filtered
+  }
+  getResolvers(): Array<ComponentResolver> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'resolver') filtered.push(entry)
+    })
+    return filtered
+  }
+  getLoaders(): Array<ComponentLoader> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'loader') filtered.push(entry)
+    })
+    return filtered
   }
 }

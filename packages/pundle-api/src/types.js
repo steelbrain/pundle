@@ -1,6 +1,6 @@
 // @flow
 
-import type Context from './context'
+import type Context from './Context'
 
 export type ComponentRules = {
   include?: string | Array<string>,
@@ -38,7 +38,7 @@ export type File = {|
 
   contents: string,
   sourceContents: string,
-  sourceMap?: Object,
+  sourceMap: ?Object,
 
   imports: Array<Import>,
   chunks: Array<Chunk>,
