@@ -6,6 +6,7 @@
   ],
   "rules": {
     "prettier/prettier": "error",
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "no-await-in-loop": "off"
   }
 }

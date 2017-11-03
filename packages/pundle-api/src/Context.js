@@ -4,11 +4,11 @@ import fs from 'fs'
 import path from 'path'
 import invariant from 'assert'
 import promisify from 'sb-promisify'
-import pEachSeries from 'p-each-series'
 
 import Components from './Components'
 import ComponentOptions from './ComponentOptions'
-import { MessageIssue, FileMessageIssue } from './issues'
+import MessageIssue from './issues/MessageIssue'
+import FileMessageIssue from './issues/FileMessageIssue'
 import type { File, Chunk, BaseConfig, ResolvePayload } from './types'
 
 const asyncStat = promisify(fs.stat)
@@ -75,12 +75,11 @@ export default class Context {
   }
   async report(report: Object): Promise<void> {
     // TODO: validation?
-    let tried = false
-    await pEachSeries(this.components.getReporters(), async entry => {
+    const reporters = this.components.getReporters()
+    for (const entry of reporters) {
       await entry.callback(this, this.options.get(entry), report)
-      tried = true
-    })
-    if (!tried) {
+    }
+    if (!reporters.length) {
       console.error(report)
     }
   }
@@ -103,24 +102,26 @@ export default class Context {
     )
 
     const resolutionRoot = requestRoot || this.config.rootDirectory
-    const resolvers = this.components.getResolvers().filter(c => !ignoredResolvers.includes(c.name))
-    const resolveRequest: ResolvePayload = {
+    const resolvers = this.components.getResolvers()
+    const nonIgnoredResolvers = resolvers.filter(c => !ignoredResolvers.includes(c.name))
+
+    const payload: ResolvePayload = {
       request,
       requestRoot: resolutionRoot,
+      ignoredResolvers,
+
       resolved: null,
       resolvedRoot: null,
-      ignoredResolvers,
     }
-    let tried = false
-    await pEachSeries(resolvers, async entry => {
-      await entry.callback(this, this.options.get(entry), resolveRequest)
-      tried = true
-    })
-    if (!tried) {
+
+    for (const entry of nonIgnoredResolvers) {
+      await entry.callback(this, this.options.get(entry), payload)
+    }
+    if (!resolvers.length) {
       throw new MessageIssue('No module resolver configured in Pundle', 'error')
     }
-    if (resolveRequest.resolved) {
-      return resolveRequest
+    if (payload.resolved) {
+      return payload
     }
     return null
   }

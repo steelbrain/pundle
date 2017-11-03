@@ -9,7 +9,6 @@
   "license": "MIT",
   "dependencies": {
     "ignore": "^3.3.5",
-    "p-each-series": "^1.0.0",
     "sb-promisify": "^2.0.2"
   }
 }

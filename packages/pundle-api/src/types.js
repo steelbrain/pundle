@@ -15,10 +15,8 @@ export type BaseConfig = {
 }
 export type ResolvePayload = {|
   request: string,
+  requestRoot: string,
   ignoredResolvers: Array<string>,
-
-  fromFile: ?string,
-  fromDirectory: ?string,
 
   resolved: ?string,
   resolvedRoot: ?string,
@@ -44,6 +42,7 @@ export type File = {|
   chunks: Array<Chunk>,
 |}
 
+export type Severity = 'info' | 'warning' | 'error'
 export type ComponentType = 'resolver' | 'reporter' | 'loader'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,

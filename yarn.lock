@@ -1851,9 +1851,9 @@ eslint-config-prettier@^2.6.0:
   dependencies:
     get-stdin "^5.0.1"
 
-eslint-config-steelbrain@^4.0.0-5:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-steelbrain/-/eslint-config-steelbrain-4.0.0.tgz#e38675f1b35cc99bcb93c036afa2c1a0f7abf2c3"
+eslint-config-steelbrain@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-config-steelbrain/-/eslint-config-steelbrain-4.0.1.tgz#63622844e68faa1841b576326a33123c0cb796a0"
   dependencies:
     babel-eslint "^8.0.1"
     eslint "^4.8.0"

@@ -19,7 +19,7 @@ export default class Components {
     const { name, version, type, callback, defaultOptions, apiVersion: componentApiVersion } = component
     invariant(typeof name === 'string', `register() expects component.name to be string, given: ${typeof name}`)
     invariant(typeof version === 'string', `register() expects component.version to be string, given: ${typeof version}`)
-    invariant(VALID_TYPES.includes(type), `register() expects component.type to be valid type, given: ${String(type)}`)
+    invariant(VALID_TYPES.has(type), `register() expects component.type to be valid type, given: ${String(type)}`)
     invariant(typeof callback === 'function', 'register() expects component.callback to be function')
     invariant(
       defaultOptions && typeof defaultOptions === 'object',

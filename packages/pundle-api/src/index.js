@@ -1,8 +1,28 @@
 // @flow
 
-export * from './issues'
-export * from './rules'
-export * from './components'
-export * from './constants'
-export { default as Context } from './context'
-export { default as ComponentOptions } from './component-options'
+import FileIssue from './issues/FileIssue'
+import FileMessageIssue from './issues/FileMessageIssue'
+import MessageIssue from './issues/MessageIssue'
+
+import matchesRules from './rules/matchesRules'
+import shouldProcess from './rules/shouldProcess'
+
+import Components from './Components'
+import ComponentOptions from './ComponentOptions'
+import { createReporter, createResolver, createLoader } from './ComponentTypes'
+
+import Context from './Context'
+
+export {
+  FileIssue,
+  FileMessageIssue,
+  MessageIssue,
+  matchesRules,
+  shouldProcess,
+  Components,
+  ComponentOptions,
+  createReporter,
+  createResolver,
+  createLoader,
+  Context,
+}
