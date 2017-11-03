@@ -13,7 +13,7 @@ export type BaseConfig = {
   target: 'browser',
   rootDirectory: string,
 }
-export type ResolvePayload = {
+export type ResolvePayload = {|
   request: string,
   ignoredResolvers: Array<string>,
 
@@ -22,16 +22,16 @@ export type ResolvePayload = {
 
   resolved: ?string,
   resolvedRoot: ?string,
-}
+|}
 
-export type Chunk = {
-  entry: string,
-  files: Array<string>,
-  // ^ RESOLVED file paths to include in the main output bundle
-}
 export type Import = string
+export type Chunk = {|
+  entry: string,
+  imports: Array<Import>,
+  // ^ RESOLVED file paths to include in the main output bundle
+|}
 
-export type File = {
+export type File = {|
   fileName: string,
   filePath: string,
   lastModified: number,
@@ -42,7 +42,7 @@ export type File = {
 
   imports: Array<Import>,
   chunks: Array<Chunk>,
-}
+|}
 
 export type ComponentType = 'resolver' | 'reporter' | 'loader'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
@@ -50,7 +50,7 @@ export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   options: Object,
   ...TARGUMENTS
 ) => Promise<?TRETURNVALUE> | ?TRETURNVALUE
-export type Component<TTYPE: ComponentType, TCALLBACK> = {
+export type Component<TTYPE: ComponentType, TCALLBACK> = {|
   name: string,
   version: string,
   type: TTYPE,
@@ -59,7 +59,7 @@ export type Component<TTYPE: ComponentType, TCALLBACK> = {
 
   // Automatically added
   apiVersion: number,
-}
+|}
 
 export type ComponentResolverCallback = ComponentCallback<[ResolvePayload], void>
 export type ComponentResolver = Component<'resolver', ComponentResolverCallback>
@@ -72,7 +72,7 @@ export type ComponentLoader = Component<'loader', ComponentLoaderCallback>
 
 export type ComponentAny = ComponentResolver | ComponentReporter | ComponentLoader
 
-export type ComponentOptionsEntry = {
+export type ComponentOptionsEntry = {|
   options: Object,
   component: ComponentAny,
-}
+|}

@@ -1,14 +1,14 @@
 // @flow
 
 import invariant from 'assert'
-import type { Component, ComponentOptionsEntry } from './types'
+import type { ComponentAny, ComponentOptionsEntry } from './types'
 
 export default class ComponentOptions {
   registered: Array<ComponentOptionsEntry>
   constructor() {
     this.registered = []
   }
-  register(component: Component, options: Object): void {
+  register(component: ComponentAny, options: Object): void {
     invariant(typeof component === 'object', `register() expects first parameter to be object, given: ${typeof component}`)
     invariant(
       options && typeof options === 'object',
@@ -16,7 +16,7 @@ export default class ComponentOptions {
     )
     this.registered.push({ component, options })
   }
-  get(component: Component, overrideConfigs: Array<Object> = []): Object {
+  get(component: ComponentAny, overrideConfigs: Array<Object> = []): Object {
     invariant(
       component && typeof component === 'object',
       `get() expects first parameter to be Component, given: ${typeof component}`,
