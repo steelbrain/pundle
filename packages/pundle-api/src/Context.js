@@ -8,8 +8,8 @@ import promisify from 'sb-promisify'
 import File from './File'
 import Components from './Components'
 import ComponentOptions from './ComponentOptions'
+import FileIssue from './issues/FileIssue'
 import MessageIssue from './issues/MessageIssue'
-import FileMessageIssue from './issues/FileMessageIssue'
 import type { Chunk, BaseConfig, ResolvePayload } from './types'
 
 const asyncStat = promisify(fs.stat)
@@ -131,7 +131,7 @@ export default class Context {
     const result = await this.resolve(request, fromFile ? path.dirname(fromFile) : null, ignoredResolvers)
     if (!result || !result.resolved) {
       if (fromFile) {
-        throw new FileMessageIssue({
+        throw new FileIssue({
           file: fromFile,
           line: fromLine,
           column: fromColumn,

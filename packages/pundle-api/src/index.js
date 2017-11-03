@@ -1,7 +1,6 @@
 // @flow
 
 import FileIssue from './issues/FileIssue'
-import FileMessageIssue from './issues/FileMessageIssue'
 import MessageIssue from './issues/MessageIssue'
 
 import matchesRules from './rules/matchesRules'
@@ -16,7 +15,6 @@ import { RECOMMENDED_CONCURRENCY } from './common'
 
 export {
   FileIssue,
-  FileMessageIssue,
   MessageIssue,
   matchesRules,
   shouldProcess,

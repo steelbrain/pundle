@@ -1,51 +1,47 @@
 // @flow
 
 import invariant from 'assert'
-import { VALID_SEVERITIES } from '../common'
-import type { Severity } from '../types'
 
 // NOTE: This class accepts lines as 1-indexed and columns as 0-indexed
 export default class FileIssue {
   file: string
-  line: number
-  column: number
-  contents: string
+  contents: ?string
+  line: ?number
+  column: ?number
   message: string
-  severity: string
 
   // For compatibility with Error object
   stack: string
-
   constructor({
     file,
     contents,
+    message,
     line,
     column,
-    message,
-    severity = 'error',
   }: {
     file: string,
-    contents: string,
-    line: number,
-    column: number,
+    contents?: string,
     message: string,
-    severity: Severity,
+    line?: ?number,
+    column?: ?number,
   }) {
-    invariant(typeof file === 'string' && file, 'File must be a valid string')
-    invariant(typeof contents === 'string' && contents, 'options.contents must be a valid string')
-    invariant(typeof line === 'number' && line > -1, 'options.line must be a valid number')
-    invariant(typeof column === 'number' && column > -1, 'options.column must be a valid number')
+    invariant(typeof file === 'string' && file, 'options.file must be a valid string')
     invariant(typeof message === 'string' && message, 'options.message must be a valid string')
-    invariant(VALID_SEVERITIES.has(severity), 'options.severity must be valid')
+    invariant(['undefined', 'string'].includes(typeof contents), 'options.contents must be a valid string or null')
+    invariant(['undefined', 'number'].includes(typeof line), 'options.line must be a valid number or null')
+    invariant(['undefined', 'number'].includes(typeof column), 'options.column must be a valid number or null')
 
     this.file = file
+    this.contents = contents || null
     this.line = line
     this.column = column
-    this.contents = contents
     this.message = message
-    this.severity = severity
   }
   get stack(): string {
-    return `FileIssue: ${this.message}\n    at ${this.file}:${this.line}:${this.column}`
+    let stack = `FileIssue: ${this.message} at ${this.file}`
+    if (this.line) {
+      stack += `${this.line}:${this.column || 0}`
+    }
+    return stack
   }
 }

@@ -1,7 +1,7 @@
 // @flow
 
 import pMap from 'p-map'
-import { RECOMMENDED_CONCURRENCY, FileMessageIssue } from 'pundle-api'
+import { RECOMMENDED_CONCURRENCY, FileIssue } from 'pundle-api'
 import type { Context } from 'pundle-api'
 import type { File, Chunk } from 'pundle-api/lib/types'
 
@@ -36,7 +36,7 @@ export default class Compilation {
       }
     }
     if (!loaderProcessed) {
-      throw new FileMessageIssue({
+      throw new FileIssue({
         file: file.filePath,
         message: 'File not loaded, did you configure a loader for this filetype? Are you sure this file is not excluded?',
       })
