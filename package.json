@@ -7,7 +7,7 @@
     "lint-staged": "lint-staged",
     "bootstrap": "lerna bootstrap",
     "clean": "rm -rf packages/*/lib",
-    "build": "npm run clean; lerna exec --parallel -- babel-flow src --out-dir lib",
+    "build": "npm run clean; lerna exec --parallel -- ~/projects/steelbrain/babel-cli-flow/lib/index.js src --out-dir lib",
     "watch": "npm run build -- --watch"
   },
   "repository": {
@@ -31,7 +31,7 @@
   "workspaces": ["packages/*"],
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "babel-cli-flow": "^1.0.0",
+    "babel-cli-flow": "^2.0.0",
     "babel-preset-steelbrain": "^5.0.3",
     "eslint-config-prettier": "^2.6.0",
     "eslint-config-steelbrain": "^4.0.0-5",

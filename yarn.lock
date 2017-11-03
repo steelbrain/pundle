@@ -226,9 +226,9 @@ axobject-query@^0.1.0:
   dependencies:
     ast-types-flow "0.0.7"
 
-babel-cli-flow@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/babel-cli-flow/-/babel-cli-flow-1.0.0.tgz#56934b55fbc0ff60300636af31fd914f494746d2"
+babel-cli-flow@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/babel-cli-flow/-/babel-cli-flow-2.0.0.tgz#2c3b91993c05bd8097dc5ba084cedd6e8a00f27f"
   dependencies:
     babel-core "^6.25.0"
     commander "^2.11.0"
