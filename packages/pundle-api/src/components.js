@@ -10,6 +10,8 @@ import type {
   ComponentLoader,
   ComponentTransformer,
   ComponentPlugin,
+  ComponentGenerator,
+  ComponentPostGenerator,
 } from './types'
 
 export default class Components {
@@ -73,6 +75,20 @@ export default class Components {
     const filtered = []
     this.registered.forEach(entry => {
       if (entry.type === 'plugin') filtered.push(entry)
+    })
+    return filtered
+  }
+  getGenerators(): Array<ComponentGenerator> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'generator') filtered.push(entry)
+    })
+    return filtered
+  }
+  getPostGenerators(): Array<ComponentPostGenerator> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'post-generator') filtered.push(entry)
     })
     return filtered
   }

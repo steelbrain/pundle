@@ -6,6 +6,9 @@
   "scripts": {
 
   },
+  "dependencies": {
+    "pundle-api": "0.0.0"
+  },
   "author": "steelbrain",
   "license": "MIT"
 }

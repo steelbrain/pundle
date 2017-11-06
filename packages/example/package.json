@@ -11,6 +11,7 @@
     "pundle-core": "*",
     "pundle-reporter-console": "*",
     "pundle-loader-js": "*",
-    "pundle-resolver-node": "*"
+    "pundle-resolver-node": "*",
+    "pundle-generator-browser": "*"
   }
 }
