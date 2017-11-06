@@ -10,7 +10,6 @@ const INJECTIONS = {
   timers: ['setImmediate', 'clearImmediate'],
   buffer: ['Buffer'],
   process: ['process'],
-  global: ['global'],
 }
 
 export default async function callback(context: Context, options: Object, file: File, ast: Object) {
