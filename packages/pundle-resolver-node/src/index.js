@@ -12,7 +12,7 @@ function promisedResolve(browserEnv: boolean, request: string, options: Object):
   return new Promise(function(resolvePromise, rejectPromise) {
     const resolver = browserEnv ? browserResolve : resolve
     resolver(request, options, function(error, resolved) {
-      if (error && error.code !== 'MODULE_NOT_FOUND') {
+      if (error && error.code !== 'MODULE_NOT_FOUND' && !error.message.startsWith('Cannot find module')) {
         rejectPromise(error)
       } else {
         resolvePromise(resolved || null)
