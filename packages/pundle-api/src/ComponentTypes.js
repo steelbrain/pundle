@@ -17,6 +17,8 @@ import type {
   ComponentPluginCallback,
   ComponentGenerator,
   ComponentGeneratorCallback,
+  ComponentPostGenerator,
+  ComponentPostGeneratorCallback,
 } from './types'
 
 type CreationParameters<TCALLBACK> = {|
@@ -68,4 +70,7 @@ export function createPlugin(params: CreationParameters<ComponentPluginCallback>
 }
 export function createGenerator(params: CreationParameters<ComponentGeneratorCallback>): ComponentGenerator {
   return createComponent('generator', params)
+}
+export function createPostGenerator(params: CreationParameters<ComponentPostGeneratorCallback>): ComponentPostGenerator {
+  return createComponent('post-generator', params)
 }

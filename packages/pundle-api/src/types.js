@@ -31,7 +31,7 @@ export type Chunk = {|
 |}
 
 export type Severity = 'info' | 'warning' | 'error'
-export type ComponentType = 'resolver' | 'reporter' | 'loader' | 'transformer' | 'plugin' | 'generator'
+export type ComponentType = 'resolver' | 'reporter' | 'loader' | 'transformer' | 'plugin' | 'generator' | 'post-generator'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
   options: Object,
@@ -84,6 +84,20 @@ export type ComponentGeneratorCallback = ComponentCallback<
   |},
 >
 export type ComponentGenerator = Component<'generator', ComponentGeneratorCallback>
+
+export type ComponentPostGeneratorCallback = ComponentCallback<
+  [
+    {|
+      contents: string,
+      sourceMap: ?Object,
+    |},
+  ],
+  {|
+    contents: string,
+    sourceMap: ?Object,
+  |},
+>
+export type ComponentPostGenerator = Component<'post-generator', ComponentPostGeneratorCallback>
 
 export type ComponentAny = ComponentResolver | ComponentReporter | ComponentLoader | ComponentTransformer | ComponentPlugin
 

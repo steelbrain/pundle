@@ -17,6 +17,7 @@ import {
   createTransformer,
   createPlugin,
   createGenerator,
+  createPostGenerator,
 } from './ComponentTypes'
 
 export {
@@ -32,6 +33,7 @@ export {
   createTransformer,
   createPlugin,
   createGenerator,
+  createPostGenerator,
   File,
   Context,
 }
