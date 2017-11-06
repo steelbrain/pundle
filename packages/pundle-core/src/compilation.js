@@ -80,6 +80,7 @@ export default class Compilation {
       } else {
         job.files.delete(resolved)
       }
+      throw error
     } finally {
       job.locks.delete(lockKey)
     }
@@ -107,6 +108,7 @@ export default class Compilation {
       } else {
         job.chunks.delete(lockKey)
       }
+      throw error
     } finally {
       job.locks.delete(lockKey)
     }
