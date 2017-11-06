@@ -63,6 +63,10 @@ export default class File {
     } else if (this.sourceMap && sourceMap) {
       this.sourceMap = mergeSourceMap(this.sourceMap, sourceMap)
     }
+    if (this.sourceMap) {
+      this.sourceMap.sources = [this.fileName]
+      this.sourceMap.sourcesContent = [this.sourceContents]
+    }
     this.contents = contents
   }
   addChunk(entry: Chunk): void {
