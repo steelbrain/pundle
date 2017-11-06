@@ -40,6 +40,7 @@ export default class Context {
   // NOTE: Both entry and imports MUST be pre-resolved
   getChunk(entry: ?string = null, imports: Array<string> = []): Chunk {
     return {
+      type: 'simple',
       entry,
       imports,
     }

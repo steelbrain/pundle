@@ -25,10 +25,13 @@ export type ResolvePayload = {|
 
 export type Import = string
 export type Chunk = {|
+  type: 'simple',
   entry: ?string,
   imports: Array<Import>,
   // ^ RESOLVED file paths to include in the main output bundle
 |}
+// TODO: Add names to chunks
+// TODO: Add new types
 
 export type Severity = 'info' | 'warning' | 'error'
 export type ComponentType = 'resolver' | 'reporter' | 'loader' | 'transformer' | 'plugin' | 'generator' | 'post-generator'
