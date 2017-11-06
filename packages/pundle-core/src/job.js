@@ -6,7 +6,6 @@ import type { Chunk } from 'pundle-api/lib/types'
 export default class Job {
   locks: Set<string>
   chunks: Map<string, Chunk>
-  oldChunks: Map<string, Chunk>
   files: Map<string, File>
   oldFiles: Map<string, File>
 
@@ -15,8 +14,7 @@ export default class Job {
     this.chunks = new Map()
     this.files = new Map()
 
-    // TODO: Restore these?
-    this.oldChunks = new Map()
+    // TODO: Restore this?
     this.oldFiles = new Map()
   }
   getLockKeyForChunk(chunk: Chunk): string {

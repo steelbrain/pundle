@@ -92,7 +92,6 @@ export default class Compilation {
     const entry = chunk.entry
     if (!entry) return
 
-    // TODO: Use cached old chunk here somewhere
     const lockKey = job.getLockKeyForChunk(chunk)
     const oldChunk = job.chunks.get(lockKey)
     if (job.locks.has(lockKey) || job.chunks.has(lockKey)) {
