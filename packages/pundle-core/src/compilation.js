@@ -1,7 +1,7 @@
 // @flow
 
 import pMap from 'p-map'
-import { RECOMMENDED_CONCURRENCY, FileIssue } from 'pundle-api'
+import { FileIssue } from 'pundle-api'
 import type { Context, File } from 'pundle-api'
 import type { Chunk } from 'pundle-api/lib/types'
 

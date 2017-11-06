@@ -11,7 +11,6 @@ import Context from './Context'
 import Components from './Components'
 import ComponentOptions from './ComponentOptions'
 import { createReporter, createResolver, createLoader, createTransformer, createPlugin } from './ComponentTypes'
-import { RECOMMENDED_CONCURRENCY } from './common'
 
 export {
   FileIssue,
@@ -27,5 +26,4 @@ export {
   createPlugin,
   File,
   Context,
-  RECOMMENDED_CONCURRENCY,
 }
