@@ -102,7 +102,14 @@ export type ComponentPostGeneratorCallback = ComponentCallback<
 >
 export type ComponentPostGenerator = Component<'post-generator', ComponentPostGeneratorCallback>
 
-export type ComponentAny = ComponentResolver | ComponentReporter | ComponentLoader | ComponentTransformer | ComponentPlugin
+export type ComponentAny =
+  | ComponentResolver
+  | ComponentReporter
+  | ComponentLoader
+  | ComponentTransformer
+  | ComponentPlugin
+  | ComponentGenerator
+  | ComponentPostGenerator
 
 export type ComponentOptionsEntry = {|
   options: Object,

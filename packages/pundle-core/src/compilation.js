@@ -1,8 +1,7 @@
 // @flow
 
 import pMap from 'p-map'
-import { FileIssue } from 'pundle-api'
-import type { Context, File } from 'pundle-api'
+import { FileIssue, MessageIssue, type Context, type File } from 'pundle-api'
 import type { Chunk } from 'pundle-api/lib/types'
 
 import Job from './job'
@@ -35,6 +34,7 @@ export default class Compilation {
       if (result) {
         loaderProcessed = true
         file.mergeTransformation(result.contents, result.sourceMap)
+        break
       }
     }
     if (!loaderProcessed) {
@@ -49,9 +49,35 @@ export default class Compilation {
 
     return file
   }
-  async generateChunk(chunk: Chunk, files: Map<string, File>): Promise<void> {
-    // TODO: invoke chunk-generate
-    console.log('chunk', chunk, 'files', files.size)
+  async generateChunk(
+    chunk: Chunk,
+    files: Map<string, File>,
+  ): Promise<{|
+    contents: string,
+    sourceMap: ?Object,
+  |}> {
+    const generators = this.context.components.getGenerators()
+    const postGenerators = this.context.components.getPostGenerators()
+
+    let generated
+    for (const entry of generators) {
+      generated = await entry.callback(this.context, this.context.options.get(entry), chunk, files)
+      if (generated) {
+        break
+      }
+    }
+    if (!generated) {
+      throw new MessageIssue(
+        "Unable to generate chunk. Did you configure a generator? Are you sure it's configured correctly?",
+      )
+    }
+    for (const entry of postGenerators) {
+      const postGenerated = await entry.callback(this.context, this.context.options.get(entry), generated)
+      if (postGenerated) {
+        generated = postGenerated
+      }
+    }
+    return generated
   }
   async processFileTree(resolved: string, job: Job, forcedOverwite: boolean, tickCallback: TickCallback): Promise<void> {
     const oldFile = job.files.get(resolved)
