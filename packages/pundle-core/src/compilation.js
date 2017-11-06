@@ -48,7 +48,7 @@ export default class Compilation {
   }
   async generateChunk(chunk: Chunk, files: Map<string, File>): Promise<void> {
     // TODO: invoke chunk-generate
-    console.log('chunk', chunk, 'files', files)
+    console.log('chunk', chunk, 'files', files.size)
   }
   async processFileTree(
     resolved: string,
@@ -78,14 +78,18 @@ export default class Compilation {
     }
   }
   async processChunk(chunk: Chunk, job: Job): Promise<void> {
+    // No need to process if file-only
+    const entry = chunk.entry
+    if (!entry) return
+
     // TODO: Use old chunk here somewhere
-    const lockKey = `file:${chunk.entry}:${chunk.imports.join(':')}`
+    const lockKey = `file:${entry}:${chunk.imports.join(':')}`
     if (job.locks.has(lockKey) || job.chunks.has(lockKey)) {
       return
     }
     job.locks.add(lockKey)
     try {
-      await this.processFileTree(chunk.entry, job, false, (oldFile, newFile) => {
+      await this.processFileTree(entry, job, false, (oldFile, newFile) => {
         // TODO: Do some relevant magic here
         console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
       })

@@ -53,7 +53,7 @@ export default class Context {
   }
   // NOTE: Public use allowed
   // NOTE: Both entry and imports MUST be pre-resolved
-  getChunk(entry: string, imports: Array<string> = []): Chunk {
+  getChunk(entry: ?string = null, imports: Array<string> = []): Chunk {
     return {
       entry,
       imports,
