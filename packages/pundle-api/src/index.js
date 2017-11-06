@@ -20,6 +20,9 @@ import {
   createPostGenerator,
 } from './ComponentTypes'
 
+// TODO: Replace all import type { Y } from 'pundle-api/lib/types'
+export type * from './types'
+
 export {
   FileIssue,
   MessageIssue,
