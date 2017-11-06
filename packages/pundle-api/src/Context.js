@@ -1,9 +1,7 @@
 // @flow
 
-import fs from 'fs'
 import path from 'path'
 import invariant from 'assert'
-import promisify from 'sb-promisify'
 
 import File from './File'
 import Components from './Components'
@@ -11,9 +9,6 @@ import ComponentOptions from './ComponentOptions'
 import FileIssue from './issues/FileIssue'
 import MessageIssue from './issues/MessageIssue'
 import type { Chunk, BaseConfig, ResolvePayload } from './types'
-
-const asyncStat = promisify(fs.stat)
-const asyncReadFile = promisify(fs.readFile)
 
 export default class Context {
   uid: Map<string, number>
@@ -39,17 +34,7 @@ export default class Context {
   }
   // NOTE: For internal use only
   async getFile(filePath: string): Promise<File> {
-    const resolved = path.resolve(this.config.rootDirectory, filePath)
-
-    const stats = await asyncStat(resolved)
-    const contents = await asyncReadFile(resolved, 'utf8')
-    return new File({
-      fileName: path.relative(this.config.rootDirectory, resolved),
-      filePath: resolved,
-      lastModified: stats.mtime.getTime() / 1000,
-
-      contents,
-    })
+    return File.get(filePath, this.config.rootDirectory)
   }
   // NOTE: Public use allowed
   // NOTE: Both entry and imports MUST be pre-resolved

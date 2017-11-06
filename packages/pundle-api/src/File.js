@@ -1,11 +1,13 @@
 // @flow
 
 import fs from 'fs'
+import path from 'path'
 import promisify from 'sb-promisify'
 import mergeSourceMap from 'merge-source-map'
 import type { Chunk, Import } from './types'
 
 const asyncStat = promisify(fs.stat)
+const asyncReadFile = promisify(fs.readFile)
 const lastModifiedFromStats = stats => stats.mtime.getTime() / 1000
 
 export default class File {
@@ -70,5 +72,18 @@ export default class File {
   addImport(entry: Import): void {
     // TODO: Dedupe
     this.imports.push(entry)
+  }
+  static async get(fileName: string, rootDirectory: string): Promise<File> {
+    const resolved = path.resolve(rootDirectory, fileName)
+
+    const stats = await asyncStat(resolved)
+    const contents = await asyncReadFile(resolved, 'utf8')
+    return new File({
+      fileName: path.relative(rootDirectory, resolved),
+      filePath: resolved,
+      lastModified: lastModifiedFromStats(stats),
+
+      contents,
+    })
   }
 }
