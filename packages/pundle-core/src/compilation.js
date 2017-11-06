@@ -4,6 +4,7 @@ import pMap from 'p-map'
 import { FileIssue } from 'pundle-api'
 import type { Context, File } from 'pundle-api'
 import type { Chunk } from 'pundle-api/lib/types'
+import type { Job } from './types'
 
 export default class Compilation {
   context: Context
@@ -51,62 +52,61 @@ export default class Compilation {
   }
   async processFileTree(
     resolved: string,
-    locks: Set<string>,
-    files: Map<string, File>,
-    oldFiles: Map<string, File>,
+    job: Job,
     forcedOverwite: boolean,
     tickCallback: (oldFile: ?File, newFile: File) => any,
   ): Promise<void> {
-    const oldFile = files.get(resolved)
+    const oldFile = job.files.get(resolved)
     const lockKey = `file:${resolved}`
     if (oldFile && !forcedOverwite) {
       return
     }
-    if (locks.has(lockKey) || files.has(resolved)) {
+    // TODO: Use old files here somewhere
+    if (job.locks.has(lockKey) || job.files.has(resolved)) {
       return
     }
-    locks.add(lockKey)
+    job.locks.add(lockKey)
     let newFile
     try {
       newFile = await this.loadFile(resolved)
-      await pMap(newFile.imports, entry => this.processFileTree(entry, locks, files, oldFiles, forcedOverwite, tickCallback))
-      await pMap(newFile.chunks, entry => this.processChunk(entry, locks, files, oldFiles))
+      await pMap(newFile.imports, entry => this.processFileTree(entry, job, false, tickCallback))
+      await pMap(newFile.chunks, entry => this.processChunk(entry, job))
       await tickCallback(oldFile, newFile)
-      files.set(resolved, newFile)
+      job.files.set(resolved, newFile)
     } finally {
-      locks.delete(lockKey)
+      job.locks.delete(lockKey)
     }
   }
-  async processChunk(
-    chunk: Chunk,
-    locks: Set<string>,
-    files: Map<string, File>,
-    oldFiles: Map<string, File>,
-  ): Promise<void> {
-    // TODO: Pass the chunks array in here and don't add chunk if it already exists in it
+  async processChunk(chunk: Chunk, job: Job): Promise<void> {
+    // TODO: Use old chunk here somewhere
     const lockKey = `file:${chunk.entry}:${chunk.imports.join(':')}`
-    if (locks.has(lockKey)) {
+    if (job.locks.has(lockKey) || job.chunks.has(lockKey)) {
       return
     }
-    locks.add(lockKey)
+    job.locks.add(lockKey)
     try {
-      await this.processFileTree(chunk.entry, locks, files, oldFiles, false, (oldFile, newFile) => {
+      await this.processFileTree(chunk.entry, job, false, (oldFile, newFile) => {
         // TODO: Do some relevant magic here
         console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
       })
+      job.chunks.set(lockKey, chunk)
     } finally {
-      locks.delete(lockKey)
+      job.locks.delete(lockKey)
     }
   }
   async build(): Promise<void> {
-    const locks: Set<string> = new Set()
-    const files: Map<string, File> = new Map()
-    const oldFiles = new Map()
+    const job = {
+      locks: new Set(),
+      chunks: new Map(),
+      oldChunks: new Map(),
+      files: new Map(),
+      oldFiles: new Map(),
+    }
     const chunks = this.context.config.entry.map(async entry =>
       this.context.getChunk(await this.context.resolveSimple(entry), []),
     )
-    await pMap(chunks, chunk => this.processChunk(chunk, locks, files, oldFiles))
-    const generated = await pMap(chunks, chunk => this.generateChunk(chunk, files))
+    await pMap(chunks, chunk => this.processChunk(chunk, job))
+    const generated = await pMap(chunks, chunk => this.generateChunk(chunk, job.files))
     console.log('generated', generated)
   }
 }
