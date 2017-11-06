@@ -90,7 +90,7 @@ export default class Compilation {
     }
     locks.add(lockKey)
     try {
-      this.processFileTree(chunk.entry, locks, files, oldFiles, false, (oldFile, newFile) => {
+      await this.processFileTree(chunk.entry, locks, files, oldFiles, false, (oldFile, newFile) => {
         // TODO: Do some relevant magic here
         console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
       })
