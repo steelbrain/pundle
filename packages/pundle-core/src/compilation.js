@@ -53,47 +53,60 @@ export default class Compilation {
     resolved: string,
     locks: Set<string>,
     files: Map<string, File>,
-    /* TODO: Add oldFiles here */
+    oldFiles: Map<string, File>,
     forcedOverwite: boolean,
     tickCallback: (oldFile: ?File, newFile: File) => any,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const oldFile = files.get(resolved)
+    const lockKey = `file:${resolved}`
     if (oldFile && !forcedOverwite) {
-      return true
+      return
     }
-    if (locks.has(resolved)) {
-      return true
+    if (locks.has(lockKey) || files.has(resolved)) {
+      return
     }
-    locks.add(resolved)
+    locks.add(lockKey)
     let newFile
     try {
       newFile = await this.loadFile(resolved)
-      // TODO: Go over all of it's imports and chunks here
+      await pMap(newFile.imports, entry => this.processFileTree(entry, locks, files, oldFiles, forcedOverwite, tickCallback))
+      await pMap(newFile.chunks, entry => this.processChunk(entry, locks, files, oldFiles))
+      await tickCallback(oldFile, newFile)
+      files.set(resolved, newFile)
     } finally {
-      locks.delete(resolved)
+      locks.delete(lockKey)
     }
-    await tickCallback(oldFile, newFile)
-    files.set(resolved, newFile)
-    return true
+  }
+  async processChunk(
+    chunk: Chunk,
+    locks: Set<string>,
+    files: Map<string, File>,
+    oldFiles: Map<string, File>,
+  ): Promise<void> {
+    // TODO: Pass the chunks array in here and don't add chunk if it already exists in it
+    const lockKey = `file:${chunk.entry}:${chunk.imports.join(':')}`
+    if (locks.has(lockKey)) {
+      return
+    }
+    locks.add(lockKey)
+    try {
+      this.processFileTree(chunk.entry, locks, files, oldFiles, false, (oldFile, newFile) => {
+        // TODO: Do some relevant magic here
+        console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
+      })
+    } finally {
+      locks.delete(lockKey)
+    }
   }
   async build(): Promise<void> {
     const locks: Set<string> = new Set()
     const files: Map<string, File> = new Map()
+    const oldFiles = new Map()
     const chunks = this.context.config.entry.map(async entry =>
       this.context.getChunk(await this.context.resolveSimple(entry), []),
     )
-    await pMap(
-      chunks,
-      (chunk: Chunk) =>
-        this.processFileTree(chunk.entry, locks, files, false, (oldFile, newFile) => {
-          // TODO: Do some relevant magic here
-          console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
-        }),
-      { concurrency: RECOMMENDED_CONCURRENCY },
-    )
-    const generated = await pMap(chunks, chunk => this.generateChunk(chunk, files), {
-      concurrency: RECOMMENDED_CONCURRENCY,
-    })
+    await pMap(chunks, chunk => this.processChunk(chunk, locks, files, oldFiles))
+    const generated = await pMap(chunks, chunk => this.generateChunk(chunk, files))
     console.log('generated', generated)
   }
 }

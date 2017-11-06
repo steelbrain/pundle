@@ -12,9 +12,9 @@ export default class File {
   sourceContents: string
   sourceMap: ?Object
 
-  // Private props
-  $chunks: Array<Chunk>
-  $imports: Array<Import>
+  // Don't push to these directly, ever
+  chunks: Array<Chunk>
+  imports: Array<Import>
 
   constructor({
     fileName,
@@ -34,8 +34,8 @@ export default class File {
 
     this.sourceContents = contents
     this.sourceMap = null
-    this.$chunks = []
-    this.$imports = []
+    this.chunks = []
+    this.imports = []
   }
   mergeTransformation(contents: string, sourceMap: ?Object): void {
     if (this.sourceMap && !sourceMap) {
@@ -49,10 +49,10 @@ export default class File {
   }
   addChunk(entry: Chunk): void {
     // TODO: Dedupe
-    this.$chunks.push(entry)
+    this.chunks.push(entry)
   }
   addImport(entry: Import): void {
     // TODO: Dedupe
-    this.$imports.push(entry)
+    this.imports.push(entry)
   }
 }
