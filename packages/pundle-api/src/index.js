@@ -10,7 +10,14 @@ import File from './File'
 import Context from './Context'
 import Components from './Components'
 import ComponentOptions from './ComponentOptions'
-import { createReporter, createResolver, createLoader, createTransformer, createPlugin } from './ComponentTypes'
+import {
+  createReporter,
+  createResolver,
+  createLoader,
+  createTransformer,
+  createPlugin,
+  createGenerator,
+} from './ComponentTypes'
 
 export {
   FileIssue,
@@ -24,6 +31,7 @@ export {
   createLoader,
   createTransformer,
   createPlugin,
+  createGenerator,
   File,
   Context,
 }

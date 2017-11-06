@@ -31,7 +31,7 @@ export type Chunk = {|
 |}
 
 export type Severity = 'info' | 'warning' | 'error'
-export type ComponentType = 'resolver' | 'reporter' | 'loader' | 'transformer' | 'plugin'
+export type ComponentType = 'resolver' | 'reporter' | 'loader' | 'transformer' | 'plugin' | 'generator'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
   options: Object,
@@ -75,6 +75,15 @@ export type ComponentTransformer = Component<'transformer', ComponentTransformer
 // NOTE: Useful for things like ESLint
 export type ComponentPluginCallback = ComponentCallback<[File], void>
 export type ComponentPlugin = Component<'plugin', ComponentPluginCallback>
+
+export type ComponentGeneratorCallback = ComponentCallback<
+  [Chunk, Map<string, File>],
+  {|
+    contents: string,
+    sourceMap: ?Object,
+  |},
+>
+export type ComponentGenerator = Component<'generator', ComponentGeneratorCallback>
 
 export type ComponentAny = ComponentResolver | ComponentReporter | ComponentLoader | ComponentTransformer | ComponentPlugin
 

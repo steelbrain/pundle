@@ -7,6 +7,8 @@ import type { Chunk } from 'pundle-api/lib/types'
 
 import Job from './job'
 
+type TickCallback = (oldFile: ?File, newFile: File) => any
+
 export default class Compilation {
   context: Context
 
@@ -51,12 +53,7 @@ export default class Compilation {
     // TODO: invoke chunk-generate
     console.log('chunk', chunk, 'files', files.size)
   }
-  async processFileTree(
-    resolved: string,
-    job: Job,
-    forcedOverwite: boolean,
-    tickCallback: (oldFile: ?File, newFile: File) => any,
-  ): Promise<void> {
+  async processFileTree(resolved: string, job: Job, forcedOverwite: boolean, tickCallback: TickCallback): Promise<void> {
     const oldFile = job.files.get(resolved)
     const lockKey = job.getLockKeyForFile(resolved)
     if (oldFile && !forcedOverwite) {
@@ -75,7 +72,7 @@ export default class Compilation {
       newFile = await this.loadFile(resolved)
       job.files.set(resolved, newFile)
       await pMap(newFile.imports, entry => this.processFileTree(entry, job, false, tickCallback))
-      await pMap(newFile.chunks, entry => this.processChunk(entry, job, false))
+      await pMap(newFile.chunks, entry => this.processChunk(entry, job, false, tickCallback))
       await tickCallback(oldFile, newFile)
     } catch (error) {
       if (oldFile) {
@@ -87,7 +84,7 @@ export default class Compilation {
       job.locks.delete(lockKey)
     }
   }
-  async processChunk(chunk: Chunk, job: Job, forcedOverwite: boolean): Promise<void> {
+  async processChunk(chunk: Chunk, job: Job, forcedOverwite: boolean, tickCallback: TickCallback): Promise<void> {
     // No need to process if imports-only
     const entry = chunk.entry
     if (!entry) return
@@ -103,10 +100,7 @@ export default class Compilation {
     job.locks.add(lockKey)
     try {
       job.chunks.set(lockKey, chunk)
-      await this.processFileTree(entry, job, forcedOverwite, (oldFile, newFile) => {
-        // TODO: Do some relevant magic here
-        console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
-      })
+      await this.processFileTree(entry, job, forcedOverwite, tickCallback)
     } catch (error) {
       if (oldChunk) {
         job.chunks.set(lockKey, oldChunk)
@@ -122,7 +116,11 @@ export default class Compilation {
     const chunks = this.context.config.entry.map(async entry =>
       this.context.getChunk(await this.context.resolveSimple(entry), []),
     )
-    await pMap(chunks, chunk => this.processChunk(chunk, job, false))
+    await pMap(chunks, chunk =>
+      this.processChunk(chunk, job, false, function() {
+        /* No Op */
+      }),
+    )
     const generated = await pMap(chunks, chunk => this.generateChunk(chunk, job.files))
     console.log('generated', generated)
   }
