@@ -62,7 +62,7 @@ export default class Compilation {
     if (oldFile && !forcedOverwite) {
       return
     }
-    // TODO: Use old files here somewhere
+    // TODO: Use cached old file here somewhere
     if (job.locks.has(lockKey)) {
       return
     }
@@ -88,11 +88,11 @@ export default class Compilation {
     }
   }
   async processChunk(chunk: Chunk, job: Job, forcedOverwite: boolean): Promise<void> {
-    // No need to process if file-only
+    // No need to process if imports-only
     const entry = chunk.entry
     if (!entry) return
 
-    // TODO: Use old chunk here somewhere
+    // TODO: Use cached old chunk here somewhere
     const lockKey = job.getLockKeyForChunk(chunk)
     const oldChunk = job.chunks.get(lockKey)
     if (job.locks.has(lockKey) || job.chunks.has(lockKey)) {

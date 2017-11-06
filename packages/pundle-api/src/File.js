@@ -1,11 +1,18 @@
 // @flow
 
+import fs from 'fs'
+import promisify from 'sb-promisify'
 import mergeSourceMap from 'merge-source-map'
 import type { Chunk, Import } from './types'
 
+const asyncStat = promisify(fs.stat)
+const lastModifiedFromStats = stats => stats.mtime.getTime() / 1000
+
 export default class File {
   fileName: string
+  // ^ relative to the root directory
   filePath: string
+  // ^ absolute file system path
   lastModified: number
 
   contents: string
@@ -36,6 +43,15 @@ export default class File {
     this.sourceMap = null
     this.chunks = []
     this.imports = []
+  }
+  async hasChanged(): Promise<boolean> {
+    let stats
+    try {
+      stats = await asyncStat(this.filePath)
+    } catch (_) {
+      return true
+    }
+    return lastModifiedFromStats(stats) !== this.lastModified
   }
   mergeTransformation(contents: string, sourceMap: ?Object): void {
     if (this.sourceMap && !sourceMap) {
