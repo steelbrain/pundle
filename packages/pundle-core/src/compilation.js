@@ -4,7 +4,8 @@ import pMap from 'p-map'
 import { FileIssue } from 'pundle-api'
 import type { Context, File } from 'pundle-api'
 import type { Chunk } from 'pundle-api/lib/types'
-import type { Job } from './types'
+
+import Job from './job'
 
 export default class Compilation {
   context: Context
@@ -57,59 +58,72 @@ export default class Compilation {
     tickCallback: (oldFile: ?File, newFile: File) => any,
   ): Promise<void> {
     const oldFile = job.files.get(resolved)
-    const lockKey = `file:${resolved}`
+    const lockKey = job.getLockKeyForFile(resolved)
     if (oldFile && !forcedOverwite) {
       return
     }
     // TODO: Use old files here somewhere
-    if (job.locks.has(lockKey) || job.files.has(resolved)) {
+    if (job.locks.has(lockKey)) {
+      return
+    }
+    if (job.files.has(resolved) && !forcedOverwite) {
       return
     }
     job.locks.add(lockKey)
     let newFile
     try {
       newFile = await this.loadFile(resolved)
-      await pMap(newFile.imports, entry => this.processFileTree(entry, job, false, tickCallback))
-      await pMap(newFile.chunks, entry => this.processChunk(entry, job))
-      await tickCallback(oldFile, newFile)
       job.files.set(resolved, newFile)
+      await pMap(newFile.imports, entry => this.processFileTree(entry, job, false, tickCallback))
+      await pMap(newFile.chunks, entry => this.processChunk(entry, job, false))
+      await tickCallback(oldFile, newFile)
+    } catch (error) {
+      if (oldFile) {
+        job.files.set(resolved, oldFile)
+      } else {
+        job.files.delete(resolved)
+      }
     } finally {
       job.locks.delete(lockKey)
     }
   }
-  async processChunk(chunk: Chunk, job: Job): Promise<void> {
+  async processChunk(chunk: Chunk, job: Job, forcedOverwite: boolean): Promise<void> {
     // No need to process if file-only
     const entry = chunk.entry
     if (!entry) return
 
     // TODO: Use old chunk here somewhere
-    const lockKey = `file:${entry}:${chunk.imports.join(':')}`
+    const lockKey = job.getLockKeyForChunk(chunk)
+    const oldChunk = job.chunks.get(lockKey)
     if (job.locks.has(lockKey) || job.chunks.has(lockKey)) {
+      return
+    }
+    if (job.chunks.has(lockKey) && !forcedOverwite) {
       return
     }
     job.locks.add(lockKey)
     try {
-      await this.processFileTree(entry, job, false, (oldFile, newFile) => {
+      job.chunks.set(lockKey, chunk)
+      await this.processFileTree(entry, job, forcedOverwite, (oldFile, newFile) => {
         // TODO: Do some relevant magic here
         console.log('oldFile', oldFile && oldFile.filePath, 'newFile', newFile.filePath)
       })
-      job.chunks.set(lockKey, chunk)
+    } catch (error) {
+      if (oldChunk) {
+        job.chunks.set(lockKey, oldChunk)
+      } else {
+        job.chunks.delete(lockKey)
+      }
     } finally {
       job.locks.delete(lockKey)
     }
   }
   async build(): Promise<void> {
-    const job = {
-      locks: new Set(),
-      chunks: new Map(),
-      oldChunks: new Map(),
-      files: new Map(),
-      oldFiles: new Map(),
-    }
+    const job = new Job()
     const chunks = this.context.config.entry.map(async entry =>
       this.context.getChunk(await this.context.resolveSimple(entry), []),
     )
-    await pMap(chunks, chunk => this.processChunk(chunk, job))
+    await pMap(chunks, chunk => this.processChunk(chunk, job, false))
     const generated = await pMap(chunks, chunk => this.generateChunk(chunk, job.files))
     console.log('generated', generated)
   }
