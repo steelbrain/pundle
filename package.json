@@ -7,8 +7,12 @@
     "lint-staged": "lint-staged",
     "bootstrap": "lerna bootstrap",
     "clean": "rm -rf packages/*/lib",
-    "build": "npm run clean; lerna exec --parallel -- ~/projects/steelbrain/babel-cli-flow/lib/index.js src --out-dir lib",
-    "watch": "npm run build -- --watch"
+    "build:babel": "lerna exec --parallel -- babel-flow src --out-dir lib",
+    "build:wrappers": "(cd packages/pundle-generator-browser; yarn build)",
+    "build": "yarn clean; npm-run-all --parallel build:*",
+    "watch:babel": "lerna exec --parallel -- babel-flow src --out-dir lib -w",
+    "watch:wrappers": "(cd packages/pundle-generator-browser; yarn watch)",
+    "watch": "yarn clean; npm-run-all --parallel watch:*"
   },
   "repository": {
     "type": "git",
@@ -41,7 +45,9 @@
     "flow-bin": "^0.57.3",
     "lerna": "^2.4.0",
     "lint-staged": "^4.3.0",
+    "npm-run-all": "^4.1.2",
     "pre-commit": "^1.2.2",
     "prettier": "1.7.4"
-  }
+  },
+  "devDependencies": {}
 }
