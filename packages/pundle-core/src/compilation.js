@@ -1,8 +1,7 @@
 // @flow
 
 import pMap from 'p-map'
-import { FileIssue, MessageIssue, type Context, type File } from 'pundle-api'
-import type { Chunk } from 'pundle-api/lib/types'
+import { FileIssue, MessageIssue, type Context, type File, type Chunk } from 'pundle-api'
 
 import Job from './job'
 

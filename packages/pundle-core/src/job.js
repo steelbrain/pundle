@@ -1,7 +1,6 @@
 // @flow
 
-import type { File } from 'pundle-api'
-import type { Chunk } from 'pundle-api/lib/types'
+import type { File, Chunk } from 'pundle-api'
 
 export default class Job {
   locks: Set<string>
