@@ -21,7 +21,7 @@ export default function() {
       const chunkMap = Helpers.getChunkMap(chunk, files)
 
       chunkMap.files.forEach(file => {
-        const fileContents = `__sbPundle.registerModule(${JSON.stringify(
+        const fileContents = `__sbPundle.moduleRegister(${JSON.stringify(
           file.fileName,
         )}, function(__filename, __dirname, require, module, exports) {\n${file.contents}\n});`
         contents.push(fileContents)

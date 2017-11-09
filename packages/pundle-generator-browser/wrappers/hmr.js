@@ -1,4 +1,4 @@
-/* @flow */
+// @flow
 
 import type { ModuleNormal } from '../types'
 
@@ -12,11 +12,11 @@ global.global = global.global || global
 global.process = global.process || require('process')
 
 class __sbPundle_HMR {
-  data: Object;
-  accepts: Set<string> = new Set();
-  declines: Set<string> = new Set();
-  callbacks_accept: Set<Function> = new Set();
-  callbacks_dispose: Set<Function> = new Set();
+  data: Object
+  accepts: Set<string> = new Set()
+  declines: Set<string> = new Set()
+  callbacks_accept: Set<Function> = new Set()
+  callbacks_dispose: Set<Function> = new Set()
   constructor(data: Object = {}) {
     this.data = data
   }
@@ -84,7 +84,7 @@ global.__sbPundle = global.__sbPundle || {
   registerMappings(mappings) {
     Object.assign(this.mapChunks, mappings.chunks)
     for (const moduleId in mappings.files) {
-      mappings.files[moduleId].forEach((requestId) => {
+      mappings.files[moduleId].forEach(requestId => {
         this.mapModules[requestId] = moduleId
       })
     }
@@ -123,7 +123,8 @@ global.__sbPundle = global.__sbPundle || {
     require.cache = this.cache
     require.resolve = this.resolve
     require.ensure = (chunk, callback) => this.ensure(chunk, () => callback(require))
-    require.import = (chunk, moduleId) => new Promise((resolve, reject) => this.ensure(chunk, () => resolve(require(moduleId)), reject))
+    require.import = (chunk, moduleId) =>
+      new Promise((resolve, reject) => this.ensure(chunk, () => resolve(require(moduleId)), reject))
     return require
   },
   require(request: string) {
@@ -136,7 +137,7 @@ global.__sbPundle = global.__sbPundle || {
     }
 
     const requestedChunks = [].concat(requestedChunk)
-    requestedChunks.forEach((entry) => {
+    requestedChunks.forEach(entry => {
       const chunkId = this.mapChunks[entry]
       if (!this.chunks[chunkId]) {
         let resolve
@@ -217,7 +218,11 @@ global.__sbPundle = global.__sbPundle || {
       }
     }
     if (failed.length) {
-      console.log('[HMR] Error: Update could not be applied because these modules did not accept:\n' + failed.map(item => `  • ${item}`).join('\n'))
+      console.log(
+        `[HMR] Error: Update could not be applied because these modules did not accept:\n${failed
+          .map(item => `  • ${item}`)
+          .join('\n')}`,
+      )
       const error: Object = new Error('Unable to apply HMR because some modules didnt accept it')
       error.code = 'HMR_REBOOT_REQUIRED'
       throw error
@@ -240,7 +245,7 @@ global.__sbPundle = global.__sbPundle || {
     if (hmrDebugging) {
       console.log('[HMR] Update order is', updateOrder)
     }
-    updateOrder.forEach((file) => {
+    updateOrder.forEach(file => {
       const oldModule = this.cache[file]
       const newModule = this.getModule(oldModule.id, oldModule.callback)
       if (hmrDebugging) {
@@ -253,7 +258,14 @@ global.__sbPundle = global.__sbPundle || {
       newModule.parents = oldModule.parents
       try {
         newModule.invoked = true
-        newModule.callback.call(newModule.exports, newModule.id, '/', this.generateRequire(newModule.id), newModule, newModule.exports)
+        newModule.callback.call(
+          newModule.exports,
+          newModule.id,
+          '/',
+          this.generateRequire(newModule.id),
+          newModule,
+          newModule.exports,
+        )
       } catch (error) {
         // NOTE: In case of error, copy last HMR info
         Object.assign(newModule.hot, {

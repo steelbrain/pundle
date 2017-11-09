@@ -12,7 +12,7 @@
     "build": "yarn clean; npm-run-all --parallel build:*",
     "watch:babel": "lerna exec --parallel -- babel-flow src --out-dir lib -w",
     "watch:wrappers": "(cd packages/pundle-generator-browser; yarn watch)",
-    "watch": "yarn clean; npm-run-all --parallel watch:*"
+    "watch": "yarn clean; npm-run-all --silent --parallel watch:*"
   },
   "repository": {
     "type": "git",

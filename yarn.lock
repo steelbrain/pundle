@@ -4055,10 +4055,6 @@ require-main-filename@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-1.0.1.tgz#97f717b69d48784f5f526a6c5aa8ffdda055a4d1"
 
-require-relative@0.8.7:
-  version "0.8.7"
-  resolved "https://registry.yarnpkg.com/require-relative/-/require-relative-0.8.7.tgz#7999539fc9e047a37928fa196f8e1563dabd36de"
-
 require-uncached@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/require-uncached/-/require-uncached-1.0.3.tgz#4e0d56d6c9662fd31e43011c4b95aa49955421d3"
@@ -4161,14 +4157,6 @@ rollup-pluginutils@^2.0.1:
   dependencies:
     estree-walker "^0.3.0"
     micromatch "^2.3.11"
-
-rollup-watch@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/rollup-watch/-/rollup-watch-4.3.1.tgz#5aa1eaeab787addf368905d102b39d6fc5ce4a8b"
-  dependencies:
-    chokidar "^1.7.0"
-    require-relative "0.8.7"
-    rollup-pluginutils "^2.0.1"
 
 rollup@^0.51.1:
   version "0.51.1"

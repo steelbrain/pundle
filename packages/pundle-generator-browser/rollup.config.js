@@ -1,4 +1,4 @@
-/* @flow */
+// @flow
 
 import babel from 'rollup-plugin-babel'
 import uglify from 'rollup-plugin-uglify'
@@ -17,6 +17,7 @@ export default {
     name: `__sbPundle_${wrapper}`,
     file: `wrappers/${wrapper}.built.js`,
   },
+  strict: false,
   plugins: [
     uglify(),
     babel({
