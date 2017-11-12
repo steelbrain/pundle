@@ -11,3 +11,10 @@ export const VALID_TYPES: Set<ComponentType> = new Set([
   'generator',
 ])
 export const VALID_SEVERITIES: Set<Severity> = new Set(['info', 'warning', 'error'])
+
+export function normalizeFileName(fileName: string): string {
+  if (fileName.charAt(0) !== '.') {
+    return `./${fileName}`
+  }
+  return fileName
+}

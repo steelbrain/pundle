@@ -4,6 +4,8 @@ import fs from 'fs'
 import path from 'path'
 import promisify from 'sb-promisify'
 import mergeSourceMap from 'merge-source-map'
+
+import { normalizeFileName } from './common'
 import type { Chunk, Import } from './types'
 
 const asyncStat = promisify(fs.stat)
@@ -83,7 +85,7 @@ export default class File {
     const stats = await asyncStat(resolved)
     const contents = await asyncReadFile(resolved, 'utf8')
     return new File({
-      fileName: path.relative(rootDirectory, resolved),
+      fileName: normalizeFileName(path.relative(rootDirectory, resolved)),
       filePath: resolved,
       lastModified: lastModifiedFromStats(stats),
 

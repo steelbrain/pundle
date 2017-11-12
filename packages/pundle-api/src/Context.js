@@ -8,6 +8,7 @@ import Components from './Components'
 import ComponentOptions from './ComponentOptions'
 import FileIssue from './issues/FileIssue'
 import MessageIssue from './issues/MessageIssue'
+import { normalizeFileName } from './common'
 import type { Chunk, BaseConfig, ResolvePayload } from './types'
 
 export default class Context {
@@ -127,10 +128,6 @@ export default class Context {
         throw new MessageIssue(`Cannot find module '${request}'`)
       }
     }
-    const relativePath = path.relative(this.config.rootDirectory, result.resolved)
-    if (relativePath.charAt(0) !== '.') {
-      return `./${relativePath}`
-    }
-    return relativePath
+    return normalizeFileName(path.relative(this.config.rootDirectory, result.resolved))
   }
 }
