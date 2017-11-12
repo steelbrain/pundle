@@ -9,7 +9,7 @@ import { getName, getParsedReplacement } from './helpers'
 const INJECTIONS = {
   timers: ['setImmediate', 'clearImmediate'],
   buffer: ['Buffer'],
-  process: ['process'],
+  process: 'process',
 }
 
 export default async function callback(context: Context, options: Object, file: File, ast: Object) {
@@ -98,8 +98,8 @@ export default async function callback(context: Context, options: Object, file: 
     injections.forEach((resolved, key) => {
       wrapper.arguments.push(t.callExpression(t.identifier('require'), [t.stringLiteral(resolved)]))
       const names = INJECTIONS[key]
-      if (names.length === 1) {
-        wrapper.callee.params.push(t.identifier(names[0]))
+      if (typeof names === 'string') {
+        wrapper.callee.params.push(t.identifier(names))
       } else {
         const refName = `__$sb$pundle${key}`
         wrapper.callee.params.push(t.identifier(refName))
@@ -115,7 +115,7 @@ export default async function callback(context: Context, options: Object, file: 
     })
     wrapper.callee.body.body = ast.program.body
     wrapper.callee.body.directives = ast.program.directives
-    ast.program.body = [wrapper]
+    ast.program.body = [t.expressionStatement(wrapper)]
     ast.program.directives = []
   }
 }
