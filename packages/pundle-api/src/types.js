@@ -26,6 +26,7 @@ export type ResolvePayload = {|
 export type Import = string
 export type Chunk = {|
   type: 'simple',
+  label: string,
   entry: ?string,
   imports: Array<Import>,
   // ^ RESOLVED file paths to include in the main output bundle

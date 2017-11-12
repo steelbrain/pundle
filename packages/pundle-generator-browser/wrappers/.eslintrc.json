@@ -1,7 +1,9 @@
 {
   "rules": {
+    "guard-for-in": "off",
     "global-require": "off",
     "no-underscore-dangle": "off",
+    "no-restricted-syntax": "off",
     "import/no-dynamic-require": "off"
   },
   "globals": {

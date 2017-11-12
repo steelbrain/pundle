@@ -47,8 +47,16 @@ export default function() {
         offset += Helpers.getLinesCount(fileContents)
       })
 
+      if (chunkMap.chunks.size) {
+        const chunkEntriesMap = {}
+        chunkMap.chunks.forEach(entry => {
+          if (entry.entry) chunkEntriesMap[entry.entry] = entry.label
+        })
+        contents.push(`sbPundle.registerMap(${JSON.stringify(chunkEntriesMap)})`)
+      }
+      contents.push(`sbPundle.registerChunk(${JSON.stringify(chunk.label)})`)
       if (chunk.entry) {
-        contents.push(`sbPundle.moduleRequireGenerate('$root')(${JSON.stringify(chunk.entry)})`)
+        contents.push(`sbPundle.moduleRequire('$root', ${JSON.stringify(chunk.entry)})`)
       }
 
       contents.push('})();\n')

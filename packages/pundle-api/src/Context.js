@@ -39,10 +39,20 @@ export default class Context {
   }
   // NOTE: Public use allowed
   // NOTE: Both entry and imports MUST be pre-resolved
-  getChunk(entry: ?string = null, imports: Array<string> = []): Chunk {
+  getChunk(entry: ?string = null, imports: Array<string> = [], label: ?string = null): Chunk {
+    let generatedLabel = label
+    if (!generatedLabel) {
+      if (entry) {
+        generatedLabel = entry.toString()
+      } else {
+        throw new Error('Either entry or label are required to make a chunk!')
+      }
+    }
+
     return {
       type: 'simple',
       entry,
+      label: generatedLabel,
       imports,
     }
   }

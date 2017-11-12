@@ -8,17 +8,24 @@ global.global = global.global || global
 
 const sbPundle = {}
 sbPundle.cache = {}
-sbPundle.moduleMake = function(moduleId, callback) {
-  return {
+sbPundle.chunks = { map: {}, loading: {} }
+sbPundle.registerMap = function(map) {
+  for (const key in map) {
+    sbPundle.chunks.map[key] = map[key]
+  }
+}
+sbPundle.registerChunk = function(id) {
+  const callback = sbPundle.chunks.loading[id]
+  if (callback) callback()
+}
+sbPundle.moduleRegister = function(moduleId, callback) {
+  this.cache[moduleId] = {
     id: moduleId,
     invoked: false,
     callback,
     exports: {},
     parents: [],
   }
-}
-sbPundle.moduleRegister = function(moduleId, callback) {
-  this.cache[moduleId] = sbPundle.moduleMake(moduleId, callback)
 }
 sbPundle.moduleRequire = function(from, request) {
   const module = this.cache[request]
@@ -30,8 +37,18 @@ sbPundle.moduleRequire = function(from, request) {
   }
   if (!module.invoked) {
     module.invoked = true
-    // TODO: Fix this __dirname
-    module.callback.call(module.exports, module.id, '/', sbPundle.moduleRequireGenerate(module.id), module, module.exports)
+    const dirname = module.id
+      .split('/')
+      .slice(0, -1)
+      .join('/')
+    module.callback.call(
+      module.exports,
+      module.id,
+      dirname,
+      sbPundle.moduleRequireGenerate(module.id),
+      module,
+      module.exports,
+    )
   }
   return module.exports
 }
@@ -39,7 +56,8 @@ sbPundle.moduleRequireGenerate = function(from) {
   const require = sbPundle.moduleRequire.bind(this, from)
   require.cache = sbPundle.cache
   require.resolve = path => path
-  require.import = () => {
+  require.import = id => {
+    console.log('id', id)
     throw new Error('Unimplemented!')
   }
   return require
