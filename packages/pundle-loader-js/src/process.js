@@ -16,6 +16,11 @@ export default async function callback(context: Context, options: Object, file: 
   if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
     return
   }
+  const replaceVariables = {
+    'process.env.browser': context.config.target === 'browser',
+    'process.env.BROWSER': context.config.target === 'browser',
+    ...options.replaceVariables,
+  }
 
   const promises = []
 
@@ -24,8 +29,8 @@ export default async function callback(context: Context, options: Object, file: 
     context.resolveSimple(request, file.filePath, node.loc.start.line, node.loc.start.column)
   const processReplaceable = path => {
     const name = getName(path.node)
-    if ({}.hasOwnProperty.call(options.replaceVariables, name)) {
-      path.replaceWith(getParsedReplacement(options.replaceVariables[name]))
+    if ({}.hasOwnProperty.call(replaceVariables, name)) {
+      path.replaceWith(getParsedReplacement(replaceVariables[name]))
       return
     }
     if (context.config.target === 'browser') {
