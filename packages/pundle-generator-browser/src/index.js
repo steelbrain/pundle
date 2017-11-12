@@ -47,6 +47,10 @@ export default function() {
         offset += Helpers.getLinesCount(fileContents)
       })
 
+      if (chunk.entry) {
+        contents.push(`sbPundle.moduleRequireGenerate('$root')(${JSON.stringify(chunk.entry)})`)
+      }
+
       contents.push('})();\n')
 
       return {
