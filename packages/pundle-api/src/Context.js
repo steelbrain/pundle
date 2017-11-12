@@ -2,6 +2,7 @@
 
 import path from 'path'
 import invariant from 'assert'
+import Imurmurhash from 'imurmurhash'
 
 import File from './File'
 import Components from './Components'
@@ -12,7 +13,6 @@ import { normalizeFileName } from './common'
 import type { Chunk, BaseConfig, ResolvePayload } from './types'
 
 export default class Context {
-  uid: Map<string, number>
   components: Components
   options: ComponentOptions
   config: BaseConfig
@@ -28,7 +28,6 @@ export default class Context {
       `new Context() expects third parameter to be a non-null object, given: ${typeof config}`,
     )
 
-    this.uid = new Map()
     this.components = components
     this.options = options
     this.config = config
@@ -43,7 +42,10 @@ export default class Context {
     let generatedLabel = label
     if (!generatedLabel) {
       if (entry) {
-        generatedLabel = entry.toString()
+        generatedLabel = new Imurmurhash()
+          .hash(entry)
+          .result()
+          .toString()
       } else {
         throw new Error('Either entry or label are required to make a chunk!')
       }
@@ -55,16 +57,6 @@ export default class Context {
       label: generatedLabel,
       imports,
     }
-  }
-  getUID(label: string): number {
-    invariant(
-      typeof label === 'string' && label,
-      `getUID() expects first parameter to be non-null string, given: ${typeof label}`,
-    )
-
-    const uid = (this.uid.get(label) || 0) + 1
-    this.uid.set(label, uid)
-    return uid
   }
   async report(report: Object): Promise<void> {
     // TODO: validation?

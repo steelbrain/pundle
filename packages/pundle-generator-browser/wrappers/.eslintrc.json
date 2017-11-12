@@ -7,6 +7,7 @@
     "import/no-dynamic-require": "off"
   },
   "globals": {
-    "PUNDLE_USE_GLOBALS": true
+    "PUNDLE_USE_GLOBALS": true,
+    "PUNDLE_PUBLIC_DIRECTORY": true
   }
 }

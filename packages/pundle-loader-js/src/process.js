@@ -71,9 +71,8 @@ export default async function callback(context: Context, options: Object, file: 
         // Chunky async Import
         promises.push(
           resolveNode(arg.value, node).then(resolved => {
-            node.callee = t.callExpression(t.memberExpression(t.identifier('require'), t.identifier('import')), [
-              t.stringLiteral(resolved),
-            ])
+            node.callee = t.memberExpression(t.identifier('require'), t.identifier('import'))
+            arg.value = resolved
             file.addChunk(context.getChunk(resolved))
           }),
         )

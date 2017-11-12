@@ -20,6 +20,7 @@ export default function() {
       })
       const definedVariables = {
         PUNDLE_USE_GLOBALS: !!options.useGlobals,
+        PUNDLE_PUBLIC_DIRECTORY: options.publicDirectory,
         ...options.definedVariables,
       }
 
@@ -54,10 +55,7 @@ export default function() {
         })
         contents.push(`sbPundle.registerMap(${JSON.stringify(chunkEntriesMap)})`)
       }
-      contents.push(`sbPundle.registerChunk(${JSON.stringify(chunk.label)})`)
-      if (chunk.entry) {
-        contents.push(`sbPundle.moduleRequire('$root', ${JSON.stringify(chunk.entry)})`)
-      }
+      contents.push(`sbPundle.registerChunk(${JSON.stringify(chunk.label)}, ${JSON.stringify(chunk.entry)})`)
 
       contents.push('})();\n')
 
@@ -69,7 +67,9 @@ export default function() {
     defaultOptions: {
       wrapper: 'normal', // or 'hmr',
       definedVariables: {},
-      useGlobals: true,
+
+      useGlobals: true, // maps to PUNDLE_USE_GLOBALS
+      publicDirectory: '/', // maps to PUNDLE_PUBLIC_DIRECTORY
     },
     // TODO: Inline sourceMaps?
   })

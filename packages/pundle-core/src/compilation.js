@@ -1,5 +1,6 @@
 // @flow
 
+import fs from 'fs'
 import pMap from 'p-map'
 import { FileIssue, MessageIssue, type Context, type File, type Chunk } from 'pundle-api'
 
@@ -52,8 +53,11 @@ export default class Compilation {
     chunk: Chunk,
     files: Map<string, File>,
   ): Promise<{|
-    contents: string,
-    sourceMap: ?Object,
+    chunk: Chunk,
+    generated: {|
+      contents: string,
+      sourceMap: ?Object,
+    |},
   |}> {
     const generators = this.context.components.getGenerators()
     const postGenerators = this.context.components.getPostGenerators()
@@ -76,7 +80,7 @@ export default class Compilation {
         generated = postGenerated
       }
     }
-    return generated
+    return { generated, chunk }
   }
   async processFileTree(resolved: string, job: Job, forcedOverwite: boolean, tickCallback: TickCallback): Promise<void> {
     const oldFile = job.files.get(resolved)
@@ -148,7 +152,11 @@ export default class Compilation {
         /* No Op */
       }),
     )
-    const generated = await pMap(chunks, chunk => this.generateChunk(chunk, job.files))
-    console.log('generated', generated)
+    const generated = await pMap(Array.from(job.chunks.values()), chunk => this.generateChunk(chunk, job.files))
+    if (process.env.NODE_ENV !== 'development') return
+    generated.forEach(function(entry) {
+      fs.writeFileSync(`${entry.chunk.label}.js`, entry.generated.contents)
+      console.log('Written contents to', `${entry.chunk.label}.js`)
+    })
   }
 }

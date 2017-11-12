@@ -14,9 +14,10 @@ sbPundle.registerMap = function(map) {
     sbPundle.chunks.map[key] = map[key]
   }
 }
-sbPundle.registerChunk = function(id) {
-  const callback = sbPundle.chunks.loading[id]
-  if (callback) callback()
+sbPundle.registerChunk = function(id, entryFile) {
+  const result = entryFile ? sbPundle.moduleRequire('$root', entryFile) : null
+  const loader = sbPundle.chunks.loading[id]
+  if (loader) loader.resolve(result)
 }
 sbPundle.moduleRegister = function(moduleId, callback) {
   this.cache[moduleId] = {
@@ -57,8 +58,22 @@ sbPundle.moduleRequireGenerate = function(from) {
   require.cache = sbPundle.cache
   require.resolve = path => path
   require.import = id => {
-    console.log('id', id)
-    throw new Error('Unimplemented!')
+    const deferred = {}
+    deferred.promise = new Promise(function(resolve) {
+      deferred.resolve = resolve
+    })
+
+    const label = sbPundle.chunks.map[id]
+    const loading = sbPundle.chunks.loading
+    if (!label) throw new Error(`No registered chunk found for module: ${label}`)
+    loading[label] = deferred
+
+    const script = document.createElement('script')
+    script.src = `${PUNDLE_PUBLIC_DIRECTORY}/${label}.js`
+    // TODO: Fix this for web workers
+    document.body.appendChild(script)
+
+    return deferred.promise
   }
   return require
 }
