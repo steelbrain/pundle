@@ -3,5 +3,8 @@
     "global-require": "off",
     "no-underscore-dangle": "off",
     "import/no-dynamic-require": "off"
+  },
+  "globals": {
+    "PUNDLE_USE_GLOBALS": true
   }
 }

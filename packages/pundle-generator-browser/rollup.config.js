@@ -14,7 +14,7 @@ export default {
   input: `wrappers/${wrapper}.js`,
   output: {
     format: 'iife',
-    name: `__sbPundle_${wrapper}`,
+    name: `__sbPundle`,
     file: `wrappers/${wrapper}.built.js`,
   },
   strict: false,

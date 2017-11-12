@@ -1,6 +1,4 @@
-// @flow
-
-const global = (typeof window !== 'undefined' && window) || (typeof self !== 'undefined' && self) || {}
+const global = (PUNDLE_USE_GLOBALS && typeof self !== 'undefined' && self) || {}
 const GLOBAL = global
 const root = global
 
@@ -20,7 +18,7 @@ sbPundle.moduleMake = function(moduleId, callback) {
   }
 }
 sbPundle.moduleRegister = function(moduleId, callback) {
-  this.cache[moduleId] = this.getModule(moduleId, callback)
+  this.cache[moduleId] = sbPundle.moduleMake(moduleId, callback)
 }
 sbPundle.moduleRequire = function(from, request) {
   const module = this.cache[request]
@@ -46,4 +44,6 @@ sbPundle.moduleRequireGenerate = function(from) {
   }
   return require
 }
+// Share with other instances - Required for chunks to work - Respects PUNDLE_USE_GLOBALS
 global.sbPundle = global.sbPundle || sbPundle
+export default global.sbPundle

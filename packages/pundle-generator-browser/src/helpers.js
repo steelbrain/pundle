@@ -1,8 +1,13 @@
 // @flow
 
+import fs from 'fs'
+import path from 'path'
 import invariant from 'assert'
+import { promisify } from 'util'
 import { SourceMapConsumer } from 'source-map'
-import type { File, Chunk } from 'pundle-api'
+import type { Context, File, Chunk } from 'pundle-api'
+
+const readFileAsync = promisify(fs.readFile)
 
 export const LINE_BREAK = /\r\n|\n|\r/
 export function getLinesCount(givenText: string | Array<string>): number {
@@ -57,4 +62,23 @@ export function mergeSourceMap(sourceMap: Object, targetMap: Object, file: File,
     })
   })
   targetMap.setSourceContent(file.fileName, file.contents)
+}
+
+export const wrapperHMR = require.resolve('../wrappers/hmr.built')
+export const wrapperNormal = require.resolve('../wrappers/normal.built')
+export async function getWrapperContents(context: Context, givenWrapper: string): Promise<string> {
+  let wrapper = givenWrapper
+  if (wrapper === 'normal') {
+    wrapper = wrapperNormal
+  } else if (wrapper === 'hmr') {
+    wrapper = wrapperHMR
+  } else if (wrapper === 'none') {
+    return ''
+  }
+  if (!path.isAbsolute(wrapper)) {
+    wrapper = await context.resolveSimple(wrapper)
+  }
+  const fileContents = await readFileAsync(wrapper)
+  // TODO: Replace some variables maybe?
+  return fileContents
 }
