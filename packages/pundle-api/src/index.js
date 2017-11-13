@@ -18,6 +18,7 @@ import {
   createPlugin,
   createGenerator,
   createPostGenerator,
+  createFilePostGenerator,
 } from './ComponentTypes'
 
 export * from './types'
@@ -36,6 +37,7 @@ export {
   createPlugin,
   createGenerator,
   createPostGenerator,
+  createFilePostGenerator,
   File,
   Context,
 }
