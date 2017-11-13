@@ -1,5 +1,6 @@
 // @flow
 
+import { posix } from 'path'
 import { createGenerator, MessageIssue } from 'pundle-api'
 import { SourceMapGenerator } from 'source-map'
 
@@ -20,7 +21,7 @@ export default function() {
       })
       const definedVariables = {
         PUNDLE_USE_GLOBALS: !!options.useGlobals,
-        PUNDLE_PUBLIC_DIRECTORY: options.publicDirectory,
+        PUNDLE_PUBLIC_DIRECTORY: posix.relative('/', options.publicDirectory),
         ...options.definedVariables,
       }
 
