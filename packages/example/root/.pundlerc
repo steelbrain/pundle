@@ -8,6 +8,13 @@ module.exports = {
         'process.env.NODE_ENV': JSON.stringify('development'),
       }
     }],
-    'pundle-generator-browser',
+    ['pundle-generator-browser', {
+      publicDirectory: '/',
+    }],
+    ['pundle-loader-url', {
+      maxSize: 10 * 1024,
+      publicDirectory: '/',
+      extensions: ['.png']
+    }],
   ],
 }
