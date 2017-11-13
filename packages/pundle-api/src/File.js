@@ -20,7 +20,7 @@ export default class File {
   lastModified: number
 
   contents: string
-  sourceContents: string
+  sourceContents: Buffer
   sourceMap: ?Object
 
   // Don't push to these directly, ever
@@ -36,12 +36,12 @@ export default class File {
     fileName: string,
     filePath: string,
     lastModified: number,
-    contents: string,
+    contents: Buffer,
   }) {
     this.fileName = fileName
     this.filePath = filePath
     this.lastModified = lastModified
-    this.contents = contents
+    this.contents = contents.toString()
 
     this.sourceContents = contents
     this.sourceMap = null
@@ -83,7 +83,7 @@ export default class File {
     const resolved = path.resolve(rootDirectory, fileName)
 
     const stats = await asyncStat(resolved)
-    const contents = await asyncReadFile(resolved, 'utf8')
+    const contents = await asyncReadFile(resolved)
     return new File({
       fileName: normalizeFileName(path.relative(rootDirectory, resolved)),
       filePath: resolved,

@@ -58,7 +58,7 @@ export default class Compilation {
     chunk: Chunk,
     format: string,
     generated: {|
-      contents: string,
+      contents: string | Buffer,
       sourceMap: ?Object,
     |},
   |}> {

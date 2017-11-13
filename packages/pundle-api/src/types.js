@@ -90,7 +90,7 @@ export type ComponentPlugin = Component<'plugin', ComponentPluginCallback>
 export type ComponentGeneratorCallback = ComponentCallback<
   [Chunk, Map<string, File>],
   {|
-    contents: string,
+    contents: string | Buffer,
     sourceMap: ?Object,
   |},
 >
@@ -99,12 +99,12 @@ export type ComponentGenerator = Component<'generator', ComponentGeneratorCallba
 export type ComponentPostGeneratorCallback = ComponentCallback<
   [
     {|
-      contents: string,
+      contents: string | Buffer,
       sourceMap: ?Object,
     |},
   ],
   {|
-    contents: string,
+    contents: string | Buffer,
     sourceMap: ?Object,
   |},
 >
