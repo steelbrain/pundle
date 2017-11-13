@@ -37,7 +37,9 @@ export function getSimpleChunkMap(
     relevantFiles.set(fileName, file)
     file.imports.forEach(iterateImports)
     file.chunks.forEach(function(entry) {
-      referencedChunks.add(entry)
+      if (entry.type !== 'file') {
+        referencedChunks.add(entry)
+      }
     })
   }
   if (chunk.entry) {
