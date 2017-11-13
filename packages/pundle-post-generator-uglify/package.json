@@ -1,0 +1,13 @@
+{
+  "name": "pundle-post-generator-uglify",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "pundle-api": "*",
+    "uglify-es": "^3.1.9"
+  }
+}

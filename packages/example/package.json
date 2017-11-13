@@ -15,6 +15,7 @@
     "pundle-loader-json": "*",
     "pundle-loader-url": "*",
     "pundle-reporter-console": "*",
+    "pundle-post-generator-uglify": "*",
     "pundle-resolver-node": "*",
     "pundle-transformer-babel": "*"
   }

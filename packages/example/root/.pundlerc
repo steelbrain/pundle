@@ -18,5 +18,6 @@ module.exports = {
     }],
     ['pundle-transformer-babel'],
     'pundle-loader-json',
+    'pundle-post-generator-uglify',
   ],
 }
