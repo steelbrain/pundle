@@ -1,6 +1,6 @@
 // @flow
 
-import { posix } from 'path'
+import { posix, extname } from 'path'
 import { createLoader, shouldProcess } from 'pundle-api'
 
 import { version } from '../package.json'
@@ -13,8 +13,12 @@ export default function() {
       if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
         return null
       }
+      const ext = extname(file.filePath)
       const chunk = context.getFileChunk(file.filePath)
-      const contents = `module.exports = ${JSON.stringify(posix.resolve(options.contentPublicDirectory, chunk.label))}`
+      const contents = `module.exports = ${JSON.stringify(`${posix.resolve(options.publicDirectory, chunk.label)}${ext}`)}`
+
+      file.addChunk(chunk)
+
       return {
         contents,
         sourceMap: null,
@@ -23,7 +27,7 @@ export default function() {
     defaultOptions: {
       extensions: [],
       replaceVariables: {},
-      contentPublicDirectory: '/',
+      publicDirectory: '/',
     },
   })
 }
