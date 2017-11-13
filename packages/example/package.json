@@ -8,11 +8,13 @@
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
+    "babel-preset-steelbrain": "^5.0.3",
     "pundle-core": "*",
-    "pundle-reporter-console": "*",
+    "pundle-generator-browser": "*",
     "pundle-loader-js": "*",
     "pundle-loader-url": "*",
+    "pundle-reporter-console": "*",
     "pundle-resolver-node": "*",
-    "pundle-generator-browser": "*"
+    "pundle-transformer-babel": "*"
   }
 }

@@ -1,6 +1,2 @@
-// export default {
-//   hello: 'world',
-// }
-module.exports = {
-  hello: 'world',
-}
+export const hello = 'world'
+export const world = 'hello'

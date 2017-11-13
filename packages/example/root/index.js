@@ -1,5 +1,4 @@
-// import hello from './hello'
-const hello = require('./hello')
+import hello from './hello'
 
 import('./hello').then(function(yeah) {
   console.log('yeah', yeah)
