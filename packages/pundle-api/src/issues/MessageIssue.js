@@ -20,4 +20,7 @@ export default class MessageIssue {
   get stack(): string {
     return `MessageIssue: ${this.severity.toUpperCase()}: ${this.message}`
   }
+  toString() {
+    return this.stack
+  }
 }

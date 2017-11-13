@@ -36,7 +36,7 @@ export default class FileIssue {
     invariant(['undefined', 'number'].includes(typeof column), 'options.column must be a valid number or null')
 
     this.file = file
-    this.contents = contents || null
+    this.contents = contents
     this.line = line
     this.column = column
     this.message = message
@@ -48,5 +48,8 @@ export default class FileIssue {
       stack += `${this.line}:${this.column || 0}`
     }
     return stack
+  }
+  toString() {
+    return this.stack
   }
 }
