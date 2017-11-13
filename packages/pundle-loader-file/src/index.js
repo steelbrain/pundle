@@ -14,7 +14,7 @@ export default function() {
         return null
       }
       const ext = extname(file.filePath)
-      const chunk = context.getFileChunk(file.filePath)
+      const chunk = context.getFileChunk(file.fileName)
       const contents = `module.exports = ${JSON.stringify(`${posix.resolve(options.publicDirectory, chunk.label)}${ext}`)}`
 
       file.addChunk(chunk)
