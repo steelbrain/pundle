@@ -17,5 +17,6 @@ module.exports = {
       extensions: ['.png']
     }],
     ['pundle-transformer-babel'],
+    'pundle-loader-json',
   ],
 }

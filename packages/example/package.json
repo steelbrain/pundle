@@ -12,6 +12,7 @@
     "pundle-core": "*",
     "pundle-generator-browser": "*",
     "pundle-loader-js": "*",
+    "pundle-loader-json": "*",
     "pundle-loader-url": "*",
     "pundle-reporter-console": "*",
     "pundle-resolver-node": "*",
