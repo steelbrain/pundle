@@ -73,7 +73,7 @@ export default async function callback(context: Context, options: Object, file: 
           resolveNode(arg.value, node).then(resolved => {
             node.callee = t.memberExpression(t.identifier('require'), t.identifier('import'))
             arg.value = resolved
-            file.addChunk(context.getChunk(resolved))
+            file.addChunk(context.getSimpleChunk(resolved))
           }),
         )
         return

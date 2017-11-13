@@ -20,7 +20,7 @@ export function getLinesCount(givenText: string | Array<string>): number {
   return text.split(LINE_BREAK).length
 }
 
-export function getChunkMap(
+export function getSimpleChunkMap(
   chunk: Chunk,
   files: Map<string, File>,
 ): {|

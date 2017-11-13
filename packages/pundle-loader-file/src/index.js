@@ -13,8 +13,8 @@ export default function() {
       if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
         return null
       }
-      const contents = `module.exports = ${JSON.stringify(posix.resolve(options.contentPublicDirectory, file.fileName))}`
-      file.sourceContents = file.contents
+      const chunk = context.getFileChunk(file.filePath)
+      const contents = `module.exports = ${JSON.stringify(posix.resolve(options.contentPublicDirectory, chunk.label))}`
       return {
         contents,
         sourceMap: null,

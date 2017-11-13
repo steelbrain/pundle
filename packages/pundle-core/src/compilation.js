@@ -145,7 +145,7 @@ export default class Compilation {
   async build(): Promise<void> {
     const job = new Job()
     const chunks = this.context.config.entry.map(async entry =>
-      this.context.getChunk(await this.context.resolveSimple(entry), []),
+      this.context.getSimpleChunk(await this.context.resolveSimple(entry), []),
     )
     await pMap(chunks, chunk =>
       this.processChunk(chunk, job, false, function() {
@@ -155,7 +155,7 @@ export default class Compilation {
     const generated = await pMap(Array.from(job.chunks.values()), chunk => this.generateChunk(chunk, job.files))
     if (process.env.NODE_ENV !== 'development') return
     generated.forEach(function(entry) {
-      fs.writeFileSync(`${entry.chunk.label}.js`, entry.generated.contents)
+      fs.writeFileSync(`public/${entry.chunk.label}.js`, entry.generated.contents)
       console.log('Written contents to', `${entry.chunk.label}.js`)
     })
   }

@@ -38,7 +38,7 @@ export default class Context {
   }
   // NOTE: Public use allowed
   // NOTE: Both entry and imports MUST be pre-resolved
-  getChunk(entry: ?string = null, imports: Array<string> = [], label: ?string = null): Chunk {
+  getSimpleChunk(entry: ?string = null, imports: Array<string> = [], label: ?string = null): Chunk {
     let generatedLabel = label
     if (!generatedLabel) {
       if (entry) {
@@ -56,6 +56,21 @@ export default class Context {
       entry,
       label: generatedLabel,
       imports,
+    }
+  }
+  getFileChunk(entry: string, label: ?string = null): Chunk {
+    let generatedLabel = label
+    if (!generatedLabel) {
+      generatedLabel = new Imurmurhash()
+        .hash(entry)
+        .result()
+        .toString()
+    }
+    return {
+      type: 'file',
+      entry,
+      label: generatedLabel,
+      imports: [],
     }
   }
   async report(report: Object): Promise<void> {

@@ -35,7 +35,7 @@ export default function() {
       contents.push(await Helpers.getWrapperContents(context, options.wrapper))
 
       let offset = Helpers.getLinesCount(contents)
-      const chunkMap = Helpers.getChunkMap(chunk, files)
+      const chunkMap = Helpers.getSimpleChunkMap(chunk, files)
 
       chunkMap.files.forEach(file => {
         const fileContents = `__sbPundle.moduleRegister(${JSON.stringify(
