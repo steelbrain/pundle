@@ -8,24 +8,24 @@ export default function shouldProcess(sourceRoot: string, filePath: string, conf
   const relativePath = Path.relative(sourceRoot, filePath)
 
   const exclude = config.exclude
-  if (exclude) {
+  if (exclude && exclude.length) {
     if (matchesRules(relativePath, [].concat(exclude))) {
       return false
     }
   }
   const include = config.include
-  if (include) {
+  if (include && include.length) {
     if (!matchesRules(relativePath, [].concat(include))) {
       return false
     }
   }
   const extensions = config.extensions
-  if (extensions) {
+  if (extensions && extensions.length) {
     if (![].concat(extensions).includes(Path.extname(filePath))) {
       return false
     }
   }
 
   // NOTE: If neither include nor exclude is provided, instead of processing all files, process none
-  return !!(include || exclude || extensions)
+  return !!((exclude && exclude.length) || (include && include.length) || (extensions && extensions.length))
 }
