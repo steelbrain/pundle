@@ -53,6 +53,7 @@ export default class Context {
 
     return {
       type: 'simple',
+      format: '.js',
       entry,
       label: generatedLabel,
       imports,
@@ -68,6 +69,7 @@ export default class Context {
     }
     return {
       type: 'file',
+      format: path.extname(entry),
       entry,
       label: generatedLabel,
       imports: [],

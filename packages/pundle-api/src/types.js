@@ -26,6 +26,7 @@ export type ResolvePayload = {|
 export type Import = string
 export type ChunkSimple = {|
   type: 'simple',
+  format: '.js',
   label: string,
   entry: ?string,
   imports: Array<Import>,
@@ -33,6 +34,7 @@ export type ChunkSimple = {|
 |}
 export type ChunkFile = {|
   type: 'file',
+  format: string,
   label: string,
   entry: string,
   imports: [],
