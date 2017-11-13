@@ -15,7 +15,7 @@ export default function() {
       if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
         return null
       }
-      if (options.maxSize !== 'number') {
+      if (typeof options.maxSize !== 'number') {
         throw new MessageIssue('options.maxSize must be specified to pundle-loader-url')
       }
       if (file.sourceContents.length > options.maxSize) {
