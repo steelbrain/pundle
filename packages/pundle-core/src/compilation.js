@@ -2,7 +2,6 @@
 
 import fs from 'fs'
 import pMap from 'p-map'
-import invariant from 'assert'
 import { FileIssue, MessageIssue, type Context, type File, type Chunk } from 'pundle-api'
 
 import Job from './job'
@@ -50,33 +49,21 @@ export default class Compilation {
 
     return file
   }
-  async generateChunk(
+  async generateSimpleChunk(
     chunk: Chunk,
     files: Map<string, File>,
   ): Promise<{|
-    chunk: Chunk,
-    generated: {|
-      contents: string | Buffer,
-      sourceMap: ?Object,
-    |},
+    contents: string,
+    sourceMap: ?Object,
   |}> {
     const generators = this.context.components.getGenerators()
     const postGenerators = this.context.components.getPostGenerators()
 
     let generated
-    if (chunk.type === 'file') {
-      const entryFile = files.get(chunk.entry)
-      invariant(entryFile, 'Files map doesnt contain chunk entry?!')
-      generated = {
-        contents: entryFile.sourceContents,
-        sourceMap: null,
-      }
-    } else {
-      for (const entry of generators) {
-        generated = await entry.callback(this.context, this.context.options.get(entry), chunk, files)
-        if (generated) {
-          break
-        }
+    for (const entry of generators) {
+      generated = await entry.callback(this.context, this.context.options.get(entry), chunk, files)
+      if (generated) {
+        break
       }
     }
     if (!generated) {
@@ -90,9 +77,58 @@ export default class Compilation {
         generated = postGenerated
       }
     }
+    return generated
+  }
+  async generateFileChunk(
+    chunk: Chunk,
+    files: Map<string, File>,
+  ): Promise<{|
+    contents: Buffer,
+  |}> {
+    const filePostGenerators = this.context.components.getFilePostGenerators()
+    const entryFile = files.get(chunk.entry || '')
+    if (!entryFile) {
+      throw new MessageIssue('File Chunk entry file was not found in files map')
+    }
+
+    let generated = {
+      contents: entryFile.sourceContents,
+    }
+    for (const entry of filePostGenerators) {
+      const postGenerated = await entry.callback(this.context, this.context.options.get(entry), generated)
+      if (postGenerated) {
+        generated = postGenerated
+      }
+    }
+    return generated
+  }
+  async generateChunk(
+    chunk: Chunk,
+    files: Map<string, File>,
+  ): Promise<{|
+    chunk: Chunk,
+    generated: {|
+      contents: Buffer,
+      sourceMap: ?Object,
+    |},
+  |}> {
+    let result
+    if (chunk.type === 'file') {
+      const generated = await this.generateFileChunk(chunk, files)
+      result = {
+        contents: generated.contents,
+        sourceMap: null,
+      }
+    } else {
+      const generated = await this.generateSimpleChunk(chunk, files)
+      result = {
+        contents: Buffer.from(generated.contents),
+        sourceMap: generated.sourceMap,
+      }
+    }
     return {
       chunk,
-      generated,
+      generated: result,
     }
   }
   async processFileTree(resolved: string, job: Job, forcedOverwite: boolean, tickCallback: TickCallback): Promise<void> {

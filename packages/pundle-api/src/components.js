@@ -12,6 +12,7 @@ import type {
   ComponentPlugin,
   ComponentGenerator,
   ComponentPostGenerator,
+  ComponentFilePostGenerator,
 } from './types'
 
 export default class Components {
@@ -89,6 +90,13 @@ export default class Components {
     const filtered = []
     this.registered.forEach(entry => {
       if (entry.type === 'post-generator') filtered.push(entry)
+    })
+    return filtered
+  }
+  getFilePostGenerators(): Array<ComponentFilePostGenerator> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'file-post-generator') filtered.push(entry)
     })
     return filtered
   }

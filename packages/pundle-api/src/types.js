@@ -44,7 +44,15 @@ export type Chunk = ChunkSimple | ChunkFile
 // TODO: Add new types
 
 export type Severity = 'info' | 'warning' | 'error'
-export type ComponentType = 'resolver' | 'reporter' | 'loader' | 'transformer' | 'plugin' | 'generator' | 'post-generator'
+export type ComponentType =
+  | 'resolver'
+  | 'reporter'
+  | 'loader'
+  | 'transformer'
+  | 'plugin'
+  | 'generator'
+  | 'post-generator'
+  | 'file-post-generator'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
   options: Object,
@@ -92,7 +100,7 @@ export type ComponentPlugin = Component<'plugin', ComponentPluginCallback>
 export type ComponentGeneratorCallback = ComponentCallback<
   [Chunk, Map<string, File>],
   {|
-    contents: string | Buffer,
+    contents: string,
     sourceMap: ?Object,
   |},
 >
@@ -101,16 +109,27 @@ export type ComponentGenerator = Component<'generator', ComponentGeneratorCallba
 export type ComponentPostGeneratorCallback = ComponentCallback<
   [
     {|
-      contents: string | Buffer,
+      contents: string,
       sourceMap: ?Object,
     |},
   ],
   {|
-    contents: string | Buffer,
+    contents: string,
     sourceMap: ?Object,
   |},
 >
 export type ComponentPostGenerator = Component<'post-generator', ComponentPostGeneratorCallback>
+export type ComponentFilePostGeneratorCallback = ComponentCallback<
+  [
+    {|
+      contents: Buffer,
+    |},
+  ],
+  {|
+    contents: Buffer,
+  |},
+>
+export type ComponentFilePostGenerator = Component<'file-post-generator', ComponentFilePostGeneratorCallback>
 
 export type ComponentAny =
   | ComponentResolver
@@ -120,6 +139,7 @@ export type ComponentAny =
   | ComponentPlugin
   | ComponentGenerator
   | ComponentPostGenerator
+  | ComponentFilePostGenerator
 
 export type ComponentOptionsEntry = {|
   options: Object,
