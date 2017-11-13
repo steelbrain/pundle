@@ -14,9 +14,11 @@
     "pundle-loader-js": "*",
     "pundle-loader-json": "*",
     "pundle-loader-url": "*",
-    "pundle-reporter-console": "*",
     "pundle-post-generator-uglify": "*",
+    "pundle-reporter-console": "*",
     "pundle-resolver-node": "*",
-    "pundle-transformer-babel": "*"
+    "pundle-transformer-babel": "*",
+    "pundle-transformer-typescript": "*",
+    "typescript": "^2.6.1"
   }
 }

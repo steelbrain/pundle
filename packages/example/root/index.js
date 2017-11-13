@@ -19,3 +19,4 @@ img.src = require('./images/google.png')
 
 document.body.appendChild(img)
 console.log('yah')
+console.log('wow', require('./wow.ts'))

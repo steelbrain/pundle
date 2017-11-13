@@ -6,7 +6,8 @@ module.exports = {
     ['pundle-loader-js', {
       replaceVariables: {
         'process.env.NODE_ENV': JSON.stringify('development'),
-      }
+      },
+      extensions: ['.js', '.ts']
     }],
     ['pundle-generator-browser', {
       publicDirectory: '/',
@@ -16,7 +17,8 @@ module.exports = {
       publicDirectory: '/',
       extensions: ['.png']
     }],
-    ['pundle-transformer-babel'],
+    'pundle-transformer-babel',
+    'pundle-transformer-typescript',
     'pundle-loader-json',
     'pundle-post-generator-uglify',
   ],
