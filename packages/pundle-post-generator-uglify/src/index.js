@@ -14,6 +14,7 @@ export default function() {
         sourceMap: {
           content: sourceMap,
         },
+        ...options.config,
       })
       if (minified.error) {
         throw new MessageIssue(`${minified.error.message} (uglify)`)
@@ -24,6 +25,8 @@ export default function() {
         sourceMap: minified.map,
       }
     },
-    defaultOptions: {},
+    defaultOptions: {
+      config: {},
+    },
   })
 }
