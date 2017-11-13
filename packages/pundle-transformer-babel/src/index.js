@@ -64,6 +64,7 @@ export default function() {
     defaultOptions: {
       config: {},
       extensions: ['.js'],
+      exclude: ['node_modules'],
     },
   })
 }
