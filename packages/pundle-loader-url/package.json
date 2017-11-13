@@ -1,0 +1,14 @@
+{
+  "name": "pundle-loader-url",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "mime-types": "^2.1.17",
+    "pundle-api": "*",
+    "pundle-loader-file": "*"
+  }
+}
