@@ -2,6 +2,7 @@
 
 import fs from 'fs'
 import pMap from 'p-map'
+import invariant from 'assert'
 import { FileIssue, MessageIssue, type Context, type File, type Chunk } from 'pundle-api'
 
 import Job from './job'
@@ -63,10 +64,19 @@ export default class Compilation {
     const postGenerators = this.context.components.getPostGenerators()
 
     let generated
-    for (const entry of generators) {
-      generated = await entry.callback(this.context, this.context.options.get(entry), chunk, files)
-      if (generated) {
-        break
+    if (chunk.type === 'file') {
+      const entryFile = files.get(chunk.entry)
+      invariant(entryFile, 'Files map doesnt contain chunk entry?!')
+      generated = {
+        contents: entryFile.sourceContents,
+        sourceMap: null,
+      }
+    } else {
+      for (const entry of generators) {
+        generated = await entry.callback(this.context, this.context.options.get(entry), chunk, files)
+        if (generated) {
+          break
+        }
       }
     }
     if (!generated) {
