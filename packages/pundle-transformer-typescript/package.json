@@ -1,0 +1,13 @@
+{
+  "name": "pundle-transformer-typescript",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "import-from": "^2.1.0",
+    "pundle-api": "*"
+  }
+}
