@@ -191,6 +191,19 @@ export default class Compilation {
       job.locks.delete(lockKey)
     }
   }
+  async transformChunks(chunks: Array<Chunk>): Promise<Array<Chunk>> {
+    let currentChunks = chunks
+
+    const chunkTransformers = this.context.components.getChunksTransformers()
+    for (const entry of chunkTransformers) {
+      const transformed = await entry.callback(this.context, this.context.options.get(entry), currentChunks)
+      if (transformed) {
+        currentChunks = transformed.chunks
+      }
+    }
+
+    return currentChunks
+  }
   async build(): Promise<void> {
     const job = new Job()
     const chunks = this.context.config.entry.map(async entry =>
@@ -201,8 +214,8 @@ export default class Compilation {
         /* No Op */
       }),
     )
-    // const transformedChunks = await this.transformChunks(Array.from(job.chunks.values()))
-    const generated = await pMap(Array.from(job.chunks.values()), chunk => this.generateChunk(chunk, job.files))
+    job.chunks = await this.transformChunks(job.chunks)
+    const generated = await pMap(job.chunks, chunk => this.generateChunk(chunk, job.files))
     if (process.env.NODE_ENV !== 'development') return
     generated.forEach(function(entry) {
       fs.writeFileSync(`public/${entry.chunk.label}${entry.chunk.format}`, entry.generated.contents)
