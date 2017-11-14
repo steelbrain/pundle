@@ -21,6 +21,8 @@ import type {
   ComponentPostGeneratorCallback,
   ComponentFilePostGenerator,
   ComponentFilePostGeneratorCallback,
+  ComponentChunksTransformer,
+  ComponentChunksTransformerCallback,
 } from './types'
 
 type CreationParameters<TCALLBACK> = {|
@@ -80,4 +82,9 @@ export function createFilePostGenerator(
   params: CreationParameters<ComponentFilePostGeneratorCallback>,
 ): ComponentFilePostGenerator {
   return createComponent('file-post-generator', params)
+}
+export function createChunksTransformer(
+  params: CreationParameters<ComponentChunksTransformerCallback>,
+): ComponentChunksTransformer {
+  return createComponent('chunks-transformer', params)
 }

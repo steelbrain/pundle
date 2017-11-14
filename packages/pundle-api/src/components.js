@@ -13,6 +13,7 @@ import type {
   ComponentGenerator,
   ComponentPostGenerator,
   ComponentFilePostGenerator,
+  ComponentChunksTransformer,
 } from './types'
 
 export default class Components {
@@ -97,6 +98,13 @@ export default class Components {
     const filtered = []
     this.registered.forEach(entry => {
       if (entry.type === 'file-post-generator') filtered.push(entry)
+    })
+    return filtered
+  }
+  getChunksTransformers(): Array<ComponentChunksTransformer> {
+    const filtered = []
+    this.registered.forEach(entry => {
+      if (entry.type === 'chunks-transformer') filtered.push(entry)
     })
     return filtered
   }

@@ -40,8 +40,6 @@ export type ChunkFile = {|
   imports: [],
 |}
 export type Chunk = ChunkSimple | ChunkFile
-// TODO: Add names to chunks
-// TODO: Add new types
 
 export type Severity = 'info' | 'warning' | 'error'
 export type ComponentType =
@@ -53,6 +51,7 @@ export type ComponentType =
   | 'generator'
   | 'post-generator'
   | 'file-post-generator'
+  | 'chunks-transformer'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
   options: Object,
@@ -97,6 +96,14 @@ export type ComponentTransformer = Component<'transformer', ComponentTransformer
 export type ComponentPluginCallback = ComponentCallback<[File], void>
 export type ComponentPlugin = Component<'plugin', ComponentPluginCallback>
 
+export type ComponentChunksTransformerCallback = ComponentCallback<
+  [Array<Chunk>],
+  {|
+    chunks: Array<Chunk>,
+  |},
+>
+export type ComponentChunksTransformer = Component<'chunks-transformer', ComponentChunksTransformerCallback>
+
 export type ComponentGeneratorCallback = ComponentCallback<
   [Chunk, Map<string, File>],
   {|
@@ -140,6 +147,7 @@ export type ComponentAny =
   | ComponentGenerator
   | ComponentPostGenerator
   | ComponentFilePostGenerator
+  | ComponentChunksTransformer
 
 export type ComponentOptionsEntry = {|
   options: Object,

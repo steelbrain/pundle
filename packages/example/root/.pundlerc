@@ -20,6 +20,6 @@ module.exports = {
     'pundle-transformer-babel',
     'pundle-transformer-typescript',
     'pundle-loader-json',
-    'pundle-post-generator-uglify',
+    // 'pundle-post-generator-uglify',
   ],
 }

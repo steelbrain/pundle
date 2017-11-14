@@ -19,6 +19,7 @@ import {
   createGenerator,
   createPostGenerator,
   createFilePostGenerator,
+  createChunksTransformer,
 } from './ComponentTypes'
 
 export * from './types'
@@ -38,6 +39,7 @@ export {
   createGenerator,
   createPostGenerator,
   createFilePostGenerator,
+  createChunksTransformer,
   File,
   Context,
 }
