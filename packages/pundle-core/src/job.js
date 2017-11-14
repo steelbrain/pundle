@@ -36,7 +36,7 @@ export default class Job {
     return this.chunks.find(entry => this.getLockKeyForChunk(entry) === lockKey)
   }
   getLockKeyForChunk(chunk: Chunk): string {
-    return `chunk:${chunk.entry || ''}:${chunk.imports.join(':')}`
+    return `chunk:${chunk.entry || ''}:${chunk.imports.join(':')}:${chunk.type}:${chunk.format}`
   }
   getLockKeyForFile(file: string): string {
     return `file:${file}`
