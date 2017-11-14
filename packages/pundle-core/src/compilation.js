@@ -169,22 +169,22 @@ export default class Compilation {
     if (!entry) return
 
     const lockKey = job.getLockKeyForChunk(chunk)
-    const oldChunk = job.chunks.get(lockKey)
-    if (job.locks.has(lockKey) || job.chunks.has(lockKey)) {
+    const oldChunk = job.getSimilarChunk(chunk)
+    if (job.locks.has(lockKey)) {
       return
     }
-    if (job.chunks.has(lockKey) && !forcedOverwite) {
+    if (oldChunk && !forcedOverwite) {
       return
     }
     job.locks.add(lockKey)
     try {
-      job.chunks.set(lockKey, chunk)
+      job.upsertChunk(chunk)
       await this.processFileTree(entry, job, forcedOverwite, tickCallback)
     } catch (error) {
       if (oldChunk) {
-        job.chunks.set(lockKey, oldChunk)
+        job.upsertChunk(chunk)
       } else {
-        job.chunks.delete(lockKey)
+        job.deleteChunk(chunk)
       }
       throw error
     } finally {
@@ -201,6 +201,7 @@ export default class Compilation {
         /* No Op */
       }),
     )
+    // const transformedChunks = await this.transformChunks(Array.from(job.chunks.values()))
     const generated = await pMap(Array.from(job.chunks.values()), chunk => this.generateChunk(chunk, job.files))
     if (process.env.NODE_ENV !== 'development') return
     generated.forEach(function(entry) {
