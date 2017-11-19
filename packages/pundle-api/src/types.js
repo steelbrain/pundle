@@ -1,7 +1,8 @@
 // @flow
 
-import type File from './File'
 import type Context from './Context'
+import type File from './File'
+import type Job from './Job'
 
 export type ComponentRules = {
   include?: string | Array<string>,
@@ -51,7 +52,7 @@ export type ComponentType =
   | 'generator'
   | 'post-generator'
   | 'file-post-generator'
-  | 'chunks-transformer'
+  | 'job-transformer'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
   options: Object,
@@ -96,13 +97,13 @@ export type ComponentTransformer = Component<'transformer', ComponentTransformer
 export type ComponentPluginCallback = ComponentCallback<[File], void>
 export type ComponentPlugin = Component<'plugin', ComponentPluginCallback>
 
-export type ComponentChunksTransformerCallback = ComponentCallback<
-  [Array<Chunk>],
+export type ComponentJobTransformerCallback = ComponentCallback<
+  [Job],
   {|
-    chunks: Array<Chunk>,
+    job: Job,
   |},
 >
-export type ComponentChunksTransformer = Component<'chunks-transformer', ComponentChunksTransformerCallback>
+export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
 
 export type ComponentGeneratorCallback = ComponentCallback<
   [Chunk, Map<string, File>],
@@ -147,7 +148,7 @@ export type ComponentAny =
   | ComponentGenerator
   | ComponentPostGenerator
   | ComponentFilePostGenerator
-  | ComponentChunksTransformer
+  | ComponentJobTransformer
 
 export type ComponentOptionsEntry = {|
   options: Object,

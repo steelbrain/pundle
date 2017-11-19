@@ -2,9 +2,7 @@
 
 import fs from 'fs'
 import pMap from 'p-map'
-import { FileIssue, MessageIssue, type Context, type File, type Chunk } from 'pundle-api'
-
-import Job from './job'
+import { FileIssue, MessageIssue, Job, type Context, type File, type Chunk } from 'pundle-api'
 
 type TickCallback = (oldFile: ?File, newFile: File) => any
 
@@ -191,21 +189,21 @@ export default class Compilation {
       job.locks.delete(lockKey)
     }
   }
-  async transformChunks(chunks: Array<Chunk>): Promise<Array<Chunk>> {
-    let currentChunks = chunks
+  async transformJob(job: Job): Promise<Job> {
+    let currentJob = job
 
-    const chunkTransformers = this.context.components.getChunksTransformers()
-    for (const entry of chunkTransformers) {
-      const transformed = await entry.callback(this.context, this.context.options.get(entry), currentChunks)
+    const jobTransformers = this.context.components.getJobTransformers()
+    for (const entry of jobTransformers) {
+      const transformed = await entry.callback(this.context, this.context.options.get(entry), currentJob)
       if (transformed) {
-        currentChunks = transformed.chunks
+        currentJob = transformed.job
       }
     }
 
-    return currentChunks
+    return currentJob
   }
   async build(): Promise<void> {
-    const job = new Job()
+    let job = new Job()
     const chunks = this.context.config.entry.map(async entry =>
       this.context.getSimpleChunk(await this.context.resolveSimple(entry), []),
     )
@@ -214,7 +212,7 @@ export default class Compilation {
         /* No Op */
       }),
     )
-    job.chunks = await this.transformChunks(job.chunks)
+    job = await this.transformJob(job)
     const generated = await pMap(job.chunks, chunk => this.generateChunk(chunk, job.files))
     if (process.env.NODE_ENV !== 'development') return
     generated.forEach(function(entry) {

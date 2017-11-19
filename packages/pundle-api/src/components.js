@@ -13,7 +13,7 @@ import type {
   ComponentGenerator,
   ComponentPostGenerator,
   ComponentFilePostGenerator,
-  ComponentChunksTransformer,
+  ComponentJobTransformer,
 } from './types'
 
 export default class Components {
@@ -101,10 +101,10 @@ export default class Components {
     })
     return filtered
   }
-  getChunksTransformers(): Array<ComponentChunksTransformer> {
+  getJobTransformers(): Array<ComponentJobTransformer> {
     const filtered = []
     this.registered.forEach(entry => {
-      if (entry.type === 'chunks-transformer') filtered.push(entry)
+      if (entry.type === 'job-transformer') filtered.push(entry)
     })
     return filtered
   }

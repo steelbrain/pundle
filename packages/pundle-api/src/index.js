@@ -6,8 +6,9 @@ import MessageIssue from './issues/MessageIssue'
 import matchesRules from './rules/matchesRules'
 import shouldProcess from './rules/shouldProcess'
 
-import File from './File'
 import Context from './Context'
+import File from './File'
+import Job from './Job'
 import Components from './Components'
 import ComponentOptions from './ComponentOptions'
 import {
@@ -19,7 +20,7 @@ import {
   createGenerator,
   createPostGenerator,
   createFilePostGenerator,
-  createChunksTransformer,
+  createJobTransformer,
 } from './ComponentTypes'
 
 export * from './types'
@@ -39,7 +40,8 @@ export {
   createGenerator,
   createPostGenerator,
   createFilePostGenerator,
-  createChunksTransformer,
-  File,
+  createJobTransformer,
   Context,
+  File,
+  Job,
 }
