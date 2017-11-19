@@ -11,12 +11,11 @@ export default function() {
     [string]: ?Object,
   } = {}
   const moduleVersionMap: {
-    [string]: Array<{
+    [string]: Array<{|
       hits: number,
-      path: string,
       root: string,
       version: string,
-    }>,
+    |}>,
   } = {}
 
   const queue: { [string]: Promise<?Object> } = {}
@@ -60,7 +59,6 @@ export default function() {
         if (!manifestMap.find(m => m.version === resolvedManifest.version)) {
           manifestMap.push({
             hits: 0,
-            path: resolved,
             root: resolvedRoot,
             version: resolvedManifest.version,
           })
@@ -70,12 +68,15 @@ export default function() {
       if (!requestManifest || !requestManifest.dependencies) return
 
       const manifests = moduleVersionMap[resolvedManifest.name].sort(semver.rcompare).sort((a, b) => b.hits - a.hits)
+      if (manifests.length === 1) return
+
       const chosen = manifests.find(manifest =>
         semver.satisfies(manifest.version, requestManifest.dependencies[resolvedManifest.name]),
       )
       if (chosen) {
+        const relative = path.resolve(chosen.root, path.relative(resolvedRoot, resolved))
         chosen.hits++
-        payload.resolved = chosen.path
+        payload.resolved = relative
         payload.resolvedRoot = chosen.root
       }
     },
