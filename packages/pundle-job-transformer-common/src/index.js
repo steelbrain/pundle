@@ -7,7 +7,7 @@ import { version } from '../package.json'
 
 export default function() {
   return createJobTransformer({
-    name: 'pundle-job-transformer-common',
+    name: 'pundle-job-transformer-commons',
     version,
     async callback(context, options, job) {
       const chunkHitsByFile: {
