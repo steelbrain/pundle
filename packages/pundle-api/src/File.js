@@ -12,6 +12,8 @@ const asyncStat = promisify(fs.stat)
 const asyncReadFile = promisify(fs.readFile)
 const lastModifiedFromStats = stats => stats.mtime.getTime() / 1000
 
+const OpenSesame = {}
+
 export default class File {
   fileName: string
   // ^ relative to the root directory
@@ -27,26 +29,47 @@ export default class File {
   chunks: Array<Chunk>
   imports: Array<Import>
 
-  constructor({
-    fileName,
-    filePath,
-    lastModified,
-    contents,
-  }: {
-    fileName: string,
-    filePath: string,
-    lastModified: number,
-    contents: Buffer,
-  }) {
+  constructor(
+    {
+      fileName,
+      filePath,
+      lastModified,
+      contents,
+    }: {
+      fileName: string,
+      filePath: string,
+      lastModified: number,
+      contents: Buffer,
+    },
+    magicalWord: ?typeof OpenSesame = null,
+  ) {
     this.fileName = fileName
     this.filePath = filePath
     this.lastModified = lastModified
-    this.contents = contents.toString()
+    if (magicalWord !== OpenSesame) {
+      this.contents = contents.toString()
+    }
 
     this.sourceContents = contents
     this.sourceMap = null
     this.chunks = []
     this.imports = []
+  }
+  clone(): File {
+    const newFile = new File(
+      {
+        fileName: this.fileName,
+        filePath: this.filePath,
+        lastModified: this.lastModified,
+        contents: this.sourceContents,
+      },
+      OpenSesame,
+    )
+    newFile.contents = this.contents
+    newFile.sourceMap = this.sourceMap
+    newFile.chunks = this.chunks.slice()
+    newFile.imports = this.imports.slice()
+    return newFile
   }
   async hasChanged(): Promise<boolean> {
     let stats

@@ -10,7 +10,7 @@ import ComponentOptions from './ComponentOptions'
 import FileIssue from './issues/FileIssue'
 import MessageIssue from './issues/MessageIssue'
 import { normalizeFileName } from './common'
-import type { Chunk, BaseConfig, ResolvePayload } from './types'
+import type { ChunkSimple, ChunkFile, BaseConfig, ResolvePayload } from './types'
 
 export default class Context {
   components: Components
@@ -38,7 +38,7 @@ export default class Context {
   }
   // NOTE: Public use allowed
   // NOTE: Both entry and imports MUST be pre-resolved
-  getSimpleChunk(entry: ?string = null, imports: Array<string> = [], label: ?string = null): Chunk {
+  getSimpleChunk(entry: ?string = null, imports: Array<string> = [], label: ?string = null): ChunkSimple {
     let generatedLabel = label
     if (!generatedLabel) {
       if (entry) {
@@ -47,7 +47,7 @@ export default class Context {
           .result()
           .toString()
       } else {
-        throw new Error('Either entry or label are required to make a chunk!')
+        throw new Error('Either entry or label are required to make a chunk')
       }
     }
 
@@ -59,7 +59,7 @@ export default class Context {
       imports,
     }
   }
-  getFileChunk(entry: string, label: ?string = null): Chunk {
+  getFileChunk(entry: string, label: ?string = null): ChunkFile {
     let generatedLabel = label
     if (!generatedLabel) {
       generatedLabel = new Imurmurhash()

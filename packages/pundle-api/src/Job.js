@@ -17,6 +17,16 @@ export default class Job {
     // TODO: Restore this?
     this.oldFiles = new Map()
   }
+  clone(): Job {
+    const newJob = new Job()
+    newJob.chunks = this.chunks.slice()
+    newJob.oldFiles = new Map(this.oldFiles)
+    this.files.forEach(file => {
+      newJob.files.set(file.fileName, file.clone())
+    })
+
+    return newJob
+  }
   deleteChunk(chunk: Chunk): void {
     const index = this.chunks.indexOf(chunk)
     if (index !== -1) {

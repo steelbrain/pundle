@@ -20,6 +20,7 @@
     "pundle-resolver-node": "*",
     "pundle-transformer-babel": "*",
     "pundle-transformer-typescript": "*",
+    "pundle-job-transformer-common": "*",
     "typescript": "^2.6.1"
   }
 }

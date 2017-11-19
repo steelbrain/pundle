@@ -189,14 +189,19 @@ export default class Compilation {
       job.locks.delete(lockKey)
     }
   }
-  async transformJob(job: Job): Promise<Job> {
+  async transformJob(job: Job, cloneJob: boolean = true): Promise<Job> {
     let currentJob = job
 
     const jobTransformers = this.context.components.getJobTransformers()
-    for (const entry of jobTransformers) {
-      const transformed = await entry.callback(this.context, this.context.options.get(entry), currentJob)
-      if (transformed) {
-        currentJob = transformed.job
+    if (jobTransformers.length) {
+      if (cloneJob) {
+        currentJob = job.clone()
+      }
+      for (const entry of jobTransformers) {
+        const transformed = await entry.callback(this.context, this.context.options.get(entry), currentJob)
+        if (transformed) {
+          currentJob = transformed.job
+        }
       }
     }
 
