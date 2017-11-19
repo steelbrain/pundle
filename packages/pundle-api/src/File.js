@@ -1,7 +1,9 @@
 // @flow
+/* eslint-disable no-underscore-dangle */
 
 import fs from 'fs'
 import path from 'path'
+import invariant from 'assert'
 import promisify from 'sb-promisify'
 import mergeSourceMap from 'merge-source-map'
 
@@ -20,7 +22,7 @@ export default class File {
   lastModified: number
   convertToString: boolean
 
-  contents: string
+  _contents: string
   sourceContents: Buffer
   sourceMap: ?Object
 
@@ -55,6 +57,14 @@ export default class File {
     this.chunks = []
     this.imports = []
   }
+  get contents(): string {
+    invariant(this.convertToString, 'Cannot access contents on a raw file')
+    return this._contents
+  }
+  set contents(newContents: string): void {
+    invariant(this.convertToString, 'Cannot set contents on a raw file')
+    this._contents = newContents
+  }
   clone(): File {
     const newFile = new File(
       {
@@ -65,7 +75,9 @@ export default class File {
       },
       this.convertToString,
     )
-    newFile.contents = this.contents
+    if (this.convertToString) {
+      newFile.contents = this.contents
+    }
     newFile.sourceMap = this.sourceMap
     newFile.chunks = this.chunks.slice()
     newFile.imports = this.imports.slice()
