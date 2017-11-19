@@ -21,6 +21,7 @@ module.exports = {
     'pundle-transformer-typescript',
     'pundle-loader-json',
     'pundle-job-transformer-common',
+    'pundle-resolver-dedupe',
     // 'pundle-post-generator-uglify',
   ],
 }

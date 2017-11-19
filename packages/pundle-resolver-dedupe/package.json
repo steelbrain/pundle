@@ -1,0 +1,13 @@
+{
+  "name": "pundle-resolver-dedupe",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "pundle-api": "*",
+    "semver": "^5.4.1"
+  }
+}

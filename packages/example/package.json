@@ -18,6 +18,7 @@
     "pundle-post-generator-uglify": "*",
     "pundle-reporter-console": "*",
     "pundle-resolver-node": "*",
+    "pundle-resolver-dedupe": "*",
     "pundle-transformer-babel": "*",
     "pundle-transformer-typescript": "*",
     "pundle-job-transformer-common": "*",
