@@ -51,7 +51,7 @@ export type ComponentType =
   | 'plugin'
   | 'generator'
   | 'post-generator'
-  | 'file-post-generator'
+  | 'file-generator'
   | 'job-transformer'
 export type ComponentCallback<TARGUMENTS, TRETURNVALUE> = (
   context: Context,
@@ -127,7 +127,7 @@ export type ComponentPostGeneratorCallback = ComponentCallback<
   |},
 >
 export type ComponentPostGenerator = Component<'post-generator', ComponentPostGeneratorCallback>
-export type ComponentFilePostGeneratorCallback = ComponentCallback<
+export type ComponentFileGeneratorCallback = ComponentCallback<
   [
     {|
       contents: Buffer,
@@ -137,7 +137,7 @@ export type ComponentFilePostGeneratorCallback = ComponentCallback<
     contents: Buffer,
   |},
 >
-export type ComponentFilePostGenerator = Component<'file-post-generator', ComponentFilePostGeneratorCallback>
+export type ComponentFileGenerator = Component<'file-generator', ComponentFileGeneratorCallback>
 
 export type ComponentAny =
   | ComponentResolver
@@ -147,7 +147,7 @@ export type ComponentAny =
   | ComponentPlugin
   | ComponentGenerator
   | ComponentPostGenerator
-  | ComponentFilePostGenerator
+  | ComponentFileGenerator
   | ComponentJobTransformer
 
 export type ComponentOptionsEntry = {|

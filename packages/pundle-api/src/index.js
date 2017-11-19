@@ -19,7 +19,7 @@ import {
   createPlugin,
   createGenerator,
   createPostGenerator,
-  createFilePostGenerator,
+  createFileGenerator,
   createJobTransformer,
 } from './ComponentTypes'
 
@@ -39,7 +39,7 @@ export {
   createPlugin,
   createGenerator,
   createPostGenerator,
-  createFilePostGenerator,
+  createFileGenerator,
   createJobTransformer,
   Context,
   File,

@@ -19,8 +19,8 @@ import type {
   ComponentGeneratorCallback,
   ComponentPostGenerator,
   ComponentPostGeneratorCallback,
-  ComponentFilePostGenerator,
-  ComponentFilePostGeneratorCallback,
+  ComponentFileGenerator,
+  ComponentFileGeneratorCallback,
   ComponentJobTransformer,
   ComponentJobTransformerCallback,
 } from './types'
@@ -78,10 +78,8 @@ export function createGenerator(params: CreationParameters<ComponentGeneratorCal
 export function createPostGenerator(params: CreationParameters<ComponentPostGeneratorCallback>): ComponentPostGenerator {
   return createComponent('post-generator', params)
 }
-export function createFilePostGenerator(
-  params: CreationParameters<ComponentFilePostGeneratorCallback>,
-): ComponentFilePostGenerator {
-  return createComponent('file-post-generator', params)
+export function createFileGenerator(params: CreationParameters<ComponentFileGeneratorCallback>): ComponentFileGenerator {
+  return createComponent('file-generator', params)
 }
 export function createJobTransformer(params: CreationParameters<ComponentJobTransformerCallback>): ComponentJobTransformer {
   return createComponent('job-transformer', params)

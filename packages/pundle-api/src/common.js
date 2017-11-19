@@ -10,7 +10,7 @@ export const VALID_TYPES: Set<ComponentType> = new Set([
   'plugin',
   'generator',
   'post-generator',
-  'file-post-generator',
+  'file-generator',
   'job-transformer',
 ])
 export const VALID_SEVERITIES: Set<Severity> = new Set(['info', 'warning', 'error'])

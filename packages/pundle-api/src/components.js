@@ -12,7 +12,7 @@ import type {
   ComponentPlugin,
   ComponentGenerator,
   ComponentPostGenerator,
-  ComponentFilePostGenerator,
+  ComponentFileGenerator,
   ComponentJobTransformer,
 } from './types'
 
@@ -94,10 +94,10 @@ export default class Components {
     })
     return filtered
   }
-  getFilePostGenerators(): Array<ComponentFilePostGenerator> {
+  getFileGenerators(): Array<ComponentFileGenerator> {
     const filtered = []
     this.registered.forEach(entry => {
-      if (entry.type === 'file-post-generator') filtered.push(entry)
+      if (entry.type === 'file-generator') filtered.push(entry)
     })
     return filtered
   }

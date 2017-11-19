@@ -83,8 +83,11 @@ export default class Compilation {
   ): Promise<{|
     contents: Buffer,
   |}> {
-    const filePostGenerators = this.context.components.getFilePostGenerators()
-    const entryFile = files.get(chunk.entry || '')
+    const fileGenerators = this.context.components.getFileGenerators()
+    if (!chunk.entry) {
+      throw new MessageIssue('File chunks does not have an entry')
+    }
+    const entryFile = files.get(chunk.entry)
     if (!entryFile) {
       throw new MessageIssue('File Chunk entry file was not found in files map')
     }
@@ -92,7 +95,7 @@ export default class Compilation {
     let generated = {
       contents: entryFile.sourceContents,
     }
-    for (const entry of filePostGenerators) {
+    for (const entry of fileGenerators) {
       const postGenerated = await entry.callback(this.context, this.context.options.get(entry), generated)
       if (postGenerated) {
         generated = postGenerated
