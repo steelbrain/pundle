@@ -21,7 +21,8 @@
     "pundle-resolver-dedupe": "*",
     "pundle-transformer-babel": "*",
     "pundle-transformer-typescript": "*",
-    "pundle-job-transformer-common": "*",
+    "pundle-job-transformer-commons": "*",
+    "pundle-job-transformer-static-injector": "*",
     "typescript": "^2.6.1"
   }
 }

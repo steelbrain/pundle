@@ -12,14 +12,13 @@ const asyncStat = promisify(fs.stat)
 const asyncReadFile = promisify(fs.readFile)
 const lastModifiedFromStats = stats => stats.mtime.getTime() / 1000
 
-const OpenSesame = {}
-
 export default class File {
   fileName: string
   // ^ relative to the root directory
   filePath: string
   // ^ absolute file system path
   lastModified: number
+  convertToString: boolean
 
   contents: string
   sourceContents: Buffer
@@ -41,12 +40,13 @@ export default class File {
       lastModified: number,
       contents: Buffer,
     },
-    magicalWord: ?typeof OpenSesame = null,
+    convertToString: boolean,
   ) {
     this.fileName = fileName
     this.filePath = filePath
     this.lastModified = lastModified
-    if (magicalWord !== OpenSesame) {
+    this.convertToString = convertToString
+    if (convertToString) {
       this.contents = contents.toString()
     }
 
@@ -63,7 +63,7 @@ export default class File {
         lastModified: this.lastModified,
         contents: this.sourceContents,
       },
-      OpenSesame,
+      this.convertToString,
     )
     newFile.contents = this.contents
     newFile.sourceMap = this.sourceMap
@@ -102,17 +102,20 @@ export default class File {
     // TODO: Dedupe
     this.imports.push(entry)
   }
-  static async get(fileName: string, rootDirectory: string): Promise<File> {
+  static async get(fileName: string, rootDirectory: string, convertToString: boolean): Promise<File> {
     const resolved = path.resolve(rootDirectory, fileName)
 
     const stats = await asyncStat(resolved)
     const contents = await asyncReadFile(resolved)
-    return new File({
-      fileName: normalizeFileName(path.relative(rootDirectory, resolved)),
-      filePath: resolved,
-      lastModified: lastModifiedFromStats(stats),
+    return new File(
+      {
+        fileName: normalizeFileName(path.relative(rootDirectory, resolved)),
+        filePath: resolved,
+        lastModified: lastModifiedFromStats(stats),
 
-      contents,
-    })
+        contents,
+      },
+      convertToString,
+    )
   }
 }

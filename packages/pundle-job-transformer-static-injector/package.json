@@ -1,0 +1,13 @@
+{
+  "name": "pundle-job-transformer-static-injector",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "p-map": "^1.2.0",
+    "pundle-api": "*"
+  }
+}

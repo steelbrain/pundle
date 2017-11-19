@@ -33,8 +33,8 @@ export default class Context {
     this.config = config
   }
   // NOTE: For internal use only
-  async getFile(filePath: string): Promise<File> {
-    return File.get(filePath, this.config.rootDirectory)
+  async getFile(filePath: string, convertToString: boolean = true): Promise<File> {
+    return File.get(filePath, this.config.rootDirectory, convertToString)
   }
   // NOTE: Public use allowed
   // NOTE: Both entry and imports MUST be pre-resolved
