@@ -1,0 +1,12 @@
+{
+  "name": "pundle-file-generator-html",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "pundle-api": "*"
+  }
+}

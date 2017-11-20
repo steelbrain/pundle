@@ -106,7 +106,7 @@ export type ComponentJobTransformerCallback = ComponentCallback<
 export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
 
 export type ComponentGeneratorCallback = ComponentCallback<
-  [Chunk, Map<string, File>],
+  [Chunk, Job],
   {|
     contents: string,
     sourceMap: ?Object,
@@ -120,6 +120,7 @@ export type ComponentPostGeneratorCallback = ComponentCallback<
       contents: string,
       sourceMap: ?Object,
     |},
+    Job,
   ],
   {|
     contents: string,
@@ -130,8 +131,10 @@ export type ComponentPostGenerator = Component<'post-generator', ComponentPostGe
 export type ComponentFileGeneratorCallback = ComponentCallback<
   [
     {|
+      filePath: string,
       contents: Buffer,
     |},
+    Job,
   ],
   {|
     contents: Buffer,

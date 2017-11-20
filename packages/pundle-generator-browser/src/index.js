@@ -13,7 +13,7 @@ export default function() {
   return createGenerator({
     name: 'pundle-generator-browser',
     version,
-    async callback(context, options, chunk, files) {
+    async callback(context, options, chunk, job) {
       // TODO: Wrappers
       const contents = [';(function(){']
       const sourceMap = new SourceMapGenerator({
@@ -36,7 +36,7 @@ export default function() {
       contents.push(await Helpers.getWrapperContents(context, options.wrapper))
 
       let offset = Helpers.getLinesCount(contents)
-      const chunkMap = Helpers.getSimpleChunkMap(chunk, files)
+      const chunkMap = Helpers.getSimpleChunkMap(chunk, job.files)
 
       chunkMap.files.forEach(file => {
         const fileContents = `__sbPundle.moduleRegister(${JSON.stringify(

@@ -49,7 +49,7 @@ export default class Compilation {
   }
   async generateSimpleChunk(
     chunk: Chunk,
-    files: Map<string, File>,
+    job: Job,
   ): Promise<{|
     contents: string,
     sourceMap: ?Object,
@@ -59,7 +59,7 @@ export default class Compilation {
 
     let generated
     for (const entry of generators) {
-      generated = await entry.callback(this.context, this.context.options.get(entry), chunk, files)
+      generated = await entry.callback(this.context, this.context.options.get(entry), chunk, job)
       if (generated) {
         break
       }
@@ -70,7 +70,7 @@ export default class Compilation {
       )
     }
     for (const entry of postGenerators) {
-      const postGenerated = await entry.callback(this.context, this.context.options.get(entry), generated)
+      const postGenerated = await entry.callback(this.context, this.context.options.get(entry), generated, job)
       if (postGenerated) {
         generated = postGenerated
       }
@@ -79,33 +79,39 @@ export default class Compilation {
   }
   async generateFileChunk(
     chunk: Chunk,
-    files: Map<string, File>,
+    job: Job,
   ): Promise<{|
     contents: Buffer,
   |}> {
+    const chunkEntry = chunk.entry
     const fileGenerators = this.context.components.getFileGenerators()
-    if (!chunk.entry) {
+    if (!chunkEntry) {
       throw new MessageIssue('File chunks does not have an entry')
     }
-    const entryFile = files.get(chunk.entry)
+    const entryFile = job.files.get(chunkEntry)
     if (!entryFile) {
       throw new MessageIssue('File Chunk entry file was not found in files map')
     }
 
-    let generated = {
-      contents: entryFile.sourceContents,
-    }
+    let generated = entryFile.sourceContents
     for (const entry of fileGenerators) {
-      const postGenerated = await entry.callback(this.context, this.context.options.get(entry), generated)
+      const postGenerated = await entry.callback(
+        this.context,
+        this.context.options.get(entry),
+        { contents: generated, filePath: chunkEntry },
+        job,
+      )
       if (postGenerated) {
-        generated = postGenerated
+        generated = postGenerated.contents
       }
     }
-    return generated
+    return {
+      contents: generated,
+    }
   }
   async generateChunk(
     chunk: Chunk,
-    files: Map<string, File>,
+    job: Job,
   ): Promise<{|
     chunk: Chunk,
     generated: {|
@@ -115,13 +121,13 @@ export default class Compilation {
   |}> {
     let result
     if (chunk.type === 'file') {
-      const generated = await this.generateFileChunk(chunk, files)
+      const generated = await this.generateFileChunk(chunk, job)
       result = {
         contents: generated.contents,
         sourceMap: null,
       }
     } else {
-      const generated = await this.generateSimpleChunk(chunk, files)
+      const generated = await this.generateSimpleChunk(chunk, job)
       result = {
         contents: Buffer.from(generated.contents),
         sourceMap: generated.sourceMap,
@@ -221,7 +227,7 @@ export default class Compilation {
       }),
     )
     job = await this.transformJob(job)
-    const generated = await pMap(job.chunks, chunk => this.generateChunk(chunk, job.files))
+    const generated = await pMap(job.chunks, chunk => this.generateChunk(chunk, job))
     if (process.env.NODE_ENV !== 'development') return
     generated.forEach(function(entry) {
       fs.writeFileSync(`public/${entry.chunk.label}${entry.chunk.format}`, entry.generated.contents)

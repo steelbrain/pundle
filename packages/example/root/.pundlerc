@@ -21,6 +21,7 @@ module.exports = {
     'pundle-transformer-typescript',
     'pundle-loader-json',
     'pundle-job-transformer-commons',
+    'pundle-file-generator-html',
     'pundle-resolver-dedupe',
     ['pundle-job-transformer-static-injector', {
       files: ['static/index.html'],

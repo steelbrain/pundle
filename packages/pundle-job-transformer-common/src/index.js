@@ -60,7 +60,7 @@ export default function() {
         addedCommonsChunk = true
       }
       if (addedCommonsChunk) {
-        job.chunks.unshift(commonsChunk)
+        job.chunks.push(commonsChunk)
       }
       return {
         job,
