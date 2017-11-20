@@ -1,5 +1,6 @@
 // @flow
 
+import { normalizeFileName } from './common'
 import FileIssue from './issues/FileIssue'
 import MessageIssue from './issues/MessageIssue'
 
@@ -28,6 +29,7 @@ export * from './types'
 export {
   FileIssue,
   MessageIssue,
+  normalizeFileName,
   matchesRules,
   shouldProcess,
   Components,

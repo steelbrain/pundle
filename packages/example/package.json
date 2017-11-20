@@ -13,6 +13,7 @@
     "pundle-core": "*",
     "pundle-generator-browser": "*",
     "pundle-loader-js": "*",
+    "pundle-loader-css": "*",
     "pundle-loader-json": "*",
     "pundle-loader-url": "*",
     "pundle-post-generator-uglify": "*",

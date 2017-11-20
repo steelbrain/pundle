@@ -1,0 +1,15 @@
+{
+  "name": "pundle-loader-css",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "author": "steelbrain",
+  "license": "MIT",
+  "dependencies": {
+    "p-map": "^1.2.0",
+    "postcss": "^6.0.14",
+    "pundle-api": "*",
+    "sb-promisify": "^2.0.2"
+  }
+}

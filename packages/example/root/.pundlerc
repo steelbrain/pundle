@@ -17,6 +17,7 @@ module.exports = {
       publicDirectory: '/',
       extensions: ['.png']
     }],
+    'pundle-loader-css',
     'pundle-transformer-babel',
     'pundle-transformer-typescript',
     'pundle-loader-json',
