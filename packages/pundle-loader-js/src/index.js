@@ -1,6 +1,6 @@
 // @flow
 
-import generate from 'babel-generator'
+import generate from '@babel/generator'
 import { createLoader, shouldProcess } from 'pundle-api'
 
 import parse from './parse'

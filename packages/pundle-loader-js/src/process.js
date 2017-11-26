@@ -1,7 +1,7 @@
 // @flow
 
-import * as t from 'babel-types'
-import traverse from 'babel-traverse'
+import * as t from '@babel/types'
+import traverse from '@babel/traverse'
 import { shouldProcess, type Context, type File } from 'pundle-api'
 
 import { getName, getParsedReplacement } from './helpers'
