@@ -72,6 +72,5 @@ export default function() {
       useGlobals: true, // maps to PUNDLE_USE_GLOBALS
       publicDirectory: '/', // maps to PUNDLE_PUBLIC_DIRECTORY
     },
-    // TODO: Inline sourceMaps?
   })
 }
