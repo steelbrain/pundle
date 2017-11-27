@@ -10,9 +10,11 @@
     "@babel/generator": "^7.0.0-beta.32",
     "@babel/template": "^7.0.0-beta.32",
     "@babel/types": "^7.0.0-beta.32",
+    "merge-source-map": "^1.0.4",
     "p-map": "^1.2.0",
     "postcss": "^6.0.14",
     "pundle-api": "*",
-    "sb-promisify": "^2.0.2"
+    "sb-promisify": "^2.0.2",
+    "source-map-to-comment": "^1.1.0"
   }
 }

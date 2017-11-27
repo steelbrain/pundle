@@ -5,6 +5,8 @@ import pMap from 'p-map'
 import postcss from 'postcss'
 import template from '@babel/template'
 import generate from '@babel/generator'
+import mergeSourceMap from 'merge-source-map'
+import sourceMapToComment from 'source-map-to-comment'
 import * as t from '@babel/types'
 import { posix, dirname, resolve } from 'path'
 import { promisifyAll } from 'sb-promisify'
@@ -72,9 +74,15 @@ export default function() {
         })
       }
 
-      const results = aggregatedRoot.toResult({
-        map: !!options.sourceMap,
-      }).css
+      let results = aggregatedRoot.toResult({
+        map: options.sourceMap ? { inline: false } : false,
+      })
+
+      if (results.map) {
+        const currentSourceMap = results.map.toJSON()
+        const sourceMap = file.sourceMap ? mergeSourceMap(file.sourceMap, currentSourceMap) : currentSourceMap
+        results += `\n${sourceMapToComment(sourceMap, { type: 'css' })}`
+      }
 
       const processModule = await context.resolveSimple('process', file.filePath)
       const ast = template.ast(`
