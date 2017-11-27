@@ -8,6 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "chokidar": "^1.7.0",
+    "lodash": "^4.17.4",
     "p-map": "^1.2.0",
     "pundle-api": "*",
     "pundle-core-parse-config": "*",

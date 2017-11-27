@@ -4,12 +4,14 @@ import fs from 'fs'
 import path from 'path'
 import pMap from 'p-map'
 import invariant from 'assert'
+import differenceBy from 'lodash/differenceBy'
 import sourceMapToComment from 'source-map-to-comment'
 import { promisifyAll } from 'sb-promisify'
 import {
   FileIssue,
   MessageIssue,
   Job,
+  normalizeFileName,
   getLockKeyForFile,
   getLockKeyForChunk,
   type ChunkGenerated,
@@ -169,7 +171,7 @@ export default class Compilation {
       newFile = await this.loadFile(resolved)
       job.files.set(resolved, newFile)
       await pMap(newFile.imports, entry => this.processFileTree(entry, job, false, tickCallback))
-      await pMap(newFile.chunks, entry => this.processChunk(entry, job, false, tickCallback))
+      await pMap(newFile.chunks, entry => this.processChunk(entry, job, tickCallback))
       await tickCallback(oldFile, newFile)
     } catch (error) {
       if (oldFile) {
@@ -182,7 +184,7 @@ export default class Compilation {
       job.locks.delete(lockKey)
     }
   }
-  async processChunk(chunk: Chunk, job: Job, forcedOverwite: boolean, tickCallback: TickCallback): Promise<void> {
+  async processChunk(chunk: Chunk, job: Job, tickCallback: TickCallback): Promise<void> {
     // No need to process if imports-only
     const entry = chunk.entry
     if (!entry) return
@@ -192,13 +194,13 @@ export default class Compilation {
     if (job.locks.has(lockKey)) {
       return
     }
-    if (oldChunk && !forcedOverwite) {
+    if (oldChunk) {
       return
     }
     job.locks.add(lockKey)
     try {
       job.upsertChunk(chunk)
-      await this.processFileTree(entry, job, forcedOverwite, tickCallback)
+      await this.processFileTree(entry, job, false, tickCallback)
     } catch (error) {
       if (oldChunk) {
         job.upsertChunk(chunk)
@@ -234,7 +236,7 @@ export default class Compilation {
       this.context.getSimpleChunk(await this.context.resolveSimple(entry), []),
     )
     await pMap(chunks, chunk =>
-      this.processChunk(chunk, job, false, function() {
+      this.processChunk(chunk, job, function() {
         /* No Op */
       }),
     )
@@ -243,27 +245,73 @@ export default class Compilation {
   }
   async watch(config: WatcherConfig): Promise<WatcherOutput> {
     const job = new Job()
+    const configChunks = await Promise.all(
+      this.context.config.entry.map(async entry => this.context.getSimpleChunk(await this.context.resolveSimple(entry), [])),
+    )
 
-    function tickCallback(oldFile: ?File, newFile: File) {
-      console.log(newFile.fileName)
-      console.log('chunks', oldFile && oldFile.chunks, newFile.chunks)
-      console.log('imports', oldFile && oldFile.imports, newFile.imports)
+    const tickCallback = async (oldFile: ?File, newFile: File) => {
+      if (config.tick) {
+        await config.tick(this, oldFile, newFile)
+      }
+      if (!oldFile) return
+      const removedChunks = differenceBy(oldFile.chunks, newFile.chunks, getLockKeyForChunk)
+      const removedImports = differenceBy(oldFile.imports, newFile.imports, getLockKeyForFile)
+      removedImports.forEach((entry: string) => {
+        let found = configChunks.find(chunk => chunk.entry === entry)
+        if (found) {
+          // DO NOT DELETE ENTRIES
+          return
+        }
+        job.files.forEach((jobFile: File) => {
+          found = found || jobFile.imports.indexOf(entry) !== -1
+        })
+        if (!found) {
+          // TODO: Debug log this?
+          job.files.delete(entry)
+        }
+      })
+      removedChunks.forEach((entry: Chunk) => {
+        const entryKey = getLockKeyForChunk(entry)
+        let found = configChunks.find(configChunk => entryKey === getLockKeyForChunk(configChunk))
+        if (found) {
+          // DO NOT DELETE ENTRIES
+          return
+        }
+        job.files.forEach((jobFile: File) => {
+          found = found || jobFile.chunks.find(chunkEntry => entryKey === getLockKeyForChunk(chunkEntry))
+        })
+        if (!found) {
+          // TODO: Debug log this?
+          job.chunks.delete(entry)
+        }
+      })
+    }
+    let queue = Promise.resolve()
+    const queueize = callback => (...args) => {
+      queue = queue.then(() => callback(...args)).catch(e => this.context.report(e))
     }
 
-    const watcher = getWatcher(config.adapter || DEFAULT_WATCHER_ADAPTER, this.context.config.rootDirectory, function() {
-      console.log('on change')
-    })
-    const chunks = this.context.config.entry.map(async entry =>
-      this.context.getSimpleChunk(await this.context.resolveSimple(entry), []),
+    const watcher = getWatcher(
+      config.adapter || DEFAULT_WATCHER_ADAPTER,
+      this.context.config.rootDirectory,
+      queueize(async filePath => {
+        const relative = normalizeFileName(path.posix.relative(this.context.config.rootDirectory, filePath))
+        const file = job.files.get(relative)
+        if (file) {
+          await this.processFileTree(relative, job, true, tickCallback)
+        }
+      }),
     )
-    await pMap(chunks, chunk => this.processChunk(chunk, job, false, tickCallback))
+    await pMap(configChunks, chunk => this.processChunk(chunk, job, tickCallback))
     if (config.ready) {
       await config.ready(this, job)
     }
     await watcher.watch()
 
     return {
-      dispose() {},
+      dispose() {
+        watcher.close()
+      },
     }
   }
   async write(generated: Array<ChunkGenerated>): Promise<{ [string]: { outputPath: string, sourceMapPath: string } }> {
