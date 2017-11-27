@@ -30,6 +30,7 @@ export default async function callback(context: Context, options: Object, file: 
   const processReplaceable = path => {
     const name = getName(path.node)
     if ({}.hasOwnProperty.call(replaceVariables, name)) {
+      // TODO: Replace this with just @babel/template
       path.replaceWith(getParsedReplacement(replaceVariables[name]))
       return
     }

@@ -18,9 +18,12 @@ import {
   type Chunk,
 } from 'pundle-api'
 
+import getWatcher from './watcher'
 import * as Helpers from './helpers'
+import type { WatcherConfig, WatcherOutput } from './types'
 
 const pfs = promisifyAll(fs)
+const DEFAULT_WATCHER_ADAPTER = 'chokidar'
 
 type TickCallback = (oldFile: ?File, newFile: File) => any
 
@@ -237,6 +240,31 @@ export default class Compilation {
     )
     job = await this.transformJob(job)
     return pMap(job.chunks, chunk => this.generateChunk(chunk, job))
+  }
+  async watch(config: WatcherConfig): Promise<WatcherOutput> {
+    const job = new Job()
+
+    function tickCallback(oldFile: ?File, newFile: File) {
+      console.log(newFile.fileName)
+      console.log('chunks', oldFile && oldFile.chunks, newFile.chunks)
+      console.log('imports', oldFile && oldFile.imports, newFile.imports)
+    }
+
+    const watcher = getWatcher(config.adapter || DEFAULT_WATCHER_ADAPTER, this.context.config.rootDirectory, function() {
+      console.log('on change')
+    })
+    const chunks = this.context.config.entry.map(async entry =>
+      this.context.getSimpleChunk(await this.context.resolveSimple(entry), []),
+    )
+    await pMap(chunks, chunk => this.processChunk(chunk, job, false, tickCallback))
+    if (config.ready) {
+      await config.ready(this, job)
+    }
+    await watcher.watch()
+
+    return {
+      dispose() {},
+    }
   }
   async write(generated: Array<ChunkGenerated>): Promise<{ [string]: { outputPath: string, sourceMapPath: string } }> {
     const outputConfig = this.context.config.output

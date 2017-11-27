@@ -1,6 +1,6 @@
 // @flow
 
-import template from 'babel-template'
+import template from '@babel/template'
 
 export function getName(obj: Object): string {
   if (typeof obj.name === 'string') {
