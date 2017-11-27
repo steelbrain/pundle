@@ -233,7 +233,6 @@ export default class Compilation {
 
     invariant(outputConfig && typeof outputConfig === 'object', 'Pundle#write expects config.output to be defined')
 
-    console.log('hi')
     const outputPaths = {}
     await pMap(generated, async (entry: ChunkGenerated) => {
       const outputPath = Helpers.getChunkFilePath(entry.chunk, outputConfig.template)
@@ -276,6 +275,7 @@ export default class Compilation {
         await pfs.writeFileAsync(resolvedSourceMapPath, JSON.stringify(entry.generated.sourceMap))
       }
     })
+    console.log(outputPaths)
 
     return outputPaths
   }

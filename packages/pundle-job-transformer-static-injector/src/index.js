@@ -14,11 +14,9 @@ export default function() {
       await pMap(options.files, async file => {
         const resolved = path.resolve(context.config.rootDirectory, file)
         const relative = normalizeFileName(path.relative(context.config.rootDirectory, resolved))
-        const extName = path.extname(relative)
-        const nameWithoutExt = extName ? path.basename(relative).slice(0, -extName.length) : relative
 
         job.files.set(relative, await context.getFile(relative, false))
-        job.chunks.push(context.getFileChunk(relative, nameWithoutExt))
+        job.chunks.push(context.getFileChunk(relative, path.basename(resolved)))
       })
 
       return {
