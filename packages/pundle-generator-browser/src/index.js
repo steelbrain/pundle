@@ -35,7 +35,7 @@ export default function() {
       }
       contents.push(await Helpers.getWrapperContents(context, options.wrapper))
 
-      let offset = Helpers.getLinesCount(contents)
+      let offset = Helpers.getLinesCount(contents) + 1
       const chunkMap = Helpers.getSimpleChunkMap(chunk, job.files)
 
       chunkMap.files.forEach(file => {
