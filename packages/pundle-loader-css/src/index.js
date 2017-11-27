@@ -3,6 +3,9 @@
 import fs from 'fs'
 import pMap from 'p-map'
 import postcss from 'postcss'
+import template from '@babel/template'
+import generate from '@babel/generator'
+import * as t from '@babel/types'
 import { posix, dirname, resolve } from 'path'
 import { promisifyAll } from 'sb-promisify'
 import { createLoader, shouldProcess, normalizeFileName } from 'pundle-api'
@@ -57,11 +60,37 @@ export default function() {
 
       await processFile(file.fileName, file.contents)
 
-      // TODO: Join all roots and convert to css
-      console.log(roots)
-      return null
+      // TODO: Use the input source map and merge the two
+      // TODO: If scoped, wrapp everything in a class tag
+      const rootsArr: Array<any> = Array.from(Object.values(roots))
+      const aggregatedRoot = rootsArr.slice(1).reduce((entry, curr) => entry.append(curr), rootsArr[0])
+      const results = aggregatedRoot.toResult({
+        map: !!options.sourceMap,
+      }).css
+
+      const processModule = await context.resolveSimple('process', file.filePath)
+      const ast = template.ast(`
+        ${file.imports.map(i => `require(${JSON.stringify(i)})`).join('\n')}
+        var style = document.createElement('style')
+        style.type = 'text/css'
+        if (require(${JSON.stringify(processModule)}).env.NODE_ENV === "development" && module.hot && module.hot.dispose) {
+          module.hot.dispose(function() {
+            document.body.removeElement(style)
+          })
+        }
+        style.textContent = ${JSON.stringify(results)}
+        document.body.appendChild(style)
+      `)
+      const generated = generate(t.program(ast))
+      file.addImport(processModule)
+
+      return {
+        contents: generated.code,
+        sourceMap: null,
+      }
     },
     defaultOptions: {
+      sourceMap: true,
       extensions: ['.css'],
       scoped: false,
     },
