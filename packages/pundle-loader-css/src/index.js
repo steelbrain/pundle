@@ -83,11 +83,11 @@ export default function() {
         style.type = 'text/css'
         if (require(${JSON.stringify(processModule)}).env.NODE_ENV === "development" && module.hot && module.hot.dispose) {
           module.hot.dispose(function() {
-            document.body.removeElement(style)
+            style.remove()
           })
         }
         style.textContent = ${JSON.stringify(results)}
-        document.body.appendChild(style)
+        document.head.appendChild(style)
         module.exports = ${JSON.stringify(options.scoped ? randomId : null)}
       `)
       const generated = generate(t.program(ast))
