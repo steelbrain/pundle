@@ -100,9 +100,11 @@ export default class File {
     } else if (this.sourceMap && sourceMap) {
       this.sourceMap = mergeSourceMap(this.sourceMap, sourceMap)
     }
-    if (this.sourceMap) {
-      this.sourceMap.sources = [this.fileName]
-      this.sourceMap.sourcesContent = [this.sourceContents]
+
+    const newSourceMap = this.sourceMap
+    if (newSourceMap) {
+      newSourceMap.sources = [this.fileName]
+      newSourceMap.sourcesContent = [this.sourceContents.toString('utf8')]
     }
     this.contents = contents
   }

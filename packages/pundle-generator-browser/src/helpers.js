@@ -63,7 +63,7 @@ export function mergeSourceMap(sourceMap: Object, targetMap: Object, file: File,
       generated: { line: offset + mapping.generatedLine, column: mapping.generatedColumn },
     })
   })
-  targetMap.setSourceContent(file.fileName, file.contents)
+  targetMap.setSourceContent(file.fileName, file.sourceContents.toString('utf8'))
 }
 
 export const wrapperHMR = require.resolve('../wrappers/hmr.built')
