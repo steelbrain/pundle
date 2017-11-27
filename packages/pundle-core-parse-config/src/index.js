@@ -24,8 +24,8 @@ function validateConfig(config: Object): void {
     'Pundle expects config.rootDirectory to be non-null string',
   )
   invariant(
-    ['undefined', 'boolean'].includes(typeof config.pundlerc),
-    `Pundle expects config.configFile to be either undefined or boolean, given: ${typeof config.pundlerc}`,
+    ['undefined', 'boolean'].includes(typeof config.configFile),
+    `Pundle expects config.configFile to be either undefined or boolean, given: ${typeof config.configFile}`,
   )
   invariant(
     ['undefined', 'string'].includes(typeof config.configFileName),
@@ -43,7 +43,7 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
   const rootDirectory = fs.realpathSync(config.rootDirectory)
   const target = get(config, 'target', 'browser')
   const configFile = get(config, 'configFile', true)
-  const configFileName = get(config, 'configFileName', '.pundlerc')
+  const configFileName = get(config, 'configFileName', 'pundle.config.js')
 
   const options = new ComponentOptions()
   const components = new Components()
