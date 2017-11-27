@@ -22,7 +22,6 @@ export default function() {
     name: 'pundle-loader-css',
     version,
     async callback(context, options, file) {
-      // TODO: Syntax errors
       if (!shouldProcess(context.config.rootDirectory, file.filePath, options)) {
         return null
       }

@@ -80,7 +80,5 @@ export async function getWrapperContents(context: Context, givenWrapper: string)
   if (!path.isAbsolute(wrapper)) {
     wrapper = await context.resolveSimple(wrapper)
   }
-  const fileContents = await readFileAsync(wrapper)
-  // TODO: Replace some variables maybe?
-  return fileContents
+  return readFileAsync(wrapper)
 }
