@@ -114,7 +114,7 @@ export default function() {
       `)
       const generated = generate(t.program(ast))
       file.addImport(processModule)
-      file.sourceContents = new Buffer(css)
+      file.sourceContents = Buffer.from(css, 'utf8')
 
       return {
         contents: generated.code,
