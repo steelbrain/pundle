@@ -1,6 +1,6 @@
 // @flow
 
-import { normalizeFileName } from './common'
+import { normalizeFileName, getLockKeyForFile, getLockKeyForChunk } from './common'
 import FileIssue from './issues/FileIssue'
 import MessageIssue from './issues/MessageIssue'
 
@@ -30,6 +30,8 @@ export {
   FileIssue,
   MessageIssue,
   normalizeFileName,
+  getLockKeyForFile,
+  getLockKeyForChunk,
   matchesRules,
   shouldProcess,
   Components,

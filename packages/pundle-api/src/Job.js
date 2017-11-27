@@ -1,5 +1,7 @@
 // @flow
 
+import { getLockKeyForChunk } from './common'
+
 import type File from './File'
 import type { Chunk } from './types'
 
@@ -34,8 +36,8 @@ export default class Job {
     }
   }
   upsertChunk(chunk: Chunk): void {
-    const lockKey = this.getLockKeyForChunk(chunk)
-    const oldIndex = this.chunks.findIndex(entry => this.getLockKeyForChunk(entry) === lockKey)
+    const lockKey = getLockKeyForChunk(chunk)
+    const oldIndex = this.chunks.findIndex(entry => getLockKeyForChunk(entry) === lockKey)
     if (oldIndex !== -1) {
       this.chunks.splice(oldIndex, 1, chunk)
     } else {
@@ -43,13 +45,7 @@ export default class Job {
     }
   }
   getSimilarChunk(chunk: Chunk): ?Chunk {
-    const lockKey = this.getLockKeyForChunk(chunk)
-    return this.chunks.find(entry => this.getLockKeyForChunk(entry) === lockKey)
-  }
-  getLockKeyForChunk(chunk: Chunk): string {
-    return `chunk:${chunk.entry || ''}:${chunk.imports.join(':')}:${chunk.type}:${chunk.format}`
-  }
-  getLockKeyForFile(file: string): string {
-    return `file:${file}`
+    const lockKey = getLockKeyForChunk(chunk)
+    return this.chunks.find(entry => getLockKeyForChunk(entry) === lockKey)
   }
 }

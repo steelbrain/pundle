@@ -6,7 +6,17 @@ import pMap from 'p-map'
 import invariant from 'assert'
 import sourceMapToComment from 'source-map-to-comment'
 import { promisifyAll } from 'sb-promisify'
-import { FileIssue, MessageIssue, Job, type ChunkGenerated, type Context, type File, type Chunk } from 'pundle-api'
+import {
+  FileIssue,
+  MessageIssue,
+  Job,
+  getLockKeyForFile,
+  getLockKeyForChunk,
+  type ChunkGenerated,
+  type Context,
+  type File,
+  type Chunk,
+} from 'pundle-api'
 
 import * as Helpers from './helpers'
 
@@ -139,7 +149,7 @@ export default class Compilation {
   }
   async processFileTree(resolved: string, job: Job, forcedOverwite: boolean, tickCallback: TickCallback): Promise<void> {
     const oldFile = job.files.get(resolved)
-    const lockKey = job.getLockKeyForFile(resolved)
+    const lockKey = getLockKeyForFile(resolved)
     if (oldFile && !forcedOverwite) {
       return
     }
@@ -174,7 +184,7 @@ export default class Compilation {
     const entry = chunk.entry
     if (!entry) return
 
-    const lockKey = job.getLockKeyForChunk(chunk)
+    const lockKey = getLockKeyForChunk(chunk)
     const oldChunk = job.getSimilarChunk(chunk)
     if (job.locks.has(lockKey)) {
       return

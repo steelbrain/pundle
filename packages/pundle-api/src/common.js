@@ -1,6 +1,6 @@
 // @flow
 
-import type { Severity, ComponentType } from './types'
+import type { Chunk, Severity, ComponentType } from './types'
 
 export const VALID_TYPES: Set<ComponentType> = new Set([
   'resolver',
@@ -20,4 +20,11 @@ export function normalizeFileName(fileName: string): string {
     return `./${fileName}`
   }
   return fileName
+}
+
+export function getLockKeyForChunk(chunk: Chunk): string {
+  return `chunk:${chunk.entry || ''}:${chunk.imports.join(':')}:${chunk.type}:${chunk.format}`
+}
+export function getLockKeyForFile(file: string): string {
+  return `file:${file}`
 }
