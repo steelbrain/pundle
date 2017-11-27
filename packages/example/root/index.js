@@ -21,4 +21,10 @@ document.body.appendChild(img)
 console.log('yah')
 console.log('wow', require('./wow.ts'))
 console.log('in main', require('color'))
-console.log('css', require('./css.css'))
+
+const cssClass = require('./css.css')
+
+console.log('cssClass', cssClass)
+const div = document.createElement('div')
+div.className = cssClass
+document.body.appendChild(div)

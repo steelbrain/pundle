@@ -10,6 +10,7 @@ import { posix, dirname, resolve } from 'path'
 import { promisifyAll } from 'sb-promisify'
 import { createLoader, shouldProcess, normalizeFileName } from 'pundle-api'
 
+import { getRandomID } from './helpers'
 import { version } from '../package.json'
 
 const pfs = promisifyAll(fs)
@@ -59,11 +60,18 @@ export default function() {
       }
 
       await processFile(file.fileName, file.contents)
+      const randomId = getRandomID()
 
       // TODO: Use the input source map and merge the two
-      // TODO: If scoped, wrapp everything in a class tag
       const rootsArr: Array<any> = Array.from(Object.values(roots))
       const aggregatedRoot = rootsArr.slice(1).reduce((entry, curr) => entry.append(curr), rootsArr[0])
+
+      if (options.scoped) {
+        aggregatedRoot.nodes.forEach(node => {
+          node.selector = `${node.selector}.${randomId}`
+        })
+      }
+
       const results = aggregatedRoot.toResult({
         map: !!options.sourceMap,
       }).css
@@ -80,6 +88,7 @@ export default function() {
         }
         style.textContent = ${JSON.stringify(results)}
         document.body.appendChild(style)
+        module.exports = ${JSON.stringify(options.scoped ? randomId : null)}
       `)
       const generated = generate(t.program(ast))
       file.addImport(processModule)
