@@ -124,6 +124,7 @@ export default function() {
       sourceMap: true,
       extensions: ['.css'],
       scoped: false,
+      // ^ does NOT work with progressive generation like watcher/HMR
     },
   })
 }
