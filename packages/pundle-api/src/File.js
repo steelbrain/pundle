@@ -7,7 +7,7 @@ import invariant from 'assert'
 import promisify from 'sb-promisify'
 import mergeSourceMap from 'merge-source-map'
 
-import { normalizeFileName } from './common'
+import { normalizeFileName, getLockKeyForChunk, getLockKeyForFile } from './common'
 import type { Chunk, Import } from './types'
 
 const asyncStat = promisify(fs.stat)
@@ -108,13 +108,17 @@ export default class File {
     }
     this.contents = contents
   }
-  addChunk(entry: Chunk): void {
-    // TODO: Dedupe
-    this.chunks.push(entry)
+  addChunk(chunk: Chunk): void {
+    const lockKey = getLockKeyForChunk(chunk)
+    if (!this.chunks.find(entry => getLockKeyForChunk(entry) === lockKey)) {
+      this.chunks.push(chunk)
+    }
   }
-  addImport(entry: Import): void {
-    // TODO: Dedupe
-    this.imports.push(entry)
+  addImport(file: Import): void {
+    const lockKey = getLockKeyForFile(file)
+    if (!this.imports.find(entry => getLockKeyForFile(entry) === lockKey)) {
+      this.imports.push(file)
+    }
   }
   static async get(fileName: string, rootDirectory: string, convertToString: boolean): Promise<File> {
     const resolved = path.resolve(rootDirectory, fileName)
