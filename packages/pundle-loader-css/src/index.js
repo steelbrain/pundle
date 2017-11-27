@@ -99,7 +99,7 @@ export default function() {
       }
 
       const processModule = await context.resolveSimple('process', file.filePath)
-      const ast = template.ast(`
+      const ast = template.ast`
         ${file.imports.map(i => `require(${JSON.stringify(i)})`).join('\n')}
         var style = document.createElement('style')
         style.type = 'text/css'
@@ -111,7 +111,7 @@ export default function() {
         style.textContent = ${JSON.stringify(css)}
         document.head.appendChild(style)
         module.exports = ${JSON.stringify(options.scoped ? randomId : null)}
-      `)
+      `
       const generated = generate(t.program(ast))
       file.addImport(processModule)
       file.sourceContents = Buffer.from(css, 'utf8')
