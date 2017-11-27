@@ -7,6 +7,8 @@ getPundle({
   rootDirectory: path.join(__dirname, '..', 'root'),
 })
   .then(function(pundle) {
-    return pundle.build()
+    return pundle.build().then(function(built) {
+      return pundle.write(built)
+    })
   })
   .catch(console.error)

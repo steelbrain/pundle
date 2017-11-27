@@ -31,6 +31,21 @@ function validateConfig(config: Object): void {
     ['undefined', 'string'].includes(typeof config.configFileName),
     `Pundle expects config.configFileName to be either undefined or string, given: ${typeof config.configFileName}`,
   )
+  if (config.output) {
+    invariant(
+      config.output.rootDirectory && typeof config.output.rootDirectory === 'string',
+      'Pundle expects config.output.rootDirectory to be a string',
+    )
+    invariant(path.isAbsolute(config.output.rootDirectory), 'Pundle expects config.output.rootDirectory to be absolute')
+    invariant(
+      config.output.template && typeof config.output.template === 'string',
+      'Pundle expects config.output.template to be a string',
+    )
+    invariant(
+      config.output.sourceMapTemplate && typeof config.output.sourceMapTemplate === 'string',
+      'Pundle expects config.output.sourceMapTemplate to be a string',
+    )
+  }
 }
 
 export default function getConfig(config: AcceptedConfig): ParsedConfig {
@@ -52,6 +67,7 @@ export default function getConfig(config: AcceptedConfig): ParsedConfig {
       entry,
       target,
       rootDirectory,
+      output: config.output,
     },
     options,
     components,

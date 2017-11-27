@@ -14,6 +14,11 @@ export type BaseConfig = {
   entry: Array<string>,
   target: 'browser',
   rootDirectory: string,
+  output?: {
+    template: string,
+    sourceMapTemplate: string | 'inline' | false,
+    rootDirectory: string,
+  },
 }
 export type ResolvePayload = {|
   request: string,
@@ -156,4 +161,12 @@ export type ComponentAny =
 export type ComponentOptionsEntry = {|
   options: Object,
   component: ComponentAny,
+|}
+
+export type ChunkGenerated = {|
+  chunk: Chunk,
+  generated: {|
+    contents: Buffer,
+    sourceMap: ?Object,
+  |},
 |}

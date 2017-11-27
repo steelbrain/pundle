@@ -8,6 +8,11 @@ export type AcceptedConfig = {
 
   configFile?: boolean,
   configFileName?: string,
+  output?: {
+    template: string,
+    sourceMapTemplate: string | 'inline' | false,
+    rootDirectory: string,
+  },
 }
 export type ParsedConfig = {
   config: BaseConfig,

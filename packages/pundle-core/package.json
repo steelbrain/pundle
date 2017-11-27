@@ -9,6 +9,8 @@
   "dependencies": {
     "p-map": "^1.2.0",
     "pundle-api": "*",
-    "pundle-core-parse-config": "*"
+    "pundle-core-parse-config": "*",
+    "sb-promisify": "^2.0.2",
+    "source-map-to-comment": "^1.1.0"
   }
 }

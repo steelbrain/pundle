@@ -1,7 +1,8 @@
 // @flow
 
-import { Context } from 'pundle-api'
 import parseConfig from 'pundle-core-parse-config'
+
+import { Context, type ChunkGenerated } from 'pundle-api'
 
 import Compilation from './compilation'
 
@@ -11,8 +12,11 @@ class Pundle {
   constructor(context: Context) {
     this.context = context
   }
-  async build(): Promise<void> {
+  async build(): Promise<Array<ChunkGenerated>> {
     return new Compilation(this.context).build()
+  }
+  async write(generated: Array<ChunkGenerated>): Promise<{ [string]: { outputPath: string, sourceMapPath: string } }> {
+    return new Compilation(this.context).write(generated)
   }
 }
 

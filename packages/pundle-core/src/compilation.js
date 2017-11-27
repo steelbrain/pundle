@@ -1,8 +1,16 @@
 // @flow
 
 import fs from 'fs'
+import path from 'path'
 import pMap from 'p-map'
-import { FileIssue, MessageIssue, Job, type Context, type File, type Chunk } from 'pundle-api'
+import invariant from 'assert'
+import sourceMapToComment from 'source-map-to-comment'
+import { promisifyAll } from 'sb-promisify'
+import { FileIssue, MessageIssue, Job, type ChunkGenerated, type Context, type File, type Chunk } from 'pundle-api'
+
+import * as Helpers from './helpers'
+
+const pfs = promisifyAll(fs)
 
 type TickCallback = (oldFile: ?File, newFile: File) => any
 
@@ -109,16 +117,7 @@ export default class Compilation {
       contents: generated,
     }
   }
-  async generateChunk(
-    chunk: Chunk,
-    job: Job,
-  ): Promise<{|
-    chunk: Chunk,
-    generated: {|
-      contents: Buffer,
-      sourceMap: ?Object,
-    |},
-  |}> {
+  async generateChunk(chunk: Chunk, job: Job): Promise<ChunkGenerated> {
     let result
     if (chunk.type === 'file') {
       const generated = await this.generateFileChunk(chunk, job)
@@ -216,7 +215,7 @@ export default class Compilation {
 
     return currentJob
   }
-  async build(): Promise<void> {
+  async build(): Promise<Array<ChunkGenerated>> {
     let job = new Job()
     const chunks = this.context.config.entry.map(async entry =>
       this.context.getSimpleChunk(await this.context.resolveSimple(entry), []),
@@ -227,11 +226,57 @@ export default class Compilation {
       }),
     )
     job = await this.transformJob(job)
-    const generated = await pMap(job.chunks, chunk => this.generateChunk(chunk, job))
-    if (process.env.NODE_ENV !== 'development') return
-    generated.forEach(function(entry) {
-      fs.writeFileSync(`public/${entry.chunk.label}${entry.chunk.format}`, entry.generated.contents)
-      console.log('Written contents to', `${entry.chunk.label}${entry.chunk.format}`)
+    return pMap(job.chunks, chunk => this.generateChunk(chunk, job))
+  }
+  async write(generated: Array<ChunkGenerated>): Promise<{ [string]: { outputPath: string, sourceMapPath: string } }> {
+    const outputConfig = this.context.config.output
+
+    invariant(outputConfig && typeof outputConfig === 'object', 'Pundle#write expects config.output to be defined')
+
+    console.log('hi')
+    const outputPaths = {}
+    await pMap(generated, async (entry: ChunkGenerated) => {
+      const outputPath = Helpers.getChunkFilePath(entry.chunk, outputConfig.template)
+      const sourceMapPath = outputConfig.sourceMapTemplate
+        ? Helpers.getChunkFilePath(entry.chunk, outputConfig.sourceMapTemplate)
+        : null
+
+      const resolved = path.resolve(outputConfig.rootDirectory, outputPath)
+      let resolvedSourceMapPath = sourceMapPath
+      if (resolvedSourceMapPath && resolvedSourceMapPath !== 'inline') {
+        resolvedSourceMapPath = path.resolve(outputConfig.rootDirectory, resolvedSourceMapPath)
+      }
+
+      let contentsToWrite = Buffer.from(entry.generated.contents)
+      if (resolvedSourceMapPath && entry.generated.sourceMap) {
+        const type = entry.chunk.format === '.css' ? 'css' : 'js'
+        let bottomLine
+
+        if (resolvedSourceMapPath === 'inline') {
+          bottomLine = sourceMapToComment(entry.generated.sourceMap, { type })
+        } else {
+          const bottomContents = `sourceMappingURL=${path.relative(path.dirname(resolved), resolvedSourceMapPath)}`
+          bottomLine = type === 'css' ? `/*# ${bottomContents} */` : `//# ${bottomContents}`
+        }
+        bottomLine = `\n${bottomLine}`
+
+        contentsToWrite = Buffer.concat([contentsToWrite, Buffer.from(bottomLine, 'utf8')])
+      }
+      invariant(
+        !outputPaths[entry.chunk.label],
+        'More than one outputs would use the same path. Try using some variables in output templates',
+      )
+      outputPaths[entry.chunk.label] = {
+        outputPath: resolved,
+        sourceMapPath: resolvedSourceMapPath,
+      }
+
+      await pfs.writeFileAsync(resolved, contentsToWrite)
+      if (resolvedSourceMapPath && resolvedSourceMapPath !== 'inline' && entry.generated.sourceMap) {
+        await pfs.writeFileAsync(resolvedSourceMapPath, JSON.stringify(entry.generated.sourceMap))
+      }
     })
+
+    return outputPaths
   }
 }

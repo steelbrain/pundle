@@ -39,6 +39,21 @@ function validate(config: Object, configFilePath: string, parsed: ParsedConfig) 
     typeof config.components === 'undefined' || Array.isArray(config.components),
     `Pundle expects config.components to be either undefined or Array ${postfix}`,
   )
+  if (config.output) {
+    invariant(
+      config.output.rootDirectory && typeof config.output.rootDirectory === 'string',
+      'Pundle expects config.output.rootDirectory to be a string',
+    )
+    invariant(path.isAbsolute(config.output.rootDirectory), 'Pundle expects config.output.rootDirectory to be absolute')
+    invariant(
+      config.output.template && typeof config.output.template === 'string',
+      'Pundle expects config.output.template to be a string',
+    )
+    invariant(
+      config.output.sourceMapTemplate && typeof config.output.sourceMapTemplate === 'string',
+      'Pundle expects config.output.sourceMapTemplate to be a string',
+    )
+  }
 }
 
 export default function loadConfig(configFilePath: string, parsed: ParsedConfig) {
@@ -152,4 +167,8 @@ export default function loadConfig(configFilePath: string, parsed: ParsedConfig)
       parsed.options.register(component, options)
     })
   })
+
+  if (config.output) {
+    parsed.config.output = config.output
+  }
 }

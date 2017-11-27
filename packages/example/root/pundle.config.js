@@ -1,3 +1,5 @@
+const path = require('path')
+
 module.exports = {
   entry: ['./index'],
   components: [
@@ -47,7 +49,8 @@ module.exports = {
     // 'pundle-post-generator-uglify',
   ],
   output: {
-    name: '',
-    directory: 'public',
+    template: '[label][format]',
+    sourceMapTemplate: '[label][format].map',
+    rootDirectory: path.resolve(__dirname, '../public'),
   },
 }
