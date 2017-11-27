@@ -87,14 +87,15 @@ export default function() {
         })
       }
 
-      let results = aggregatedRoot.toResult({
-        map: options.sourceMap ? { inline: false } : false,
+      const results = aggregatedRoot.toResult({
+        map: options.sourceMap ? { inline: false, annotation: false } : false,
       })
+      let css = results.css
 
       if (results.map) {
         const currentSourceMap = results.map.toJSON()
         const sourceMap = file.sourceMap ? mergeSourceMap(file.sourceMap, currentSourceMap) : currentSourceMap
-        results += `\n${sourceMapToComment(sourceMap, { type: 'css' })}`
+        css += `\n${sourceMapToComment(sourceMap, { type: 'css' })}`
       }
 
       const processModule = await context.resolveSimple('process', file.filePath)
@@ -107,7 +108,7 @@ export default function() {
             style.remove()
           })
         }
-        style.textContent = ${JSON.stringify(results)}
+        style.textContent = ${JSON.stringify(css)}
         document.head.appendChild(style)
         module.exports = ${JSON.stringify(options.scoped ? randomId : null)}
       `)
