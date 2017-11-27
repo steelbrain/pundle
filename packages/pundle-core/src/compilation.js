@@ -285,7 +285,6 @@ export default class Compilation {
         await pfs.writeFileAsync(resolvedSourceMapPath, JSON.stringify(entry.generated.sourceMap))
       }
     })
-    console.log(outputPaths)
 
     return outputPaths
   }
