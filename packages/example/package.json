@@ -10,21 +10,22 @@
   "dependencies": {
     "babel-preset-steelbrain": "^5.0.3",
     "color": "^2.0.1",
+    "normalize.css": "^7.0.0",
     "pundle-core": "*",
+    "pundle-file-generator-html": "*",
     "pundle-generator-browser": "*",
-    "pundle-loader-js": "*",
+    "pundle-job-transformer-commons": "*",
+    "pundle-job-transformer-static-injector": "*",
     "pundle-loader-css": "*",
+    "pundle-loader-js": "*",
     "pundle-loader-json": "*",
     "pundle-loader-url": "*",
     "pundle-post-generator-uglify": "*",
     "pundle-reporter-console": "*",
-    "pundle-resolver-node": "*",
     "pundle-resolver-dedupe": "*",
+    "pundle-resolver-node": "*",
     "pundle-transformer-babel": "*",
     "pundle-transformer-typescript": "*",
-    "pundle-job-transformer-commons": "*",
-    "pundle-file-generator-html": "*",
-    "pundle-job-transformer-static-injector": "*",
     "typescript": "^2.6.1"
   }
 }

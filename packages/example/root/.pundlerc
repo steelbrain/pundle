@@ -18,7 +18,7 @@ module.exports = {
       extensions: ['.png']
     }],
     ['pundle-loader-css', {
-      scoped: true,
+      scoped: false,
     }],
     'pundle-transformer-babel',
     'pundle-transformer-typescript',
