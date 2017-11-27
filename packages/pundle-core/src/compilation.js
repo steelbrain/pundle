@@ -250,10 +250,12 @@ export default class Compilation {
     )
 
     const tickCallback = async (oldFile: ?File, newFile: File) => {
-      if (config.tick) {
-        await config.tick(this, oldFile, newFile)
+      if (!oldFile) {
+        if (config.tick) {
+          await config.tick(this, oldFile, newFile)
+        }
+        return
       }
-      if (!oldFile) return
       const removedChunks = differenceBy(oldFile.chunks, newFile.chunks, getLockKeyForChunk)
       const removedImports = differenceBy(oldFile.imports, newFile.imports, getLockKeyForFile)
       removedImports.forEach((entry: string) => {
@@ -285,6 +287,9 @@ export default class Compilation {
           job.chunks.delete(entry)
         }
       })
+      if (config.tick) {
+        await config.tick(this, oldFile, newFile)
+      }
     }
     let queue = Promise.resolve()
     const queueize = callback => (...args) => {
