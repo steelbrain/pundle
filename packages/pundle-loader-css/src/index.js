@@ -10,7 +10,7 @@ import sourceMapToComment from 'source-map-to-comment'
 import * as t from '@babel/types'
 import { posix, dirname, resolve } from 'path'
 import { promisifyAll } from 'sb-promisify'
-import { createLoader, shouldProcess, normalizeFileName } from 'pundle-api'
+import { FileIssue, createLoader, shouldProcess, normalizeFileName } from 'pundle-api'
 
 import { getRandomID } from './helpers'
 import { version } from '../package.json'
@@ -33,10 +33,24 @@ export default function() {
       async function processFile(filePath: string, contents: string) {
         if (roots[filePath]) return
 
-        const root = postcss.parse(contents, { from: filePath })
-        roots[filePath] = root
+        let currentRoot
+        try {
+          currentRoot = postcss.parse(contents, { from: filePath })
+        } catch (error) {
+          if (error && error.name === 'CssSyntaxError') {
+            throw new FileIssue({
+              file: error.file,
+              contents,
+              message: error.reason,
+              line: error.line,
+              column: error.column - 1,
+            })
+          }
+          throw error
+        }
+        roots[filePath] = currentRoot
 
-        await pMap(root.nodes, async function(node, index) {
+        await pMap(currentRoot.nodes, async function(node, index) {
           if (node.type !== 'atrule' || node.name !== 'import') return
           const innerContent = node.params.slice(1, -1)
           const prefixed = innerContent.endsWith('.css') ? innerContent : `${innerContent}.css`
@@ -57,14 +71,13 @@ export default function() {
           } else {
             file.addImport(resolved)
           }
-          root.nodes.splice(index, 1)
+          currentRoot.nodes.splice(index, 1)
         })
       }
 
       await processFile(file.fileName, file.contents)
       const randomId = getRandomID()
 
-      // TODO: Use the input source map and merge the two
       const rootsArr: Array<any> = Array.from(Object.values(roots))
       const aggregatedRoot = rootsArr.slice(1).reduce((entry, curr) => entry.append(curr), rootsArr[0])
 
