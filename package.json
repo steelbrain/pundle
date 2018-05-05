@@ -19,11 +19,13 @@
     "@babel/preset-env": "^7.0.0-beta.46",
     "eslint-config-steelbrain": "^5.0.2",
     "flow-bin": "^0.71.0",
+    "nodemon": "^1.17.3",
     "rimraf": "^2.6.2"
   },
   "scripts": {
     "build": "babel packages --delete-dir-on-start -D -d dist --config-file ./.babelrc",
     "watch": "yarn build -w",
+    "dev": "nodemon -w 'packages/**/*.{js,json}' -d 1 -x node node_modules/pundle-core/lib",
     "postinstall": "yarn build && node scripts/install"
   },
   "engines": {
