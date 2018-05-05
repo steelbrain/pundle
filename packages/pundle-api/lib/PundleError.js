@@ -1,13 +1,13 @@
 // @flow
 
-import type { PundleErrorType, PundleErrorCode } from './types'
+import type { ErrorType, ErrorCode } from './types'
 
 export default class PundleError extends Error {
-  type: PundleErrorType
-  code: PundleErrorCode
+  type: ErrorType
+  code: ErrorCode
   path: string
   loc: ?Object
-  constructor(type: PundleErrorType, code: PundleErrorCode, path: string, loc: ?Object = null, message: ?string = null) {
+  constructor(type: ErrorType, code: ErrorCode, path: string, loc: ?Object = null, message: ?string = null) {
     super(`PUNDLE ${type.toUpperCase()} ERROR code ${code}`)
     this.type = type
     this.code = code
