@@ -1,0 +1,16 @@
+{
+  "name": "pundle",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pundle root repository",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steelbrain/pundle/issues"
+  },
+  "homepage": "https://github.com/steelbrain/pundle#readme"
+}
