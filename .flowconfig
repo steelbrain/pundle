@@ -13,6 +13,7 @@ unclear-type=warn
 [options]
 suppress_type=$FlowFixMeProps
 suppress_type=$FlowFixMe
+module.system.node.resolve_dirname=./packages
 
 [strict]
 

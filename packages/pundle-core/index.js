@@ -1,1 +1,3 @@
+// @flow
+
 console.log('hi')

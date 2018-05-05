@@ -22,7 +22,7 @@
     "rimraf": "^2.6.2"
   },
   "scripts": {
-    "build": "babel packages --delete-dir-on-start -D -d dist",
+    "build": "babel packages --delete-dir-on-start -D -d dist --config-file ./.babelrc",
     "watch": "yarn build -w",
     "postinstall": "yarn build && node scripts/install"
   },
