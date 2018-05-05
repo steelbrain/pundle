@@ -4,7 +4,7 @@ export type ErrorType = 'CONFIG'
 export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG'
 
 export type ComponentType = 'issue-reporter'
-export type ComponentCallback<T1: Array<*>, T2> = (context: $FlowFixMe, job: $FlowFixMe, ...T1) => Promise<T2> | T2
+export type ComponentCallback<T1, T2> = (context: $FlowFixMe, job: $FlowFixMe, ...T1) => Promise<T2> | T2
 export type Component<T1: ComponentType, T2> = {|
   name: string,
   version: string,

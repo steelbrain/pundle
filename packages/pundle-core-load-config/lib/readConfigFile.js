@@ -3,14 +3,14 @@
 import fs from 'sb-fs'
 import path from 'path'
 import difference from 'lodash/difference'
-import { PundleError, type Component } from 'pundle-api'
+import { PundleError, validateComponent, type Component } from 'pundle-api'
 
 type Payload = {|
   directory: string,
   configFileName: string,
   loadConfigFile: boolean,
 |}
-type ConfigFile = {
+type ConfigFile = {|
   entry?: Array<string> | string,
   rootDirectory: string,
   output?: {
@@ -20,7 +20,7 @@ type ConfigFile = {
     rootDirectory: string,
   },
   components?: Array<Component<*, *>>,
-}
+|}
 const ALLOWED_CONFIG_FILE_KEYS = ['entry', 'rootDirectory', 'output', 'components']
 const ALLOWED_CONFIG_FILE_OUTPUT_KEYS = ['name', 'sourceMap', 'sourceMapName', 'rootDirectory']
 
@@ -121,6 +121,19 @@ export default async function readConfigFile({ directory, configFileName, loadCo
           }
         }
       }
+    }
+  }
+
+  if (config.components) {
+    if (!Array.isArray(config.components)) {
+      faults.push(`config.components must be a valid Array`)
+    } else {
+      config.components.forEach(function(component, index) {
+        const componentFaults = validateComponent(component)
+        if (componentFaults.length) {
+          faults.push(...componentFaults.map(item => `config.components[${index}].${item}`))
+        }
+      })
     }
   }
 

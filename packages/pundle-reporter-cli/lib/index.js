@@ -8,7 +8,7 @@ export default function() {
   return createIssueReporter({
     name: 'pundle-reporter-cli',
     version: '0.0.0',
-    callback(issue) {
+    callback(_, __, issue) {
       console.log('Issue Encountered', normalizeError(issue))
     },
   })
