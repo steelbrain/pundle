@@ -4,6 +4,7 @@
       "targets": {
         "node": 6
       }
-    }]
+    }],
+    "@babel/preset-flow"
   ]
 }

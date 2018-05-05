@@ -1,5 +1,5 @@
 {
-  "name": "pundle-core",
+  "name": "pundle-api",
   "version": "0.0.0",
   "private": true,
   "description": "TODO",
@@ -8,7 +8,7 @@
 
   },
   "dependencies": {
-    "pundle-core-load-config": "0.0.0"
+
   },
   "author": "steelbrain",
   "license": "MIT"

@@ -1,4 +1,5 @@
 [ignore]
+<PROJECT_ROOT>/node_modules/eslint-plugin-jsx-a11y
 
 [include]
 
@@ -9,11 +10,13 @@ all=error
 sketchy-null-bool=warn
 sketchy-null-string=warn
 unclear-type=warn
+untyped-import=off
 
 [options]
 suppress_type=$FlowFixMeProps
 suppress_type=$FlowFixMe
-module.system.node.resolve_dirname=./packages
+module.system.node.resolve_dirname=packages
+module.system.node.resolve_dirname=node_modules
 
 [strict]
 

@@ -16,7 +16,7 @@ packagesDirectories.forEach(function(packagesDirectory) {
       const packageManifest = require(path.join(packageDirectory, 'package.json'))
       packagesMap[packageManifest.name] = {
         dist: path.join(repoRoot, 'dist', packageName),
-        root: path.join(repoRoot, 'node_modules', packageName),
+        root: path.join(repoRoot, 'node_modules', packageManifest.name),
       }
     }
   })

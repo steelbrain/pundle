@@ -1,14 +1,14 @@
 {
-  "name": "pundle-core",
+  "name": "pundle-core-load-config",
   "version": "0.0.0",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
-    "pundle-core-load-config": "0.0.0"
+    "lodash": "^4.17.10",
+    "pundle-api": "0.0.0",
+    "sb-fs": "^3.0.0"
   },
   "author": "steelbrain",
   "license": "MIT"
