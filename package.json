@@ -16,8 +16,20 @@
   "dependencies": {
     "@babel/cli": "^7.0.0-beta.46",
     "@babel/core": "^7.0.0-beta.46",
-    "babel-preset-steelbrain": "^5.0.3",
+    "@babel/preset-env": "^7.0.0-beta.46",
     "eslint-config-steelbrain": "^5.0.2",
-    "flow-bin": "^0.71.0"
-  }
+    "flow-bin": "^0.71.0",
+    "rimraf": "^2.6.2"
+  },
+  "scripts": {
+    "build": "babel packages --delete-dir-on-start -D -d dist",
+    "watch": "yarn build -w",
+    "postinstall": "yarn build && node scripts/install"
+  },
+  "engines": {
+    "node": ">=6 <=10"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }
