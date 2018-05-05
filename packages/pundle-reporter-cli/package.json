@@ -1,0 +1,14 @@
+{
+  "name": "pundle-reporter-cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "dependencies": {
+    "pundle-api": "0.0.0",
+    "pundle-reporter-base": "0.0.0"
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}

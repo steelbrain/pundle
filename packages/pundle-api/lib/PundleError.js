@@ -15,6 +15,6 @@ export default class PundleError extends Error {
     this.loc = loc
 
     // TODO: Fix loc
-    this.stack = `${this.message}${message ? `: '${message}'` : ''}\n  at ${path}`
+    this.stack = `${this.message}${message ? `: ${message}` : ''}\n  at ${path}`
   }
 }

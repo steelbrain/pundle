@@ -8,18 +8,18 @@ const apiVersion = parseInt(manifest.version.split('.').shift(), 10)
 type Payload<T> = {|
   name: string,
   version: string,
-  weight?: number,
+  priority?: number,
   callback: T,
 |}
 function createComponent<T1: ComponentType, T2>(
   type: T1,
-  { name, version, weight = 100, callback }: Payload<T2>,
+  { name, version, priority = 100, callback }: Payload<T2>,
 ): Component<T1, T2> {
   return {
     name,
     version,
     type,
-    weight,
+    priority,
     callback,
     apiVersion,
   }
