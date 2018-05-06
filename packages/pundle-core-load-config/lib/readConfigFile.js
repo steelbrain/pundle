@@ -2,6 +2,7 @@
 
 import fs from 'sb-fs'
 import path from 'path'
+// eslint-disable-next-line
 import { fromStack } from 'sb-callsite'
 import { PundleError } from 'pundle-api'
 

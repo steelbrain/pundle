@@ -13,3 +13,14 @@ export type Config = {|
   },
   components?: Array<Component<*, *>>,
 |}
+export type LoadedConfig = {|
+  entry: Array<string>,
+  rootDirectory: string,
+  output: ?{
+    name: string,
+    sourceMap?: boolean,
+    sourceMapName?: string,
+    rootDirectory: string,
+  },
+  components: Array<Component<*, *>>,
+|}
