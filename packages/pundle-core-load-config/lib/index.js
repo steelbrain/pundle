@@ -7,7 +7,7 @@ import validateAndTransformConfig from './validateAndTransformConfig'
 
 type Payload = {|
   directory: string,
-  inlineConfig: Config,
+  config: Config,
   configFileName: string,
   loadConfigFile: boolean,
 |}
@@ -15,7 +15,7 @@ type Payload = {|
 export type { LoadedConfig as Config }
 export default async function loadConfig({
   directory,
-  inlineConfig: givenInlineConfig,
+  config: givenInlineConfig,
   configFileName,
   loadConfigFile,
 }: Payload): Promise<LoadedConfig> {

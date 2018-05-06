@@ -1,7 +1,7 @@
 // @flow
 
-export type ErrorType = 'CONFIG'
-export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG'
+export type ErrorType = 'CONFIG' | 'DAEMON'
+export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED'
 
 export type ComponentType = 'issue-reporter'
 export type ComponentCallback<T1, T2> = (context: $FlowFixMe, job: $FlowFixMe, ...T1) => Promise<T2> | T2
