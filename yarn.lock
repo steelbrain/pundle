@@ -2964,6 +2964,10 @@ sax@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
 
+sb-callsite@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/sb-callsite/-/sb-callsite-1.1.2.tgz#28191fb66d64e3a3ee92084a95a90fcb5102243b"
+
 sb-fs@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/sb-fs/-/sb-fs-3.0.0.tgz#fbdcdd3010e80a1b8e27490cef336064974203b8"

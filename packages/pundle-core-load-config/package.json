@@ -8,6 +8,7 @@
   "dependencies": {
     "lodash": "^4.17.10",
     "pundle-api": "0.0.0",
+    "sb-callsite": "^1.1.2",
     "sb-fs": "^3.0.0"
   },
   "author": "steelbrain",

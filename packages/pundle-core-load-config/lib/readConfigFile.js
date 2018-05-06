@@ -2,6 +2,7 @@
 
 import fs from 'sb-fs'
 import path from 'path'
+import { fromStack } from 'sb-callsite'
 import { PundleError } from 'pundle-api'
 
 type Payload = {|
@@ -23,9 +24,22 @@ export default async function readConfigFile({ directory, configFileName, loadCo
     // $FlowFixMe
     configContents = require(configFilePath) // eslint-disable-line global-require,import/no-dynamic-require
   } catch (error) {
-    // TODO: Handle this better (maybe use FILE_NOT_FOUND code?)
-    console.log('handle this error', error)
-    return { rootDirectory: directory }
+    if (error && error.stack) {
+      const stackFrame = fromStack(error.stack).find(i => path.isAbsolute(i.file))
+      throw new PundleError(
+        'CONFIG',
+        'INVALID_CONFIG',
+        stackFrame && stackFrame.file,
+        stackFrame
+          ? {
+              line: stackFrame.line,
+              col: typeof stackFrame.col === 'number' ? stackFrame.col - 1 : 0,
+            }
+          : null,
+        error.message,
+      )
+    }
+    throw error
   }
   if (!configContents || typeof configContents !== 'object') {
     throw new PundleError('CONFIG', 'INVALID_CONFIG', configFileName, null, 'Exported config is not a valid object')
