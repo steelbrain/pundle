@@ -32,4 +32,5 @@ export default async function getPundle({
   })
   await master.spawnWorkers()
   console.log('workers spawned and boom fallerala')
+  return master
 }

@@ -4,8 +4,9 @@ import path from 'path'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
 
+import { WORKER_REQUEST_TYPE } from './constants'
 import type Master from './master'
-import type { RunOptions, WorkerType } from './types'
+import type { RunOptions, WorkerType, WorkerJobType } from './types'
 
 export default class Worker {
   type: WorkerType
@@ -19,10 +20,17 @@ export default class Worker {
     this.options = options
     this.master = null
   }
-  setMaster(master: Master) {
+  isAlive(): boolean {
+    return !!(this.handle && this.bridge)
+  }
+  setMaster(master: $FlowFixMe) {
     this.master = master
   }
   async spawn() {
+    if (this.isAlive()) {
+      throw new Error(`Cannot spawn worker is still alive`)
+    }
+
     const spawnedProcess = fork(path.join(__dirname, 'worker'), [], {
       env: {
         ...process.env,
@@ -45,8 +53,27 @@ export default class Worker {
     if (response !== 'ok') {
       throw new Error(`Got non-ok response from worker: ${response}`)
     }
+
+    await this.handleRequests()
   }
-  async kill() {
+  async handleRequests() {
+    const { bridge } = this
+
+    if (!bridge) {
+      throw new Error('Cannot setupListeners() on a dead worker')
+    }
+    bridge.on('request', async (request: { type: WorkerJobType }) => {
+      const { type, ...args } = request
+      if (!WORKER_REQUEST_TYPE.includes(type)) {
+        throw new Error(`Invalid/Unrecognized request type: '${type}'`)
+      }
+      // TODO: Why won't flow complain if I compare an enum to an invalid string?
+      if (type === 'resolve') {
+        console.log('resolve request', args)
+      }
+    })
+  }
+  async dispose() {
     if (this.handle) {
       this.handle.kill()
       this.handle = null

@@ -26,9 +26,23 @@ export default class Master {
   }
   async spawnWorkers() {
     try {
-      await Promise.all(this.workers.map(worker => worker.spawn()))
+      await Promise.all(
+        this.workers.map(async worker => {
+          try {
+            await worker.spawn()
+          } catch (error) {
+            worker.dispose()
+            throw error
+          }
+        }),
+      )
     } catch (error) {
       throw new PundleError('DAEMON', 'WORKER_CRASHED', null, null, `Worker crashed during initial spawn: ${error.message}`)
     }
+  }
+  dispose() {
+    this.workers.forEach(function(worker) {
+      worker.dispose()
+    })
   }
 }
