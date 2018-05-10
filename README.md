@@ -14,7 +14,7 @@
 - statics in a chunk (blobs?)
 - create a commons chunk
 - resolve (browser fields?)
-- all loaded files have a type {js, html, css, blob}
+- we have chunk specific file types {js,html,css,blob}
 
 Types of components:
 
@@ -25,3 +25,7 @@ Types of components:
 - file-generator
 - chunk-generator
 - chunk-transformer
+
+## Post-initial demo goals
+
+- Fork browser field resolver, it's so wasteful of fs

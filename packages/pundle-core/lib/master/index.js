@@ -1,11 +1,12 @@
 // @flow
 
 import os from 'os'
+import invariant from 'assert'
 import { PundleError } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
-import WorkerDelegate from './worker-delegate'
-import type { RunOptions } from './types'
+import WorkerDelegate from '../worker/delegate'
+import type { RunOptions } from '../types'
 
 export default class Master {
   config: Config
@@ -28,6 +29,7 @@ export default class Master {
     try {
       await Promise.all(
         this.workers.map(async worker => {
+          if (worker.isAlive()) return
           try {
             await worker.spawn()
           } catch (error) {
@@ -43,6 +45,29 @@ export default class Master {
   dispose() {
     this.workers.forEach(function(worker) {
       worker.dispose()
+    })
+  }
+  report(issue: $FlowFixMe) {
+    console.log('issue reported to master', issue)
+  }
+
+  async execute() {
+    const entries = this.config.entry
+    for (const entry of entries) {
+      const result = await this.resolve(entry)
+      console.log('entry', entry, 'result', result)
+    }
+  }
+  async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<void> {
+    const resolver = this.workers.find(worker => worker.type === 'resolver')
+    const actualRequestRoot = requestRoot || this.config.rootDirectory
+
+    invariant(resolver, 'resolver worker not found')
+
+    return resolver.send('resolve', {
+      request,
+      requestRoot: actualRequestRoot,
+      ignoredResolvers,
     })
   }
 }

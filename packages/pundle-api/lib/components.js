@@ -2,7 +2,14 @@
 
 import manifest from '../package.json'
 import { COMPONENT_TYPES } from './constants'
-import type { Component, ComponentType, ComponentIssueReporterCallback, ComponentIssueReporter } from './types'
+import type {
+  Component,
+  ComponentType,
+  ComponentIssueReporterCallback,
+  ComponentIssueReporter,
+  ComponentFileResolverCallback,
+  ComponentFileResolver,
+} from './types'
 
 const apiVersion = parseInt(manifest.version.split('.').shift(), 10)
 
@@ -62,4 +69,8 @@ export function validateComponent(component: any): Array<string> {
 
 export function createIssueReporter(payload: Payload<ComponentIssueReporterCallback>): ComponentIssueReporter {
   return createComponent('issue-reporter', payload)
+}
+
+export function createFileResolver(payload: Payload<ComponentFileResolverCallback>): ComponentFileResolver {
+  return createComponent('file-resolver', payload)
 }

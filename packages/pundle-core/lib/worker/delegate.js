@@ -1,12 +1,13 @@
 // @flow
 
 import path from 'path'
+import invariant from 'assert'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
 
-import { WORKER_REQUEST_TYPE } from './constants'
-import type Master from './master'
-import type { RunOptions, WorkerType, WorkerJobType } from './types'
+import { WORKER_REQUEST_TYPE } from '../constants'
+import type Master from '../master'
+import type { RunOptions, WorkerType, WorkerRequestType, WorkerJobType } from '../types'
 
 export default class Worker {
   type: WorkerType
@@ -26,16 +27,18 @@ export default class Worker {
   setMaster(master: $FlowFixMe) {
     this.master = master
   }
+  async send<T>(type: WorkerRequestType, payload: Object): Promise<T> {
+    const { bridge } = this
+    invariant(bridge, 'Cannot send job to dead worker')
+
+    return bridge.send(type, payload)
+  }
   async spawn() {
     if (this.isAlive()) {
       throw new Error(`Cannot spawn worker is still alive`)
     }
 
-    const spawnedProcess = fork(path.join(__dirname, 'worker'), [], {
-      env: {
-        ...process.env,
-        PUNDLE_WORKER_PROCESS: 'TRUE',
-      },
+    const spawnedProcess = fork(path.join(__dirname, 'process'), [], {
       stdio: ['ignore', 'ignore', 'inherit', 'ipc'],
     })
     const communication = new Communication({
@@ -48,6 +51,7 @@ export default class Worker {
     })
     this.handle = spawnedProcess
     this.bridge = communication
+    spawnedProcess.on('exit', () => this.dispose())
 
     const response = await communication.send('init', { type: this.type, options: this.options })
     if (response !== 'ok') {
@@ -57,10 +61,13 @@ export default class Worker {
     await this.handleRequests()
   }
   async handleRequests() {
-    const { bridge } = this
+    const { bridge, master } = this
 
     if (!bridge) {
       throw new Error('Cannot setupListeners() on a dead worker')
+    }
+    if (!master) {
+      throw new Error('Cannot setupListeners() without a master')
     }
     bridge.on('request', async (request: { type: WorkerJobType }) => {
       const { type, ...args } = request
@@ -73,7 +80,7 @@ export default class Worker {
       }
     })
   }
-  async dispose() {
+  dispose() {
     if (this.handle) {
       this.handle.kill()
       this.handle = null

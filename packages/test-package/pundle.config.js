@@ -1,6 +1,13 @@
 import cliReporter from 'pundle-reporter-cli'
+import resolverDefault from 'pundle-resolver-default'
 
 export default {
-  components: [cliReporter()],
+  entry: ['./src'],
+  components: [
+    cliReporter(),
+    resolverDefault({
+      extensions: ['.js'],
+    }),
+  ],
   rootDirectory: __dirname,
 }

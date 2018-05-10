@@ -1,16 +1,13 @@
 {
-  "name": "--test-package--",
+  "name": "pundle-resolver-default",
   "version": "0.0.0",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
-    "pundle-core": "0.0.0",
-    "pundle-resolver-default": "0.0.0",
-    "pundle-reporter-cli": "0.0.0"
+    "browser-resolve": "^1.11.2",
+    "pundle-api": "0.0.0"
   },
   "author": "steelbrain",
   "license": "MIT"

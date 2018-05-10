@@ -6,8 +6,9 @@
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "0.0.0",
+    "p-reduce": "^1.0.0",
     "promise.defer": "^1.0.1",
+    "pundle-api": "0.0.0",
     "pundle-core-load-config": "0.0.0",
     "sb-communication": "5"
   },
