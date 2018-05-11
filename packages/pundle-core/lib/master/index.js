@@ -1,21 +1,26 @@
 // @flow
 
 import os from 'os'
+import pMap from 'p-map'
 import invariant from 'assert'
-import { PundleError, getChunk, type ResolveResult } from 'pundle-api'
+import promiseDefer from 'promise.defer'
+import { PundleError, getChunk, type ResolveResult, type Chunk } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
 import WorkerDelegate from '../worker/delegate'
 import type { RunOptions } from '../types'
 
+// TODO: Locks for files and chunks
 export default class Master {
   config: Config
   options: RunOptions
   workers: Array<WorkerDelegate>
+  queue: Array<{| payload: {}, resolve: Function, reject: Function |}>
 
   constructor(config: Config, options: RunOptions) {
     this.config = config
     this.options = options
+    this.queue = []
 
     this.workers = [new WorkerDelegate('resolver', options)]
     os.cpus().forEach(() => {
@@ -54,7 +59,16 @@ export default class Master {
   async execute() {
     const entries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
     const chunks = entries.map(entry => getChunk(entry.format, null, entry.resolved))
-    console.log('chunks', chunks)
+    const processed = await pMap(chunks, chunk => this.processChunk(chunk))
+    console.log('processed', processed)
+  }
+  async processChunk(chunk: Chunk): Promise<void> {
+    const processedEntry = await this.queuedProcess({
+      path: chunk.entry,
+      format: 'js',
+      resolved: true,
+    })
+    console.log('processedEntry', processedEntry)
   }
   async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<ResolveResult> {
     const resolver = this.workers.find(worker => worker.type === 'resolver')
@@ -67,5 +81,24 @@ export default class Master {
       requestRoot: actualRequestRoot,
       ignoredResolvers,
     })
+  }
+  // TODO: Don't queue a file again if it's already queued
+  async queuedProcess(payload: {}): Promise<void> {
+    const currentWorker = this.workers.find(worker => worker.isWorking === 0)
+    if (currentWorker) {
+      return currentWorker.send('process', payload, () => {
+        const itemToProcess = this.queue.pop()
+        if (itemToProcess) {
+          currentWorker.send('process', itemToProcess.payload).then(itemToProcess.resolve, itemToProcess.reject)
+        }
+      })
+    }
+    const deferred = promiseDefer()
+    this.queue.push({
+      payload,
+      resolve: deferred.resolve,
+      reject: deferred.reject,
+    })
+    return deferred.promise
   }
 }

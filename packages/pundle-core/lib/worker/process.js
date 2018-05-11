@@ -27,4 +27,16 @@ communication.on('init', async function({ type, options }) {
 })
 init.promise.then((worker: Worker) => {
   communication.on('resolve', payload => worker.resolve(payload))
+  communication.on('process', async ({ resolved, ...payload }) => {
+    const extraPayload = {}
+    if (!resolved) {
+      const { path } = payload
+      const response = await communication.send('resolve', [path])
+      extraPayload.path = response.resolved
+    }
+    return worker.process({
+      ...payload,
+      ...extraPayload,
+    })
+  })
 })

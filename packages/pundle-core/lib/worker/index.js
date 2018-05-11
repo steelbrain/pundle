@@ -49,4 +49,7 @@ export default class Worker {
     }
     return result
   }
+  async process({ path, format }: { path: string, format: string }): Promise<void> {
+    console.log('path', path)
+  }
 }
