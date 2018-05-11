@@ -30,9 +30,9 @@ init.promise.then((worker: Worker) => {
   communication.on('process', async ({ resolved, ...payload }) => {
     const extraPayload = {}
     if (!resolved) {
-      const { path } = payload
-      const response = await communication.send('resolve', [path])
-      extraPayload.path = response.resolved
+      const { filePath } = payload
+      const response = await communication.send('resolve', [filePath])
+      extraPayload.filePath = response.resolved
       extraPayload.format = response.format
     }
     return worker.process({

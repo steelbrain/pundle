@@ -44,8 +44,9 @@ export type ComponentFileResolverCallback = ComponentCallback<[ResolveRequest], 
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
 
 export type LoaderRequest = {|
-  path: string,
   format: string,
+  contents: Buffer,
+  filePath: string,
 |}
 
 export type LoaderResult = {|

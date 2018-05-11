@@ -1,5 +1,6 @@
 // @flow
 
+import fs from 'sb-fs'
 import pReduce from 'p-reduce'
 import type { Config } from 'pundle-core-load-config'
 import type { RunOptions, WorkerType } from '../types'
@@ -49,7 +50,34 @@ export default class Worker {
     }
     return result
   }
-  async process({ path, format }: { path: string, format: string }): Promise<void> {
-    console.log('path', path)
+  async process({ filePath, format }: { filePath: string, format: string }): Promise<void> {
+    const contents = await fs.readFile(filePath)
+    const initialPayload = {
+      format,
+      contents,
+      filePath,
+    }
+
+    const loaders = this.config.components.filter(c => c.type === 'file-loader')
+    if (!loaders.length) {
+      throw new Error('No loaders have been configured')
+    }
+    const result = await pReduce(
+      loaders,
+      async (payload, loader) => {
+        if (payload !== initialPayload) {
+          // Already been loaded
+          return payload
+        }
+
+        const response = await loader.callback(payload)
+        return response || payload
+      },
+      initialPayload,
+    )
+    if (result === initialPayload) {
+      throw new Error(`Unable to load file '${filePath}' of format '${format}'`)
+    }
+    console.log('result', result)
   }
 }

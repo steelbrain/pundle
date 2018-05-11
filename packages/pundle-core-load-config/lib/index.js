@@ -36,7 +36,7 @@ export default async function loadConfig({
   let hasOutput = false
   const config = {
     entry: [],
-    rootDirectory: directory,
+    rootDirectory: fileConfig.rootDirectory,
     output: {
       name: '',
       rootDirectory: '',
