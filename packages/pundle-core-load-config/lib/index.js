@@ -58,7 +58,7 @@ export default async function loadConfig({
     Object.assign(config.output, inlineConfig.output)
   }
   if (fileConfig.components) {
-    config.components = fileConfig.components
+    config.components = fileConfig.components.sort((a, b) => b.priority - a.priority)
   }
 
   if (!hasOutput) {
