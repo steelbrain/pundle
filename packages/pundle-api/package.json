@@ -4,11 +4,9 @@
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
-
+    "imurmurhash": "^0.1.4"
   },
   "author": "steelbrain",
   "license": "MIT"

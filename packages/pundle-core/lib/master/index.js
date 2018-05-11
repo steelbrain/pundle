@@ -2,7 +2,7 @@
 
 import os from 'os'
 import invariant from 'assert'
-import { PundleError } from 'pundle-api'
+import { PundleError, getChunk, type ResolveResult } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
 import WorkerDelegate from '../worker/delegate'
@@ -53,9 +53,10 @@ export default class Master {
 
   async execute() {
     const entries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
-    console.log('entries', entries)
+    const chunks = entries.map(entry => getChunk(entry.format, null, entry.resolved))
+    console.log('chunks', chunks)
   }
-  async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<void> {
+  async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<ResolveResult> {
     const resolver = this.workers.find(worker => worker.type === 'resolver')
     const actualRequestRoot = requestRoot || this.config.rootDirectory
 
