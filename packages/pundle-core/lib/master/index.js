@@ -63,8 +63,13 @@ export default class Master {
     console.log('processed', processed)
   }
   async processChunk(chunk: Chunk): Promise<void> {
+    const { entry } = chunk
+    if (!entry) {
+      throw new Error('Cannot process chunk without entry')
+    }
+
     const processedEntry = await this.queuedProcess({
-      path: chunk.entry,
+      path: entry,
       format: 'js',
       resolved: true,
     })
@@ -83,7 +88,7 @@ export default class Master {
     })
   }
   // TODO: Don't queue a file again if it's already queued
-  async queuedProcess(payload: {}): Promise<void> {
+  async queuedProcess(payload: { path: string, format: string, resolved: boolean }): Promise<void> {
     const currentWorker = this.workers.find(worker => worker.isWorking === 0)
     if (currentWorker) {
       return currentWorker.send('process', payload, () => {

@@ -33,6 +33,7 @@ init.promise.then((worker: Worker) => {
       const { path } = payload
       const response = await communication.send('resolve', [path])
       extraPayload.path = response.resolved
+      extraPayload.format = response.format
     }
     return worker.process({
       ...payload,

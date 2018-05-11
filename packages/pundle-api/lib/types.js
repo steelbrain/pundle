@@ -10,7 +10,7 @@ export type Chunk = {
   imports: Array<string>,
 }
 
-export type ComponentType = 'issue-reporter' | 'file-resolver'
+export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-loader'
 export type ComponentCallback<T1, T2> = (...T1) => Promise<?T2> | ?T2
 export type Component<T1: ComponentType, T2> = {|
   name: string,
@@ -42,3 +42,17 @@ export type ResolveResult = {|
 |}
 export type ComponentFileResolverCallback = ComponentCallback<[ResolveRequest], ResolveResult>
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
+
+export type LoaderRequest = {|
+  path: string,
+  format: string,
+|}
+
+export type LoaderResult = {|
+  contents: Buffer | string,
+  isBuffer: boolean,
+  sourceMap: ?Object,
+|}
+
+export type ComponentFileLoaderCallback = ComponentCallback<[LoaderRequest], LoaderResult>
+export type ComponentFileLoader = Component<'file-loader', ComponentFileLoaderCallback>

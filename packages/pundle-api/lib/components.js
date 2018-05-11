@@ -9,6 +9,8 @@ import type {
   ComponentIssueReporter,
   ComponentFileResolverCallback,
   ComponentFileResolver,
+  ComponentFileLoaderCallback,
+  ComponentFileLoader,
 } from './types'
 
 const apiVersion = parseInt(manifest.version.split('.').shift(), 10)
@@ -73,4 +75,8 @@ export function createIssueReporter(payload: Payload<ComponentIssueReporterCallb
 
 export function createFileResolver(payload: Payload<ComponentFileResolverCallback>): ComponentFileResolver {
   return createComponent('file-resolver', payload)
+}
+
+export function createFileLoader(payload: Payload<ComponentFileLoaderCallback>): ComponentFileLoader {
+  return createComponent('file-loader', payload)
 }
