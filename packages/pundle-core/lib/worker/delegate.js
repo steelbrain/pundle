@@ -39,7 +39,7 @@ export default class Worker {
     }
 
     const spawnedProcess = fork(path.join(__dirname, 'process'), [], {
-      stdio: ['ignore', 'ignore', 'inherit', 'ipc'],
+      stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
     })
     const communication = new Communication({
       listener(callback) {

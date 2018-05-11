@@ -6,7 +6,9 @@ export default {
   components: [
     cliReporter(),
     resolverDefault({
-      extensions: ['.js'],
+      formats: {
+        js: ['.js', '.json'],
+      },
     }),
   ],
   rootDirectory: __dirname,

@@ -52,11 +52,8 @@ export default class Master {
   }
 
   async execute() {
-    const entries = this.config.entry
-    for (const entry of entries) {
-      const result = await this.resolve(entry)
-      console.log('entry', entry, 'result', result)
-    }
+    const entries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
+    console.log('entries', entries)
   }
   async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<void> {
     const resolver = this.workers.find(worker => worker.type === 'resolver')

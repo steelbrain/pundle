@@ -35,6 +35,7 @@ export default class Worker {
         request,
         requestRoot,
         ignoredResolvers,
+        format: null,
         resolved: null,
         resolvedRoot: null,
       },
@@ -42,6 +43,9 @@ export default class Worker {
 
     if (!result.resolved) {
       throw new Error(`Unable to resolve '${request}' from '${requestRoot}'`)
+    }
+    if (!result.format) {
+      throw new Error(`Resolved request '${request}' to '${result.resolved}' but format was not determined`)
     }
     return result
   }
