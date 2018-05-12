@@ -4,7 +4,7 @@ import os from 'os'
 import pMap from 'p-map'
 import invariant from 'assert'
 import promiseDefer from 'promise.defer'
-import { PundleError, getChunk, type ResolveResult, type Chunk } from 'pundle-api'
+import { PundleError, getChunk, type ResolveResult, type Chunk, type FileImportRequest } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
 import WorkerDelegate from '../worker/delegate'
@@ -65,16 +65,17 @@ export default class Master {
   async processChunk(chunk: Chunk): Promise<void> {
     const { entry } = chunk
     if (!entry) {
+      // TODO: Return silently instead?
       throw new Error('Cannot process chunk without entry')
     }
 
     const processedEntry = await this.queuedProcess({
       format: 'js',
-      resolved: true,
       filePath: entry,
     })
     console.log('processedEntry', processedEntry)
   }
+  // async processFileTree(request: string)
   async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<ResolveResult> {
     const resolver = this.workers.find(worker => worker.type === 'resolver')
     const actualRequestRoot = requestRoot || this.config.rootDirectory
@@ -88,7 +89,7 @@ export default class Master {
     })
   }
   // TODO: Don't queue a file again if it's already queued
-  async queuedProcess(payload: { filePath: string, format: string, resolved: boolean }): Promise<void> {
+  async queuedProcess(payload: FileImportRequest): Promise<void> {
     const currentWorker = this.workers.find(worker => worker.isWorking === 0)
     if (currentWorker) {
       return currentWorker.send('process', payload, () => {

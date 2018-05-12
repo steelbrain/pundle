@@ -3,6 +3,7 @@
 import fs from 'sb-fs'
 import pReduce from 'p-reduce'
 import type { Config } from 'pundle-core-load-config'
+import type { FileImport } from 'pundle-api'
 import type { RunOptions, WorkerType } from '../types'
 
 export default class Worker {
@@ -50,7 +51,7 @@ export default class Worker {
     }
     return result
   }
-  async process({ filePath, format }: { filePath: string, format: string }): Promise<void> {
+  async process({ filePath, format }: FileImport): Promise<void> {
     const contents = await fs.readFile(filePath)
     const initialPayload = {
       format,

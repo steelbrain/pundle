@@ -3,6 +3,7 @@
 import promiseDefer from 'promise.defer'
 import Communication from 'sb-communication'
 import loadConfig from 'pundle-core-load-config'
+import type { FileImportRequest } from 'pundle-api'
 
 import Worker from './'
 
@@ -27,17 +28,15 @@ communication.on('init', async function({ type, options }) {
 })
 init.promise.then((worker: Worker) => {
   communication.on('resolve', payload => worker.resolve(payload))
-  communication.on('process', async ({ resolved, ...payload }) => {
-    const extraPayload = {}
-    if (!resolved) {
-      const { filePath } = payload
-      const response = await communication.send('resolve', [filePath])
-      extraPayload.filePath = response.resolved
-      extraPayload.format = response.format
-    }
-    return worker.process({
-      ...payload,
-      ...extraPayload,
-    })
+  communication.on('process', async (request: FileImportRequest) => {
+    let resolved
+    if (!request.format) {
+      const response = await communication.send('resolve', [request.filePath])
+      resolved = {
+        format: response.format,
+        filePath: response.filePath,
+      }
+    } else resolved = request
+    return worker.process(resolved)
   })
 })

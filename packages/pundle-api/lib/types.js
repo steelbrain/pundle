@@ -9,6 +9,15 @@ export type Chunk = {
   entry: ?string,
   imports: Array<string>,
 }
+export type FileImportRequest = {
+  format: ?string,
+  filePath: string,
+}
+
+export type FileImport = {
+  format: string,
+  filePath: string,
+}
 
 export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-loader'
 export type ComponentCallback<T1, T2> = (...T1) => Promise<?T2> | ?T2
