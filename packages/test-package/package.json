@@ -12,7 +12,7 @@
     "pundle-resolver-default": "0.0.0",
     "pundle-reporter-cli": "0.0.0",
     "pundle-loader-js": "0.0.0",
-    "pundle-transformer-commonjs": "0.0.0"
+    "pundle-transformer-js": "0.0.0"
   },
   "author": "steelbrain",
   "license": "MIT"

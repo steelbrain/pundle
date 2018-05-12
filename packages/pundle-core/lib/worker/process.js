@@ -22,20 +22,10 @@ const communication = new Communication({
 })
 communication.on('init', async function({ type, options }) {
   const config = await loadConfig(options)
-  init.resolve(new Worker(type, config, options))
+  init.resolve(new Worker(type, config, options, communication))
   return 'ok'
 })
 init.promise.then((worker: Worker) => {
   communication.on('resolve', payload => worker.resolve(payload))
-  communication.on('process', async request => {
-    let resolved
-    if (!request.format) {
-      const response = await communication.send('resolve', [request.filePath])
-      resolved = {
-        format: response.format,
-        filePath: response.filePath,
-      }
-    } else resolved = request
-    return worker.process(resolved)
-  })
+  communication.on('process', payload => worker.process(payload))
 })

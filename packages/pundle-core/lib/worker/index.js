@@ -1,22 +1,28 @@
 // @flow
 
 import fs from 'sb-fs'
+import path from 'path'
+import pick from 'lodash/pick'
 import pReduce from 'p-reduce'
 import type { Config } from 'pundle-core-load-config'
-import type { FileImport } from 'pundle-api'
+import type { ImportResolved, ImportRequest } from 'pundle-api'
+import type Communication from 'sb-communication'
+
 import type { RunOptions, WorkerType } from '../types'
 
 export default class Worker {
   type: WorkerType
   config: Config
   options: RunOptions
+  bridge: Communication
 
-  constructor(type: WorkerType, config: Config, options: RunOptions) {
+  constructor(type: WorkerType, config: Config, options: RunOptions, bridge: Communication) {
     this.type = type
     this.config = config
     this.options = options
+    this.bridge = bridge
   }
-  async resolve({ request, requestRoot, ignoredResolvers }: $FlowFixMe) {
+  async resolve({ request, requestRoot, ignoredResolvers }: ImportRequest) {
     const resolvers = this.config.components.filter(c => c.type === 'file-resolver')
     const allowedResolvers = resolvers.filter(c => !ignoredResolvers.includes(c.name))
 
@@ -52,7 +58,10 @@ export default class Worker {
     }
     return result
   }
-  async process({ filePath, format }: FileImport): Promise<void> {
+  async resolveFromMaster(payload: ImportRequest) {
+    return this.bridge.send('resolve', payload)
+  }
+  async process({ filePath, format }: ImportResolved): Promise<void> {
     const contents = await fs.readFile(filePath)
     const initialPayload = {
       format,
@@ -82,16 +91,29 @@ export default class Worker {
       throw new Error(`Unable to load file '${filePath}' of format '${format}'`)
     }
 
+    const fileImports = []
+    const fileChunks = []
+
     const transformers = this.config.components.filter(c => c.type === 'file-transformer')
-    return pReduce(
+    const transformed = await pReduce(
       transformers,
       async (payload, transformer) => {
         const response = await transformer.callback(payload, {
-          async resolve(request) {
-            console.log('got resolve request in worker', request)
+          resolve: async request => {
+            const resolved = await this.resolveFromMaster({
+              request,
+              requestRoot: path.dirname(filePath),
+              ignoredResolvers: [],
+            })
+            return { filePath: resolved.resolved, format: resolved.format }
           },
           addImport(fileImport) {
-            console.log('got import request in worker', fileImport)
+            // TODO: Validation
+            fileImports.push(fileImport)
+          },
+          addChunk(chunk) {
+            // TODO: Validation
+            fileChunks.push(chunk)
           },
         })
         if (response) {
@@ -109,5 +131,11 @@ export default class Worker {
         sourceMap: result.sourceMap,
       },
     )
+
+    return {
+      ...transformed,
+      imports: fileImports,
+      chunks: fileChunks,
+    }
   }
 }

@@ -4,7 +4,14 @@ import os from 'os'
 import pMap from 'p-map'
 import invariant from 'assert'
 import promiseDefer from 'promise.defer'
-import { PundleError, getChunk, type ResolveResult, type Chunk, type FileImportRequest } from 'pundle-api'
+import {
+  PundleError,
+  getChunk,
+  type Chunk,
+  type ImportResolved,
+  type ImportRequest,
+  type ComponentFileResolverResult,
+} from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
 import WorkerDelegate from '../worker/delegate'
@@ -57,7 +64,15 @@ export default class Master {
   }
 
   async execute() {
-    const entries = await Promise.all(this.config.entry.map(entry => this.resolve(entry)))
+    const entries = await Promise.all(
+      this.config.entry.map(entry =>
+        this.resolve({
+          request: entry,
+          requestRoot: this.config.rootDirectory,
+          ignoredResolvers: [],
+        }),
+      ),
+    )
     const chunks = entries.map(entry => getChunk(entry.format, null, entry.resolved))
     const processed = await pMap(chunks, chunk => this.processChunk(chunk))
     console.log('processed', processed)
@@ -75,24 +90,19 @@ export default class Master {
     })
     console.log('processedTree', processedTree)
   }
-  async processFileTree(request: FileImportRequest): Promise<void> {
+  async processFileTree(request: ImportResolved): Promise<void> {
     const processedEntry = await this.queuedProcess(request)
     console.log('processedEntry', processedEntry)
   }
-  async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<ResolveResult> {
+  async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
     const resolver = this.workers.find(worker => worker.type === 'resolver')
-    const actualRequestRoot = requestRoot || this.config.rootDirectory
 
     invariant(resolver, 'resolver worker not found')
 
-    return resolver.send('resolve', {
-      request,
-      requestRoot: actualRequestRoot,
-      ignoredResolvers,
-    })
+    return resolver.send('resolve', request)
   }
   // TODO: Don't queue a file again if it's already queued
-  async queuedProcess(payload: FileImportRequest): Promise<void> {
+  async queuedProcess(payload: ImportResolved): Promise<void> {
     const currentWorker = this.workers.find(worker => worker.isWorking === 0)
     if (currentWorker) {
       return currentWorker.send('process', payload, () => {

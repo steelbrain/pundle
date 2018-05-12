@@ -1,11 +1,14 @@
 {
-  "name": "pundle-transformer-commonjs",
+  "name": "pundle-transformer-js",
   "version": "0.0.0",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
+    "@babel/traverse": "^7.0.0-beta.46",
+    "@babel/types": "^7.0.0-beta.46",
+    "babylon": "^7.0.0-beta.46",
     "pundle-api": "0.0.0"
   },
   "author": "steelbrain",

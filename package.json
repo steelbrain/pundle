@@ -24,7 +24,7 @@
     "rimraf": "^2.6.2"
   },
   "scripts": {
-    "build": "babel packages --delete-dir-on-start -D -d dist --config-file ./.babelrc",
+    "build": "babel packages --delete-dir-on-start -D -d dist --config-file ./.babelrc --ignore packages/test-package/src",
     "watch": "yarn build -w",
     "dev": "nodemon -w 'packages/**/*.{js,json}' -d 0.2 -x node node_modules/--test-package--/lib",
     "postinstall": "yarn build && node scripts/install"

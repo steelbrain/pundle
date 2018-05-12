@@ -95,7 +95,7 @@ export default class Worker {
     if (!master) {
       throw new Error('Cannot setupListeners() without a master')
     }
-    bridge.on('resolve', async params => master.resolve(...params))
+    bridge.on('resolve', async params => master.resolve(params))
   }
   dispose() {
     if (this.handle) {
