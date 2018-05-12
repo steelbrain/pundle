@@ -25,7 +25,7 @@ type Payload<T> = {|
 |}
 function createComponent<T1: ComponentType, T2>(
   type: T1,
-  { name, version, priority = 100, callback }: Payload<T2>,
+  { name, version, priority = 1000, callback }: Payload<T2>,
 ): Component<T1, T2> {
   return {
     name,

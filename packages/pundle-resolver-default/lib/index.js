@@ -7,13 +7,13 @@ import { createFileResolver } from 'pundle-api'
 
 import manifest from '../package.json'
 
-// TODO: have a config?
 export default function({ formats }: { formats: { [string]: string } }) {
   // TODO: validation of config?
 
   return createFileResolver({
     name: 'pundle-file-resolver',
     version: manifest.version,
+    // TODO: Respect the `format` parameter?
     async callback({ request, requestRoot, resolved }) {
       if (resolved) return null
 

@@ -29,7 +29,7 @@ export default async function readConfigFile({ directory, configFileName, loadCo
       const stackFrame = fromStack(error.stack).find(i => path.isAbsolute(i.file))
       throw new PundleError(
         'CONFIG',
-        'INVALID_CONFIG',
+        error.code === 'MODULE_NOT_FOUND' ? 'FILE_NOT_FOUND' : 'INVALID_CONFIG',
         stackFrame && stackFrame.file,
         stackFrame
           ? {

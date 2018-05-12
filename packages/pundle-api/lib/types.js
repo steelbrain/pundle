@@ -67,5 +67,25 @@ export type LoaderResult = {|
 export type ComponentFileLoaderCallback = ComponentCallback<[LoaderRequest], LoaderResult>
 export type ComponentFileLoader = Component<'file-loader', ComponentFileLoaderCallback>
 
-export type ComponentFileTransformerCallback = ComponentCallback<[LoaderResult], LoaderResult>
+export type TransformationRequest = {|
+  filePath: string,
+  format: string,
+  contents: Buffer | string,
+  isBuffer: boolean,
+  sourceMap: ?Object,
+|}
+export type TransformationResult = {|
+  contents: Buffer | string,
+  isBuffer: boolean,
+  sourceMap: ?Object,
+|}
+// TODO: Maybe loc? and then transform original error to have a loc?
+export type TransformationContext = {|
+  resolve(request: ResolveRequest): Promise<ResolveResult>,
+  addImport(fileImport: FileImportRequest): void,
+|}
+export type ComponentFileTransformerCallback = ComponentCallback<
+  [TransformationRequest, TransformationContext],
+  TransformationResult,
+>
 export type ComponentFileTransformer = Component<'file-transformer', ComponentFileTransformerCallback>

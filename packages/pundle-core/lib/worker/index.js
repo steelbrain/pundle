@@ -31,6 +31,7 @@ export default class Worker {
       allowedResolvers,
       async (payload, resolver) => {
         const response = await resolver.callback(payload)
+        // TODO: Validation?
         return response || payload
       },
       {
@@ -72,6 +73,7 @@ export default class Worker {
         }
 
         const response = await loader.callback(payload)
+        // TODO: Validation?
         return response || payload
       },
       initialPayload,
@@ -84,10 +86,28 @@ export default class Worker {
     return pReduce(
       transformers,
       async (payload, transformer) => {
-        const response = await transformer.callback(payload)
-        return response || payload
+        const response = await transformer.callback(payload, {
+          async resolve(request) {
+            console.log('got resolve request in worker', request)
+          },
+          addImport(fileImport) {
+            console.log('got import request in worker', fileImport)
+          },
+        })
+        if (response) {
+          // TODO: Validation?
+          // TODO: Merge isBuffer, contents and sourceMap here instead of returning like this
+          return response
+        }
+        return payload
       },
-      result,
+      {
+        filePath,
+        format,
+        contents: result.contents,
+        isBuffer: result.isBuffer,
+        sourceMap: result.sourceMap,
+      },
     )
   }
 }
