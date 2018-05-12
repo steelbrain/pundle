@@ -69,13 +69,16 @@ export default class Master {
       throw new Error('Cannot process chunk without entry')
     }
 
-    const processedEntry = await this.queuedProcess({
+    const processedTree = await this.processFileTree({
       format: 'js',
       filePath: entry,
     })
+    console.log('processedTree', processedTree)
+  }
+  async processFileTree(request: FileImportRequest): Promise<void> {
+    const processedEntry = await this.queuedProcess(request)
     console.log('processedEntry', processedEntry)
   }
-  // async processFileTree(request: string)
   async resolve(request: string, requestRoot: ?string = null, ignoredResolvers: Array<string> = []): Promise<ResolveResult> {
     const resolver = this.workers.find(worker => worker.type === 'resolver')
     const actualRequestRoot = requestRoot || this.config.rootDirectory

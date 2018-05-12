@@ -79,6 +79,15 @@ export default class Worker {
     if (result === initialPayload) {
       throw new Error(`Unable to load file '${filePath}' of format '${format}'`)
     }
-    console.log('result', result)
+
+    const transformers = this.config.components.filter(c => c.type === 'file-transformer')
+    return pReduce(
+      transformers,
+      async (payload, transformer) => {
+        const response = await transformer.callback(payload)
+        return response || payload
+      },
+      result,
+    )
   }
 }

@@ -11,6 +11,8 @@ import type {
   ComponentFileResolver,
   ComponentFileLoaderCallback,
   ComponentFileLoader,
+  ComponentFileTransformerCallback,
+  ComponentFileTransformer,
 } from './types'
 
 const apiVersion = parseInt(manifest.version.split('.').shift(), 10)
@@ -79,4 +81,8 @@ export function createFileResolver(payload: Payload<ComponentFileResolverCallbac
 
 export function createFileLoader(payload: Payload<ComponentFileLoaderCallback>): ComponentFileLoader {
   return createComponent('file-loader', payload)
+}
+
+export function createFileTransformer(payload: Payload<ComponentFileTransformerCallback>): ComponentFileTransformer {
+  return createComponent('file-transformer', payload)
 }

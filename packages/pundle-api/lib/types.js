@@ -19,7 +19,7 @@ export type FileImport = {
   filePath: string,
 }
 
-export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-loader'
+export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-loader' | 'file-transformer'
 export type ComponentCallback<T1, T2> = (...T1) => Promise<?T2> | ?T2
 export type Component<T1: ComponentType, T2> = {|
   name: string,
@@ -66,3 +66,6 @@ export type LoaderResult = {|
 
 export type ComponentFileLoaderCallback = ComponentCallback<[LoaderRequest], LoaderResult>
 export type ComponentFileLoader = Component<'file-loader', ComponentFileLoaderCallback>
+
+export type ComponentFileTransformerCallback = ComponentCallback<[LoaderResult], LoaderResult>
+export type ComponentFileTransformer = Component<'file-transformer', ComponentFileTransformerCallback>
