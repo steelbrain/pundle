@@ -22,11 +22,12 @@ export function getOutputPath(config: Config, output: { id: string, format: stri
     throw new Error(`Unable to find output path for format '${output.format}' in config file`)
   }
 
-  if (formatOutput === false) {
+  const format = config.output.formats[formatOutput]
+  if (format === false) {
     return false
   }
-  if (typeof formatOutput !== 'string') {
+  if (typeof format !== 'string') {
     throw new Error(`config.output.formats.${output.format} MUST be either string OR false`)
   }
-  return formatOutput.replace('[id]', output.id).replace('[format]', output.format)
+  return format.replace('[id]', output.id).replace('[format]', output.format)
 }

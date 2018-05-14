@@ -33,7 +33,6 @@ export default async function loadConfig({
     throw new PundleError('CONFIG', 'INVALID_CONFIG', null, null, 'config.components is not allowed in inline config')
   }
 
-  let hasOutput = false
   const config = {
     entry: [],
     rootDirectory: fileConfig.rootDirectory,
@@ -50,20 +49,13 @@ export default async function loadConfig({
     config.entry = config.entry.concat(inlineConfig.entry)
   }
   if (fileConfig.output) {
-    hasOutput = true
     Object.assign(config.output, fileConfig.output)
   }
   if (typeof inlineConfig.output === 'object' && inlineConfig.output !== null) {
-    hasOutput = true
     Object.assign(config.output, inlineConfig.output)
   }
   if (fileConfig.components) {
     config.components = fileConfig.components.sort((a, b) => b.priority - a.priority)
-  }
-
-  if (!hasOutput) {
-    // $FlowFixMe
-    config.output = null
   }
 
   return config

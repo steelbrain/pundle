@@ -6,6 +6,7 @@
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
+    "pundle-chunk-generator-js": "0.0.0",
     "pundle-core": "0.0.0",
     "pundle-loader-js": "0.0.0",
     "pundle-reporter-cli": "0.0.0",

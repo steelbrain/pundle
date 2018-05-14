@@ -9,13 +9,6 @@ export type Loc = {
   line: number,
   col: number,
 }
-export type Chunk = {
-  id: string,
-  format: string,
-  label: ?string,
-  entry: ?string,
-  imports: Array<string>,
-}
 export type ImportResolved = {
   format: string,
   filePath: string,
@@ -24,6 +17,13 @@ export type ImportRequest = {
   request: string,
   requestRoot: string,
   ignoredResolvers: Array<string>,
+}
+export type Chunk = {
+  id: string,
+  format: string,
+  label: ?string,
+  entry: ?string,
+  imports: Array<ImportResolved>,
 }
 
 export type WorkerProcessResult = {
@@ -121,11 +121,10 @@ export type ComponentFileTransformer = Component<'file-transformer', ComponentFi
 export type ComponentJobTransformerCallback = (job: Job) => Promise<?Job> | ?Job
 export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
 
-export type ComponentChunkGeneratorResult = {
-  id: string,
+export type ComponentChunkGeneratorResult = Array<{
   format: string,
   contents: string | Buffer,
-}
+}>
 export type ComponentChunkGeneratorCallback = (
   chunk: Chunk,
   job: Job,

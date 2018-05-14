@@ -104,32 +104,21 @@ export default class Master {
       throw new Error('No chunk-generator components configured')
     }
 
-    const generated = await pMap(job.chunks.values(), async jobChunk => {
-      const result = await pReduce(
-        chunkGenerators,
-        async (value, chunkGenerator) => {
-          if (value !== jobChunk) {
-            // Already generated
-            return value
-          }
-          const resultChunkGenerator = await chunkGenerator.callback(jobChunk, job, {
-            getOutputPath: (output: { id: string, format: string }) => getOutputPath(this.config, output),
-          })
-          // TODO: Validation
-          return resultChunkGenerator || value
-        },
-        jobChunk,
-      )
-
-      if (result === jobChunk) {
-        throw new Error(
-          `All generators refused to generate chunk of format '${jobChunk.format}' with label '${
-            jobChunk.label
-          }' and entry '${jobChunk.entry}'`,
-        )
+    const generated = await pMap(job.chunks.values(), async chunk => {
+      for (let i = 0, { length } = chunkGenerators; i < length; i++) {
+        const generator = chunkGenerators[i]
+        const result = await generator.callback(chunk, job, {
+          getOutputPath: (output: { id: string, format: string }) => getOutputPath(this.config, output),
+        })
+        if (result) {
+          return result
+        }
       }
-
-      return result
+      throw new Error(
+        `All generators refused to generate chunk of format '${chunk.format}' with label '${chunk.label}' and entry '${
+          chunk.entry
+        }'`,
+      )
     })
 
     return generated
@@ -176,6 +165,7 @@ export default class Master {
 
     try {
       const newFile = await this.queuedProcess(request)
+      job.files.set(newFile.id, newFile)
       await Promise.all([
         pMap(newFile.imports, fileImport => this.processFileTree(fileImport, false, job)),
         pMap(newFile.chunks, fileChunk => this.processChunk(fileChunk, job)),
