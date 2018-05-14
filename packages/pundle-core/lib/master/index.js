@@ -69,7 +69,7 @@ export default class Master {
     console.log('issue reported to master', issue)
   }
 
-  async getJob(): Promise<Job> {
+  async execute(): Promise<void> {
     const job = new Job()
     const entries = await Promise.all(
       this.config.entry.map(entry =>
@@ -80,15 +80,7 @@ export default class Master {
         }),
       ),
     )
-    entries.forEach(entry => {
-      const chunk = getChunk(entry.format, null, entry.resolved)
-      job.chunks.set(chunk.id, chunk)
-    })
-    return job
-  }
-  async execute(): Promise<void> {
-    const job = await this.getJob()
-    await pMap(job.chunks.values(), chunk => this.processChunk(chunk, job))
+    await pMap(entries, entry => this.processChunk(getChunk(entry.format, null, entry.resolved), job))
     const generated = await this.generate(job)
     console.log('generated', generated)
   }
@@ -111,16 +103,20 @@ export default class Master {
       throw new Error('No chunk-generator components configured')
     }
 
-    const generated = await pMap(job.chunks, async jobChunk => {
-      const result = await pReduce(chunkGenerators, async (value, chunkGenerator) => {
-        if (value !== jobChunk) {
-          // Already generated
-          return value
-        }
-        const resultChunkGenerator = await chunkGenerator.callback(jobChunk, job)
-        // TODO: Validation
-        return resultChunkGenerator || value
-      })
+    const generated = await pMap(job.chunks.values(), async jobChunk => {
+      const result = await pReduce(
+        chunkGenerators,
+        async (value, chunkGenerator) => {
+          if (value !== jobChunk) {
+            // Already generated
+            return value
+          }
+          const resultChunkGenerator = await chunkGenerator.callback(jobChunk, job)
+          // TODO: Validation
+          return resultChunkGenerator || value
+        },
+        jobChunk,
+      )
 
       if (result === jobChunk) {
         throw new Error(
@@ -141,15 +137,27 @@ export default class Master {
       // TODO: Return silently instead?
       throw new Error('Cannot process chunk without entry')
     }
+    if (job.locks.has(chunk.id)) return
+    if (job.chunks.has(chunk.id)) return
 
-    await this.processFileTree(
-      {
-        format: 'js',
-        filePath: entry,
-      },
-      false,
-      job,
-    )
+    job.locks.add(chunk.id)
+    try {
+      job.chunks.set(chunk.id, chunk)
+
+      await this.processFileTree(
+        {
+          format: 'js',
+          filePath: entry,
+        },
+        false,
+        job,
+      )
+    } catch (error) {
+      job.chunks.delete(chunk.id)
+      throw error
+    } finally {
+      job.locks.delete(chunk.id)
+    }
   }
   // TODO: Use cached old files here if present on the job?
   async processFileTree(request: ImportResolved, forcedOverwrite: boolean, job: Job): Promise<void> {
@@ -165,7 +173,6 @@ export default class Master {
 
     try {
       const newFile = await this.queuedProcess(request)
-      job.files.set(lockKey, newFile)
       await Promise.all([
         pMap(newFile.imports, fileImport => this.processFileTree(fileImport, false, job)),
         pMap(newFile.chunks, fileChunk => this.processChunk(fileChunk, job)),
