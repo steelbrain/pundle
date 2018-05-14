@@ -2,4 +2,11 @@
 
 import type { ComponentType } from './types'
 
-export const COMPONENT_TYPES: Array<ComponentType> = ['issue-reporter', 'file-resolver', 'file-loader', 'file-transformer']
+export const COMPONENT_TYPES: Array<ComponentType> = [
+  'issue-reporter',
+  'file-resolver',
+  'file-loader',
+  'file-transformer',
+  'job-transformer',
+  'chunk-generator',
+]

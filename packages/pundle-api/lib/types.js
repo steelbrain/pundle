@@ -1,5 +1,7 @@
 // @flow
 
+import type Job from './job'
+
 export type ErrorType = 'CONFIG' | 'DAEMON'
 export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED'
 
@@ -35,7 +37,13 @@ export type WorkerProcessResult = {
   chunks: Array<Chunk>,
 }
 
-export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-loader' | 'file-transformer'
+export type ComponentType =
+  | 'issue-reporter'
+  | 'file-resolver'
+  | 'file-loader'
+  | 'file-transformer'
+  | 'job-transformer'
+  | 'chunk-generator'
 export type Component<T1: ComponentType, T2> = {|
   name: string,
   version: string,
@@ -109,3 +117,9 @@ export type ComponentFileTransformerCallback = (
   context: ComponentFileTransformerContext,
 ) => Promise<?ComponentFileTransformerResult> | ?ComponentFileTransformerResult
 export type ComponentFileTransformer = Component<'file-transformer', ComponentFileTransformerCallback>
+
+export type ComponentJobTransformerCallback = (job: Job) => Promise<?Job> | ?Job
+export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
+
+export type ComponentChunkGeneratorCallback = (chunk: Chunk, job: Job) => Promise<$FlowFixMe> | $FlowFixMe
+export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>

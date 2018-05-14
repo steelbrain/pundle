@@ -7,10 +7,10 @@ export type RunOptions = {|
   loadConfigFile: boolean,
 |}
 
-export type WorkerType = 'resolver' | 'processor' | 'generator'
+export type WorkerType = 'resolver' | 'processor'
 
 // Tasks assigned to the worker
-export type WorkerJobType = 'resolve' | 'process' | 'generate'
+export type WorkerJobType = 'resolve' | 'process'
 
 // Tasks worker can request from master
 export type WorkerRequestType = 'resolve'

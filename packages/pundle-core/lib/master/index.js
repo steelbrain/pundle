@@ -2,6 +2,7 @@
 
 import os from 'os'
 import pMap from 'p-map'
+import pReduce from 'p-reduce'
 import promiseDefer from 'promise.defer'
 import {
   Job,
@@ -24,7 +25,6 @@ export default class Master {
   config: Config
   options: RunOptions
   resolverWorker: WorkerDelegate
-  generatorWorker: WorkerDelegate
   processorWorkers: Array<WorkerDelegate>
   queue: Array<{| payload: {}, resolve: Function, reject: Function |}>
 
@@ -34,7 +34,6 @@ export default class Master {
     this.queue = []
 
     this.resolverWorker = new WorkerDelegate('resolver', options)
-    this.generatorWorker = new WorkerDelegate('generator', options)
     this.processorWorkers = os.cpus().map(() => new WorkerDelegate('processor', options))
 
     this.getAllWorkers().forEach(worker => {
@@ -42,7 +41,7 @@ export default class Master {
     })
   }
   getAllWorkers(): Array<WorkerDelegate> {
-    return [this.resolverWorker, this.generatorWorker].concat(this.processorWorkers)
+    return [this.resolverWorker].concat(this.processorWorkers)
   }
   async spawnWorkers() {
     try {
@@ -70,7 +69,7 @@ export default class Master {
     console.log('issue reported to master', issue)
   }
 
-  async execute(): Promise<void> {
+  async getJob(): Promise<Job> {
     const job = new Job()
     const entries = await Promise.all(
       this.config.entry.map(entry =>
@@ -81,10 +80,60 @@ export default class Master {
         }),
       ),
     )
-    const chunks = entries.map(entry => getChunk(entry.format, null, entry.resolved))
-    await pMap(chunks, chunk => this.processChunk(chunk, job))
+    entries.forEach(entry => {
+      const chunk = getChunk(entry.format, null, entry.resolved)
+      job.chunks.set(chunk.id, chunk)
+    })
+    return job
+  }
+  async execute(): Promise<void> {
+    const job = await this.getJob()
+    await pMap(job.chunks.values(), chunk => this.processChunk(chunk, job))
+    const generated = await this.generate(job)
+    console.log('generated', generated)
+  }
+  async generate(givenJob: Job): Promise<void> {
+    let job = givenJob.clone()
+    const jobTransformers = this.config.components.filter(c => c.type === 'job-transformer')
 
-    console.log('Job Processed!!1!')
+    job = await pReduce(
+      jobTransformers,
+      async (value, component) => {
+        const result = await component.callback(value)
+        // TODO: Validation
+        return result || value
+      },
+      job,
+    )
+
+    const chunkGenerators = this.config.components.filter(c => c.type === 'chunk-generator')
+    if (!chunkGenerators.length) {
+      throw new Error('No chunk-generator components configured')
+    }
+
+    const generated = await pMap(job.chunks, async jobChunk => {
+      const result = await pReduce(chunkGenerators, async (value, chunkGenerator) => {
+        if (value !== jobChunk) {
+          // Already generated
+          return value
+        }
+        const resultChunkGenerator = await chunkGenerator.callback(jobChunk, job)
+        // TODO: Validation
+        return resultChunkGenerator || value
+      })
+
+      if (result === jobChunk) {
+        throw new Error(
+          `All generators refused to generate chunk of format '${jobChunk.format}' with label '${
+            jobChunk.label
+          }' and entry '${jobChunk.entry}'`,
+        )
+      }
+
+      return result
+    })
+
+    return generated
   }
   async processChunk(chunk: Chunk, job: Job): Promise<void> {
     const { entry } = chunk
@@ -135,7 +184,6 @@ export default class Master {
   async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
     return this.resolverWorker.send('resolve', request)
   }
-  // TODO: Don't queue a file again if it's already queued (job-specific)
   async queuedProcess(payload: ImportResolved): Promise<WorkerProcessResult> {
     const currentWorker = this.processorWorkers.find(worker => worker.isWorking === 0)
     if (currentWorker) {

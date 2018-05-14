@@ -13,6 +13,10 @@ import type {
   ComponentFileLoader,
   ComponentFileTransformerCallback,
   ComponentFileTransformer,
+  ComponentJobTransformerCallback,
+  ComponentJobTransformer,
+  ComponentChunkGeneratorCallback,
+  ComponentChunkGenerator,
 } from './types'
 
 const apiVersion = parseInt(manifest.version.split('.').shift(), 10)
@@ -85,4 +89,12 @@ export function createFileLoader(payload: Payload<ComponentFileLoaderCallback>):
 
 export function createFileTransformer(payload: Payload<ComponentFileTransformerCallback>): ComponentFileTransformer {
   return createComponent('file-transformer', payload)
+}
+
+export function createJobTransformer(payload: Payload<ComponentJobTransformerCallback>): ComponentJobTransformer {
+  return createComponent('job-transformer', payload)
+}
+
+export function createChunkGenerator(payload: Payload<ComponentChunkGeneratorCallback>): ComponentChunkGenerator {
+  return createComponent('chunk-generator', payload)
 }
