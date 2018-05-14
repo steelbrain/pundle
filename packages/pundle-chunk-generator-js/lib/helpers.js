@@ -22,7 +22,6 @@ export function getContentForOutput(
   function iterateImports(fileImport: ImportResolved) {
     const fileKey = getFileImportHash(fileImport.filePath, fileImport.format)
     const file = job.files.get(fileKey)
-    console.log('file', fileKey)
     invariant(file, `File referenced in chunk ('${fileImport.filePath}') not found in local cache!?`)
 
     if (relevantFiles.has(fileKey)) return

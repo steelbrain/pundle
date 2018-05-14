@@ -3,6 +3,7 @@
 import os from 'os'
 import pMap from 'p-map'
 import pReduce from 'p-reduce'
+import flatten from 'lodash/flatten'
 import promiseDefer from 'promise.defer'
 import {
   Job,
@@ -83,9 +84,13 @@ export default class Master {
     )
     await pMap(entries, entry => this.processChunk(getChunk(entry.format, null, entry.resolved), job))
     const generated = await this.generate(job)
-    console.log('generated', generated)
+
+    // TODO: Maybe do something else?
+    return generated
   }
-  async generate(givenJob: Job): Promise<void> {
+  async generate(
+    givenJob: Job,
+  ): Promise<Array<{ id: string, filePath: string | false, format: string, contents: string | Buffer }>> {
     let job = givenJob.clone()
     const jobTransformers = this.config.components.filter(c => c.type === 'job-transformer')
 
@@ -111,7 +116,7 @@ export default class Master {
           getOutputPath: (output: { id: string, format: string }) => getOutputPath(this.config, output),
         })
         if (result) {
-          return result
+          return result.map(item => ({ ...item, id: chunk.id, filePath: getOutputPath(this.config, chunk) }))
         }
       }
       throw new Error(
@@ -121,7 +126,7 @@ export default class Master {
       )
     })
 
-    return generated
+    return flatten(generated)
   }
   async processChunk(chunk: Chunk, job: Job): Promise<void> {
     const { entry } = chunk

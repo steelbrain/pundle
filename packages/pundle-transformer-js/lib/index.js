@@ -47,7 +47,7 @@ export default function() {
             promises.push(
               resolve(arg.value, arg.loc).then(resolved => {
                 const chunk = getChunk(resolved.format, null, resolved.filePath)
-                node.callee = t.memberExpression(t.identifier('require'), t.identifier('async'))
+                node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
                 arg.value = chunk.id
                 addChunk(chunk)
               }),
