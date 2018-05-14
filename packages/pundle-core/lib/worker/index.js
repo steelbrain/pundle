@@ -3,6 +3,7 @@
 import fs from 'sb-fs'
 import path from 'path'
 import pReduce from 'p-reduce'
+import mergeSourceMap from 'merge-source-map'
 import {
   getFileImportHash,
   type ImportResolved,
@@ -130,8 +131,16 @@ export default class Worker {
         )
         if (response) {
           // TODO: Validation?
-          // TODO: Merge isBuffer, contents and sourceMap here instead of returning like this
-          return response
+          let newSourceMap = null
+          if (response.sourceMap && !payload.sourceMap) {
+            newSourceMap = response.sourceMap
+          } else if (response.sourceMap && payload.sourceMap) {
+            newSourceMap = mergeSourceMap(payload.sourceMap, response.sourceMap)
+          }
+          return {
+            ...response,
+            sourceMap: newSourceMap,
+          }
         }
         return payload
       },
