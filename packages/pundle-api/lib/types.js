@@ -121,5 +121,16 @@ export type ComponentFileTransformer = Component<'file-transformer', ComponentFi
 export type ComponentJobTransformerCallback = (job: Job) => Promise<?Job> | ?Job
 export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
 
-export type ComponentChunkGeneratorCallback = (chunk: Chunk, job: Job) => Promise<$FlowFixMe> | $FlowFixMe
+export type ComponentChunkGeneratorResult = {
+  id: string,
+  format: string,
+  contents: string | Buffer,
+}
+export type ComponentChunkGeneratorCallback = (
+  chunk: Chunk,
+  job: Job,
+  {
+    getOutputPath: (output: { id: string, format: string }) => string | false,
+  },
+) => Promise<$FlowFixMe> | $FlowFixMe
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>

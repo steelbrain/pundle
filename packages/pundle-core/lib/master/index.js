@@ -17,6 +17,7 @@ import {
 } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
+import { getOutputPath } from './helpers'
 import WorkerDelegate from '../worker/delegate'
 import type { RunOptions } from '../types'
 
@@ -111,7 +112,9 @@ export default class Master {
             // Already generated
             return value
           }
-          const resultChunkGenerator = await chunkGenerator.callback(jobChunk, job)
+          const resultChunkGenerator = await chunkGenerator.callback(jobChunk, job, {
+            getOutputPath: (output: { id: string, format: string }) => getOutputPath(this.config, output),
+          })
           // TODO: Validation
           return resultChunkGenerator || value
         },

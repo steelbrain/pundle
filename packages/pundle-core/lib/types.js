@@ -1,7 +1,9 @@
 // @flow
 
+import type { Config } from 'pundle-core-load-config'
+
 export type RunOptions = {|
-  config: $FlowFixMe,
+  config: Config,
   directory: string,
   configFileName: string,
   loadConfigFile: boolean,
