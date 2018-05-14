@@ -24,6 +24,17 @@ export type ImportRequest = {
   ignoredResolvers: Array<string>,
 }
 
+export type WorkerProcessResult = {
+  id: string,
+  filePath: string,
+  format: string,
+  contents: Buffer | string,
+  isBuffer: boolean,
+  sourceMap: ?Object,
+  imports: Array<ImportResolved>,
+  chunks: Array<Chunk>,
+}
+
 export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-loader' | 'file-transformer'
 export type Component<T1: ComponentType, T2> = {|
   name: string,

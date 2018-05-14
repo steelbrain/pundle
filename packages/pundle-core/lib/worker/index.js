@@ -2,10 +2,9 @@
 
 import fs from 'sb-fs'
 import path from 'path'
-import pick from 'lodash/pick'
 import pReduce from 'p-reduce'
+import { getFileImportHash, type ImportResolved, type ImportRequest, type WorkerProcessResult } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
-import type { ImportResolved, ImportRequest } from 'pundle-api'
 import type Communication from 'sb-communication'
 
 import type { RunOptions, WorkerType } from '../types'
@@ -61,7 +60,7 @@ export default class Worker {
   async resolveFromMaster(payload: ImportRequest) {
     return this.bridge.send('resolve', payload)
   }
-  async process({ filePath, format }: ImportResolved): Promise<void> {
+  async process({ filePath, format }: ImportResolved): Promise<WorkerProcessResult> {
     const contents = await fs.readFile(filePath)
     const initialPayload = {
       format,
@@ -98,24 +97,31 @@ export default class Worker {
     const transformed = await pReduce(
       transformers,
       async (payload, transformer) => {
-        const response = await transformer.callback(payload, {
-          resolve: async request => {
-            const resolved = await this.resolveFromMaster({
-              request,
-              requestRoot: path.dirname(filePath),
-              ignoredResolvers: [],
-            })
-            return { filePath: resolved.resolved, format: resolved.format }
+        const response = await transformer.callback(
+          {
+            ...payload,
+            format,
+            filePath,
           },
-          addImport(fileImport) {
-            // TODO: Validation
-            fileImports.push(fileImport)
+          {
+            resolve: async request => {
+              const resolved = await this.resolveFromMaster({
+                request,
+                requestRoot: path.dirname(filePath),
+                ignoredResolvers: [],
+              })
+              return { filePath: resolved.resolved, format: resolved.format }
+            },
+            addImport(fileImport) {
+              // TODO: Validation
+              fileImports.push(fileImport)
+            },
+            addChunk(chunk) {
+              // TODO: Validation
+              fileChunks.push(chunk)
+            },
           },
-          addChunk(chunk) {
-            // TODO: Validation
-            fileChunks.push(chunk)
-          },
-        })
+        )
         if (response) {
           // TODO: Validation?
           // TODO: Merge isBuffer, contents and sourceMap here instead of returning like this
@@ -124,8 +130,6 @@ export default class Worker {
         return payload
       },
       {
-        filePath,
-        format,
         contents: result.contents,
         isBuffer: result.isBuffer,
         sourceMap: result.sourceMap,
@@ -134,6 +138,9 @@ export default class Worker {
 
     return {
       ...transformed,
+      id: getFileImportHash(filePath, format),
+      format,
+      filePath,
       imports: fileImports,
       chunks: fileChunks,
     }

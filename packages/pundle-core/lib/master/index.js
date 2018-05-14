@@ -2,7 +2,6 @@
 
 import os from 'os'
 import pMap from 'p-map'
-import invariant from 'assert'
 import promiseDefer from 'promise.defer'
 import {
   PundleError,
@@ -21,7 +20,9 @@ import type { RunOptions } from '../types'
 export default class Master {
   config: Config
   options: RunOptions
-  workers: Array<WorkerDelegate>
+  resolverWorker: WorkerDelegate
+  generatorWorker: WorkerDelegate
+  processorWorkers: Array<WorkerDelegate>
   queue: Array<{| payload: {}, resolve: Function, reject: Function |}>
 
   constructor(config: Config, options: RunOptions) {
@@ -29,18 +30,21 @@ export default class Master {
     this.options = options
     this.queue = []
 
-    this.workers = [new WorkerDelegate('resolver', options)]
-    os.cpus().forEach(() => {
-      this.workers.push(new WorkerDelegate('processor', options))
-    })
-    this.workers.forEach(worker => {
+    this.resolverWorker = new WorkerDelegate('resolver', options)
+    this.generatorWorker = new WorkerDelegate('generator', options)
+    this.processorWorkers = os.cpus().map(() => new WorkerDelegate('processor', options))
+
+    this.getAllWorkers().forEach(worker => {
       worker.setMaster(this)
     })
+  }
+  getAllWorkers(): Array<WorkerDelegate> {
+    return [this.resolverWorker, this.generatorWorker].concat(this.processorWorkers)
   }
   async spawnWorkers() {
     try {
       await Promise.all(
-        this.workers.map(async worker => {
+        this.getAllWorkers().map(async worker => {
           if (worker.isAlive()) return
           try {
             await worker.spawn()
@@ -55,7 +59,7 @@ export default class Master {
     }
   }
   dispose() {
-    this.workers.forEach(function(worker) {
+    this.getAllWorkers().forEach(function(worker) {
       worker.dispose()
     })
   }
@@ -95,15 +99,11 @@ export default class Master {
     console.log('processedEntry', processedEntry)
   }
   async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
-    const resolver = this.workers.find(worker => worker.type === 'resolver')
-
-    invariant(resolver, 'resolver worker not found')
-
-    return resolver.send('resolve', request)
+    return this.resolverWorker.send('resolve', request)
   }
   // TODO: Don't queue a file again if it's already queued
-  async queuedProcess(payload: ImportResolved): Promise<void> {
-    const currentWorker = this.workers.find(worker => worker.isWorking === 0)
+  async queuedProcess(payload: ImportResolved): Promise<$FlowFixMe> {
+    const currentWorker = this.processorWorkers.find(worker => worker.isWorking === 0)
     if (currentWorker) {
       return currentWorker.send('process', payload, () => {
         const itemToProcess = this.queue.pop()

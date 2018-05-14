@@ -7,3 +7,5 @@ console.log('hi!', test2, test)
 import('./test3').then(function(val) {
   console.log('val', val)
 })
+
+console.log('react', require('react'), 'react-dom', require('react-dom'))
