@@ -29,7 +29,7 @@ export default async function loadConfig({
     configFileName,
     config: givenInlineConfig,
   })
-  if (inlineConfig.components) {
+  if (typeof inlineConfig.components !== 'undefined') {
     throw new PundleError('CONFIG', 'INVALID_CONFIG', null, null, 'config.components is not allowed in inline config')
   }
 
@@ -38,7 +38,7 @@ export default async function loadConfig({
     entry: [],
     rootDirectory: fileConfig.rootDirectory,
     output: {
-      name: '',
+      formats: {},
       rootDirectory: '',
     },
     components: [],
@@ -46,14 +46,14 @@ export default async function loadConfig({
   if (fileConfig.entry) {
     config.entry = config.entry.concat(fileConfig.entry)
   }
-  if (inlineConfig.entry) {
+  if (typeof inlineConfig.entry === 'string') {
     config.entry = config.entry.concat(inlineConfig.entry)
   }
   if (fileConfig.output) {
     hasOutput = true
     Object.assign(config.output, fileConfig.output)
   }
-  if (inlineConfig.output) {
+  if (typeof inlineConfig.output === 'object' && inlineConfig.output !== null) {
     hasOutput = true
     Object.assign(config.output, inlineConfig.output)
   }

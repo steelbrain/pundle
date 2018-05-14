@@ -6,9 +6,7 @@ export type Config = {|
   entry?: Array<string> | string,
   rootDirectory: string,
   output?: {
-    name: string,
-    sourceMap?: boolean,
-    sourceMapName?: string,
+    formats: { [string]: string },
     rootDirectory: string,
   },
   components?: Array<Component<*, *>>,
@@ -17,9 +15,7 @@ export type LoadedConfig = {|
   entry: Array<string>,
   rootDirectory: string,
   output: ?{
-    name: string,
-    sourceMap?: boolean,
-    sourceMapName?: string,
+    formats: { [string]: string },
     rootDirectory: string,
   },
   components: Array<Component<*, *>>,

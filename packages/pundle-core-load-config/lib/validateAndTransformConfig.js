@@ -8,7 +8,7 @@ import { PundleError, validateComponent } from 'pundle-api'
 import type { Config } from './types'
 
 const ALLOWED_CONFIG_FILE_KEYS = ['entry', 'rootDirectory', 'output', 'components']
-const ALLOWED_CONFIG_FILE_OUTPUT_KEYS = ['name', 'sourceMap', 'sourceMapName', 'rootDirectory']
+const ALLOWED_CONFIG_FILE_OUTPUT_KEYS = ['formats', 'rootDirectory']
 
 type Payload = {|
   directory: string,
@@ -69,11 +69,8 @@ export default async function validateAndTransformConfig({
       if (extraConfigOutputKeys.length) {
         faults.push(`config.output contains unknown keys: '${extraConfigOutputKeys.join(', ')}'`)
       } else {
-        if (!config.output.name || typeof config.output.name !== 'string') {
-          faults.push('config.output.name must be a valid string')
-        }
-        if (config.output.sourceMapName && typeof config.output.soruceMapName !== 'string') {
-          faults.push('config.output.sourceMapName must be a valid string or falsy')
+        if (!config.output.formats || typeof config.output.formats !== 'object') {
+          faults.push('config.output.formats must be a Object')
         }
         if (!config.output.rootDirectory || typeof config.output.rootDirectory !== 'string') {
           faults.push('config.output.rootDirectory must be a valid string')
