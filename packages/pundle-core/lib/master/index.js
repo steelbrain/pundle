@@ -4,12 +4,15 @@ import os from 'os'
 import pMap from 'p-map'
 import promiseDefer from 'promise.defer'
 import {
+  Job,
   PundleError,
   getChunk,
+  getFileImportHash,
   type Chunk,
   type ImportResolved,
   type ImportRequest,
   type ComponentFileResolverResult,
+  type WorkerProcessResult,
 } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
@@ -67,7 +70,8 @@ export default class Master {
     console.log('issue reported to master', issue)
   }
 
-  async execute() {
+  async execute(): Promise<void> {
+    const job = new Job()
     const entries = await Promise.all(
       this.config.entry.map(entry =>
         this.resolve({
@@ -78,31 +82,61 @@ export default class Master {
       ),
     )
     const chunks = entries.map(entry => getChunk(entry.format, null, entry.resolved))
-    const processed = await pMap(chunks, chunk => this.processChunk(chunk))
-    console.log('processed', processed)
+    await pMap(chunks, chunk => this.processChunk(chunk, job))
+
+    console.log('Job Processed!!1!')
   }
-  async processChunk(chunk: Chunk): Promise<void> {
+  async processChunk(chunk: Chunk, job: Job): Promise<void> {
     const { entry } = chunk
     if (!entry) {
       // TODO: Return silently instead?
       throw new Error('Cannot process chunk without entry')
     }
 
-    const processedTree = await this.processFileTree({
-      format: 'js',
-      filePath: entry,
-    })
-    console.log('processedTree', processedTree)
+    await this.processFileTree(
+      {
+        format: 'js',
+        filePath: entry,
+      },
+      false,
+      job,
+    )
   }
-  async processFileTree(request: ImportResolved): Promise<void> {
-    const processedEntry = await this.queuedProcess(request)
-    console.log('processedEntry', processedEntry)
+  // TODO: Use cached old files here if present on the job?
+  async processFileTree(request: ImportResolved, forcedOverwrite: boolean, job: Job): Promise<void> {
+    const lockKey = getFileImportHash(request.filePath, request.format)
+    const oldFile = job.files.get(lockKey)
+    if (job.locks.has(lockKey)) {
+      return
+    }
+    if (oldFile && !forcedOverwrite) {
+      return
+    }
+    job.locks.add(lockKey)
+
+    try {
+      const newFile = await this.queuedProcess(request)
+      job.files.set(lockKey, newFile)
+      await Promise.all([
+        pMap(newFile.imports, fileImport => this.processFileTree(fileImport, false, job)),
+        pMap(newFile.chunks, fileChunk => this.processChunk(fileChunk, job)),
+      ])
+    } catch (error) {
+      if (oldFile) {
+        job.files.set(lockKey, oldFile)
+      } else {
+        job.files.delete(lockKey)
+      }
+      throw error
+    } finally {
+      job.locks.delete(lockKey)
+    }
   }
   async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
     return this.resolverWorker.send('resolve', request)
   }
-  // TODO: Don't queue a file again if it's already queued
-  async queuedProcess(payload: ImportResolved): Promise<$FlowFixMe> {
+  // TODO: Don't queue a file again if it's already queued (job-specific)
+  async queuedProcess(payload: ImportResolved): Promise<WorkerProcessResult> {
     const currentWorker = this.processorWorkers.find(worker => worker.isWorking === 0)
     if (currentWorker) {
       return currentWorker.send('process', payload, () => {

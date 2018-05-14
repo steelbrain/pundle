@@ -3,7 +3,13 @@
 import fs from 'sb-fs'
 import path from 'path'
 import pReduce from 'p-reduce'
-import { getFileImportHash, type ImportResolved, type ImportRequest, type WorkerProcessResult } from 'pundle-api'
+import {
+  getFileImportHash,
+  type ImportResolved,
+  type ImportRequest,
+  type WorkerProcessResult,
+  type ComponentFileResolverResult,
+} from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 import type Communication from 'sb-communication'
 
@@ -21,7 +27,7 @@ export default class Worker {
     this.options = options
     this.bridge = bridge
   }
-  async resolve({ request, requestRoot, ignoredResolvers }: ImportRequest) {
+  async resolve({ request, requestRoot, ignoredResolvers }: ImportRequest): Promise<ComponentFileResolverResult> {
     const resolvers = this.config.components.filter(c => c.type === 'file-resolver')
     const allowedResolvers = resolvers.filter(c => !ignoredResolvers.includes(c.name))
 
