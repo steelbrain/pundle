@@ -7,7 +7,7 @@ import { createFileResolver } from 'pundle-api'
 
 import manifest from '../package.json'
 
-export default function({ formats }: { formats: { [string]: string } }) {
+export default function({ formats, aliases = {} }: { formats: { [string]: string }, aliases: { [string]: string } }) {
   // TODO: validation of config?
 
   return createFileResolver({
@@ -22,6 +22,7 @@ export default function({ formats }: { formats: { [string]: string } }) {
         browserResolve(
           request,
           {
+            modules: aliases,
             basedir: requestRoot,
             extensions: flatten(Object.values(formats)),
             packageFilter(pkg, pkgroot) {

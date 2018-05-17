@@ -11,6 +11,7 @@
     "pundle-loader-js": "0.0.0",
     "pundle-reporter-cli": "0.0.0",
     "pundle-resolver-default": "0.0.0",
+    "pundle-resolver-aliases-browser": "0.0.0",
     "pundle-transformer-js": "0.0.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2"
