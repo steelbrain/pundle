@@ -5,7 +5,6 @@
 - typescript
 - babel
 - uglify
-- html file support
 - css file support
 - postcss
 - node builtin modules in browser
@@ -22,9 +21,9 @@ Types of components:
 - file-resolver
 - file-loader
 - file-transformer
-- file-generator
+- job-transformer
 - chunk-generator
-- chunk-transformer
+- chunk-transformer (todo)
 
 ## Post-initial demo goals
 
