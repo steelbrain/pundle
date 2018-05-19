@@ -17,7 +17,9 @@ export default {
       aliases: browserAliases,
     }),
     loaderJs({}),
-    transformerJS(),
+    transformerJS({
+      transformCore: true,
+    }),
     chunkGeneratorJs(),
   ],
   rootDirectory: __dirname,

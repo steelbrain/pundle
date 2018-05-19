@@ -7,6 +7,7 @@ async function main() {
     directory: path.dirname(__dirname),
   })
   const result = await pundle.execute()
+  console.log('Compiled and writing to fs')
   result.forEach(output => {
     const { filePath } = output
     if (!filePath) {

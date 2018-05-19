@@ -9,4 +9,4 @@ console.log('hi!', test)
 //   console.log('val', val)
 // })
 
-console.log('react', require('react'), 'react-dom', require('react-dom'))
+console.log('react', require('react'), 'react-dom', require('react-dom'), setImmediate)
