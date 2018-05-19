@@ -6,10 +6,11 @@
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
+    "@babel/core": "^7.0.0-beta.47",
     "@babel/generator": "^7.0.0-beta.47",
-    "@babel/traverse": "^7.0.0-beta.47",
     "@babel/types": "^7.0.0-beta.47",
-    "babylon": "^7.0.0-beta.47",
+    "babel-plugin-minify-dead-code-elimination": "^0.4.3",
+    "babel-plugin-transform-node-env-inline": "^0.4.3",
     "pundle-api": "0.0.0"
   },
   "author": "steelbrain",

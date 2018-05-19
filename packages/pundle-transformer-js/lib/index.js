@@ -1,10 +1,13 @@
 // @flow
 
 import * as t from '@babel/types'
-import { parse } from 'babylon'
+import { promisify } from 'util'
+import { transform } from '@babel/core'
 import generate from '@babel/generator'
-import traverse from '@babel/traverse'
 import { createFileTransformer, getChunk, getFileImportHash } from 'pundle-api'
+
+import pluginEliminateDeadCode from 'babel-plugin-minify-dead-code-elimination'
+import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
 
 import manifest from '../package.json'
 import { getName } from './helpers'
@@ -17,79 +20,94 @@ INJECTIONS.forEach(function(names, sourceModule) {
   })
 })
 
+const transformAsync = promisify(transform)
+
 // TODO: have a config?
 export default function({ transformCore }: { transformCore: boolean }) {
   return createFileTransformer({
     name: 'pundle-transformer-commonjs',
     version: manifest.version,
     async callback({ filePath, format, contents, isBuffer }, { resolve, addImport, addChunk }) {
-      // Only ever process JS files
       if (format !== 'js') return null
 
-      const ast = parse(isBuffer ? contents.toString() : contents, {
-        plugins: ['dynamicImport'],
-        sourceType: 'module',
-        sourceFilename: filePath,
-      })
       const promises = []
       const injectionNames = new Set()
-      traverse(ast, {
-        ImportDeclaration({ node }) {
-          const { source } = node
-          if (!t.isStringLiteral(source)) return
-          promises.push(
-            resolve(source.value, source.loc).then(resolved => {
-              source.value = getFileImportHash(resolved.filePath, resolved.format)
-              addImport(resolved)
-            }),
-          )
-        },
-        CallExpression(path) {
-          const { node } = path
-          const { callee } = node
-          const [arg] = node.arguments
-
-          if (!t.isStringLiteral(arg)) return
-
-          if (t.isImport(callee)) {
-            promises.push(
-              resolve(arg.value, arg.loc).then(resolved => {
-                const chunk = getChunk(resolved.format, null, resolved.filePath)
-                node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
-                arg.value = chunk.id
-                addChunk(chunk)
-              }),
-            )
-            return
-          }
-
-          if (!['require', 'require.resolve'].includes(getName(callee)) || path.scope.hasBinding('require')) {
-            return
-          }
-
-          // Handling require + require.resolve
-          promises.push(
-            resolve(arg.value, arg.loc).then(resolved => {
-              arg.value = getFileImportHash(resolved.filePath, resolved.format)
-              addImport(resolved)
-            }),
-          )
-        },
-        ...(transformCore
-          ? {
-              Identifier(path) {
-                const { node } = path
-                if (
-                  INJECTIONS_NAMES.has(node.name) &&
-                  !injectionNames.has(node.name) &&
-                  path.isReferencedIdentifier() &&
-                  !path.scope.hasBinding(node.name)
-                ) {
-                  injectionNames.add(node.name)
-                }
+      const { ast } = await transformAsync(isBuffer ? contents.toString() : contents, {
+        ast: true,
+        code: false,
+        babelrc: false,
+        configFile: false,
+        sourceMaps: false,
+        filename: filePath,
+        highlightCode: false,
+        plugins: [
+          pluginTransformNodeEnvInline,
+          pluginEliminateDeadCode,
+          {
+            visitor: {
+              ImportDeclaration({ node }) {
+                const { source } = node
+                if (!t.isStringLiteral(source)) return
+                promises.push(
+                  resolve(source.value, source.loc).then(resolved => {
+                    source.value = getFileImportHash(resolved.filePath, resolved.format)
+                    addImport(resolved)
+                  }),
+                )
               },
-            }
-          : {}),
+              CallExpression(path) {
+                const { node } = path
+                const { callee } = node
+                const [arg] = node.arguments
+
+                if (!t.isStringLiteral(arg)) return
+
+                if (t.isImport(callee)) {
+                  promises.push(
+                    resolve(arg.value, arg.loc).then(resolved => {
+                      const chunk = getChunk(resolved.format, null, resolved.filePath)
+                      node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
+                      arg.value = chunk.id
+                      addChunk(chunk)
+                    }),
+                  )
+                  return
+                }
+
+                if (!['require', 'require.resolve'].includes(getName(callee)) || path.scope.hasBinding('require')) {
+                  return
+                }
+
+                // Handling require + require.resolve
+                promises.push(
+                  resolve(arg.value, arg.loc).then(resolved => {
+                    arg.value = getFileImportHash(resolved.filePath, resolved.format)
+                    addImport(resolved)
+                  }),
+                )
+              },
+              ...(transformCore
+                ? {
+                    Identifier(path) {
+                      const { node } = path
+                      if (
+                        INJECTIONS_NAMES.has(node.name) &&
+                        !injectionNames.has(node.name) &&
+                        path.isReferencedIdentifier() &&
+                        !path.scope.hasBinding(node.name)
+                      ) {
+                        injectionNames.add(node.name)
+                      }
+                    },
+                  }
+                : {}),
+            },
+          },
+        ],
+        sourceType: 'module',
+        parserOpts: {
+          plugins: ['dynamicImport'],
+        },
       })
 
       const injectionImports = new Map()
@@ -104,6 +122,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
       })
 
       await Promise.all(promises)
+
       if (injectionImports.size) {
         const wrapper = t.callExpression(t.functionExpression(null, [], t.blockStatement([])), [])
         injectionImports.forEach((resolved, importName) => {
@@ -133,6 +152,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
 
       const generated = generate(ast, {
         sourceMaps: true,
+        sourceFileName: filePath,
       })
 
       return {

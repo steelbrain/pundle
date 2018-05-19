@@ -28,4 +28,5 @@ Types of components:
 
 ## Post-initial demo goals
 
+- Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
