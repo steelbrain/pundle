@@ -97,8 +97,8 @@ export default class Worker {
       throw new Error(`Unable to load file '${filePath}' of format '${format}'`)
     }
 
-    const fileImports = []
-    const fileChunks = []
+    const fileChunks = new Map()
+    const fileImports = new Map()
 
     const transformers = this.config.components.filter(c => c.type === 'file-transformer')
     const transformed = await pReduce(
@@ -121,11 +121,12 @@ export default class Worker {
             },
             addImport(fileImport) {
               // TODO: Validation
-              fileImports.push(fileImport)
+              const id = getFileImportHash(fileImport.filePath, fileImport.format)
+              fileImports.set(id, fileImport)
             },
             addChunk(chunk) {
               // TODO: Validation
-              fileChunks.push(chunk)
+              fileChunks.set(chunk.id, chunk)
             },
           },
         )
@@ -156,8 +157,8 @@ export default class Worker {
       id: getFileImportHash(filePath, format),
       format,
       filePath,
-      imports: fileImports,
-      chunks: fileChunks,
+      imports: Array.from(fileImports.values()),
+      chunks: Array.from(fileChunks.values()),
     }
   }
 }
