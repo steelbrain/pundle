@@ -143,7 +143,7 @@ export default class Master {
 
       await this.processFileTree(
         {
-          format: 'js',
+          format: chunk.format,
           filePath: entry,
         },
         false,
