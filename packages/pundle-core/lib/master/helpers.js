@@ -1,10 +1,11 @@
 // @flow
 
+import path from 'path'
 import globrex from 'globrex'
 import type { Config } from 'pundle-core-load-config'
 
 const formatValidatorCache = {}
-export function getOutputPath(config: Config, output: { id: string, format: string }): string | false {
+export function getOutputPath(config: Config, output: { id: string, entry: ?string, format: string }): string | false {
   const formatKeys = Object.keys(config.output.formats).sort((a, b) => b.length - a.length)
 
   const formatOutput = formatKeys.find(formatKey => {
@@ -29,5 +30,8 @@ export function getOutputPath(config: Config, output: { id: string, format: stri
   if (typeof format !== 'string') {
     throw new Error(`config.output.formats.${output.format} MUST be either string OR false`)
   }
-  return format.replace('[id]', output.id).replace('[format]', output.format)
+  return format
+    .replace('[id]', output.id)
+    .replace('[format]', output.format)
+    .replace('[name]', output.entry ? path.parse(output.entry).name : output.id)
 }

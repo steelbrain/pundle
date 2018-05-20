@@ -19,6 +19,7 @@ export default function() {
 
       const sourceMapPath = getOutputPath({
         id: chunk.id,
+        entry: chunk.entry || null,
         format: `${chunk.format}.map`,
       })
       const { files, chunks } = Helpers.getContentForOutput(chunk, job)

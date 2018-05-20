@@ -129,7 +129,7 @@ export type ComponentChunkGeneratorCallback = (
   chunk: Chunk,
   job: Job,
   {
-    getOutputPath: (output: { id: string, format: string }) => string | false,
+    getOutputPath: (output: { id: string, entry: ?string, format: string }) => string | false,
   },
 ) => Promise<$FlowFixMe> | $FlowFixMe
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>
