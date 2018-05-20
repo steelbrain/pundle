@@ -8,7 +8,7 @@ import * as t from '@babel/types'
 // OR
 // module.exports = process.env.NODE_ENV === 'production' ? require('./prod-version') : require('./dev-version')
 
-function processBooleanConditional(path) {
+function processBooleanConditional(path: $FlowFixMe) {
   const { node } = path
   const { test, consequent, alternate } = node
 

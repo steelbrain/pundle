@@ -5,6 +5,7 @@ import loaderHtml from 'pundle-loader-html'
 import cliReporter from 'pundle-reporter-cli'
 import resolverDefault from 'pundle-resolver-default'
 import transformerJS from 'pundle-transformer-js'
+import transformerCSS from 'pundle-transformer-css'
 import chunkGeneratorJs from 'pundle-chunk-generator-js'
 import chunkGeneratorHtml from 'pundle-chunk-generator-html'
 import browserAliases from 'pundle-resolver-aliases-browser'
@@ -27,6 +28,7 @@ export default {
     transformerJS({
       transformCore: true,
     }),
+    transformerCSS(),
     chunkGeneratorJs(),
     chunkGeneratorHtml(),
   ],

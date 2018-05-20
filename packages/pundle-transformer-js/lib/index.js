@@ -25,7 +25,7 @@ const transformAsync = promisify(transform)
 // TODO: have a config?
 export default function({ transformCore }: { transformCore: boolean }) {
   return createFileTransformer({
-    name: 'pundle-transformer-commonjs',
+    name: 'pundle-transformer-js',
     version: manifest.version,
     async callback({ filePath, format, contents, isBuffer }, { resolve, addImport, addChunk }) {
       if (format !== 'js') return null

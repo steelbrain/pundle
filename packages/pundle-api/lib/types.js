@@ -131,5 +131,5 @@ export type ComponentChunkGeneratorCallback = (
   {
     getOutputPath: (output: { id: string, entry: ?string, format: string }) => string | false,
   },
-) => Promise<$FlowFixMe> | $FlowFixMe
+) => Promise<ComponentChunkGeneratorResult> | ComponentChunkGeneratorResult
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>
