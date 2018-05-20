@@ -2,10 +2,6 @@ const global = (typeof self !== 'undefined' && self) || {}
 const GLOBAL = global
 const root = global
 
-global.root = global.root || root
-global.GLOBAL = global.GLOBAL || GLOBAL
-global.global = global.global || global
-
 const sbPundle = global.sbPundle || {
   cache: {},
   chunks: {},
