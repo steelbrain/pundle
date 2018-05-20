@@ -109,7 +109,7 @@ export default class Master {
       for (let i = 0, { length } = chunkGenerators; i < length; i++) {
         const generator = chunkGenerators[i]
         const result = await generator.callback(chunk, job, {
-          getOutputPath: (output: { id: string, entry: ?string, format: string }) => getOutputPath(this.config, output),
+          getOutputPath: output => getOutputPath(this.config, output),
         })
         if (result) {
           return result.map(item => ({ ...item, id: chunk.id, filePath: getOutputPath(this.config, chunk) }))

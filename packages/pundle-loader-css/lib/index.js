@@ -9,9 +9,9 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
   return createFileLoader({
     name: 'pundle-loader-css',
     version: manifest.version,
-    callback({ contents, filePath, format }) {
+    callback({ contents, filePath }) {
       const extName = path.extname(filePath)
-      if (!extensions.includes(extName) || format !== 'css') {
+      if (!extensions.includes(extName)) {
         return null
       }
       return {

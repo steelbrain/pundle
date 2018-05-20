@@ -27,6 +27,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
   return createFileTransformer({
     name: 'pundle-transformer-js',
     version: manifest.version,
+    priority: 1000,
     async callback({ filePath, format, contents }, { resolve, addImport, addChunk }) {
       if (format !== 'js') return null
 
