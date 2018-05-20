@@ -10,3 +10,5 @@ console.log('hi!', test)
 // })
 
 console.log('react', require('react'), 'react-dom', require('react-dom'), setImmediate)
+
+console.log(process.env.NODE_ENV === 'development' ? 'development' : 'production')

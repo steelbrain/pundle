@@ -12,18 +12,15 @@ function processBooleanConditional(path) {
   const { node } = path
   const { test, consequent, alternate } = node
 
-  if (test && test.type === 'BooleanLiteral') {
-    if (test.value) {
-      if (alternate) {
-        if (t.isBlockStatement(alternate)) {
-          node.alternate = null
-        } else {
-          node.alternate = t.numericLiteral(0)
-        }
-      }
-    } else {
-      consequent.body = []
-    }
+  if (!t.isBooleanLiteral(test)) return
+  const { value } = test
+
+  if (t.isIfStatement(node)) {
+    if (value) {
+      node.alternate = null
+    } else consequent.body = []
+  } else {
+    path.replaceWith(value ? consequent : alternate)
   }
 }
 
