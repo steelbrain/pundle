@@ -21,4 +21,4 @@ module.system.node.resolve_dirname=node_modules
 [strict]
 
 [version]
-^0.71.0
+^0.72.0
