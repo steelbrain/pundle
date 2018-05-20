@@ -147,7 +147,6 @@ export default class Worker {
       },
       {
         contents: result.contents,
-        isBuffer: result.isBuffer,
         sourceMap: result.sourceMap,
       },
     )

@@ -31,7 +31,6 @@ export type WorkerProcessResult = {
   filePath: string,
   format: string,
   contents: Buffer | string,
-  isBuffer: boolean,
   sourceMap: ?Object,
   imports: Array<ImportResolved>,
   chunks: Array<Chunk>,
@@ -85,7 +84,6 @@ export type ComponentFileLoaderRequest = {|
 
 export type ComponentFileLoaderResult = {|
   contents: Buffer | string,
-  isBuffer: boolean,
   sourceMap: ?Object,
 |}
 
@@ -98,7 +96,6 @@ export type ComponentFileTransformerRequest = {|
   filePath: string,
   format: string,
   contents: Buffer | string,
-  isBuffer: boolean,
   sourceMap: ?Object,
 |}
 // TODO: Maybe transform original error to have a loc?
@@ -109,7 +106,6 @@ export type ComponentFileTransformerContext = {|
 |}
 export type ComponentFileTransformerResult = {|
   contents: Buffer | string,
-  isBuffer: boolean,
   sourceMap: ?Object,
 |}
 export type ComponentFileTransformerCallback = (

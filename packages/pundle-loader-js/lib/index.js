@@ -16,7 +16,6 @@ export default function({ extensions = ['.js', '.mjs'] }: { extensions?: Array<s
       }
       return {
         contents: contents.toString(),
-        isBuffer: false,
         sourceMap: null,
       }
     },

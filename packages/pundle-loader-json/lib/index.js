@@ -25,7 +25,6 @@ export default function({ extensions = ['.json'] }: { extensions?: Array<string>
       }
       return {
         contents: `module.exports = ${JSON.stringify(parsed)}`,
-        isBuffer: false,
         sourceMap: null,
       }
     },

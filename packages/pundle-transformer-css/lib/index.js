@@ -8,10 +8,10 @@ export default function() {
   return createFileTransformer({
     name: 'pundle-transformer-css',
     version: manifest.version,
-    async callback({ filePath, format, contents, isBuffer }, { resolve, addImport, addChunk }) {
+    async callback({ filePath, format, contents }, { resolve, addImport, addChunk }) {
       if (format !== 'css') return null
 
-      const stringContents = isBuffer ? contents.toString() : contents
+      const stringContents = typeof contents === 'string' ? contents : contents.toString()
       console.log('stringContents', stringContents)
 
       return null

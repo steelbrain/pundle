@@ -27,12 +27,12 @@ export default function({ transformCore }: { transformCore: boolean }) {
   return createFileTransformer({
     name: 'pundle-transformer-js',
     version: manifest.version,
-    async callback({ filePath, format, contents, isBuffer }, { resolve, addImport, addChunk }) {
+    async callback({ filePath, format, contents }, { resolve, addImport, addChunk }) {
       if (format !== 'js') return null
 
       const promises = []
       const injectionNames = new Set()
-      const { ast } = await transformAsync(isBuffer ? contents.toString() : contents, {
+      const { ast } = await transformAsync(typeof contents === 'string' ? contents : contents.toString(), {
         ast: true,
         code: false,
         babelrc: false,
@@ -157,7 +157,6 @@ export default function({ transformCore }: { transformCore: boolean }) {
 
       return {
         contents: generated.code,
-        isBuffer: false,
         sourceMap: generated.map,
       }
     },

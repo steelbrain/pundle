@@ -16,7 +16,6 @@ export default function({ extensions = ['.html'] }: { extensions?: Array<string>
       }
       return {
         contents: contents.toString(),
-        isBuffer: false,
         sourceMap: null,
       }
     },
