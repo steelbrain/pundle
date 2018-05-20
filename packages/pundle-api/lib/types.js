@@ -104,6 +104,7 @@ export type ComponentFileTransformerContext = {|
   resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
   addImport(fileImport: ImportResolved): void,
   addChunk(chunk: Chunk): void,
+  getFileName(chunk: Chunk): string | false,
 |}
 export type ComponentFileTransformerResult = {|
   contents: Buffer | string,
@@ -126,7 +127,7 @@ export type ComponentChunkGeneratorCallback = (
   chunk: Chunk,
   job: Job,
   {
-    getOutputPath: (output: { id: string, entry: ?string, format: string }) => string | false,
+    getFileName: (chunk: Chunk) => string | false,
   },
-) => Promise<ComponentChunkGeneratorResult> | ComponentChunkGeneratorResult
+) => Promise<?ComponentChunkGeneratorResult> | ?ComponentChunkGeneratorResult
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>

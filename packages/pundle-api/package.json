@@ -6,6 +6,7 @@
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
+    "globrex": "^0.1.1",
     "imurmurhash": "^0.1.4"
   },
   "author": "steelbrain",

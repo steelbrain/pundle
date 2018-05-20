@@ -1,6 +1,7 @@
 // @flow
 
 import globrex from 'globrex'
+import invariant from 'assert'
 import { createChunkGenerator, getFileImportHash, type Job, type Chunk } from 'pundle-api'
 
 import manifest from '../package.json'
@@ -30,24 +31,30 @@ export default function() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
     version: manifest.version,
-    async callback(chunk: Chunk, job: Job, { getOutputPath }) {
+    async callback(chunk: Chunk, job: Job, { getFileName }) {
       if (chunk.format !== 'html') return null
 
       const { entry } = chunk
       if (!entry) return null
 
       function getChunkImportLine(chunkToWrite): string {
-        const outputPath = getOutputPath(chunkToWrite)
-        if (chunkToWrite.format === 'js') {
-          return `<script src="${outputPath}" type="application/javascript"></script>`
-        }
-        if (chunkToWrite.format === 'css') {
-          return `<link href="${outputPath}" type="text/css" rel="stylesheet">`
+        const outputPath = getFileName(chunkToWrite)
+        if (outputPath) {
+          if (chunkToWrite.format === 'js') {
+            return `<script src="${outputPath}" type="application/javascript"></script>`
+          }
+          if (chunkToWrite.format === 'css') {
+            return `<link href="${outputPath}" type="text/css" rel="stylesheet">`
+          }
+        } else {
+          // TODO: For chunks that don't want to be written, what do we do?
         }
         throw new Error(`Invalid chunk format: ${chunkToWrite.format} to include in html file '${entry}'`)
       }
 
       const file = job.files.get(getFileImportHash(entry, chunk.format))
+      invariant(file, 'entry file not found')
+
       const chunks = Array.from(job.chunks.values()).filter(i => i.entry !== chunk.entry && i.format !== chunk.format)
       const contents = typeof file.contents === 'string' ? file.contents : file.contents.toString()
 
@@ -60,7 +67,11 @@ export default function() {
 
         const filter = g1.trim()
         const chunksToWrite = filter ? getChunksMatchingFilter(chunks, filter, entry) : chunks
-        return chunksToWrite.map(getChunkImportLine).map(line => `${prefix}${line}`)
+
+        return chunksToWrite
+          .map(getChunkImportLine)
+          .map(line => `${prefix}${line}`)
+          .join('\n')
       })
 
       return [{ format: chunk.format, contents: transformedContents }]

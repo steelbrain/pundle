@@ -14,12 +14,11 @@ export default function() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-js',
     version: manifest.version,
-    async callback(chunk: Chunk, job: Job, { getOutputPath }) {
+    async callback(chunk: Chunk, job: Job, { getFileName }) {
       if (chunk.format !== 'js') return null
 
-      const sourceMapPath = getOutputPath({
-        id: chunk.id,
-        entry: chunk.entry || null,
+      const sourceMapPath = getFileName({
+        ...chunk,
         format: `${chunk.format}.map`,
       })
       const { files, chunks } = Helpers.getContentForOutput(chunk, job)

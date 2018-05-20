@@ -1,5 +1,7 @@
 // @flow
 
+import path from 'path'
+import globrex from 'globrex'
 import Imurmurhash from 'imurmurhash'
 import type { Chunk } from './types'
 
@@ -34,4 +36,39 @@ export function getChunk(format: string, label: ?string = null, entry: ?string =
     label,
     imports: [],
   }
+}
+
+const outputFormatCache = {}
+export function getFileName(
+  formats: { [string]: string | false },
+  output: { id: string, entry: ?string, format: string },
+): string | false {
+  const formatKeys = Object.keys(formats).sort((a, b) => b.length - a.length)
+
+  const formatOutput = formatKeys.find(formatKey => {
+    let regex = outputFormatCache[formatKey]
+    if (!regex) {
+      const result = globrex(formatKey)
+      regex = result.regex // eslint-disable-line prefer-destructuring
+      outputFormatCache[formatKey] = result.regex
+    }
+
+    return regex.test(output.format)
+  })
+
+  if (typeof formatOutput === 'undefined') {
+    throw new Error(`Unable to find output path for format '${output.format}' in config file`)
+  }
+
+  const format = formats[formatOutput]
+  if (format === false) {
+    return false
+  }
+  if (typeof format !== 'string') {
+    throw new Error(`formats.${output.format} MUST be either string OR false`)
+  }
+  return format
+    .replace('[id]', output.id)
+    .replace('[format]', output.format)
+    .replace('[name]', output.entry ? path.parse(output.entry).name : output.id)
 }

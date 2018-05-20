@@ -9,6 +9,7 @@ import {
   Job,
   PundleError,
   getChunk,
+  getFileName,
   getFileImportHash,
   type Chunk,
   type ImportResolved,
@@ -18,7 +19,6 @@ import {
 } from 'pundle-api'
 import type { Config } from 'pundle-core-load-config'
 
-import { getOutputPath } from './helpers'
 import WorkerDelegate from '../worker/delegate'
 import type { RunOptions } from '../types'
 
@@ -86,7 +86,7 @@ export default class Master {
   }
   async generate(
     givenJob: Job,
-  ): Promise<Array<{ id: string, filePath: string | false, format: string, contents: string | Buffer }>> {
+  ): Promise<Array<{ id: string, fileName: string | false, format: string, contents: string | Buffer }>> {
     let job = givenJob.clone()
     const jobTransformers = this.config.components.filter(c => c.type === 'job-transformer')
 
@@ -109,10 +109,10 @@ export default class Master {
       for (let i = 0, { length } = chunkGenerators; i < length; i++) {
         const generator = chunkGenerators[i]
         const result = await generator.callback(chunk, job, {
-          getOutputPath: output => getOutputPath(this.config, output),
+          getFileName: output => getFileName(this.config.output.formats, output),
         })
         if (result) {
-          return result.map(item => ({ ...item, id: chunk.id, filePath: getOutputPath(this.config, chunk) }))
+          return result.map(item => ({ ...item, id: chunk.id, fileName: getFileName(this.config.output.formats, chunk) }))
         }
       }
       throw new Error(

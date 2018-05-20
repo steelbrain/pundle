@@ -1,9 +1,10 @@
 // @flow
 
+import invariant from 'assert'
+import generate from '@babel/generator'
 import * as t from '@babel/types'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
-import generate from '@babel/generator'
 import { createFileTransformer, getChunk, getFileImportHash } from 'pundle-api'
 
 import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
@@ -114,6 +115,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
       const injectionImports = new Map()
       injectionNames.forEach(item => {
         const sourceModule = INJECTIONS_NAMES.get(item)
+        invariant(sourceModule, 'sourceModule for Injection was not found?')
         promises.push(
           resolve(sourceModule).then(resolved => {
             injectionImports.set(sourceModule, getFileImportHash(resolved.filePath, resolved.format))
@@ -131,7 +133,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
           let names = INJECTIONS.get(importName)
           if (typeof names === 'string') {
             wrapper.callee.params.push(t.identifier(names))
-          } else {
+          } else if (Array.isArray(names)) {
             names = names.filter(item => injectionNames.has(item))
             const refName = `__$sb$pundle${importName}`
             wrapper.callee.params.push(t.identifier(refName))
