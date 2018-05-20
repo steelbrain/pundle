@@ -1,5 +1,9 @@
 # Pundle - NG (pre-alpha)
 
+## Note to self
+
+- Implement chunk dependency on each other
+
 ## Features to include
 
 - typescript

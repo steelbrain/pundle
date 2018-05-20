@@ -25,6 +25,7 @@ function getChunksMatchingFilter(chunks: Array<Chunk>, filter: string, entry: st
 }
 
 // TODO: have a config?
+// TODO: Topo sort because some chunks depend on others?
 export default function() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
