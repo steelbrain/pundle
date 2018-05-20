@@ -6,9 +6,9 @@ import { transform } from '@babel/core'
 import generate from '@babel/generator'
 import { createFileTransformer, getChunk, getFileImportHash } from 'pundle-api'
 
-import pluginEliminateDeadCode from 'babel-plugin-minify-dead-code-elimination'
 import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
 
+import pluginRemoveDeadNodes from './plugin-remove-dead-nodes'
 import manifest from '../package.json'
 import { getName } from './helpers'
 
@@ -42,7 +42,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
         highlightCode: false,
         plugins: [
           pluginTransformNodeEnvInline,
-          pluginEliminateDeadCode,
+          pluginRemoveDeadNodes,
           {
             visitor: {
               ImportDeclaration({ node }) {

@@ -29,3 +29,8 @@ Types of components:
 
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
+
+
+## Notes
+
+- `babel-plugin-minify-dead-code-elimination` increases the compile time of a React app from 1116ms to 2214ms
