@@ -1,5 +1,6 @@
 import path from 'path'
 import loaderJs from 'pundle-loader-js'
+import loaderCSS from 'pundle-loader-css'
 import loaderHtml from 'pundle-loader-html'
 import cliReporter from 'pundle-reporter-cli'
 import resolverDefault from 'pundle-resolver-default'
@@ -16,9 +17,11 @@ export default {
       formats: {
         js: ['.js', '.mjs', '.json'],
         html: ['.html'],
+        css: ['.css'],
       },
       aliases: browserAliases,
     }),
+    loaderCSS({}),
     loaderJs({}),
     loaderHtml({}),
     transformerJS({
