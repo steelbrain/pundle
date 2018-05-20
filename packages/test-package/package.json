@@ -7,6 +7,7 @@
   "scripts": {},
   "dependencies": {
     "pundle-chunk-generator-js": "0.0.0",
+    "pundle-chunk-generator-html": "0.0.0",
     "pundle-core": "0.0.0",
     "pundle-loader-js": "0.0.0",
     "pundle-loader-html": "0.0.0",
