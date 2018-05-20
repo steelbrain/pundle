@@ -121,7 +121,15 @@ export default class Worker {
             addImport(fileImport) {
               // TODO: Validation
               const id = getFileImportHash(fileImport.filePath, fileImport.format)
-              fileImports.set(id, fileImport)
+              // TODO: Note this somewhere but when we import a file
+              // it's format is discarded and current chunk format is used
+              // This allows for requiring css files in JS depsite them
+              // being resolved as css. Or allow their "module" JS counterparts
+              // to be exposed
+              fileImports.set(id, {
+                ...fileImport,
+                format,
+              })
             },
             addChunk(chunk) {
               // TODO: Validation
