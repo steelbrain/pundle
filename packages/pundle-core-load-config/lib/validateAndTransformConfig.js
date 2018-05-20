@@ -5,7 +5,7 @@ import path from 'path'
 import difference from 'lodash/difference'
 import { PundleError, validateComponent } from 'pundle-api'
 
-import type { Config } from './types'
+import type { AcceptedConfig } from './types'
 
 const ALLOWED_CONFIG_FILE_KEYS = ['entry', 'rootDirectory', 'output', 'components']
 const ALLOWED_CONFIG_FILE_OUTPUT_KEYS = ['formats', 'rootDirectory']
@@ -20,7 +20,7 @@ export default async function validateAndTransformConfig({
   directory,
   configFileName,
   config: givenConfig,
-}: Payload): Promise<Config> {
+}: Payload): Promise<AcceptedConfig> {
   const config = { ...givenConfig }
   const extraConfigKeys = difference(Object.keys(config), ALLOWED_CONFIG_FILE_KEYS)
   if (extraConfigKeys.length) {

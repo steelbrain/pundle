@@ -2,21 +2,21 @@
 
 import type { Component } from 'pundle-api'
 
-export type Config = {|
+export type AcceptedConfig = {|
   entry?: Array<string> | string,
   rootDirectory: string,
   output: {
     formats: { [string]: string | false },
     rootDirectory: string,
   },
-  components?: Array<Component<*, *>>,
+  components?: Array<Component<any, any>>,
 |}
-export type LoadedConfig = {|
+export type Config = {|
   entry: Array<string>,
   rootDirectory: string,
   output: {
     formats: { [string]: string | false },
     rootDirectory: string,
   },
-  components: Array<Component<*, *>>,
+  components: Array<Component<any, any>>,
 |}

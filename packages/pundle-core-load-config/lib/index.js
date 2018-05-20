@@ -1,24 +1,24 @@
 // @flow
 
 import { PundleError } from 'pundle-api'
-import type { Config, LoadedConfig } from './types'
+import type { Config, AcceptedConfig } from './types'
 import readConfigFile from './readConfigFile'
 import validateAndTransformConfig from './validateAndTransformConfig'
 
 type Payload = {|
   directory: string,
-  config: Config,
+  config: AcceptedConfig,
   configFileName: string,
   loadConfigFile: boolean,
 |}
 
-export type { LoadedConfig as Config }
+export type { Config, AcceptedConfig }
 export default async function loadConfig({
   directory,
   config: givenInlineConfig,
   configFileName,
   loadConfigFile,
-}: Payload): Promise<LoadedConfig> {
+}: Payload): Promise<Config> {
   const fileConfig = await validateAndTransformConfig({
     directory,
     configFileName,
