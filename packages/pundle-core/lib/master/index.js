@@ -35,12 +35,8 @@ export default class Master {
     this.options = options
     this.queue = []
 
-    this.resolverWorker = new WorkerDelegate('resolver', options)
-    this.processorWorkers = os.cpus().map(() => new WorkerDelegate('processor', options))
-
-    this.getAllWorkers().forEach(worker => {
-      worker.setMaster(this)
-    })
+    this.resolverWorker = new WorkerDelegate('resolver', options, this)
+    this.processorWorkers = os.cpus().map(() => new WorkerDelegate('processor', options, this))
   }
   getAllWorkers(): Array<WorkerDelegate> {
     return [this.resolverWorker].concat(this.processorWorkers)

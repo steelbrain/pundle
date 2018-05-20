@@ -11,27 +11,23 @@ import type { RunOptions, WorkerType, WorkerJobType } from '../types'
 export default class Worker {
   type: WorkerType
   options: RunOptions
-  master: ?Master
+  master: Master
   handle: ?ChildProcess
   bridge: ?Communication
   isWorking: number
 
-  constructor(type: WorkerType, options: RunOptions) {
+  constructor(type: WorkerType, options: RunOptions, master: Master) {
     this.type = type
     this.options = options
-    this.master = null
+    this.master = master
     this.isWorking = 0
   }
   isAlive(): boolean {
     return !!(this.handle && this.bridge)
   }
-  setMaster(master: $FlowFixMe) {
-    this.master = master
-  }
   async send<T>(type: WorkerJobType, payload: Object, onTaskComplete?: () => void): Promise<T> {
-    const { bridge, master } = this
+    const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
-    invariant(master, 'Cannot send() without a master')
 
     const taskCompleted = () => {
       this.isWorking = this.isWorking > 0 ? this.isWorking - 1 : 0
@@ -55,9 +51,6 @@ export default class Worker {
   async spawn() {
     if (this.isAlive()) {
       throw new Error(`Cannot spawn worker is still alive`)
-    }
-    if (!this.master) {
-      throw new Error('Cannot setupListeners() without a master')
     }
 
     const spawnedProcess = fork(path.join(__dirname, 'process'), [], {
@@ -91,9 +84,6 @@ export default class Worker {
 
     if (!bridge) {
       throw new Error('Cannot setupListeners() on a dead worker')
-    }
-    if (!master) {
-      throw new Error('Cannot setupListeners() without a master')
     }
     bridge.on('resolve', async params => master.resolve(params))
   }

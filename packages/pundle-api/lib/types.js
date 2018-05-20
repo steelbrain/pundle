@@ -105,7 +105,7 @@ export type ComponentFileTransformerRequest = {|
 export type ComponentFileTransformerContext = {|
   resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
   addImport(fileImport: ImportResolved): void,
-  addChunk(chunk: $FlowFixMe): void,
+  addChunk(chunk: Chunk): void,
 |}
 export type ComponentFileTransformerResult = {|
   contents: Buffer | string,
