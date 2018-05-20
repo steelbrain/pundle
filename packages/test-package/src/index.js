@@ -1,7 +1,6 @@
 // import test2 from './test2'
 
 const test = require('./test')
-const indexCss = require('../styles/index.css')
 
 // console.log('hi!', test2)
 console.log('hi!', test)
@@ -14,4 +13,4 @@ console.log('react', require('react'), 'react-dom', require('react-dom'), setImm
 
 console.log(process.env.NODE_ENV === 'development' ? 'development' : 'production')
 
-console.log('indexCss', indexCss)
+// console.log('indexCss', require('../styles/index.css'))

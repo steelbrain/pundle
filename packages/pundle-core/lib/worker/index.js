@@ -1,7 +1,6 @@
 // @flow
 
 import fs from 'sb-fs'
-import path from 'path'
 import pReduce from 'p-reduce'
 import mergeSourceMap from 'merge-source-map'
 import {
@@ -28,7 +27,7 @@ export default class Worker {
     this.options = options
     this.bridge = bridge
   }
-  async resolve({ request, requestRoot, ignoredResolvers }: ImportRequest): Promise<ComponentFileResolverResult> {
+  async resolve({ request, requestFile, ignoredResolvers }: ImportRequest): Promise<ComponentFileResolverResult> {
     const resolvers = this.config.components.filter(c => c.type === 'file-resolver')
     const allowedResolvers = resolvers.filter(c => !ignoredResolvers.includes(c.name))
 
@@ -42,13 +41,13 @@ export default class Worker {
     const result = await pReduce(
       allowedResolvers,
       async (payload, resolver) => {
-        const response = await resolver.callback(payload)
+        const response = await resolver.callback(payload, { rootDirectory: this.config.rootDirectory })
         // TODO: Validation?
         return response || payload
       },
       {
         request,
-        requestRoot,
+        requestFile,
         ignoredResolvers,
         format: null,
         resolved: null,
@@ -57,7 +56,7 @@ export default class Worker {
     )
 
     if (!result.resolved) {
-      throw new Error(`Unable to resolve '${request}' from '${requestRoot}'`)
+      throw new Error(`Unable to resolve '${request}' from '${requestFile || this.config.rootDirectory}'`)
     }
     if (!result.format) {
       throw new Error(`Resolved request '${request}' to '${result.resolved}' but format was not determined`)
@@ -114,7 +113,7 @@ export default class Worker {
             resolve: async request => {
               const resolved = await this.resolveFromMaster({
                 request,
-                requestRoot: path.dirname(filePath),
+                requestFile: filePath,
                 ignoredResolvers: [],
               })
               return { filePath: resolved.resolved, format: resolved.format }

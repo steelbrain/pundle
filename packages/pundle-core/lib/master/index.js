@@ -73,7 +73,7 @@ export default class Master {
       this.config.entry.map(entry =>
         this.resolve({
           request: entry,
-          requestRoot: this.config.rootDirectory,
+          requestFile: null,
           ignoredResolvers: [],
         }),
       ),

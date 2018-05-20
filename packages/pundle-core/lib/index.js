@@ -1,12 +1,12 @@
 // @flow
 
-import loadConfig, { type AcceptedConfig } from 'pundle-core-load-config'
+import loadConfig from 'pundle-core-load-config'
 
 import Master from './master'
 import { CONFIG_FILE_NAME } from './constants'
 
 type RunOptions = {|
-  config?: AcceptedConfig,
+  config?: Object,
   directory?: string,
   configFileName?: string,
   loadConfigFile?: boolean,

@@ -14,7 +14,7 @@ export default function({ formats, aliases = {} }: { formats: { [string]: string
     name: 'pundle-file-resolver',
     version: manifest.version,
     // TODO: Respect the `format` parameter?
-    async callback({ request, requestRoot, resolved }) {
+    async callback({ request, requestFile, resolved }, { rootDirectory }) {
       if (resolved) return null
 
       let resolvedRoot = null
@@ -23,7 +23,7 @@ export default function({ formats, aliases = {} }: { formats: { [string]: string
           request,
           {
             modules: aliases,
-            basedir: requestRoot,
+            basedir: requestFile ? path.dirname(requestFile) : rootDirectory,
             extensions: flatten(Object.values(formats)),
             packageFilter(pkg, pkgroot) {
               resolvedRoot = path.dirname(pkgroot)
@@ -48,7 +48,7 @@ export default function({ formats, aliases = {} }: { formats: { [string]: string
 
       return {
         request,
-        requestRoot,
+        requestFile,
         format,
         resolved: response,
         resolvedRoot,

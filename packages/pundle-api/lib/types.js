@@ -15,7 +15,7 @@ export type ImportResolved = {
 }
 export type ImportRequest = {
   request: string,
-  requestRoot: string,
+  requestFile: ?string,
   ignoredResolvers: Array<string>,
 }
 export type Chunk = {
@@ -59,20 +59,21 @@ export type ComponentIssueReporter = Component<'issue-reporter', ComponentIssueR
 
 export type ComponentFileResolverRequest = {|
   request: string,
-  requestRoot: string,
+  requestFile: ?string,
   format: ?string,
   resolved: ?string,
   resolvedRoot: ?string,
 |}
 export type ComponentFileResolverResult = {|
   request: string,
-  requestRoot: string,
+  requestFile: ?string,
   format: string,
   resolved: string,
   resolvedRoot: ?string,
 |}
 export type ComponentFileResolverCallback = (
   request: ComponentFileResolverRequest,
+  context: { rootDirectory: string },
 ) => Promise<?ComponentFileResolverResult> | ?ComponentFileResolverResult
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
 
