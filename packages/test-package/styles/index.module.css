@@ -1,0 +1,13 @@
+/* styles.css */
+:global .page {
+  background: #fafafa
+}
+
+.title {
+  composes: title from "./test.css";
+  color: green;
+}
+
+.article {
+  font-size: 16px;
+}

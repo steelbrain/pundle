@@ -38,7 +38,7 @@ export default {
     formats: {
       '*.map': '[id].[format]',
       html: '[name].[format]',
-      js: '[id].[format]',
+      '*': '[id].[format]',
     },
   },
 }

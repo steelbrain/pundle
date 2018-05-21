@@ -6,6 +6,8 @@
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
+    "postcss": "^6.0.22",
+    "postcss-modules": "^1.1.0",
     "pundle-api": "0.0.0"
   },
   "author": "steelbrain",
