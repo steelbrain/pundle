@@ -2,6 +2,8 @@
 
 import type Job from './job'
 
+type GetFileNamePayload = { id: string, entry: ?string, format: string }
+
 export type ErrorType = 'CONFIG' | 'DAEMON'
 export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED'
 
@@ -104,7 +106,7 @@ export type ComponentFileTransformerContext = {|
   resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
   addImport(fileImport: ImportResolved): void,
   addChunk(chunk: Chunk): void,
-  getFileName(chunk: Chunk): string | false,
+  getFileName(payload: GetFileNamePayload): string | false,
 |}
 export type ComponentFileTransformerResult = {|
   contents: Buffer | string,
@@ -127,7 +129,7 @@ export type ComponentChunkGeneratorCallback = (
   chunk: Chunk,
   job: Job,
   {
-    getFileName: (chunk: Chunk) => string | false,
+    getFileName: (payload: GetFileNamePayload) => string | false,
   },
 ) => Promise<?ComponentChunkGeneratorResult> | ?ComponentChunkGeneratorResult
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>

@@ -14,7 +14,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
     version: manifest.version,
     priority: 1001,
     // +1 from transformer-js
-    async callback({ filePath, format, contents }, { addChunk }) {
+    async callback({ filePath, format, contents }, { addChunk, getFileName }) {
       const extName = path.extname(filePath)
       if (!extensions.includes(extName)) {
         return null
@@ -35,14 +35,15 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
         )
       }
 
+      const cssChunk = getChunk('css', null, filePath)
       const processed = await postcss(plugins).process(typeof contents === 'string' ? contents : contents.toString(), {
         from: filePath,
-        map: { inline: false },
+        map: { inline: false, annotation: false },
       })
 
       if (format === 'js') {
         // was imported from a JS file
-        addChunk(getChunk('css', null, filePath))
+        addChunk(cssChunk)
 
         return {
           contents: moduleMap ? `module.exports = ${JSON.stringify(moduleMap)}` : '',
@@ -50,8 +51,16 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
         }
       } else if (format === 'css') {
         // entry or was imported from a css file
+        let { css } = processed
+        if (processed.map) {
+          const sourceMapUrl = getFileName({ ...cssChunk, format: 'css.map' })
+          if (sourceMapUrl) {
+            css += `\n$/*# sourceMappingURL=${sourceMapUrl} */`
+          }
+        }
+
         return {
-          contents: processed.css,
+          contents: css,
           sourceMap: processed.map,
         }
       }
