@@ -29,6 +29,10 @@ export function getContentForOutput(
 
     file.imports.forEach(iterateImports)
     file.chunks.forEach(function(relevantChunk) {
+      if (relevantChunk.format !== fileImport.format) {
+        // Do not include chunks of other formats
+        return
+      }
       relevantChunks.set(relevantChunk.id, relevantChunk)
     })
   }
