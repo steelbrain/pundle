@@ -4,7 +4,6 @@ import fs from 'sb-fs'
 import pReduce from 'p-reduce'
 import mergeSourceMap from 'merge-source-map'
 import {
-  getFileName,
   getFileImportHash,
   type Chunk,
   type ImportResolved,
@@ -112,7 +111,6 @@ export default class Worker {
             filePath,
           },
           {
-            getFileName: (chunk: Chunk): string | false => getFileName(this.config.output.formats, chunk),
             resolve: async request => {
               const resolved = await this.resolveFromMaster({
                 request,
