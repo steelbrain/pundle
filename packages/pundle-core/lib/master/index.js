@@ -112,7 +112,15 @@ export default class Master {
           getFileName: output => getFileName(this.config.output.formats, output),
         })
         if (result) {
-          return result.map(item => ({ ...item, id: chunk.id, fileName: getFileName(this.config.output.formats, chunk) }))
+          return result.map(item => ({
+            ...item,
+            id: chunk.id,
+            fileName: getFileName(this.config.output.formats, {
+              id: chunk.id,
+              entry: chunk.entry,
+              format: item.format,
+            }),
+          }))
         }
       }
       throw new Error(

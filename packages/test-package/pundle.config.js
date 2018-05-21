@@ -8,6 +8,7 @@ import transformerJS from 'pundle-transformer-js'
 import transformerCSS from 'pundle-transformer-css'
 import chunkGeneratorJs from 'pundle-chunk-generator-js'
 import chunkGeneratorHtml from 'pundle-chunk-generator-html'
+import chunkGeneratorStatic from 'pundle-chunk-generator-static'
 import browserAliases from 'pundle-resolver-aliases-browser'
 
 export default {
@@ -31,6 +32,7 @@ export default {
     transformerCSS(),
     chunkGeneratorJs(),
     chunkGeneratorHtml(),
+    chunkGeneratorStatic({ formats: ['css'] }),
   ],
   rootDirectory: __dirname,
   output: {
