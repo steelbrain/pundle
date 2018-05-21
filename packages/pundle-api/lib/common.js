@@ -10,14 +10,14 @@ export function getChunkHash(identifier: string, format: string): string {
     .hash(identifier)
     .result()
     .toString()
-  return `c${format}${hash}`
+  return `${format}${hash}`
 }
 export function getFileImportHash(filePath: string, format: string): string {
   const hash = new Imurmurhash()
     .hash(filePath)
     .result()
     .toString()
-  return `p${format}${hash}`
+  return `${format}${hash}`
 }
 
 export function getChunk(format: string, label: ?string = null, entry: ?string = null): Chunk {
