@@ -117,20 +117,19 @@ export default class Worker {
                 requestFile: filePath,
                 ignoredResolvers: [],
               })
+              if (resolved.format !== format) {
+                // TODO: Note this somewhere but when we import a file
+                // it's format is discarded and current chunk format is used
+                // This allows for requiring css files in JS depsite them
+                // being resolved as css. Or allow their "module" JS counterparts
+                // to be exposed
+                resolved.format = format
+              }
               return { filePath: resolved.resolved, format: resolved.format }
             },
             addImport(fileImport) {
               // TODO: Validation
-              const id = getFileImportHash(fileImport.filePath, fileImport.format)
-              // TODO: Note this somewhere but when we import a file
-              // it's format is discarded and current chunk format is used
-              // This allows for requiring css files in JS depsite them
-              // being resolved as css. Or allow their "module" JS counterparts
-              // to be exposed
-              fileImports.set(id, {
-                ...fileImport,
-                format,
-              })
+              fileImports.set(getFileImportHash(fileImport.filePath, fileImport.format), fileImport)
             },
             addChunk(chunk) {
               // TODO: Validation
