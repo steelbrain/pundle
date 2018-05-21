@@ -138,10 +138,11 @@ export default class Master {
       // TODO: Return silently instead?
       throw new Error('Cannot process chunk without entry')
     }
-    if (job.locks.has(chunk.id)) return
+    const lockKey = `c${chunk.id}`
+    if (job.locks.has(lockKey)) return
     if (job.chunks.has(chunk.id)) return
 
-    job.locks.add(chunk.id)
+    job.locks.add(lockKey)
     try {
       job.chunks.set(chunk.id, chunk)
 
@@ -157,7 +158,7 @@ export default class Master {
       job.chunks.delete(chunk.id)
       throw error
     } finally {
-      job.locks.delete(chunk.id)
+      job.locks.delete(lockKey)
     }
   }
   // TODO: Use cached old files here if present on the job?
