@@ -6,8 +6,8 @@ import postcssModules from 'postcss-modules'
 import { createFileTransformer, getChunk } from 'pundle-api'
 
 import manifest from '../package.json'
+import pluginImportResolver from './plugin-import-resolver'
 
-// TODO: Process imports in JS files
 export default function({ extensions = ['.css'] }: { extensions?: Array<string> } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-css',
@@ -34,6 +34,12 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
           }),
         )
       }
+      plugins.push(
+        pluginImportResolver({
+          resolve,
+          addChunk,
+        }),
+      )
 
       const cssChunk = getChunk('css', null, filePath)
       const processed = await postcss(plugins).process(typeof contents === 'string' ? contents : contents.toString(), {
@@ -58,36 +64,6 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
             css += `\n$/*# sourceMappingURL=${sourceMapUrl} */`
           }
         }
-
-        // Add imports
-        const promises = []
-
-        const { nodes } = processed.root
-
-        let i = nodes.length
-        while (i--) {
-          const node = nodes[i]
-          const currentIndex = i
-          if (node.type !== 'atrule' || node.name !== 'import') continue
-
-          if (!node.params.startsWith('"') || !node.params.endsWith('"')) continue
-
-          let request = node.params.slice(1, -1)
-
-          if (request.slice(0, 1) !== '.') {
-            request = `./${request}`
-          }
-
-          promises.push(
-            resolve(request, node.source.start).then(resolved => {
-              const importChunk = getChunk(resolved.format, null, resolved.filePath)
-              addChunk(importChunk)
-              nodes.splice(currentIndex, 1)
-            }),
-          )
-        }
-
-        await Promise.all(promises)
 
         return {
           contents: css,
