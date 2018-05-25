@@ -41,6 +41,7 @@ export default {
     formats: {
       '*.map': '[id].[format]',
       html: '[name].[format]',
+      static: '[id][ext]',
       '*': '[id].[format]',
     },
   },

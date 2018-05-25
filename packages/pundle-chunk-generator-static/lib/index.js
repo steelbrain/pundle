@@ -10,10 +10,11 @@ export default function({ formats }: { formats: Array<string> }) {
     name: 'pundle-chunk-generator-html',
     version: manifest.version,
     async callback(chunk: Chunk, job: Job) {
-      if (!formats.includes(chunk.format) || !chunk.entry) return null
+      const formatMatch = chunk.format === 'static' || formats.includes(chunk.format)
+      if (!formatMatch || !chunk.entry) return null
 
       const file = job.files.get(getFileImportHash(chunk.entry, chunk.format))
-      invariant(file, 'Entry for chunk not found in generator-html')
+      invariant(file, 'Entry for chunk not found in generator-static')
 
       const outputs = [
         {
