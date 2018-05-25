@@ -134,12 +134,15 @@ export default class Worker {
     )
 
     return {
-      ...transformed,
       id: getFileImportHash(filePath, format),
       format,
       filePath,
       imports: Array.from(fileImports.values()),
       chunks: Array.from(fileChunks.values()),
+      // FIXME: Currently we don't have config on both sides to send buffers through process.send(), it shows up
+      // as an orindary object instead of a Buffer
+      contents: typeof transformed.contents === 'string' ? transformed.contents : transformed.contents.toString(),
+      sourceMap: transformed.sourceMap,
     }
   }
 }
