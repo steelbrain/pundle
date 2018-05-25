@@ -70,33 +70,6 @@ export default class Worker {
   }
   async process({ filePath, format }: ImportResolved): Promise<WorkerProcessResult> {
     const contents = await fs.readFile(filePath)
-    const initialPayload = {
-      format,
-      contents,
-      filePath,
-    }
-
-    const loaders = this.config.components.filter(c => c.type === 'file-loader')
-    if (!loaders.length) {
-      throw new Error('No loaders have been configured')
-    }
-    const result = await pReduce(
-      loaders,
-      async (payload, loader) => {
-        if (payload !== initialPayload) {
-          // Already been loaded
-          return payload
-        }
-
-        const response = await loader.callback(payload)
-        // TODO: Validation?
-        return response || payload
-      },
-      initialPayload,
-    )
-    if (result === initialPayload) {
-      throw new Error(`Unable to load file '${filePath}' of format '${format}'`)
-    }
 
     const fileChunks = new Map()
     const fileImports = new Map()
@@ -155,8 +128,8 @@ export default class Worker {
         return payload
       },
       {
-        contents: result.contents,
-        sourceMap: result.sourceMap,
+        contents,
+        sourceMap: null,
       },
     )
 

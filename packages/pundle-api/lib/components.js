@@ -9,8 +9,6 @@ import type {
   ComponentIssueReporter,
   ComponentFileResolverCallback,
   ComponentFileResolver,
-  ComponentFileLoaderCallback,
-  ComponentFileLoader,
   ComponentFileTransformerCallback,
   ComponentFileTransformer,
   ComponentJobTransformerCallback,
@@ -81,10 +79,6 @@ export function createIssueReporter(payload: Payload<ComponentIssueReporterCallb
 
 export function createFileResolver(payload: Payload<ComponentFileResolverCallback>): ComponentFileResolver {
   return createComponent('file-resolver', payload)
-}
-
-export function createFileLoader(payload: Payload<ComponentFileLoaderCallback>): ComponentFileLoader {
-  return createComponent('file-loader', payload)
 }
 
 export function createFileTransformer(payload: Payload<ComponentFileTransformerCallback>): ComponentFileTransformer {

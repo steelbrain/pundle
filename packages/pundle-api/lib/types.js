@@ -38,13 +38,7 @@ export type WorkerProcessResult = {
   chunks: Array<Chunk>,
 }
 
-export type ComponentType =
-  | 'issue-reporter'
-  | 'file-resolver'
-  | 'file-loader'
-  | 'file-transformer'
-  | 'job-transformer'
-  | 'chunk-generator'
+export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-transformer' | 'job-transformer' | 'chunk-generator'
 export type Component<T1: ComponentType, T2> = {|
   name: string,
   version: string,
@@ -78,22 +72,6 @@ export type ComponentFileResolverCallback = (
   context: { rootDirectory: string },
 ) => Promise<?ComponentFileResolverResult> | ?ComponentFileResolverResult
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
-
-export type ComponentFileLoaderRequest = {|
-  format: string,
-  contents: Buffer,
-  filePath: string,
-|}
-
-export type ComponentFileLoaderResult = {|
-  contents: Buffer | string,
-  sourceMap: ?Object,
-|}
-
-export type ComponentFileLoaderCallback = (
-  request: ComponentFileLoaderRequest,
-) => Promise<?ComponentFileLoaderResult> | ?ComponentFileLoaderResult
-export type ComponentFileLoader = Component<'file-loader', ComponentFileLoaderCallback>
 
 export type ComponentFileTransformerRequest = {|
   filePath: string,
