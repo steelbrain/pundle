@@ -196,20 +196,32 @@ export default class Master {
   }
   async queuedProcess(payload: ImportResolved): Promise<WorkerProcessResult> {
     const currentWorker = this.processorWorkers.find(worker => worker.isWorking === 0)
+    let promise
     if (currentWorker) {
-      return currentWorker.send('process', payload, () => {
+      promise = currentWorker.send('process', payload, () => {
         const itemToProcess = this.queue.pop()
         if (itemToProcess) {
           currentWorker.send('process', itemToProcess.payload).then(itemToProcess.resolve, itemToProcess.reject)
         }
       })
+    } else {
+      const deferred = promiseDefer()
+      this.queue.push({
+        payload,
+        resolve: deferred.resolve,
+        reject: deferred.reject,
+      })
+      // Stupid ESLint thinks we can destructure a let declaration a block above
+      // eslint-disable-next-line prefer-destructuring
+      promise = deferred.promise
     }
-    const deferred = promiseDefer()
-    this.queue.push({
-      payload,
-      resolve: deferred.resolve,
-      reject: deferred.reject,
+
+    return promise.then(result => {
+      // Convert sent buffer contents back to Buffer
+      if (typeof result.contents === 'object' && result.contents && result.contents.type === 'Buffer') {
+        return { ...result, contents: Buffer.from(result.contents) }
+      }
+      return result
     })
-    return deferred.promise
   }
 }
