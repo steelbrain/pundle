@@ -67,8 +67,12 @@ export function getFileName(
   if (typeof format !== 'string') {
     throw new Error(`formats.${output.format} MUST be either string OR false`)
   }
+
+  const parsed = output.entry ? path.parse(output.entry) : null
+
   return format
     .replace('[id]', output.id)
     .replace('[format]', output.format)
-    .replace('[name]', output.entry ? path.parse(output.entry).name : output.id)
+    .replace('[name]', parsed ? parsed.name : output.id)
+    .replace('[ext]', parsed ? parsed.ext : '')
 }
