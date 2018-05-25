@@ -1,0 +1,14 @@
+{
+  "name": "pundle-transformer-static",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "dependencies": {
+    "mime": "^2.3.1",
+    "pundle-api": "0.0.0"
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}

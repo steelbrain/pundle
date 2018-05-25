@@ -16,6 +16,7 @@
     "pundle-transformer-css": "0.0.0",
     "pundle-transformer-js": "0.0.0",
     "pundle-transformer-json": "0.0.0",
+    "pundle-transformer-static": "0.0.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2"
   },

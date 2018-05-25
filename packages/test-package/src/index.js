@@ -16,3 +16,5 @@ console.log(process.env.NODE_ENV === 'development' ? 'development' : 'production
 console.log('indexCss', require('../styles/index.module.css'))
 console.log('nonModuleCss', require('../styles/non-module.css'))
 console.log('json', require('./haha'))
+console.log('photos inline', require('../photos/white-screenshot.png'))
+console.log('big photo', require('../photos/big-photo.png'))

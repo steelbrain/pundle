@@ -4,6 +4,7 @@ import resolverDefault from 'pundle-resolver-default'
 import transformerJS from 'pundle-transformer-js'
 import transformerCSS from 'pundle-transformer-css'
 import transformerJSON from 'pundle-transformer-json'
+import transformerStatic from 'pundle-transformer-static'
 import chunkGeneratorJs from 'pundle-chunk-generator-js'
 import chunkGeneratorHtml from 'pundle-chunk-generator-html'
 import chunkGeneratorStatic from 'pundle-chunk-generator-static'
@@ -18,6 +19,7 @@ export default {
         js: ['.js', '.mjs', '.json'],
         html: ['.html'],
         css: ['.css'],
+        static: ['.png'],
       },
       aliases: browserAliases,
     }),
@@ -26,6 +28,9 @@ export default {
       transformCore: true,
     }),
     transformerCSS(),
+    transformerStatic({
+      extensionsOrMimes: ['.png'],
+    }),
     chunkGeneratorJs(),
     chunkGeneratorHtml(),
     chunkGeneratorStatic({ formats: ['css'] }),
