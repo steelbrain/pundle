@@ -1,14 +1,16 @@
 // @flow
 
 import path from 'path'
-import { createFileLoader } from 'pundle-api'
+import { createFileTransformer } from 'pundle-api'
 
 import manifest from '../package.json'
 
 export default function({ extensions = ['.json'] }: { extensions?: Array<string> } = {}) {
-  return createFileLoader({
-    name: 'pundle-loader-json',
+  return createFileTransformer({
+    name: 'pundle-transformer-json',
     version: manifest.version,
+    priority: 1001,
+    // +1 from transformer-js
     callback({ contents, filePath, format }) {
       const extName = path.extname(filePath)
       if (!extensions.includes(extName) || format !== 'js') {
