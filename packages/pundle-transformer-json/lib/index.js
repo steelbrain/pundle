@@ -18,7 +18,7 @@ export default function({ extensions = ['.json'] }: { extensions?: Array<string>
       }
       let parsed
       try {
-        parsed = contents.toString()
+        parsed = JSON.parse(contents.toString())
       } catch (error) {
         if (error instanceof SyntaxError) {
           throw new Error(`Error parsing JSON at '${filePath}'`)
