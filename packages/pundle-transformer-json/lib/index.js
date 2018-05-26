@@ -10,7 +10,6 @@ export default function({ extensions = ['.json'] }: { extensions?: Array<string>
     name: 'pundle-transformer-json',
     version: manifest.version,
     priority: 1500,
-    // +1 from transformer-js
     callback({ contents, filePath, format }) {
       const extName = path.extname(filePath)
       if (!extensions.includes(extName) || format !== 'js') {
