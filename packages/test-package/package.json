@@ -13,6 +13,7 @@
     "pundle-reporter-cli": "0.0.0",
     "pundle-resolver-default": "0.0.0",
     "pundle-resolver-aliases-browser": "0.0.0",
+    "pundle-transformer-babel": "0.0.0",
     "pundle-transformer-css": "0.0.0",
     "pundle-transformer-js": "0.0.0",
     "pundle-transformer-json": "0.0.0",

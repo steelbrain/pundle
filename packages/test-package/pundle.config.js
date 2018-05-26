@@ -4,6 +4,7 @@ import resolverDefault from 'pundle-resolver-default'
 import transformerJS from 'pundle-transformer-js'
 import transformerCSS from 'pundle-transformer-css'
 import transformerJSON from 'pundle-transformer-json'
+import transformerBabel from 'pundle-transformer-babel'
 import transformerStatic from 'pundle-transformer-static'
 import chunkGeneratorJs from 'pundle-chunk-generator-js'
 import chunkGeneratorHtml from 'pundle-chunk-generator-html'
@@ -24,6 +25,7 @@ export default {
       aliases: browserAliases,
     }),
     transformerJSON(),
+    transformerBabel(),
     transformerJS({
       transformCore: true,
     }),
