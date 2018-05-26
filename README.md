@@ -3,7 +3,6 @@
 ## Note to self
 
 - Implement chunk dependency on each other
-- CSS import pngs
 
 ## Features to include
 

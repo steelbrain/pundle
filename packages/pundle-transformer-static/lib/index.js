@@ -69,13 +69,6 @@ export default function({
           sourceMap: null,
         }
       }
-      if (format === 'css') {
-        // required in a css file
-        return {
-          contents: JSON.stringify(url),
-          sourceMap: null,
-        }
-      }
 
       throw new Error(`Unexpected format '${format}' encountered in static transformer`)
     },
