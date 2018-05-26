@@ -6,17 +6,17 @@
 
 ## Features to include
 
-- typescript
 - babel
-- uglify
-- css file support
+- uglify (Babili?)
 - postcss
-- node builtin modules in browser
 - resolver?
+- typescript
+- css file support
 - html file support
-- statics in a chunk (blobs?)
 - create a commons chunk
 - resolve (browser fields?)
+- statics in a chunk (blobs?)
+- node builtin modules in browser
 - we have chunk specific file types {js,html,css,blob}
 
 Types of components:
