@@ -12,8 +12,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
   return createFileTransformer({
     name: 'pundle-transformer-css',
     version: manifest.version,
-    priority: 1001,
-    // +1 from transformer-js
+    priority: 1500,
     async callback({ filePath, format, contents }, { resolve, addChunk, getFileName }) {
       const extName = path.extname(filePath)
       if (!extensions.includes(extName)) {

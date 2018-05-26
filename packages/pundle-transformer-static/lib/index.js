@@ -37,7 +37,7 @@ export default function({
   return createFileTransformer({
     name: 'pundle-transformer-static',
     version: manifest.version,
-    priority: 1002,
+    priority: 2000,
     // ^ +1 from transformer-js and transformer-css
     callback({ contents, filePath, format }, { addChunk, getFileName }) {
       const extName = path.extname(filePath)

@@ -14,8 +14,7 @@ export default function({
   return createFileTransformer({
     name: 'pundle-transformer-babel',
     version: manifest.version,
-    priority: 999,
-    // -1 from transformer-js
+    priority: 1250,
     async callback({ contents, filePath, format }, { rootDirectory }) {
       if (format !== 'js') return null
 
