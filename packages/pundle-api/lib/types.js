@@ -81,6 +81,7 @@ export type ComponentFileTransformerRequest = {|
 |}
 // TODO: Maybe transform original error to have a loc?
 export type ComponentFileTransformerContext = {|
+  rootDirectory: string,
   resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
   addImport(fileImport: ImportResolved): void,
   addChunk(chunk: Chunk): void,

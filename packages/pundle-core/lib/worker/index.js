@@ -85,6 +85,7 @@ export default class Worker {
             filePath,
           },
           {
+            rootDirectory: this.config.rootDirectory,
             getFileName: (chunk: Chunk): string | false => getFileName(this.config.output.formats, chunk),
             resolve: async request => {
               const resolved = await this.resolveFromMaster({
@@ -139,8 +140,6 @@ export default class Worker {
       filePath,
       imports: Array.from(fileImports.values()),
       chunks: Array.from(fileChunks.values()),
-      // FIXME: Currently we don't have config on both sides to send buffers through process.send(), it shows up
-      // as an orindary object instead of a Buffer
       contents: transformed.contents,
       sourceMap: transformed.sourceMap,
     }
