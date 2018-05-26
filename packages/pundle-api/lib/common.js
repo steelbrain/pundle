@@ -10,14 +10,14 @@ export function getChunkHash(identifier: string, format: string): string {
     .hash(identifier)
     .result()
     .toString()
-  return `${format}${hash}`
+  return `${format}_${hash}`
 }
 export function getFileImportHash(filePath: string, format: string): string {
   const hash = new Imurmurhash()
     .hash(filePath)
     .result()
     .toString()
-  return `${format}${hash}`
+  return `${format}_${hash}`
 }
 
 export function getChunk(format: string, label: ?string = null, entry: ?string = null): Chunk {
@@ -59,6 +59,7 @@ export function getFileName(
   if (typeof formatOutput === 'undefined') {
     throw new Error(`Unable to find output path for format '${output.format}' in config file`)
   }
+  const [, hash] = output.id.split('_')
 
   const format = formats[formatOutput]
   if (format === false) {
@@ -75,4 +76,5 @@ export function getFileName(
     .replace('[format]', output.format)
     .replace('[name]', parsed ? parsed.name : output.id)
     .replace('[ext]', parsed ? parsed.ext : '')
+    .replace('[hash]', hash)
 }
