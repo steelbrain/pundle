@@ -3,7 +3,7 @@
 import { Context } from 'pundle-api'
 import promiseDefer from 'promise.defer'
 import Communication from 'sb-communication'
-import loadConfig, { type Config } from 'pundle-core-load-config'
+import loadConfig from 'pundle-core-load-config'
 
 import Worker from './'
 
@@ -22,7 +22,7 @@ const communication = new Communication({
   },
 })
 communication.on('init', async function(options) {
-  const context: Context<Config> = new Context({
+  const context: Context = new Context({
     config: ({}: Object),
     ...options,
   })

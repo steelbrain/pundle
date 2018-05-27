@@ -13,14 +13,13 @@ import {
   type WorkerProcessResult,
   type ComponentFileResolverResult,
 } from 'pundle-api'
-import type { Config } from 'pundle-core-load-config'
 import type Communication from 'sb-communication'
 
 export default class Worker {
   bridge: Communication
-  context: Context<Config>
+  context: Context
 
-  constructor(context: Context<Config>, bridge: Communication) {
+  constructor(context: Context, bridge: Communication) {
     this.context = context
     this.bridge = bridge
   }

@@ -1,7 +1,7 @@
 // @flow
 
 import { Context } from 'pundle-api'
-import loadConfig, { type Config } from 'pundle-core-load-config'
+import loadConfig from 'pundle-core-load-config'
 
 import Master from './master'
 import { CONFIG_FILE_NAME } from './constants'
@@ -12,7 +12,7 @@ export default async function getPundle({
   configLoadFile = true,
   directory = process.cwd(),
 }: $FlowFixMe = {}) {
-  const context: Context<Config> = new Context({
+  const context: Context = new Context({
     config: ({}: Object),
     configInline,
     configFileName,

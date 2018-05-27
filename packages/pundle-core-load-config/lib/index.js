@@ -6,7 +6,7 @@ import readConfigFile from './readConfigFile'
 import validateAndTransformConfig from './validateAndTransformConfig'
 
 export type { Config, AcceptedConfig }
-export default async function loadConfig(context: Context<Config>): Promise<Config> {
+export default async function loadConfig(context: Context): Promise<Config> {
   const fileConfig = await validateAndTransformConfig({
     directory: context.directory,
     configFileName: context.configFileName,

@@ -4,11 +4,10 @@ import path from 'path'
 import invariant from 'assert'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
-import type { Config } from 'pundle-core-load-config'
 import type { Context, ImportResolved, WorkerProcessResult, ImportRequest, ComponentFileResolverResult } from 'pundle-api'
 
 type Payload = {|
-  context: Context<Config>,
+  context: Context,
   processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>,
   handleResolve: (request: ImportRequest) => Promise<ComponentFileResolverResult>,
 |}

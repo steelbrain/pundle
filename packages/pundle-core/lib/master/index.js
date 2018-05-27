@@ -18,18 +18,17 @@ import {
   type ComponentFileResolverResult,
   type WorkerProcessResult,
 } from 'pundle-api'
-import type { Config } from 'pundle-core-load-config'
 
 import WorkerDelegate from '../worker/delegate'
 
 // TODO: Locks for files and chunks
 export default class Master {
-  context: Context<Config>
+  context: Context
   resolverWorker: WorkerDelegate
   processorWorkers: Array<WorkerDelegate>
   processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>
 
-  constructor(context: Context<Config>) {
+  constructor(context: Context) {
     this.context = context
     this.processQueue = []
 

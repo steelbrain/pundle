@@ -1,7 +1,9 @@
 // @flow
 
-export default class Context<T> {
-  config: T
+import type { Config } from 'pundle-core-load-config'
+
+export default class Context {
+  config: Config
   configInline: Object
   configFileName: string
   configLoadFile: boolean
@@ -14,7 +16,7 @@ export default class Context<T> {
     configLoadFile,
     directory,
   }: {|
-    config: T,
+    config: Config,
     configInline: Object,
     configFileName: string,
     configLoadFile: boolean,
