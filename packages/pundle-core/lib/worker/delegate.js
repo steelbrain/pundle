@@ -4,49 +4,53 @@ import path from 'path'
 import invariant from 'assert'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
+import type { ImportResolved, WorkerProcessResult, ImportRequest, ComponentFileResolverResult } from 'pundle-api'
 
-import type Master from '../master'
-import type { RunOptions, WorkerType, WorkerJobType } from '../types'
+import type { RunOptions } from '../types'
 
-export default class Worker {
-  type: WorkerType
-  options: RunOptions
-  master: Master
+type DelegateOptions = {
+  processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>,
+  handleResolve: (request: ImportRequest) => Promise<ComponentFileResolverResult>,
+}
+
+export default class WorkerDelegate {
   handle: ?ChildProcess
   bridge: ?Communication
-  isWorking: number
+  busyProcessing: number
+  pundleOptions: RunOptions
+  delegateOptions: DelegateOptions
 
-  constructor(type: WorkerType, options: RunOptions, master: Master) {
-    this.type = type
-    this.options = options
-    this.master = master
-    this.isWorking = 0
+  constructor(pundleOptions: RunOptions, delegateOptions: DelegateOptions) {
+    this.busyProcessing = 0
+    this.pundleOptions = pundleOptions
+    this.delegateOptions = delegateOptions
   }
   isAlive(): boolean {
     return !!(this.handle && this.bridge)
   }
-  async send<T>(type: WorkerJobType, payload: Object, onTaskComplete?: () => void): Promise<T> {
+  processQueue(): void {
+    const queueItem = this.delegateOptions.processQueue.pop()
+    if (queueItem) {
+      this.process(queueItem.payload).then(queueItem.resolve, queueItem.reject)
+    }
+  }
+  async process(request: ImportResolved): Promise<WorkerProcessResult> {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 
-    const taskCompleted = () => {
-      this.isWorking = this.isWorking > 0 ? this.isWorking - 1 : 0
-      if (onTaskComplete) {
-        onTaskComplete()
-      }
+    this.busyProcessing++
+    try {
+      return await bridge.send('process', request)
+    } finally {
+      this.busyProcessing--
+      this.processQueue()
     }
+  }
+  async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
+    const { bridge } = this
+    invariant(bridge, 'Cannot send job to dead worker')
 
-    this.isWorking++
-    return bridge.send(type, payload).then(
-      response => {
-        taskCompleted()
-        return response
-      },
-      error => {
-        taskCompleted()
-        throw error
-      },
-    )
+    return bridge.send('resolve', request)
   }
   async spawn() {
     if (this.isAlive()) {
@@ -66,26 +70,16 @@ export default class Worker {
     })
     this.handle = spawnedProcess
     this.bridge = communication
-    this.isWorking = 0
     spawnedProcess.on('exit', () => {
       // TODO: Notify master?
       this.dispose()
     })
 
-    const response = await communication.send('init', { type: this.type, options: this.options })
+    const response = await communication.send('init', this.pundleOptions)
     if (response !== 'ok') {
       throw new Error(`Got non-ok response from worker: ${response}`)
     }
-
-    await this.handleRequests()
-  }
-  async handleRequests() {
-    const { bridge, master } = this
-
-    if (!bridge) {
-      throw new Error('Cannot setupListeners() on a dead worker')
-    }
-    bridge.on('resolve', async params => master.resolve(params))
+    communication.on('resolve', this.delegateOptions.handleResolve)
   }
   dispose() {
     if (this.handle) {
@@ -96,6 +90,5 @@ export default class Worker {
       this.bridge.dispose()
       this.bridge = null
     }
-    this.isWorking = 0
   }
 }

@@ -9,8 +9,6 @@ export type RunOptions = {|
   loadConfigFile: boolean,
 |}
 
-export type WorkerType = 'resolver' | 'processor'
-
 // Tasks assigned to the worker
 export type WorkerJobType = 'resolve' | 'process'
 

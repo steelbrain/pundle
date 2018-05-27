@@ -28,15 +28,21 @@ export default class Master {
   options: RunOptions
   resolverWorker: WorkerDelegate
   processorWorkers: Array<WorkerDelegate>
-  queue: Array<{| payload: {}, resolve: Function, reject: Function |}>
+  processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>
 
   constructor(config: Config, options: RunOptions) {
     this.config = config
     this.options = options
-    this.queue = []
+    this.processQueue = []
 
-    this.resolverWorker = new WorkerDelegate('resolver', options, this)
-    this.processorWorkers = os.cpus().map(() => new WorkerDelegate('processor', options, this))
+    this.resolverWorker = this._createWorker()
+    this.processorWorkers = os.cpus().map(() => this._createWorker())
+  }
+  _createWorker(): WorkerDelegate {
+    return new WorkerDelegate(this.options, {
+      processQueue: this.processQueue,
+      handleResolve: request => this.resolve(request),
+    })
   }
   getAllWorkers(): Array<WorkerDelegate> {
     return [this.resolverWorker].concat(this.processorWorkers)
@@ -139,8 +145,12 @@ export default class Master {
       throw new Error('Cannot process chunk without entry')
     }
     const lockKey = `c${chunk.id}`
-    if (job.locks.has(lockKey)) return
-    if (job.chunks.has(chunk.id)) return
+    if (job.locks.has(lockKey)) {
+      return
+    }
+    if (job.chunks.has(chunk.id)) {
+      return
+    }
 
     job.locks.add(lockKey)
     try {
@@ -192,36 +202,30 @@ export default class Master {
     }
   }
   async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
-    return this.resolverWorker.send('resolve', request)
+    return this.resolverWorker.resolve(request)
   }
   async queuedProcess(payload: ImportResolved): Promise<WorkerProcessResult> {
-    const currentWorker = this.processorWorkers.find(worker => worker.isWorking === 0)
+    const currentWorker = this.processorWorkers.find(worker => worker.busyProcessing === 0)
     let promise
     if (currentWorker) {
-      promise = currentWorker.send('process', payload, () => {
-        const itemToProcess = this.queue.pop()
-        if (itemToProcess) {
-          currentWorker.send('process', itemToProcess.payload).then(itemToProcess.resolve, itemToProcess.reject)
-        }
-      })
+      promise = currentWorker.process(payload)
     } else {
-      const deferred = promiseDefer()
-      this.queue.push({
+      const { promise: deferredPromise, resolve, reject } = promiseDefer()
+      this.processQueue.push({
         payload,
-        resolve: deferred.resolve,
-        reject: deferred.reject,
+        resolve,
+        reject,
       })
-      // Stupid ESLint thinks we can destructure a let declaration a block above
-      // eslint-disable-next-line prefer-destructuring
-      promise = deferred.promise
+      promise = deferredPromise
     }
 
-    return promise.then(result => {
-      // Convert sent buffer contents back to Buffer
-      if (typeof result.contents === 'object' && result.contents && result.contents.type === 'Buffer') {
-        return { ...result, contents: Buffer.from(result.contents) }
+    const result = await promise
+    if (typeof result.contents === 'object' && result.contents) {
+      return {
+        ...result,
+        contents: Buffer.from(result.contents),
       }
-      return result
-    })
+    }
+    return result
   }
 }

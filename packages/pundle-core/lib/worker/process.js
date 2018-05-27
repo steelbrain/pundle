@@ -20,9 +20,9 @@ const communication = new Communication({
     process.send(payload)
   },
 })
-communication.on('init', async function({ type, options }) {
+communication.on('init', async function(options) {
   const config = await loadConfig(options)
-  init.resolve(new Worker(type, config, options, communication))
+  init.resolve(new Worker(config, options, communication))
   return 'ok'
 })
 init.promise.then((worker: Worker) => {

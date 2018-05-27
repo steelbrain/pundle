@@ -15,16 +15,14 @@ import {
 import type { Config } from 'pundle-core-load-config'
 import type Communication from 'sb-communication'
 
-import type { RunOptions, WorkerType } from '../types'
+import type { RunOptions } from '../types'
 
 export default class Worker {
-  type: WorkerType
   config: Config
   options: RunOptions
   bridge: Communication
 
-  constructor(type: WorkerType, config: Config, options: RunOptions, bridge: Communication) {
-    this.type = type
+  constructor(config: Config, options: RunOptions, bridge: Communication) {
     this.config = config
     this.options = options
     this.bridge = bridge
