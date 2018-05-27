@@ -2,10 +2,21 @@
 
 ## Note to self
 
+- reporter (TOP PRIORITY)
 - Implement chunk dependency on each other
+- pundle-transformer-postcss with plugin support, like autoprefixer and flexbugs-fixes
+- split commons as chunk with configurable name
+- "ModuleScopePlugin" to limit direct import of files
+- ESlint to lint files
+- load .graphql files?
+- enforce case sensitivity?
+- fix for https://github.com/facebook/create-react-app/issues/186 ?
+- FileSizeReporter
 
 ## Features to include
 
+- less
+- scss
 - babel
 - uglify (Babili?)
 - postcss
