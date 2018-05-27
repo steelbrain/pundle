@@ -1,33 +1,25 @@
 // @flow
 
-import { PundleError } from 'pundle-api'
+import { PundleError, type Context } from 'pundle-api'
 import type { Config, AcceptedConfig } from './types'
 import readConfigFile from './readConfigFile'
 import validateAndTransformConfig from './validateAndTransformConfig'
 
-type Payload = {|
-  directory: string,
-  config: AcceptedConfig,
-  configFileName: string,
-  loadConfigFile: boolean,
-|}
-
 export type { Config, AcceptedConfig }
-export default async function loadConfig({
-  directory,
-  config: givenInlineConfig,
-  configFileName,
-  loadConfigFile,
-}: Payload): Promise<Config> {
+export default async function loadConfig(context: Context<Config>): Promise<Config> {
   const fileConfig = await validateAndTransformConfig({
-    directory,
-    configFileName,
-    config: await readConfigFile({ directory, configFileName, loadConfigFile }),
+    directory: context.directory,
+    configFileName: context.configFileName,
+    config: await readConfigFile({
+      directory: context.directory,
+      configFileName: context.configFileName,
+      configLoadFile: context.configLoadFile,
+    }),
   })
   const inlineConfig = await validateAndTransformConfig({
-    directory,
-    configFileName,
-    config: givenInlineConfig,
+    directory: context.directory,
+    configFileName: context.configFileName,
+    config: context.configInline,
   })
   if (typeof inlineConfig.components !== 'undefined') {
     throw new PundleError('CONFIG', 'INVALID_CONFIG', null, null, 'config.components is not allowed in inline config')

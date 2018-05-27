@@ -9,11 +9,11 @@ import { PundleError } from 'pundle-api'
 type Payload = {|
   directory: string,
   configFileName: string,
-  loadConfigFile: boolean,
+  configLoadFile: boolean,
 |}
 
-export default async function readConfigFile({ directory, configFileName, loadConfigFile }: Payload): Promise<Object> {
-  if (!loadConfigFile) {
+export default async function readConfigFile({ directory, configFileName, configLoadFile }: Payload): Promise<Object> {
+  if (!configLoadFile) {
     return { rootDirectory: directory }
   }
   const configFilePath = path.join(directory, configFileName)

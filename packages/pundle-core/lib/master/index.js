@@ -12,6 +12,7 @@ import {
   getFileName,
   getFileImportHash,
   type Chunk,
+  type Context,
   type ImportResolved,
   type ImportRequest,
   type ComponentFileResolverResult,
@@ -20,19 +21,16 @@ import {
 import type { Config } from 'pundle-core-load-config'
 
 import WorkerDelegate from '../worker/delegate'
-import type { RunOptions } from '../types'
 
 // TODO: Locks for files and chunks
 export default class Master {
-  config: Config
-  options: RunOptions
+  context: Context<Config>
   resolverWorker: WorkerDelegate
   processorWorkers: Array<WorkerDelegate>
   processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>
 
-  constructor(config: Config, options: RunOptions) {
-    this.config = config
-    this.options = options
+  constructor(context: Context<Config>) {
+    this.context = context
     this.processQueue = []
 
     this.resolverWorker = this._createWorker()
@@ -44,7 +42,8 @@ export default class Master {
       .map(() => this._createWorker())
   }
   _createWorker(): WorkerDelegate {
-    return new WorkerDelegate(this.options, {
+    return new WorkerDelegate({
+      context: this.context,
       processQueue: this.processQueue,
       handleResolve: request => this.resolve(request),
     })
@@ -81,7 +80,7 @@ export default class Master {
   async execute(): Promise<void> {
     const job = new Job()
     const entries = await Promise.all(
-      this.config.entry.map(entry =>
+      this.context.config.entry.map(entry =>
         this.resolve({
           request: entry,
           requestFile: null,
@@ -99,7 +98,7 @@ export default class Master {
     givenJob: Job,
   ): Promise<Array<{ id: string, fileName: string | false, format: string, contents: string | Buffer }>> {
     let job = givenJob.clone()
-    const jobTransformers = this.config.components.filter(c => c.type === 'job-transformer')
+    const jobTransformers = this.context.config.components.filter(c => c.type === 'job-transformer')
 
     job = await pReduce(
       jobTransformers,
@@ -111,7 +110,7 @@ export default class Master {
       job,
     )
 
-    const chunkGenerators = this.config.components.filter(c => c.type === 'chunk-generator')
+    const chunkGenerators = this.context.config.components.filter(c => c.type === 'chunk-generator')
     if (!chunkGenerators.length) {
       throw new Error('No chunk-generator components configured')
     }
@@ -120,13 +119,13 @@ export default class Master {
       for (let i = 0, { length } = chunkGenerators; i < length; i++) {
         const generator = chunkGenerators[i]
         const result = await generator.callback(chunk, job, {
-          getFileName: output => getFileName(this.config.output.formats, output),
+          getFileName: output => getFileName(this.context.config.output.formats, output),
         })
         if (result) {
           return result.map(item => ({
             ...item,
             id: chunk.id,
-            fileName: getFileName(this.config.output.formats, {
+            fileName: getFileName(this.context.config.output.formats, {
               id: chunk.id,
               entry: chunk.entry,
               format: item.format,

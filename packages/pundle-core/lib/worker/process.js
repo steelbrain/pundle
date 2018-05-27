@@ -1,8 +1,9 @@
 // @flow
 
+import { Context } from 'pundle-api'
 import promiseDefer from 'promise.defer'
 import Communication from 'sb-communication'
-import loadConfig from 'pundle-core-load-config'
+import loadConfig, { type Config } from 'pundle-core-load-config'
 
 import Worker from './'
 
@@ -21,8 +22,12 @@ const communication = new Communication({
   },
 })
 communication.on('init', async function(options) {
-  const config = await loadConfig(options)
-  init.resolve(new Worker(config, options, communication))
+  const context: Context<Config> = new Context({
+    config: ({}: Object),
+    ...options,
+  })
+  context.config = await loadConfig(context)
+  init.resolve(new Worker(context, communication))
   return 'ok'
 })
 init.promise.then((worker: Worker) => {

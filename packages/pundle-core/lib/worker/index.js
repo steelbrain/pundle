@@ -7,6 +7,7 @@ import {
   getFileName,
   getFileImportHash,
   type Chunk,
+  type Context,
   type ImportResolved,
   type ImportRequest,
   type WorkerProcessResult,
@@ -15,20 +16,16 @@ import {
 import type { Config } from 'pundle-core-load-config'
 import type Communication from 'sb-communication'
 
-import type { RunOptions } from '../types'
-
 export default class Worker {
-  config: Config
-  options: RunOptions
   bridge: Communication
+  context: Context<Config>
 
-  constructor(config: Config, options: RunOptions, bridge: Communication) {
-    this.config = config
-    this.options = options
+  constructor(context: Context<Config>, bridge: Communication) {
+    this.context = context
     this.bridge = bridge
   }
   async resolve({ request, requestFile, ignoredResolvers }: ImportRequest): Promise<ComponentFileResolverResult> {
-    const resolvers = this.config.components.filter(c => c.type === 'file-resolver')
+    const resolvers = this.context.config.components.filter(c => c.type === 'file-resolver')
     const allowedResolvers = resolvers.filter(c => !ignoredResolvers.includes(c.name))
 
     if (!resolvers.length) {
@@ -41,7 +38,7 @@ export default class Worker {
     const result = await pReduce(
       allowedResolvers,
       async (payload, resolver) => {
-        const response = await resolver.callback(payload, { rootDirectory: this.config.rootDirectory })
+        const response = await resolver.callback(payload, { rootDirectory: this.context.config.rootDirectory })
         // TODO: Validation?
         return response || payload
       },
@@ -56,7 +53,7 @@ export default class Worker {
     )
 
     if (!result.resolved) {
-      throw new Error(`Unable to resolve '${request}' from '${requestFile || this.config.rootDirectory}'`)
+      throw new Error(`Unable to resolve '${request}' from '${requestFile || this.context.config.rootDirectory}'`)
     }
     if (!result.format) {
       throw new Error(`Resolved request '${request}' to '${result.resolved}' but format was not determined`)
@@ -72,7 +69,7 @@ export default class Worker {
     const fileChunks = new Map()
     const fileImports = new Map()
 
-    const transformers = this.config.components.filter(c => c.type === 'file-transformer')
+    const transformers = this.context.config.components.filter(c => c.type === 'file-transformer')
     const transformed = await pReduce(
       transformers,
       async (payload, transformer) => {
@@ -83,8 +80,8 @@ export default class Worker {
             filePath,
           },
           {
-            rootDirectory: this.config.rootDirectory,
-            getFileName: (chunk: Chunk): string | false => getFileName(this.config.output.formats, chunk),
+            rootDirectory: this.context.config.rootDirectory,
+            getFileName: (chunk: Chunk): string | false => getFileName(this.context.config.output.formats, chunk),
             resolve: async request => {
               const resolved = await this.resolveFromMaster({
                 request,

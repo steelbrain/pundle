@@ -4,32 +4,30 @@ import path from 'path'
 import invariant from 'assert'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
-import type { ImportResolved, WorkerProcessResult, ImportRequest, ComponentFileResolverResult } from 'pundle-api'
+import type { Config } from 'pundle-core-load-config'
+import type { Context, ImportResolved, WorkerProcessResult, ImportRequest, ComponentFileResolverResult } from 'pundle-api'
 
-import type { RunOptions } from '../types'
-
-type DelegateOptions = {
+type Payload = {|
+  context: Context<Config>,
   processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>,
   handleResolve: (request: ImportRequest) => Promise<ComponentFileResolverResult>,
-}
+|}
 
 export default class WorkerDelegate {
   handle: ?ChildProcess
   bridge: ?Communication
   busyProcessing: number
-  pundleOptions: RunOptions
-  delegateOptions: DelegateOptions
+  options: Payload
 
-  constructor(pundleOptions: RunOptions, delegateOptions: DelegateOptions) {
+  constructor(options: Payload) {
     this.busyProcessing = 0
-    this.pundleOptions = pundleOptions
-    this.delegateOptions = delegateOptions
+    this.options = options
   }
   isAlive(): boolean {
     return !!(this.handle && this.bridge)
   }
   processQueue(): void {
-    const queueItem = this.delegateOptions.processQueue.pop()
+    const queueItem = this.options.processQueue.pop()
     if (queueItem) {
       this.process(queueItem.payload).then(queueItem.resolve, queueItem.reject)
     }
@@ -75,11 +73,11 @@ export default class WorkerDelegate {
       this.dispose()
     })
 
-    const response = await communication.send('init', this.pundleOptions)
+    const response = await communication.send('init', this.options.context.serialize())
     if (response !== 'ok') {
       throw new Error(`Got non-ok response from worker: ${response}`)
     }
-    communication.on('resolve', this.delegateOptions.handleResolve)
+    communication.on('resolve', this.options.handleResolve)
   }
   dispose() {
     if (this.handle) {

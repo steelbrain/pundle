@@ -16,7 +16,7 @@ async function main() {
       // Ignore this one
       return
     }
-    fs.writeFileSync(path.join(pundle.config.output.rootDirectory, fileName), output.contents)
+    fs.writeFileSync(path.join(pundle.context.config.output.rootDirectory, fileName), output.contents)
   })
 }
 main().catch(console.error)

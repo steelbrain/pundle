@@ -1,35 +1,26 @@
 // @flow
 
-import loadConfig from 'pundle-core-load-config'
+import { Context } from 'pundle-api'
+import loadConfig, { type Config } from 'pundle-core-load-config'
 
 import Master from './master'
 import { CONFIG_FILE_NAME } from './constants'
 
-type RunOptions = {|
-  config?: Object,
-  directory?: string,
-  configFileName?: string,
-  loadConfigFile?: boolean,
-|}
-
 export default async function getPundle({
-  directory = process.cwd(),
-  config: inlineConfig = {},
+  config: configInline = {},
   configFileName = CONFIG_FILE_NAME,
-  loadConfigFile = true,
-}: RunOptions = {}) {
-  const config = await loadConfig({
-    directory,
-    config: inlineConfig,
+  configLoadFile = true,
+  directory = process.cwd(),
+}: $FlowFixMe = {}) {
+  const context: Context<Config> = new Context({
+    config: ({}: Object),
+    configInline,
     configFileName,
-    loadConfigFile,
-  })
-  const master = new Master(config, {
+    configLoadFile,
     directory,
-    config: inlineConfig,
-    configFileName,
-    loadConfigFile,
   })
+  context.config = await loadConfig(context)
+  const master = new Master(context)
   await master.spawnWorkers()
   return master
 }

@@ -19,9 +19,9 @@ type Payload = {|
 export default async function validateAndTransformConfig({
   directory,
   configFileName,
-  config: givenConfig,
+  config: configGiven,
 }: Payload): Promise<AcceptedConfig> {
-  const config = { ...givenConfig }
+  const config = { ...configGiven }
   const extraConfigKeys = difference(Object.keys(config), ALLOWED_CONFIG_FILE_KEYS)
   if (extraConfigKeys.length) {
     throw new PundleError(
