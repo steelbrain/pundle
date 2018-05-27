@@ -1,6 +1,8 @@
 // @flow
 
 import type { Config } from 'pundle-core-load-config'
+import type { Component, ComponentType, GetFileNamePayload } from './types'
+import { getFileName } from './common'
 
 export default class Context {
   config: Config
@@ -35,5 +37,11 @@ export default class Context {
       configLoadFile: this.configLoadFile,
       directory: this.directory,
     }
+  }
+  getComponents<T1: ComponentType, T2>(type: T1): Array<Component<T1, T2>> {
+    return this.config.components.filter(c => c.type === type)
+  }
+  getFileName(payload: GetFileNamePayload) {
+    return getFileName(this.config.output.formats, payload)
   }
 }

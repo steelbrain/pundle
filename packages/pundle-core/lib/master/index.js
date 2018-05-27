@@ -9,7 +9,6 @@ import {
   Job,
   PundleError,
   getChunk,
-  getFileName,
   getFileImportHash,
   type Chunk,
   type Context,
@@ -97,7 +96,7 @@ export default class Master {
     givenJob: Job,
   ): Promise<Array<{ id: string, fileName: string | false, format: string, contents: string | Buffer }>> {
     let job = givenJob.clone()
-    const jobTransformers = this.context.config.components.filter(c => c.type === 'job-transformer')
+    const jobTransformers = this.context.getComponents('job-transformer')
 
     job = await pReduce(
       jobTransformers,
@@ -109,7 +108,7 @@ export default class Master {
       job,
     )
 
-    const chunkGenerators = this.context.config.components.filter(c => c.type === 'chunk-generator')
+    const chunkGenerators = this.context.getComponents('chunk-generator')
     if (!chunkGenerators.length) {
       throw new Error('No chunk-generator components configured')
     }
@@ -118,13 +117,13 @@ export default class Master {
       for (let i = 0, { length } = chunkGenerators; i < length; i++) {
         const generator = chunkGenerators[i]
         const result = await generator.callback(chunk, job, {
-          getFileName: output => getFileName(this.context.config.output.formats, output),
+          getFileName: output => this.context.getFileName(output),
         })
         if (result) {
           return result.map(item => ({
             ...item,
             id: chunk.id,
-            fileName: getFileName(this.context.config.output.formats, {
+            fileName: this.context.getFileName({
               id: chunk.id,
               entry: chunk.entry,
               format: item.format,

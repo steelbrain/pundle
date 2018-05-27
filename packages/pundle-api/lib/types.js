@@ -2,8 +2,6 @@
 
 import type Job from './job'
 
-type GetFileNamePayload = { id: string, entry: ?string, format: string }
-
 export type ErrorType = 'CONFIG' | 'DAEMON'
 export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED'
 
@@ -27,6 +25,7 @@ export type Chunk = {
   entry: ?string,
   imports: Array<ImportResolved>,
 }
+export type GetFileNamePayload = { id: string, entry: ?string, format: string }
 
 export type WorkerProcessResult = {
   id: string,

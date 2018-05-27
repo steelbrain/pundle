@@ -4,7 +4,6 @@ import fs from 'sb-fs'
 import pReduce from 'p-reduce'
 import mergeSourceMap from 'merge-source-map'
 import {
-  getFileName,
   getFileImportHash,
   type Chunk,
   type Context,
@@ -24,7 +23,7 @@ export default class Worker {
     this.bridge = bridge
   }
   async resolve({ request, requestFile, ignoredResolvers }: ImportRequest): Promise<ComponentFileResolverResult> {
-    const resolvers = this.context.config.components.filter(c => c.type === 'file-resolver')
+    const resolvers = this.context.getComponents('file-resolver')
     const allowedResolvers = resolvers.filter(c => !ignoredResolvers.includes(c.name))
 
     if (!resolvers.length) {
@@ -68,7 +67,7 @@ export default class Worker {
     const fileChunks = new Map()
     const fileImports = new Map()
 
-    const transformers = this.context.config.components.filter(c => c.type === 'file-transformer')
+    const transformers = this.context.getComponents('file-transformer')
     const transformed = await pReduce(
       transformers,
       async (payload, transformer) => {
@@ -80,7 +79,7 @@ export default class Worker {
           },
           {
             rootDirectory: this.context.config.rootDirectory,
-            getFileName: (chunk: Chunk): string | false => getFileName(this.context.config.output.formats, chunk),
+            getFileName: (chunk: Chunk): string | false => this.context.getFileName(chunk),
             resolve: async request => {
               const resolved = await this.resolveFromMaster({
                 request,
