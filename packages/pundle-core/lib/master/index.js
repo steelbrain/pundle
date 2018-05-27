@@ -39,7 +39,8 @@ export default class Master {
     this.processorWorkers = os
       .cpus()
       // Minus two because we have current plus resolver
-      .slice(-2)
+      // TODO: See if it's worth doing
+      // .slice(-2)
       .map(() => this._createWorker())
   }
   _createWorker(): WorkerDelegate {
