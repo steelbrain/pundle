@@ -36,7 +36,11 @@ export default class Master {
     this.processQueue = []
 
     this.resolverWorker = this._createWorker()
-    this.processorWorkers = os.cpus().map(() => this._createWorker())
+    this.processorWorkers = os
+      .cpus()
+      // Minus two because we have current plus resolver
+      .slice(-2)
+      .map(() => this._createWorker())
   }
   _createWorker(): WorkerDelegate {
     return new WorkerDelegate(this.options, {
