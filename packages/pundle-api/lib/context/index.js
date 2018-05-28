@@ -1,6 +1,5 @@
 // @flow
 
-import pLocate from 'p-locate'
 import type { Config } from 'pundle-core-load-config'
 
 import PundleError from '../pundle-error'
@@ -59,26 +58,25 @@ export default class Context {
       throw new PundleError('WORK', 'RESOLVE_FAILED', 'All resolvers were ignored', requestFile)
     }
 
-    const resolved = await pLocate(resolvers, async resolver => {
-      const result = await resolver.callback({
+    let resolved
+
+    for (const resolver of resolvers) {
+      resolved = await resolver.callback({
         context: this,
         request,
         requestFile,
         ignoredResolvers,
       })
+      if (!resolved) continue
 
-      if (!result) {
-        return null
-      }
-      const errors = await validators.resolved(result)
+      const errors = await validators.resolved(resolved)
       if (errors)
         throw new PundleError(
           'WORK',
           'RESOLVE_FAILED',
           `Resolver '${resolver.name}' returned invalid result: ${errors.join(', ')}`,
         )
-      return result
-    })
+    }
 
     if (!resolved) {
       throw new PundleError('WORK', 'RESOLVE_FAILED', `Unable to resolve '${request}'`, requestFile)

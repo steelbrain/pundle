@@ -8,7 +8,6 @@
   "dependencies": {
     "globrex": "^0.1.1",
     "imurmurhash": "^0.1.4",
-    "p-locate": "^2.0.0",
     "yup": "^0.25.1"
   },
   "author": "steelbrain",

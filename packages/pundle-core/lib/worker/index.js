@@ -3,14 +3,7 @@
 import fs from 'sb-fs'
 import pReduce from 'p-reduce'
 import mergeSourceMap from 'merge-source-map'
-import {
-  getFileImportHash,
-  type Context,
-  type ImportResolved,
-  type ImportRequest,
-  type ImportProcessed,
-  type ComponentFileResolverResult,
-} from 'pundle-api'
+import { getFileImportHash, type Context, type ImportResolved, type ImportRequest, type ImportProcessed } from 'pundle-api'
 import type Communication from 'sb-communication'
 
 export default class Worker {
@@ -21,42 +14,8 @@ export default class Worker {
     this.context = context
     this.bridge = bridge
   }
-  async resolve({ request, requestFile, ignoredResolvers }: ImportRequest): Promise<ComponentFileResolverResult> {
-    const resolvers = this.context.getComponents('file-resolver')
-    const allowedResolvers = resolvers.filter(c => !ignoredResolvers.includes(c.name))
-
-    if (!resolvers.length) {
-      throw new Error('No resolvers have been configured')
-    }
-    if (!allowedResolvers.length) {
-      throw new Error('All resolvers have been excluded by config')
-    }
-
-    const result = await pReduce(
-      allowedResolvers,
-      async (payload, resolver) => {
-        // TODO: We only invoke first resolver now, make necessary changes
-        if (payload) return payload
-
-        const response = await resolver.callback({
-          context: this.context,
-          request,
-          requestFile,
-          ignoredResolvers,
-        })
-        // TODO: Validation?
-        return response || payload
-      },
-      null,
-    )
-
-    if (!result.filePath) {
-      throw new Error(`Unable to resolve '${request}' from '${requestFile || this.context.config.rootDirectory}'`)
-    }
-    if (!result.format) {
-      throw new Error(`Resolved request '${request}' to '${result.filePath}' but format was not determined`)
-    }
-    return result
+  async resolve(request: ImportRequest): Promise<ImportResolved> {
+    return this.context.invokeFileResolvers(request)
   }
   async resolveFromMaster(payload: ImportRequest) {
     return this.bridge.send('resolve', payload)
