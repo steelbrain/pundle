@@ -10,6 +10,7 @@ import {
   PundleError,
   getChunk,
   getFileImportHash,
+  getChunkHash,
   type Chunk,
   type Context,
   type ImportResolved,
@@ -125,7 +126,7 @@ export default class Master {
             ...item,
             id: chunk.id,
             fileName: this.context.getFileName({
-              id: chunk.id,
+              label: chunk.label,
               entry: chunk.entry,
               format: item.format,
             }),
@@ -147,17 +148,17 @@ export default class Master {
       // TODO: Return silently instead?
       throw new Error('Cannot process chunk without entry')
     }
-    const lockKey = `c${chunk.id}`
+    const lockKey = `c${getChunkHash(chunk)}`
     if (job.locks.has(lockKey)) {
       return
     }
-    if (job.chunks.has(chunk.id)) {
+    if (job.chunks.has(lockKey)) {
       return
     }
 
     job.locks.add(lockKey)
     try {
-      job.chunks.set(chunk.id, chunk)
+      job.chunks.set(lockKey, chunk)
 
       await this.processFileTree(
         {
@@ -168,7 +169,7 @@ export default class Master {
         job,
       )
     } catch (error) {
-      job.chunks.delete(chunk.id)
+      job.chunks.delete(lockKey)
       throw error
     } finally {
       job.locks.delete(lockKey)

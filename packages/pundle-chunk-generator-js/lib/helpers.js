@@ -1,7 +1,7 @@
 // @flow
 
 import invariant from 'assert'
-import { getFileImportHash, type Chunk, type Job, type ImportResolved, type ImportProcessed } from 'pundle-api'
+import { getChunkHash, getFileImportHash, type Chunk, type Job, type ImportResolved, type ImportProcessed } from 'pundle-api'
 
 export const REGEX_NEWLINE = /(\r?\n)/g
 
@@ -33,7 +33,7 @@ export function getContentForOutput(
         // Do not include chunks of other formats
         return
       }
-      relevantChunks.set(relevantChunk.id, relevantChunk)
+      relevantChunks.set(getChunkHash(relevantChunk), relevantChunk)
     })
   }
 

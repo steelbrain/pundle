@@ -5,7 +5,7 @@ import generate from '@babel/generator'
 import * as t from '@babel/types'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
-import { createFileTransformer, getChunk, getFileImportHash } from 'pundle-api'
+import { createFileTransformer, getChunk, getChunkHash, getFileImportHash } from 'pundle-api'
 
 import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
 
@@ -69,7 +69,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                     resolve(arg.value, arg.loc).then(resolved => {
                       const chunk = getChunk(resolved.format, null, resolved.filePath)
                       node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
-                      arg.value = chunk.id
+                      arg.value = getChunkHash(chunk)
                       addChunk(chunk)
                     }),
                   )

@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { createChunkGenerator, getFileImportHash } from 'pundle-api'
+import { createChunkGenerator, getFileImportHash, getChunkHash } from 'pundle-api'
 
 import * as Helpers from './helpers'
 import manifest from '../package.json'
@@ -40,7 +40,7 @@ export default function() {
         const chunkEntryId = getFileImportHash(chunk)
         output.push(
           `Object.assign(sbPundleEntries, ${JSON.stringify({
-            [chunkEntryId]: chunk.id,
+            [chunkEntryId]: getChunkHash(chunk),
           })})`,
         )
         output.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)

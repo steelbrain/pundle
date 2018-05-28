@@ -5,12 +5,12 @@ import globrex from 'globrex'
 import Imurmurhash from 'imurmurhash'
 import type { Chunk, ImportResolved, GetFileNamePayload } from './types'
 
-export function getChunkHash(identifier: string, format: string): string {
+export function getChunkHash(chunk: GetFileNamePayload): string {
   const hash = new Imurmurhash()
-    .hash(identifier)
+    .hash(chunk.label || chunk.entry || '')
     .result()
     .toString()
-  return `${format}_${hash}`
+  return `${chunk.format}_${hash}`
 }
 export function getFileImportHash(item: ImportResolved | Chunk): string {
   let entry = ''
@@ -30,16 +30,10 @@ export function getFileImportHash(item: ImportResolved | Chunk): string {
 }
 
 export function getChunk(format: string, label: ?string = null, entry: ?string = null): Chunk {
-  let id
-  if (label) {
-    id = getChunkHash(label, format)
-  } else if (entry) {
-    id = getChunkHash(entry, format)
-  } else {
+  if (!label && !entry) {
     throw new Error('Either label or entry are required to make a chunk')
   }
   return {
-    id,
     format,
     entry,
     label,
@@ -49,6 +43,7 @@ export function getChunk(format: string, label: ?string = null, entry: ?string =
 
 const outputFormatCache = {}
 export function getFileName(formats: { [string]: string | false }, output: GetFileNamePayload): string | false {
+  const id = getChunkHash(output)
   const formatKeys = Object.keys(formats).sort((a, b) => b.length - a.length)
 
   const formatOutput = formatKeys.find(formatKey => {
@@ -65,7 +60,7 @@ export function getFileName(formats: { [string]: string | false }, output: GetFi
   if (typeof formatOutput === 'undefined') {
     throw new Error(`Unable to find output path for format '${output.format}' in config file`)
   }
-  const [, hash] = output.id.split('_')
+  const [, hash] = id.split('_')
 
   const format = formats[formatOutput]
   if (format === false) {
@@ -78,9 +73,9 @@ export function getFileName(formats: { [string]: string | false }, output: GetFi
   const parsed = output.entry ? path.parse(output.entry) : null
 
   return format
-    .replace('[id]', output.id)
+    .replace('[id]', id)
     .replace('[format]', output.format)
-    .replace('[name]', parsed ? parsed.name : output.id)
+    .replace('[name]', parsed ? parsed.name : id)
     .replace('[ext]', parsed ? parsed.ext : '')
     .replace('[hash]', hash)
 }

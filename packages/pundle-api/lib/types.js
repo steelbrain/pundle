@@ -20,13 +20,12 @@ export type ImportRequest = {
   ignoredResolvers: Array<string>,
 }
 export type Chunk = {
-  id: string,
   format: string,
   label: ?string,
   entry: ?string,
   imports: Array<ImportResolved>,
 }
-export type GetFileNamePayload = { id: string, entry: ?string, format: string }
+export type GetFileNamePayload = { label: ?string, entry: ?string, format: string }
 
 export type ImportProcessed = {
   format: string,
