@@ -13,17 +13,18 @@ function validate(obj: yup.ObjectSchemaConstructor) {
 const resolved = validate({
   format: yup.string().required(),
   filePath: yup.string().required(),
-  packageRoot: yup
-    .string()
-    .nullable()
-    .required(),
+  packageRoot: yup.string().nullable(),
 })
 const transformed = validate({
-  contents: yup.string().required(),
-  sourcemap: yup
-    .object()
-    .nullable(true)
-    .required(),
+  contents: yup
+    .mixed()
+    .required()
+    .test(
+      'is-buffer-or-string',
+      'Contents must be valid string or Buffer',
+      val => typeof val === 'string' || Buffer.isBuffer(val),
+    ),
+  sourceMap: yup.object().nullable(),
 })
 
 export { resolved, transformed }
