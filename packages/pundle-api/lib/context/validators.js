@@ -3,19 +3,22 @@
 import * as yup from 'yup'
 
 function validate(obj: yup.ObjectSchemaConstructor) {
-  const validator = yup.object(obj)
+  const schema = yup.object(obj)
 
-  return function(input: Object) {
-    return validator.validate(input)
+  return {
+    validate(input: Object) {
+      return schema.validate(input)
+    },
+    schema,
   }
 }
 
-const resolved = validate({
+const { validate: resolved, schema: resolvedSchema } = validate({
   format: yup.string().required(),
   filePath: yup.string().required(),
   packageRoot: yup.string().nullable(),
 })
-const transformed = validate({
+const { validate: transformed } = validate({
   contents: yup
     .mixed()
     .required()
@@ -26,5 +29,11 @@ const transformed = validate({
     ),
   sourceMap: yup.object().nullable(),
 })
+const { validate: chunk } = validate({
+  format: yup.string().required(),
+  label: yup.string().nullable(),
+  entry: yup.string().nullable(),
+  imports: yup.array().of(resolvedSchema),
+})
 
-export { resolved, transformed }
+export { resolved, transformed, chunk }

@@ -38,7 +38,7 @@ export default function({
     name: 'pundle-transformer-static',
     version: manifest.version,
     priority: 2000,
-    callback({ file, addChunk, context }) {
+    async callback({ file, addChunk, context }) {
       const extName = path.extname(file.filePath)
       if (!recognizedExtensions.includes(extName)) {
         return null
@@ -57,7 +57,7 @@ export default function({
         url = `data:${getMimeTypeByExtension(extName)};base64,${contentsBuffer.toString('base64')}`
       } else {
         const chunk = getChunk('static', null, file.filePath)
-        addChunk(chunk)
+        await addChunk(chunk)
         url = context.getFileName(chunk)
       }
 

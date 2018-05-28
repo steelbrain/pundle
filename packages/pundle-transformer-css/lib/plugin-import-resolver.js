@@ -20,8 +20,8 @@ export default plugin('pundle-transformer-css', function({ resolve, addChunk }) 
 
       promise = resolve(request, rule.source.start).then(resolved => {
         const importChunk = getChunk(resolved.format, null, resolved.filePath)
-        addChunk(importChunk)
         rule.remove()
+        return addChunk(importChunk)
       })
     })
 

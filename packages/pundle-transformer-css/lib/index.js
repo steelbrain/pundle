@@ -51,7 +51,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
 
       if (file.format === 'js') {
         // was imported from a JS file
-        addChunk(cssChunk)
+        await addChunk(cssChunk)
 
         return {
           contents: moduleMap ? `module.exports = ${JSON.stringify(moduleMap)}` : '',

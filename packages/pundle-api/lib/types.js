@@ -4,7 +4,13 @@ import type Job from './job'
 import type Context from './context'
 
 export type ErrorType = 'CONFIG' | 'DAEMON' | 'WORK'
-export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED' | 'RESOLVE_FAILED'
+export type ErrorCode =
+  | 'FILE_NOT_FOUND'
+  | 'CONFIG_NOT_FOUND'
+  | 'INVALID_CONFIG'
+  | 'WORKER_CRASHED'
+  | 'RESOLVE_FAILED'
+  | 'TRANSFORM_FAILED'
 
 export type Loc = {
   line: number,

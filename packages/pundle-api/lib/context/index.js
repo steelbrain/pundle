@@ -109,12 +109,34 @@ export default class Context {
         file: { ...transformed, filePath, format },
         context: this,
         resolve,
-        addImport(fileImport) {
-          // TODO: Validation
+        async addImport(fileImport) {
+          try {
+            await validators.resolved(fileImport)
+          } catch (error) {
+            if (error && error.name === 'ValidationError') {
+              throw new PundleError(
+                'WORK',
+                'TRANSFORM_FAILED',
+                `Cannot add invalid import in transformer '${transformer.name}': ${error.errors.join(', ')}`,
+              )
+            }
+            throw error
+          }
           fileImports.set(getFileKey(fileImport), fileImport)
         },
-        addChunk(chunk) {
-          // TODO: Validation
+        async addChunk(chunk) {
+          try {
+            await validators.chunk(chunk)
+          } catch (error) {
+            if (error && error.name === 'ValidationError') {
+              throw new PundleError(
+                'WORK',
+                'TRANSFORM_FAILED',
+                `Cannot add invalid chunk in transformer '${transformer.name}': ${error.errors.join(', ')}`,
+              )
+            }
+            throw error
+          }
           fileChunks.set(chunk.id, chunk)
         },
       })
