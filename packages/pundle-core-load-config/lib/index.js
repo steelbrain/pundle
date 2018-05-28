@@ -22,7 +22,7 @@ export default async function loadConfig(context: Context): Promise<Config> {
     config: context.configInline,
   })
   if (typeof inlineConfig.components !== 'undefined') {
-    throw new PundleError('CONFIG', 'INVALID_CONFIG', null, null, 'config.components is not allowed in inline config')
+    throw new PundleError('CONFIG', 'INVALID_CONFIG', 'config.components is not allowed in inline config')
   }
 
   const config = {

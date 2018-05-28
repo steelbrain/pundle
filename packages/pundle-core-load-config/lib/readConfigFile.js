@@ -18,7 +18,7 @@ export default async function readConfigFile({ directory, configFileName, config
   }
   const configFilePath = path.join(directory, configFileName)
   if (!(await fs.exists(configFilePath))) {
-    throw new PundleError('CONFIG', 'CONFIG_NOT_FOUND', configFilePath)
+    throw new PundleError('CONFIG', 'CONFIG_NOT_FOUND', 'Unable to find Config File', configFilePath)
   }
   let configContents
   try {
@@ -30,6 +30,7 @@ export default async function readConfigFile({ directory, configFileName, config
       throw new PundleError(
         'CONFIG',
         error.code === 'MODULE_NOT_FOUND' ? 'FILE_NOT_FOUND' : 'INVALID_CONFIG',
+        error.message,
         stackFrame && stackFrame.file,
         stackFrame
           ? {
@@ -37,19 +38,18 @@ export default async function readConfigFile({ directory, configFileName, config
               col: typeof stackFrame.col === 'number' ? stackFrame.col - 1 : 0,
             }
           : null,
-        error.message,
       )
     }
     throw error
   }
   if (!configContents || typeof configContents !== 'object') {
-    throw new PundleError('CONFIG', 'INVALID_CONFIG', configFileName, null, 'Exported config is not a valid object')
+    throw new PundleError('CONFIG', 'INVALID_CONFIG', 'Exported config is not a valid object', configFileName)
   }
 
   // Normalize es export
   const config = configContents.__esModule ? configContents.default : configContents
   if (!config || typeof config !== 'object') {
-    throw new PundleError('CONFIG', 'INVALID_CONFIG', configFileName, null, 'Exported ESM config is not a valid object')
+    throw new PundleError('CONFIG', 'INVALID_CONFIG', 'Exported ESM config is not a valid object', configFileName)
   }
 
   return config

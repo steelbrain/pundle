@@ -3,8 +3,8 @@
 import type Job from './job'
 import type Context from './context'
 
-export type ErrorType = 'CONFIG' | 'DAEMON'
-export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED'
+export type ErrorType = 'CONFIG' | 'DAEMON' | 'WORK'
+export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED' | 'RESOLVE_FAILED'
 
 export type Loc = {
   line: number,
@@ -26,7 +26,7 @@ export type Chunk = {
   entry: ?string,
   imports: Array<ImportResolved>,
 }
-export type GetFileNamePayload = { id: string, entry: ?string, format: string }
+export type ResolutionPayload = { id: string, entry: ?string, format: string }
 
 export type ImportProcessed = {
   id: string,
@@ -55,13 +55,14 @@ export type ComponentIssueReporter = Component<'issue-reporter', ComponentIssueR
 
 export type ComponentFileResolverResult = {|
   format: string,
-  resolved: string,
-  resolvedRoot: ?string,
+  filePath: string,
+  packageRoot: ?string,
 |}
 export type ComponentFileResolverCallback = (params: {
   context: Context,
   request: string,
   requestFile: ?string,
+  ignoredResolvers: Array<string>,
 }) => Promise<?ComponentFileResolverResult> | ?ComponentFileResolverResult
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
 

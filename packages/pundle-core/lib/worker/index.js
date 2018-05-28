@@ -39,9 +39,10 @@ export default class Worker {
         if (payload) return payload
 
         const response = await resolver.callback({
+          context: this.context,
           request,
           requestFile,
-          context: this.context,
+          ignoredResolvers,
         })
         // TODO: Validation?
         return response || payload
@@ -49,11 +50,11 @@ export default class Worker {
       null,
     )
 
-    if (!result.resolved) {
+    if (!result.filePath) {
       throw new Error(`Unable to resolve '${request}' from '${requestFile || this.context.config.rootDirectory}'`)
     }
     if (!result.format) {
-      throw new Error(`Resolved request '${request}' to '${result.resolved}' but format was not determined`)
+      throw new Error(`Resolved request '${request}' to '${result.filePath}' but format was not determined`)
     }
     return result
   }
@@ -85,7 +86,7 @@ export default class Worker {
               // to be exposed
               resolved.format = format
             }
-            return { filePath: resolved.resolved, format: resolved.format }
+            return { filePath: resolved.filePath, format: resolved.format }
           },
           addImport(fileImport) {
             // TODO: Validation

@@ -3,7 +3,7 @@
 import path from 'path'
 import globrex from 'globrex'
 import Imurmurhash from 'imurmurhash'
-import type { Chunk, GetFileNamePayload } from './types'
+import type { Chunk, ResolutionPayload } from './types'
 
 export function getChunkHash(identifier: string, format: string): string {
   const hash = new Imurmurhash()
@@ -39,7 +39,7 @@ export function getChunk(format: string, label: ?string = null, entry: ?string =
 }
 
 const outputFormatCache = {}
-export function getFileName(formats: { [string]: string | false }, output: GetFileNamePayload): string | false {
+export function getFileName(formats: { [string]: string | false }, output: ResolutionPayload): string | false {
   const formatKeys = Object.keys(formats).sort((a, b) => b.length - a.length)
 
   const formatOutput = formatKeys.find(formatKey => {

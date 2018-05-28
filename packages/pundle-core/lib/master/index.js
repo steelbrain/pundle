@@ -62,7 +62,7 @@ export default class Master {
         }),
       )
     } catch (error) {
-      throw new PundleError('DAEMON', 'WORKER_CRASHED', null, null, `Worker crashed during initial spawn: ${error.message}`)
+      throw new PundleError('DAEMON', 'WORKER_CRASHED', `Worker crashed during initial spawn: ${error.message}`)
     }
   }
   dispose() {
@@ -85,7 +85,7 @@ export default class Master {
         }),
       ),
     )
-    await pMap(entries, entry => this.processChunk(getChunk(entry.format, null, entry.resolved), job))
+    await pMap(entries, entry => this.processChunk(getChunk(entry.format, null, entry.filePath), job))
     const generated = await this.generate(job)
 
     // TODO: Maybe do something else?

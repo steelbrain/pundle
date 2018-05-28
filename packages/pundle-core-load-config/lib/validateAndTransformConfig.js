@@ -27,9 +27,8 @@ export default async function validateAndTransformConfig({
     throw new PundleError(
       'CONFIG',
       'INVALID_CONFIG',
-      configFileName,
-      null,
       `Unknown config keys recieved: ${extraConfigKeys.join(', ')}`,
+      configFileName,
     )
   }
 
@@ -106,7 +105,7 @@ export default async function validateAndTransformConfig({
   }
 
   if (faults.length) {
-    throw new PundleError('CONFIG', 'INVALID_CONFIG', configFileName, null, faults.join(', '))
+    throw new PundleError('CONFIG', 'INVALID_CONFIG', faults.join(', '), configFileName)
   }
   return config
 }
