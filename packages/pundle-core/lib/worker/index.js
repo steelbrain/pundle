@@ -5,11 +5,10 @@ import pReduce from 'p-reduce'
 import mergeSourceMap from 'merge-source-map'
 import {
   getFileImportHash,
-  type Chunk,
   type Context,
   type ImportResolved,
   type ImportRequest,
-  type WorkerProcessResult,
+  type ImportProcessed,
   type ComponentFileResolverResult,
 } from 'pundle-api'
 import type Communication from 'sb-communication'
@@ -36,18 +35,18 @@ export default class Worker {
     const result = await pReduce(
       allowedResolvers,
       async (payload, resolver) => {
-        const response = await resolver.callback(payload, { rootDirectory: this.context.config.rootDirectory })
+        // TODO: We only invoke first resolver now, make necessary changes
+        if (payload) return payload
+
+        const response = await resolver.callback({
+          request,
+          requestFile,
+          context: this.context,
+        })
         // TODO: Validation?
         return response || payload
       },
-      {
-        request,
-        requestFile,
-        ignoredResolvers,
-        format: null,
-        resolved: null,
-        resolvedRoot: null,
-      },
+      null,
     )
 
     if (!result.resolved) {
@@ -61,68 +60,59 @@ export default class Worker {
   async resolveFromMaster(payload: ImportRequest) {
     return this.bridge.send('resolve', payload)
   }
-  async process({ filePath, format }: ImportResolved): Promise<WorkerProcessResult> {
-    const contents = await fs.readFile(filePath)
-
+  async process({ filePath, format }: ImportResolved): Promise<ImportProcessed> {
     const fileChunks = new Map()
     const fileImports = new Map()
 
     const transformers = this.context.getComponents('file-transformer')
     const transformed = await pReduce(
       transformers,
-      async (payload, transformer) => {
-        const response = await transformer.callback(
-          {
-            ...payload,
-            format,
-            filePath,
+      async ({ contents, sourceMap }, transformer) => {
+        const response = await transformer.callback({
+          file: { filePath, format, contents, sourceMap },
+          context: this.context,
+          resolve: async request => {
+            const resolved = await this.resolveFromMaster({
+              request,
+              requestFile: filePath,
+              ignoredResolvers: [],
+            })
+            if (resolved.format !== format) {
+              // TODO: Note this somewhere but when we import a file
+              // it's format is discarded and current chunk format is used
+              // This allows for requiring css files in JS depsite them
+              // being resolved as css. Or allow their "module" JS counterparts
+              // to be exposed
+              resolved.format = format
+            }
+            return { filePath: resolved.resolved, format: resolved.format }
           },
-          {
-            rootDirectory: this.context.config.rootDirectory,
-            getFileName: (chunk: Chunk): string | false => this.context.getFileName(chunk),
-            resolve: async request => {
-              const resolved = await this.resolveFromMaster({
-                request,
-                requestFile: filePath,
-                ignoredResolvers: [],
-              })
-              if (resolved.format !== format) {
-                // TODO: Note this somewhere but when we import a file
-                // it's format is discarded and current chunk format is used
-                // This allows for requiring css files in JS depsite them
-                // being resolved as css. Or allow their "module" JS counterparts
-                // to be exposed
-                resolved.format = format
-              }
-              return { filePath: resolved.resolved, format: resolved.format }
-            },
-            addImport(fileImport) {
-              // TODO: Validation
-              fileImports.set(getFileImportHash(fileImport.filePath, fileImport.format), fileImport)
-            },
-            addChunk(chunk) {
-              // TODO: Validation
-              fileChunks.set(chunk.id, chunk)
-            },
+          addImport(fileImport) {
+            // TODO: Validation
+            fileImports.set(getFileImportHash(fileImport.filePath, fileImport.format), fileImport)
           },
-        )
+          addChunk(chunk) {
+            // TODO: Validation
+            fileChunks.set(chunk.id, chunk)
+          },
+        })
         if (response) {
           // TODO: Validation?
           let newSourceMap = null
-          if (response.sourceMap && !payload.sourceMap) {
+          if (response.sourceMap && !sourceMap) {
             newSourceMap = response.sourceMap
-          } else if (response.sourceMap && payload.sourceMap) {
-            newSourceMap = mergeSourceMap(payload.sourceMap, response.sourceMap)
+          } else if (response.sourceMap && sourceMap) {
+            newSourceMap = mergeSourceMap(sourceMap, response.sourceMap)
           }
           return {
             ...response,
             sourceMap: newSourceMap,
           }
         }
-        return payload
+        return { contents, sourceMap }
       },
       {
-        contents,
+        contents: await fs.readFile(filePath),
         sourceMap: null,
       },
     )

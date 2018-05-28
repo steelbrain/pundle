@@ -4,12 +4,12 @@ import path from 'path'
 import invariant from 'assert'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
-import type { Context, ImportResolved, WorkerProcessResult, ImportRequest, ComponentFileResolverResult } from 'pundle-api'
+import type { Context, ImportResolved, ImportProcessed, ImportRequest } from 'pundle-api'
 
 type Payload = {|
   context: Context,
   processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>,
-  handleResolve: (request: ImportRequest) => Promise<ComponentFileResolverResult>,
+  handleResolve: (request: ImportRequest) => Promise<ImportResolved>,
 |}
 
 export default class WorkerDelegate {
@@ -31,7 +31,7 @@ export default class WorkerDelegate {
       this.process(queueItem.payload).then(queueItem.resolve, queueItem.reject)
     }
   }
-  async process(request: ImportResolved): Promise<WorkerProcessResult> {
+  async process(request: ImportResolved): Promise<ImportProcessed> {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 
@@ -43,7 +43,7 @@ export default class WorkerDelegate {
       this.processQueue()
     }
   }
-  async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
+  async resolve(request: ImportRequest): Promise<ImportResolved> {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 

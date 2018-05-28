@@ -2,7 +2,7 @@
 
 import globrex from 'globrex'
 import invariant from 'assert'
-import { createChunkGenerator, getFileImportHash, type Job, type Chunk } from 'pundle-api'
+import { createChunkGenerator, getFileImportHash, type Chunk } from 'pundle-api'
 
 import manifest from '../package.json'
 
@@ -31,14 +31,14 @@ export default function() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
     version: manifest.version,
-    async callback(chunk: Chunk, job: Job, { getFileName }) {
+    async callback({ chunk, job, context }) {
       if (chunk.format !== 'html') return null
 
       const { entry } = chunk
       if (!entry) return null
 
       function getChunkImportLine(chunkToWrite): string {
-        const outputPath = getFileName(chunkToWrite)
+        const outputPath = context.getFileName(chunkToWrite)
         if (outputPath) {
           if (chunkToWrite.format === 'js') {
             return `<script src="${outputPath}" type="application/javascript"></script>`

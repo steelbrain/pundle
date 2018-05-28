@@ -14,8 +14,7 @@ import {
   type Context,
   type ImportResolved,
   type ImportRequest,
-  type ComponentFileResolverResult,
-  type WorkerProcessResult,
+  type ImportProcessed,
 } from 'pundle-api'
 
 import WorkerDelegate from '../worker/delegate'
@@ -100,10 +99,10 @@ export default class Master {
 
     job = await pReduce(
       jobTransformers,
-      async (value, component) => {
-        const result = await component.callback(value)
+      async (transformedJob, component) => {
+        const result = await component.callback({ context: this.context, job: transformedJob })
         // TODO: Validation
-        return result || value
+        return result ? result.job : transformedJob
       },
       job,
     )
@@ -116,8 +115,10 @@ export default class Master {
     const generated = await pMap(job.chunks.values(), async chunk => {
       for (let i = 0, { length } = chunkGenerators; i < length; i++) {
         const generator = chunkGenerators[i]
-        const result = await generator.callback(chunk, job, {
-          getFileName: output => this.context.getFileName(output),
+        const result = await generator.callback({
+          job,
+          chunk,
+          context: this.context,
         })
         if (result) {
           return result.map(item => ({
@@ -203,10 +204,10 @@ export default class Master {
       job.locks.delete(lockKey)
     }
   }
-  async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
+  async resolve(request: ImportRequest): Promise<ImportResolved> {
     return this.resolverWorker.resolve(request)
   }
-  async queuedProcess(payload: ImportResolved): Promise<WorkerProcessResult> {
+  async queuedProcess(payload: ImportResolved): Promise<ImportProcessed> {
     const currentWorker = this.processorWorkers.find(worker => worker.busyProcessing === 0)
     let promise
     if (currentWorker) {

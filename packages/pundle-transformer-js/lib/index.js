@@ -29,18 +29,18 @@ export default function({ transformCore }: { transformCore: boolean }) {
     name: 'pundle-transformer-js',
     version: manifest.version,
     priority: 1000,
-    async callback({ filePath, format, contents }, { resolve, addImport, addChunk }) {
-      if (format !== 'js') return null
+    async callback({ file, resolve, addImport, addChunk }) {
+      if (file.format !== 'js') return null
 
       const promises = []
       const injectionNames = new Set()
-      const { ast } = await transformAsync(typeof contents === 'string' ? contents : contents.toString(), {
+      const { ast } = await transformAsync(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         ast: true,
         code: false,
         babelrc: false,
         configFile: false,
         sourceMaps: false,
-        filename: filePath,
+        filename: file.filePath,
         highlightCode: false,
         plugins: [
           pluginTransformNodeEnvInline,
@@ -155,7 +155,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
 
       const generated = generate(ast, {
         sourceMaps: true,
-        sourceFileName: filePath,
+        sourceFileName: file.filePath,
       })
 
       return {

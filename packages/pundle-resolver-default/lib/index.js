@@ -14,16 +14,14 @@ export default function({ formats, aliases = {} }: { formats: { [string]: string
     name: 'pundle-file-resolver',
     version: manifest.version,
     // TODO: Respect the `format` parameter?
-    async callback({ request, requestFile, resolved }, { rootDirectory }) {
-      if (resolved) return null
-
+    async callback({ request, requestFile, context }) {
       let resolvedRoot = null
       const response = await new Promise(function(resolve, reject) {
         browserResolve(
           request,
           {
             modules: aliases,
-            basedir: requestFile ? path.dirname(requestFile) : rootDirectory,
+            basedir: requestFile ? path.dirname(requestFile) : context.config.rootDirectory,
             extensions: flatten(Object.values(formats)),
             packageFilter(pkg, pkgroot) {
               resolvedRoot = path.dirname(pkgroot)

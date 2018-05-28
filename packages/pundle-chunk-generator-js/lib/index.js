@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { createChunkGenerator, getFileImportHash, type Job, type Chunk } from 'pundle-api'
+import { createChunkGenerator, getFileImportHash } from 'pundle-api'
 
 import * as Helpers from './helpers'
 import manifest from '../package.json'
@@ -14,10 +14,10 @@ export default function() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-js',
     version: manifest.version,
-    async callback(chunk: Chunk, job: Job, { getFileName }) {
+    async callback({ chunk, job, context }) {
       if (chunk.format !== 'js') return null
 
-      const sourceMapPath = getFileName({
+      const sourceMapPath = context.getFileName({
         ...chunk,
         format: `${chunk.format}.map`,
       })

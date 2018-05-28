@@ -1,6 +1,7 @@
 // @flow
 
 import type Job from './job'
+import type Context from './context'
 
 export type ErrorType = 'CONFIG' | 'DAEMON'
 export type ErrorCode = 'FILE_NOT_FOUND' | 'CONFIG_NOT_FOUND' | 'INVALID_CONFIG' | 'WORKER_CRASHED'
@@ -27,7 +28,7 @@ export type Chunk = {
 }
 export type GetFileNamePayload = { id: string, entry: ?string, format: string }
 
-export type WorkerProcessResult = {
+export type ImportProcessed = {
   id: string,
   filePath: string,
   format: string,
@@ -52,62 +53,50 @@ export type Component<T1: ComponentType, T2> = {|
 export type ComponentIssueReporterCallback = (issue: any) => void | Promise<void>
 export type ComponentIssueReporter = Component<'issue-reporter', ComponentIssueReporterCallback>
 
-export type ComponentFileResolverRequest = {|
-  request: string,
-  requestFile: ?string,
-  format: ?string,
-  resolved: ?string,
-  resolvedRoot: ?string,
-|}
 export type ComponentFileResolverResult = {|
-  request: string,
-  requestFile: ?string,
   format: string,
   resolved: string,
   resolvedRoot: ?string,
 |}
-export type ComponentFileResolverCallback = (
-  request: ComponentFileResolverRequest,
-  context: { rootDirectory: string },
-) => Promise<?ComponentFileResolverResult> | ?ComponentFileResolverResult
+export type ComponentFileResolverCallback = (params: {
+  context: Context,
+  request: string,
+  requestFile: ?string,
+}) => Promise<?ComponentFileResolverResult> | ?ComponentFileResolverResult
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
 
-export type ComponentFileTransformerRequest = {|
-  filePath: string,
-  format: string,
-  contents: Buffer | string,
-  sourceMap: ?Object,
-|}
 // TODO: Maybe transform original error to have a loc?
-export type ComponentFileTransformerContext = {|
-  rootDirectory: string,
-  resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
-  addImport(fileImport: ImportResolved): void,
-  addChunk(chunk: Chunk): void,
-  getFileName(payload: GetFileNamePayload): string | false,
-|}
 export type ComponentFileTransformerResult = {|
   contents: Buffer | string,
   sourceMap: ?Object,
 |}
-export type ComponentFileTransformerCallback = (
-  request: ComponentFileTransformerRequest,
-  context: ComponentFileTransformerContext,
-) => Promise<?ComponentFileTransformerResult> | ?ComponentFileTransformerResult
+export type ComponentFileTransformerCallback = (params: {
+  file: {
+    filePath: string,
+    format: string,
+    contents: Buffer | string,
+    sourceMap: ?Object,
+  },
+  context: Context,
+  resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
+  addImport(fileImport: ImportResolved): void,
+  addChunk(chunk: Chunk): void,
+}) => Promise<?ComponentFileTransformerResult> | ?ComponentFileTransformerResult
 export type ComponentFileTransformer = Component<'file-transformer', ComponentFileTransformerCallback>
 
-export type ComponentJobTransformerCallback = (job: Job) => Promise<?Job> | ?Job
+export type ComponentJobTransformerResult = { job: Job }
+export type ComponentJobTransformerCallback = (params: { context: Context, job: Job }) =>
+  | Promise<?ComponentJobTransformerResult>
+  | ?ComponentJobTransformerResult
 export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
 
 export type ComponentChunkGeneratorResult = Array<{
   format: string,
   contents: string | Buffer,
 }>
-export type ComponentChunkGeneratorCallback = (
-  chunk: Chunk,
+export type ComponentChunkGeneratorCallback = (params: {
   job: Job,
-  {
-    getFileName: (payload: GetFileNamePayload) => string | false,
-  },
-) => Promise<?ComponentChunkGeneratorResult> | ?ComponentChunkGeneratorResult
+  chunk: Chunk,
+  context: Context,
+}) => Promise<?ComponentChunkGeneratorResult> | ?ComponentChunkGeneratorResult
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>

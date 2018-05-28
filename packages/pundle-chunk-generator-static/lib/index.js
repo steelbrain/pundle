@@ -1,7 +1,7 @@
 // @flow
 
 import invariant from 'assert'
-import { createChunkGenerator, getFileImportHash, type Job, type Chunk } from 'pundle-api'
+import { createChunkGenerator, getFileImportHash } from 'pundle-api'
 
 import manifest from '../package.json'
 
@@ -9,7 +9,7 @@ export default function({ formats }: { formats: Array<string> }) {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
     version: manifest.version,
-    async callback(chunk: Chunk, job: Job) {
+    async callback({ chunk, job }) {
       const formatMatch = chunk.format === 'static' || formats.includes(chunk.format)
       if (!formatMatch || !chunk.entry) return null
 

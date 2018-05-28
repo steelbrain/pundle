@@ -13,15 +13,15 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
     name: 'pundle-transformer-css',
     version: manifest.version,
     priority: 1500,
-    async callback({ filePath, format, contents }, { resolve, addChunk, getFileName }) {
-      const extName = path.extname(filePath)
+    async callback({ file, context, resolve, addChunk }) {
+      const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) {
         return null
       }
 
       let moduleMap = null
       const plugins = []
-      const fileIsModule = filePath.endsWith('.module.css')
+      const fileIsModule = file.filePath.endsWith('.module.css')
 
       if (fileIsModule) {
         plugins.push(
@@ -40,13 +40,16 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
         }),
       )
 
-      const cssChunk = getChunk('css', null, filePath)
-      const processed = await postcss(plugins).process(typeof contents === 'string' ? contents : contents.toString(), {
-        from: filePath,
-        map: { inline: false, annotation: false },
-      })
+      const cssChunk = getChunk('css', null, file.filePath)
+      const processed = await postcss(plugins).process(
+        typeof file.contents === 'string' ? file.contents : file.contents.toString(),
+        {
+          from: file.filePath,
+          map: { inline: false, annotation: false },
+        },
+      )
 
-      if (format === 'js') {
+      if (file.format === 'js') {
         // was imported from a JS file
         addChunk(cssChunk)
 
@@ -54,11 +57,11 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
           contents: moduleMap ? `module.exports = ${JSON.stringify(moduleMap)}` : '',
           sourceMap: null,
         }
-      } else if (format === 'css') {
+      } else if (file.format === 'css') {
         // entry or was imported from a css file
         let { css } = processed
         if (processed.map) {
-          const sourceMapUrl = getFileName({ ...cssChunk, format: 'css.map' })
+          const sourceMapUrl = context.getFileName({ ...cssChunk, format: 'css.map' })
           if (sourceMapUrl) {
             css += `\n$/*# sourceMappingURL=${sourceMapUrl} */`
           }
@@ -69,7 +72,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
           sourceMap: processed.map,
         }
       }
-      throw new Error(`Unknown format for css files '${format}' encountered in loader-css`)
+      throw new Error(`Unknown format for css files '${file.format}' encountered in loader-css`)
     },
   })
 }

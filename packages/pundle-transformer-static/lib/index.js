@@ -38,30 +38,30 @@ export default function({
     name: 'pundle-transformer-static',
     version: manifest.version,
     priority: 2000,
-    callback({ contents, filePath, format }, { addChunk, getFileName }) {
-      const extName = path.extname(filePath)
+    callback({ file, addChunk, context }) {
+      const extName = path.extname(file.filePath)
       if (!recognizedExtensions.includes(extName)) {
         return null
       }
 
-      if (format === 'static') {
+      if (file.format === 'static') {
         // Keep as is
         return null
       }
 
-      const shouldUseDataUrl = contents.length <= inlineLimit
+      const shouldUseDataUrl = file.contents.length <= inlineLimit
 
       let url
       if (shouldUseDataUrl) {
-        const contentsBuffer = typeof contents === 'string' ? Buffer.from(contents) : contents
+        const contentsBuffer = typeof file.contents === 'string' ? Buffer.from(file.contents) : file.contents
         url = `data:${getMimeTypeByExtension(extName)};base64,${contentsBuffer.toString('base64')}`
       } else {
-        const chunk = getChunk('static', null, filePath)
+        const chunk = getChunk('static', null, file.filePath)
         addChunk(chunk)
-        url = getFileName(chunk)
+        url = context.getFileName(chunk)
       }
 
-      if (format === 'js') {
+      if (file.format === 'js') {
         // required in a JS file
         return {
           contents: `module.exports = ${JSON.stringify(url)}`,
@@ -69,7 +69,7 @@ export default function({
         }
       }
 
-      throw new Error(`Unexpected format '${format}' encountered in static transformer`)
+      throw new Error(`Unexpected format '${file.format}' encountered in static transformer`)
     },
   })
 }

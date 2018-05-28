@@ -15,32 +15,32 @@ export default function({
     name: 'pundle-transformer-babel',
     version: manifest.version,
     priority: 1250,
-    async callback({ contents, filePath, format }, { rootDirectory }) {
-      if (format !== 'js') return null
+    async callback({ file, context }) {
+      if (file.format !== 'js') return null
 
-      if (exclude.some(item => nanomatch.isMatch(filePath, item))) {
+      if (exclude.some(item => nanomatch.isMatch(file.filePath, item))) {
         // Excluded
         return null
       }
-      if (!processOutsideProjectRoot && !filePath.startsWith(rootDirectory)) {
+      if (!processOutsideProjectRoot && !file.filePath.startsWith(context.config.rootDirectory)) {
         // Outside project root
         return null
       }
 
-      const babelCore = getBabelCore(rootDirectory)
+      const babelCore = getBabelCore(context.config.rootDirectory)
       if (!babelCore) {
-        throw new Error(`Babel not found in '${rootDirectory}' (tried @babel/core & babel-core)`)
+        throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried @babel/core & babel-core)`)
       }
 
       const transformed = await new Promise((resolve, reject) => {
         babelCore.transform(
-          contents,
+          file.contents,
           {
             babelrc: true,
-            filename: filePath,
+            filename: file.filePath,
             sourceMap: true,
             highlightCode: false,
-            sourceFileName: filePath,
+            sourceFileName: file.filePath,
           },
           function(err, result) {
             if (err) {

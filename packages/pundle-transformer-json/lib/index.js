@@ -10,17 +10,17 @@ export default function({ extensions = ['.json'] }: { extensions?: Array<string>
     name: 'pundle-transformer-json',
     version: manifest.version,
     priority: 1500,
-    callback({ contents, filePath, format }) {
-      const extName = path.extname(filePath)
-      if (!extensions.includes(extName) || format !== 'js') {
+    callback({ file }) {
+      const extName = path.extname(file.filePath)
+      if (!extensions.includes(extName) || file.format !== 'js') {
         return null
       }
       let parsed
       try {
-        parsed = JSON.parse(contents.toString())
+        parsed = JSON.parse(file.contents.toString())
       } catch (error) {
         if (error instanceof SyntaxError) {
-          throw new Error(`Error parsing JSON at '${filePath}'`)
+          throw new Error(`Error parsing JSON at '${file.filePath}'`)
         }
         throw error
       }

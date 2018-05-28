@@ -2,7 +2,7 @@
 
 import resolveFrom from 'resolve-from'
 
-export function getTypescripti(rootDirectory: string): ?Object {
+export function getTypescript(rootDirectory: string): ?Object {
   const resolved = resolveFrom(rootDirectory, 'typescript', true) || null
 
   if (resolved) {
