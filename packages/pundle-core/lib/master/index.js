@@ -2,7 +2,6 @@
 
 import os from 'os'
 import pMap from 'p-map'
-import pReduce from 'p-reduce'
 import flatten from 'lodash/flatten'
 import promiseDefer from 'promise.defer'
 import {
@@ -93,31 +92,20 @@ export default class Master {
     return generated
   }
   async generate(
-    givenJob: Job,
+    job: Job,
   ): Promise<Array<{ id: string, fileName: string | false, format: string, contents: string | Buffer }>> {
-    let job = givenJob.clone()
-    const jobTransformers = this.context.getComponents('job-transformer')
-
-    job = await pReduce(
-      jobTransformers,
-      async (transformedJob, component) => {
-        const result = await component.callback({ context: this.context, job: transformedJob })
-        // TODO: Validation
-        return result ? result.job : transformedJob
-      },
-      job,
-    )
+    const jobTransformed = await this.context.invokeJobTransformer({ job })
 
     const chunkGenerators = this.context.getComponents('chunk-generator')
     if (!chunkGenerators.length) {
       throw new Error('No chunk-generator components configured')
     }
 
-    const generated = await pMap(job.chunks.values(), async chunk => {
+    const generated = await pMap(jobTransformed.chunks.values(), async chunk => {
       for (let i = 0, { length } = chunkGenerators; i < length; i++) {
         const generator = chunkGenerators[i]
         const result = await generator.callback({
-          job,
+          job: jobTransformed,
           chunk,
           context: this.context,
         })

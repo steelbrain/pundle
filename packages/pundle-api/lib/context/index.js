@@ -3,6 +3,7 @@
 import mergeSourceMap from 'merge-source-map'
 import type { Config } from 'pundle-core-load-config'
 
+import Job from '../job'
 import PundleError from '../pundle-error'
 import { getFileName, getFileKey } from '../common'
 import type {
@@ -170,5 +171,27 @@ export default class Context {
       contents: transformed.contents,
       sourceMap: transformed.sourceMap,
     }
+  }
+  async invokeJobTransformer({ job }: { job: Job }): Promise<Job> {
+    let transformed = job
+
+    const transformers = this.getComponents('job-transformer')
+    for (const transformer of transformers) {
+      const result = await transformer.callback({
+        context: this,
+        job: transformed,
+      })
+      if (!result) continue
+      if (typeof result !== 'object' || typeof result.job !== 'object' || !(result.job instanceof Job)) {
+        throw new PundleError(
+          'WORK',
+          'TRANSFORM_FAILED',
+          `Job Transformer '${transformer.name}' returned invalid results: job must be valid`,
+        )
+      }
+      transformed = result.job
+    }
+
+    return job
   }
 }

@@ -96,8 +96,8 @@ export type ComponentFileTransformerCallback = (params: {
   },
   context: Context,
   resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
-  addImport(fileImport: ImportResolved): void,
-  addChunk(chunk: Chunk): void,
+  addImport(fileImport: ImportResolved): Promise<void>,
+  addChunk(chunk: Chunk): Promise<void>,
 }) => Promise<?ComponentFileTransformerResult> | ?ComponentFileTransformerResult
 export type ComponentFileTransformer = Component<'file-transformer', ComponentFileTransformerCallback>
 
