@@ -4,43 +4,43 @@ import path from 'path'
 import invariant from 'assert'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
-import type { Context, ImportResolved, ImportProcessed, ImportRequest } from 'pundle-api'
+import type { Context, ImportResolved, ImportTransformed, ImportRequest } from 'pundle-api'
 
 type Payload = {|
   context: Context,
-  processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>,
+  transformQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>,
   handleResolve: (request: ImportRequest) => Promise<ImportResolved>,
 |}
 
 export default class WorkerDelegate {
   handle: ?ChildProcess
   bridge: ?Communication
-  busyProcessing: number
   options: Payload
+  busyTransforming: number
 
   constructor(options: Payload) {
-    this.busyProcessing = 0
     this.options = options
+    this.busyTransforming = 0
   }
   isAlive(): boolean {
     return !!(this.handle && this.bridge)
   }
-  processQueue(): void {
-    const queueItem = this.options.processQueue.pop()
+  transformQueue(): void {
+    const queueItem = this.options.transformQueue.pop()
     if (queueItem) {
-      this.process(queueItem.payload).then(queueItem.resolve, queueItem.reject)
+      this.transform(queueItem.payload).then(queueItem.resolve, queueItem.reject)
     }
   }
-  async process(request: ImportResolved): Promise<ImportProcessed> {
+  async transform(request: ImportResolved): Promise<ImportTransformed> {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 
-    this.busyProcessing++
+    this.busyTransforming++
     try {
       return await bridge.send('process', request)
     } finally {
-      this.busyProcessing--
-      this.processQueue()
+      this.busyTransforming--
+      this.transformQueue()
     }
   }
   async resolve(request: ImportRequest): Promise<ImportResolved> {

@@ -1,7 +1,7 @@
 // @flow
 
 import invariant from 'assert'
-import { getFileKey, type Chunk, type Job, type ImportResolved, type ImportProcessed } from 'pundle-api'
+import { getFileKey, type Chunk, type Job, type ImportResolved, type ImportTransformed } from 'pundle-api'
 
 export const REGEX_NEWLINE = /(\r?\n)/g
 
@@ -13,7 +13,7 @@ export function getContentForOutput(
   chunk: Chunk,
   job: Job,
 ): {
-  files: Array<ImportProcessed>,
+  files: Array<ImportTransformed>,
   chunks: Array<Chunk>,
 } {
   const relevantFiles = new Set()

@@ -32,5 +32,5 @@ communication.on('init', async function(options) {
 })
 init.promise.then((worker: Worker) => {
   communication.on('resolve', payload => worker.resolve(payload))
-  communication.on('process', payload => worker.process(payload))
+  communication.on('transform', payload => worker.transform(payload))
 })

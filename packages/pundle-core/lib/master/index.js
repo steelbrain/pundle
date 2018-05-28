@@ -15,7 +15,7 @@ import {
   type Context,
   type ImportResolved,
   type ImportRequest,
-  type ImportProcessed,
+  type ImportTransformed,
 } from 'pundle-api'
 
 import WorkerDelegate from '../worker/delegate'
@@ -24,15 +24,15 @@ import WorkerDelegate from '../worker/delegate'
 export default class Master {
   context: Context
   resolverWorker: WorkerDelegate
-  processorWorkers: Array<WorkerDelegate>
-  processQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>
+  transformWorkers: Array<WorkerDelegate>
+  transformQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>
 
   constructor(context: Context) {
     this.context = context
-    this.processQueue = []
+    this.transformQueue = []
 
     this.resolverWorker = this._createWorker()
-    this.processorWorkers = os
+    this.transformWorkers = os
       .cpus()
       // Minus two because we have current plus resolver
       // TODO: See if it's worth doing
@@ -42,12 +42,12 @@ export default class Master {
   _createWorker(): WorkerDelegate {
     return new WorkerDelegate({
       context: this.context,
-      processQueue: this.processQueue,
-      handleResolve: request => this.resolve(request),
+      transformQueue: this.transformQueue,
+      handleResolve: req => this.resolve(req),
     })
   }
   getAllWorkers(): Array<WorkerDelegate> {
-    return [this.resolverWorker].concat(this.processorWorkers)
+    return [this.resolverWorker].concat(this.transformWorkers)
   }
   async spawnWorkers() {
     try {
@@ -86,7 +86,7 @@ export default class Master {
         }),
       ),
     )
-    await pMap(entries, entry => this.processChunk(getChunk(entry.format, null, entry.filePath), job))
+    await pMap(entries, entry => this.transformChunk(getChunk(entry.format, null, entry.filePath), job))
     const generated = await this.generate(job)
 
     // TODO: Maybe do something else?
@@ -141,7 +141,7 @@ export default class Master {
 
     return flatten(generated)
   }
-  async processChunk(chunk: Chunk, job: Job): Promise<void> {
+  async transformChunk(chunk: Chunk, job: Job): Promise<void> {
     const { entry } = chunk
     if (!entry) {
       // TODO: Return silently instead?
@@ -159,12 +159,11 @@ export default class Master {
     try {
       job.chunks.set(lockKey, chunk)
 
-      await this.processFileTree(
+      await this.transformFileTree(
         {
           format: chunk.format,
           filePath: entry,
         },
-        false,
         job,
       )
     } catch (error) {
@@ -175,7 +174,7 @@ export default class Master {
     }
   }
   // TODO: Use cached old files here if present on the job?
-  async processFileTree(request: ImportResolved, forcedOverwrite: boolean, job: Job): Promise<void> {
+  async transformFileTree(request: ImportResolved, job: Job, forcedOverwrite: boolean = false): Promise<void> {
     const lockKey = getFileKey(request)
     const oldFile = job.files.get(lockKey)
     if (job.locks.has(lockKey)) {
@@ -187,11 +186,11 @@ export default class Master {
     job.locks.add(lockKey)
 
     try {
-      const newFile = await this.queuedProcess(request)
+      const newFile = await this.queuedTransform(request)
       job.files.set(lockKey, newFile)
       await Promise.all([
-        pMap(newFile.imports, fileImport => this.processFileTree(fileImport, false, job)),
-        pMap(newFile.chunks, fileChunk => this.processChunk(fileChunk, job)),
+        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job)),
+        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job)),
       ])
     } catch (error) {
       if (oldFile) {
@@ -207,14 +206,14 @@ export default class Master {
   async resolve(request: ImportRequest): Promise<ImportResolved> {
     return this.resolverWorker.resolve(request)
   }
-  async queuedProcess(payload: ImportResolved): Promise<ImportProcessed> {
-    const currentWorker = this.processorWorkers.find(worker => worker.busyProcessing === 0)
+  async queuedTransform(payload: ImportResolved): Promise<ImportTransformed> {
+    const currentWorker = this.transformWorkers.find(worker => worker.busyTransforming === 0)
     let promise
     if (currentWorker) {
-      promise = currentWorker.process(payload)
+      promise = currentWorker.transform(payload)
     } else {
       const { promise: deferredPromise, resolve, reject } = promiseDefer()
-      this.processQueue.push({
+      this.transformQueue.push({
         payload,
         resolve,
         reject,

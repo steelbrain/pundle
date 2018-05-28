@@ -26,7 +26,7 @@ export type Chunk = {
   imports: Array<ImportResolved>,
 }
 
-export type ImportProcessed = {
+export type ImportTransformed = {
   format: string,
   filePath: string,
   contents: Buffer | string,

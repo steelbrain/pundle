@@ -1,11 +1,11 @@
 // @flow
 
-import type { Chunk, ImportProcessed } from './types'
+import type { Chunk, ImportTransformed } from './types'
 
 export default class Job {
   locks: Set<string>
-  files: Map<string, ImportProcessed>
-  oldFiles: Map<string, ImportProcessed>
+  files: Map<string, ImportTransformed>
+  oldFiles: Map<string, ImportTransformed>
   chunks: Map<string, Chunk>
 
   constructor() {

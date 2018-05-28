@@ -1,7 +1,7 @@
 // @flow
 
 import fs from 'sb-fs'
-import { type Context, type ImportResolved, type ImportRequest, type ImportProcessed } from 'pundle-api'
+import { type Context, type ImportResolved, type ImportRequest, type ImportTransformed } from 'pundle-api'
 import type Communication from 'sb-communication'
 
 export default class Worker {
@@ -18,7 +18,7 @@ export default class Worker {
   async resolveFromMaster(payload: ImportRequest) {
     return this.bridge.send('resolve', payload)
   }
-  async process({ filePath, format }: ImportResolved): Promise<ImportProcessed> {
+  async transform({ filePath, format }: ImportResolved): Promise<ImportTransformed> {
     const transformed = await this.context.invokeFileTransformers({
       filePath,
       format,
