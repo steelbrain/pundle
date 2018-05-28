@@ -3,7 +3,7 @@
 import fs from 'sb-fs'
 import path from 'path'
 import difference from 'lodash/difference'
-import { PundleError, validateComponent } from 'pundle-api'
+import { PundleError, validateComponent, type Context } from 'pundle-api'
 
 import type { AcceptedConfig } from './types'
 
@@ -11,16 +11,16 @@ const ALLOWED_CONFIG_FILE_KEYS = ['entry', 'rootDirectory', 'output', 'component
 const ALLOWED_CONFIG_FILE_OUTPUT_KEYS = ['formats', 'rootDirectory']
 
 type Payload = {|
-  directory: string,
-  configFileName: string,
+  context: Context,
   config: Object,
 |}
 
 export default async function validateAndTransformConfig({
-  directory,
-  configFileName,
+  context,
   config: configGiven,
 }: Payload): Promise<AcceptedConfig> {
+  const { configFileName } = context
+
   const config = { ...configGiven }
   const extraConfigKeys = difference(Object.keys(config), ALLOWED_CONFIG_FILE_KEYS)
   if (extraConfigKeys.length) {
@@ -56,8 +56,6 @@ export default async function validateAndTransformConfig({
         config.rootDirectory = resolved
       }
     }
-  } else {
-    config.rootDirectory = directory
   }
 
   if (config.output) {

@@ -8,17 +8,11 @@ import validateAndTransformConfig from './validateAndTransformConfig'
 export type { Config, AcceptedConfig }
 export default async function loadConfig(context: Context): Promise<Config> {
   const fileConfig = await validateAndTransformConfig({
-    directory: context.directory,
-    configFileName: context.configFileName,
-    config: await readConfigFile({
-      directory: context.directory,
-      configFileName: context.configFileName,
-      configLoadFile: context.configLoadFile,
-    }),
+    context,
+    config: await readConfigFile(context),
   })
   const inlineConfig = await validateAndTransformConfig({
-    directory: context.directory,
-    configFileName: context.configFileName,
+    context,
     config: context.configInline,
   })
   if (typeof inlineConfig.components !== 'undefined') {

@@ -69,13 +69,17 @@ export default class Context {
       })
       if (!resolved) continue
 
-      const errors = await validators.resolved(resolved)
-      if (errors)
-        throw new PundleError(
-          'WORK',
-          'RESOLVE_FAILED',
-          `Resolver '${resolver.name}' returned invalid result: ${errors.join(', ')}`,
-        )
+      try {
+        resolved = await validators.resolved(resolved)
+      } catch (error) {
+        if (error && error.type === 'ValidationError') {
+          throw new PundleError(
+            'WORK',
+            'RESOLVE_FAILED',
+            `Resolver '${resolver.name}' returned invalid result: ${error.errors.join(', ')}`,
+          )
+        }
+      }
     }
 
     if (!resolved) {
