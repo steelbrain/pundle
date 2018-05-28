@@ -25,7 +25,6 @@ export type Chunk = {
   entry: ?string,
   imports: Array<ImportResolved>,
 }
-export type GetFileNamePayload = { label: ?string, entry: ?string, format: string }
 
 export type ImportProcessed = {
   format: string,

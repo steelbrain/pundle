@@ -6,13 +6,13 @@ import type { Config } from 'pundle-core-load-config'
 import PundleError from '../pundle-error'
 import { getFileName, getFileKey } from '../common'
 import type {
+  Chunk,
   Component,
   ComponentType,
   ImportRequest,
   ImportResolved,
   TransformRequest,
   TransformResult,
-  GetFileNamePayload,
 } from '../types'
 import * as validators from './validators'
 
@@ -53,7 +53,7 @@ export default class Context {
   getComponents<T1: ComponentType, T2>(type: T1): Array<Component<T1, T2>> {
     return this.config.components.filter(c => c.type === type)
   }
-  getFileName(payload: GetFileNamePayload) {
+  getFileName(payload: Chunk) {
     return getFileName(this.config.output.formats, payload)
   }
   async invokeFileResolvers({ request, requestFile, ignoredResolvers }: ImportRequest): Promise<ImportResolved> {

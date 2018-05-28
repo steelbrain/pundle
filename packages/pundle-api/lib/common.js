@@ -3,14 +3,14 @@
 import path from 'path'
 import globrex from 'globrex'
 import Imurmurhash from 'imurmurhash'
-import type { Chunk, ImportResolved, GetFileNamePayload } from './types'
+import type { Chunk, ImportResolved } from './types'
 
 export function getChunkHash(chunk: Chunk): string {
   const hash = new Imurmurhash()
     .hash(chunk.label || chunk.entry || '')
     .result()
     .toString()
-  return hash
+  return `${chunk.format}_${hash}`
 }
 export function getChunkKey(chunk: Chunk): string {
   return `chunk_${chunk.format}_${getChunkHash(chunk)}`
@@ -48,7 +48,7 @@ export function getChunk(format: string, label: ?string = null, entry: ?string =
 }
 
 const outputFormatCache = {}
-export function getFileName(formats: { [string]: string | false }, output: GetFileNamePayload): string | false {
+export function getFileName(formats: { [string]: string | false }, output: Chunk): string | false {
   const formatKeys = Object.keys(formats).sort((a, b) => b.length - a.length)
 
   const formatOutput = formatKeys.find(formatKey => {
@@ -65,7 +65,7 @@ export function getFileName(formats: { [string]: string | false }, output: GetFi
   if (typeof formatOutput === 'undefined') {
     throw new Error(`Unable to find output path for format '${output.format}' in config file`)
   }
-  const hash = getChunkHash(output)
+  const [, hash] = getChunkHash(output).split('_')
 
   const format = formats[formatOutput]
   if (format === false) {

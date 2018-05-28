@@ -10,7 +10,6 @@ import {
   PundleError,
   getChunk,
   getFileKey,
-  getFileImportHash,
   getChunkKey,
   type Chunk,
   type Context,
@@ -127,8 +126,7 @@ export default class Master {
             ...item,
             id: chunk.id,
             fileName: this.context.getFileName({
-              label: chunk.label,
-              entry: chunk.entry,
+              ...chunk,
               format: item.format,
             }),
           }))
