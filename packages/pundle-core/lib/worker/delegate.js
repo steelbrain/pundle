@@ -37,7 +37,7 @@ export default class WorkerDelegate {
 
     this.busyTransforming++
     try {
-      return await bridge.send('process', request)
+      return await bridge.send('transform', request)
     } finally {
       this.busyTransforming--
       this.transformQueue()

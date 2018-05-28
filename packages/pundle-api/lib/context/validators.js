@@ -2,7 +2,15 @@
 
 import * as yup from 'yup'
 
-const { validate: resolved } = yup.object({
+function validate(obj: yup.ObjectSchemaConstructor) {
+  const validator = yup.object(obj)
+
+  return function(input: Object) {
+    return validator.validate(input)
+  }
+}
+
+const resolved = validate({
   format: yup.string().required(),
   filePath: yup.string().required(),
   packageRoot: yup
@@ -10,7 +18,7 @@ const { validate: resolved } = yup.object({
     .nullable()
     .required(),
 })
-const { validate: transformed } = yup.object({
+const transformed = validate({
   contents: yup.string().required(),
   sourcemap: yup
     .object()

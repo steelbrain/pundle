@@ -81,13 +81,14 @@ export default class Context {
       try {
         await validators.resolved(resolved)
       } catch (error) {
-        if (error && error.type === 'ValidationError') {
+        if (error && error.name === 'ValidationError') {
           throw new PundleError(
             'WORK',
             'RESOLVE_FAILED',
             `Resolver '${resolver.name}' returned invalid result: ${error.errors.join(', ')}`,
           )
         }
+        throw error
       }
     }
 
@@ -122,13 +123,14 @@ export default class Context {
       try {
         await validators.transformed(result)
       } catch (error) {
-        if (error && error.type === 'ValidationError') {
+        if (error && error.name === 'ValidationError') {
           throw new PundleError(
             'WORK',
             'RESOLVE_FAILED',
             `Transformer '${transformer.name}' returned invalid result: ${error.errors.join(', ')}`,
           )
         }
+        throw error
       }
 
       let newSourceMap = null
