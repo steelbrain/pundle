@@ -3,7 +3,7 @@
 import path from 'path'
 import globrex from 'globrex'
 import Imurmurhash from 'imurmurhash'
-import type { Chunk, GetFileNamePayload } from './types'
+import type { Chunk, ImportResolved, GetFileNamePayload } from './types'
 
 export function getChunkHash(identifier: string, format: string): string {
   const hash = new Imurmurhash()
@@ -12,12 +12,21 @@ export function getChunkHash(identifier: string, format: string): string {
     .toString()
   return `${format}_${hash}`
 }
-export function getFileImportHash(filePath: string, format: string): string {
+export function getFileImportHash(item: ImportResolved | Chunk): string {
+  let entry = ''
+  if (typeof item.filePath === 'string') {
+    entry = item.filePath
+  } else if (typeof item.entry === 'string') {
+    // TODO: Eslint bug?
+    // eslint-disable-next-line prefer-destructuring
+    entry = item.entry
+  }
+
   const hash = new Imurmurhash()
-    .hash(filePath)
+    .hash(entry)
     .result()
     .toString()
-  return `${format}_${hash}`
+  return `${item.format}_${hash}`
 }
 
 export function getChunk(format: string, label: ?string = null, entry: ?string = null): Chunk {

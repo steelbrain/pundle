@@ -52,7 +52,7 @@ export default function() {
         throw new Error(`Invalid chunk format: ${chunkToWrite.format} to include in html file '${entry}'`)
       }
 
-      const file = job.files.get(getFileImportHash(entry, chunk.format))
+      const file = job.files.get(getFileImportHash(chunk))
       invariant(file, 'entry file not found')
 
       const chunks = Array.from(job.chunks.values()).filter(i => i.entry !== chunk.entry && i.format !== chunk.format)

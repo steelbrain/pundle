@@ -28,7 +28,7 @@ export default function() {
 
       files.forEach(function(file) {
         const fileContents = `sbPundleModuleRegister(${JSON.stringify(
-          getFileImportHash(file.filePath, file.format),
+          getFileImportHash(file),
         )}, function(module, require, exports, __filename, __dirname) {\n${file.contents.toString()}\n});`
         if (sourceMapPath) {
           // TODO: Process source map because enabled
@@ -37,7 +37,7 @@ export default function() {
       })
       // TODO: Invoke chunk loaded success callbacks if available?
       if (chunk.entry) {
-        const chunkEntryId = getFileImportHash(chunk.entry, chunk.format)
+        const chunkEntryId = getFileImportHash(chunk)
         output.push(
           `Object.assign(sbPundleEntries, ${JSON.stringify({
             [chunkEntryId]: chunk.id,

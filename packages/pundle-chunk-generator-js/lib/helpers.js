@@ -20,7 +20,7 @@ export function getContentForOutput(
   const relevantChunks = new Map()
 
   function iterateImports(fileImport: ImportResolved) {
-    const fileKey = getFileImportHash(fileImport.filePath, fileImport.format)
+    const fileKey = getFileImportHash(fileImport)
     const file = job.files.get(fileKey)
     invariant(file, `File referenced in chunk ('${fileImport.filePath}') not found in local cache!?`)
 

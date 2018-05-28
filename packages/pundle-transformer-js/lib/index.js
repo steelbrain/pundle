@@ -52,7 +52,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                 if (!t.isStringLiteral(source)) return
                 promises.push(
                   resolve(source.value, source.loc).then(resolved => {
-                    source.value = getFileImportHash(resolved.filePath, resolved.format)
+                    source.value = getFileImportHash(resolved)
                     addImport(resolved)
                   }),
                 )
@@ -83,7 +83,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                 // Handling require + require.resolve
                 promises.push(
                   resolve(arg.value, arg.loc).then(resolved => {
-                    arg.value = getFileImportHash(resolved.filePath, resolved.format)
+                    arg.value = getFileImportHash(resolved)
                     addImport(resolved)
                   }),
                 )
@@ -118,7 +118,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
         invariant(sourceModule, 'sourceModule for Injection was not found?')
         promises.push(
           resolve(sourceModule).then(resolved => {
-            injectionImports.set(sourceModule, getFileImportHash(resolved.filePath, resolved.format))
+            injectionImports.set(sourceModule, getFileImportHash(resolved))
             addImport(resolved)
           }),
         )

@@ -13,7 +13,7 @@ export default function({ formats }: { formats: Array<string> }) {
       const formatMatch = chunk.format === 'static' || formats.includes(chunk.format)
       if (!formatMatch || !chunk.entry) return null
 
-      const file = job.files.get(getFileImportHash(chunk.entry, chunk.format))
+      const file = job.files.get(getFileImportHash(chunk))
       invariant(file, 'Entry for chunk not found in generator-static')
 
       const outputs = [

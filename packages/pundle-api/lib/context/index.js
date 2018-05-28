@@ -110,7 +110,7 @@ export default class Context {
         resolve,
         addImport(fileImport) {
           // TODO: Validation
-          fileImports.set(getFileImportHash(fileImport.filePath, fileImport.format), fileImport)
+          fileImports.set(getFileImportHash(fileImport), fileImport)
         },
         addChunk(chunk) {
           // TODO: Validation

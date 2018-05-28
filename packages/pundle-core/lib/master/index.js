@@ -176,7 +176,7 @@ export default class Master {
   }
   // TODO: Use cached old files here if present on the job?
   async processFileTree(request: ImportResolved, forcedOverwrite: boolean, job: Job): Promise<void> {
-    const lockKey = getFileImportHash(request.filePath, request.format)
+    const lockKey = getFileImportHash(request)
     const oldFile = job.files.get(lockKey)
     if (job.locks.has(lockKey)) {
       return
