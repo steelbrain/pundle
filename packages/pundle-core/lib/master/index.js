@@ -9,8 +9,9 @@ import {
   Job,
   PundleError,
   getChunk,
+  getFileKey,
   getFileImportHash,
-  getChunkHash,
+  getChunkKey,
   type Chunk,
   type Context,
   type ImportResolved,
@@ -148,7 +149,7 @@ export default class Master {
       // TODO: Return silently instead?
       throw new Error('Cannot process chunk without entry')
     }
-    const lockKey = `c${getChunkHash(chunk)}`
+    const lockKey = getChunkKey(chunk)
     if (job.locks.has(lockKey)) {
       return
     }
@@ -177,7 +178,7 @@ export default class Master {
   }
   // TODO: Use cached old files here if present on the job?
   async processFileTree(request: ImportResolved, forcedOverwrite: boolean, job: Job): Promise<void> {
-    const lockKey = getFileImportHash(request)
+    const lockKey = getFileKey(request)
     const oldFile = job.files.get(lockKey)
     if (job.locks.has(lockKey)) {
       return

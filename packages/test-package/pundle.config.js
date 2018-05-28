@@ -41,10 +41,10 @@ export default {
   output: {
     rootDirectory: path.join(__dirname, 'dist'),
     formats: {
-      '*.map': '[hash].[format]',
+      '*.map': '[id].[format]',
       html: '[name].[format]',
-      static: '[hash][ext]',
-      '*': '[hash].[format]',
+      static: '[id][ext]',
+      '*': '[id].[format]',
     },
   },
 }

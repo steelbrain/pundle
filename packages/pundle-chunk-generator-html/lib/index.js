@@ -2,7 +2,7 @@
 
 import globrex from 'globrex'
 import invariant from 'assert'
-import { createChunkGenerator, getFileImportHash, type Chunk } from 'pundle-api'
+import { createChunkGenerator, getFileKey, type Chunk } from 'pundle-api'
 
 import manifest from '../package.json'
 
@@ -52,7 +52,7 @@ export default function() {
         throw new Error(`Invalid chunk format: ${chunkToWrite.format} to include in html file '${entry}'`)
       }
 
-      const file = job.files.get(getFileImportHash(chunk))
+      const file = job.files.get(getFileKey(chunk))
       invariant(file, 'entry file not found')
 
       const chunks = Array.from(job.chunks.values()).filter(i => i.entry !== chunk.entry && i.format !== chunk.format)

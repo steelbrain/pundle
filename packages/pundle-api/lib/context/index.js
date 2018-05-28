@@ -4,7 +4,7 @@ import mergeSourceMap from 'merge-source-map'
 import type { Config } from 'pundle-core-load-config'
 
 import PundleError from '../pundle-error'
-import { getFileName, getFileImportHash } from '../common'
+import { getFileName, getFileKey } from '../common'
 import type {
   Component,
   ComponentType,
@@ -110,7 +110,7 @@ export default class Context {
         resolve,
         addImport(fileImport) {
           // TODO: Validation
-          fileImports.set(getFileImportHash(fileImport), fileImport)
+          fileImports.set(getFileKey(fileImport), fileImport)
         },
         addChunk(chunk) {
           // TODO: Validation
