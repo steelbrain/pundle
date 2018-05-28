@@ -53,7 +53,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                 promises.push(
                   resolve(source.value, source.loc).then(resolved => {
                     source.value = getFileImportHash(resolved)
-                    addImport(resolved)
+                    return addImport(resolved)
                   }),
                 )
               },
@@ -70,7 +70,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                       const chunk = getChunk(resolved.format, null, resolved.filePath)
                       node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
                       arg.value = getChunkHash(chunk)
-                      addChunk(chunk)
+                      return addChunk(chunk)
                     }),
                   )
                   return
@@ -84,7 +84,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                 promises.push(
                   resolve(arg.value, arg.loc).then(resolved => {
                     arg.value = getFileImportHash(resolved)
-                    addImport(resolved)
+                    return addImport(resolved)
                   }),
                 )
               },
@@ -119,7 +119,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
         promises.push(
           resolve(sourceModule).then(resolved => {
             injectionImports.set(sourceModule, getFileImportHash(resolved))
-            addImport(resolved)
+            return addImport(resolved)
           }),
         )
       })
