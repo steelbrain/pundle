@@ -26,17 +26,29 @@ export type Chunk = {
   entry: ?string,
   imports: Array<ImportResolved>,
 }
-export type ResolutionPayload = { id: string, entry: ?string, format: string }
+export type GetFileNamePayload = { id: string, entry: ?string, format: string }
 
 export type ImportProcessed = {
-  id: string,
+  format: string,
+  filePath: string,
+  contents: Buffer | string,
+  sourceMap: ?Object,
+  chunks: Array<Chunk>,
+  imports: Array<ImportResolved>,
+}
+
+export type TransformRequest = {
   filePath: string,
   format: string,
   contents: Buffer | string,
-  sourceMap: ?Object,
-  imports: Array<ImportResolved>,
-  chunks: Array<Chunk>,
+  resolve: (request: string) => Promise<ImportResolved>,
 }
+export type TransformResult = {|
+  contents: Buffer | string,
+  sourceMap: ?Object,
+  chunks: Array<Chunk>,
+  imports: Array<ImportResolved>,
+|}
 
 export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-transformer' | 'job-transformer' | 'chunk-generator'
 export type Component<T1: ComponentType, T2> = {|

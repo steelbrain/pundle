@@ -7,7 +7,6 @@
   "scripts": {},
   "dependencies": {
     "lodash": "^4.17.10",
-    "merge-source-map": "^1.1.0",
     "p-map": "^1.2.0",
     "p-reduce": "^1.0.0",
     "promise.defer": "^1.0.1",

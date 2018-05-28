@@ -188,7 +188,7 @@ export default class Master {
 
     try {
       const newFile = await this.queuedProcess(request)
-      job.files.set(newFile.id, newFile)
+      job.files.set(lockKey, newFile)
       await Promise.all([
         pMap(newFile.imports, fileImport => this.processFileTree(fileImport, false, job)),
         pMap(newFile.chunks, fileChunk => this.processChunk(fileChunk, job)),

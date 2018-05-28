@@ -28,7 +28,7 @@ export default function() {
 
       files.forEach(function(file) {
         const fileContents = `sbPundleModuleRegister(${JSON.stringify(
-          file.id,
+          getFileImportHash(file.filePath, file.format),
         )}, function(module, require, exports, __filename, __dirname) {\n${file.contents.toString()}\n});`
         if (sourceMapPath) {
           // TODO: Process source map because enabled
