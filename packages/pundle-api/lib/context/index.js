@@ -5,7 +5,7 @@ import type { Config } from 'pundle-core-load-config'
 
 import Job from '../job'
 import PundleError from '../pundle-error'
-import { getFileName, getFileKey } from '../common'
+import { getFileName, getFileKey, getChunkKey } from '../common'
 import type {
   Chunk,
   Component,
@@ -138,7 +138,7 @@ export default class Context {
             }
             throw error
           }
-          fileChunks.set(chunk.id, chunk)
+          fileChunks.set(getChunkKey(chunk), chunk)
         },
       })
       if (!result) continue

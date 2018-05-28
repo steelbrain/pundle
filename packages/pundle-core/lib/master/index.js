@@ -112,7 +112,7 @@ export default class Master {
         if (result) {
           return result.map(item => ({
             ...item,
-            id: chunk.id,
+            id: getChunkKey(chunk),
             fileName: this.context.getFileName({
               ...chunk,
               format: item.format,
