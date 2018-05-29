@@ -92,8 +92,7 @@ export default class Master {
     return generated
   }
   async generate(job: Job): Promise<ChunksGenerated> {
-    const transformed = await this.context.invokeJobTransformers({ job })
-    return this.context.invokeChunkGenerators({ job: transformed })
+    return this.context.invokeChunkGenerators({ job: await this.context.invokeJobTransformers({ job }) })
   }
   async transformChunk(chunk: Chunk, job: Job): Promise<void> {
     const { entry } = chunk
