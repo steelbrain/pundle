@@ -1,5 +1,6 @@
 // @flow
 
+import pMap from 'p-map'
 import mergeSourceMap from 'merge-source-map'
 import type { Config } from 'pundle-core-load-config'
 
@@ -14,6 +15,7 @@ import type {
   ImportResolved,
   TransformRequest,
   TransformResult,
+  ChunksGenerated,
 } from '../types'
 import * as validators from './validators'
 
@@ -172,7 +174,7 @@ export default class Context {
       sourceMap: transformed.sourceMap,
     }
   }
-  async invokeJobTransformer({ job }: { job: Job }): Promise<Job> {
+  async invokeJobTransformers({ job }: { job: Job }): Promise<Job> {
     let transformed = job
 
     const transformers = this.getComponents('job-transformer')
@@ -193,5 +195,58 @@ export default class Context {
     }
 
     return job
+  }
+  async invokeChunkGenerators({ job }: { job: Job }): Promise<ChunksGenerated> {
+    const everything = []
+
+    const generators = this.getComponents('chunk-generator')
+    if (!generators.length) {
+      throw new PundleError('WORK', 'GENERATE_FAILED', 'No chunk generators configured')
+    }
+
+    await pMap(job.chunks.values(), async chunk => {
+      let generated = null
+
+      for (const generator of generators) {
+        generated = await generator.callback({
+          job,
+          chunk,
+          context: this,
+        })
+        if (generated) {
+          break
+          // TODO: Validation
+        }
+      }
+
+      if (!generated) {
+        const ps = []
+        if (chunk.entry) {
+          ps.push(`with entry '${chunk.entry}'`)
+        }
+        if (chunk.label) {
+          ps.push(`with label '${chunk.label}'`)
+        }
+        throw new PundleError(
+          'WORK',
+          'GENERATE_FAILED',
+          `Chunk Generators refused to generate chunk of format '${chunk.format}'${ps ? ` ${ps.join(' ')}` : ''}`,
+        )
+      }
+
+      generated.forEach(item =>
+        everything.push({
+          chunk,
+          format: item.format,
+          contents: item.contents,
+          fileName: this.getFileName({ ...chunk, format: item.format }),
+        }),
+      )
+    })
+
+    return {
+      directory: this.config.rootDirectory,
+      outputs: everything,
+    }
   }
 }

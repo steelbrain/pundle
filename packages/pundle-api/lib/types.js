@@ -11,6 +11,7 @@ export type ErrorCode =
   | 'WORKER_CRASHED'
   | 'RESOLVE_FAILED'
   | 'TRANSFORM_FAILED'
+  | 'GENERATE_FAILED'
 
 export type Loc = {
   line: number,
@@ -53,6 +54,15 @@ export type TransformResult = {|
   chunks: Array<Chunk>,
   imports: Array<ImportResolved>,
 |}
+export type ChunksGenerated = {
+  directory: string,
+  outputs: Array<{
+    chunk: Chunk,
+    format: string,
+    contents: string | Buffer,
+    fileName: string | false,
+  }>,
+}
 
 export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-transformer' | 'job-transformer' | 'chunk-generator'
 export type Component<T1: ComponentType, T2> = {|

@@ -10,13 +10,13 @@ async function main() {
   const result = await pundle.execute()
   console.timeEnd('execute')
   console.log('Compiled and writing to fs')
-  result.forEach(output => {
+  result.outputs.forEach(output => {
     const { fileName } = output
     if (!fileName) {
       // Ignore this one
       return
     }
-    fs.writeFileSync(path.join(pundle.context.config.output.rootDirectory, fileName), output.contents)
+    fs.writeFileSync(path.join(result.directory, fileName), output.contents)
   })
 }
 main().catch(console.error)

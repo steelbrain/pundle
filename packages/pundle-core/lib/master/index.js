@@ -2,7 +2,6 @@
 
 import os from 'os'
 import pMap from 'p-map'
-import flatten from 'lodash/flatten'
 import promiseDefer from 'promise.defer'
 import {
   Job,
@@ -15,6 +14,7 @@ import {
   type ImportResolved,
   type ImportRequest,
   type ImportTransformed,
+  type ChunksGenerated,
 } from 'pundle-api'
 
 import WorkerDelegate from '../worker/delegate'
@@ -91,43 +91,9 @@ export default class Master {
     // TODO: Maybe do something else?
     return generated
   }
-  async generate(
-    job: Job,
-  ): Promise<Array<{ id: string, fileName: string | false, format: string, contents: string | Buffer }>> {
-    const jobTransformed = await this.context.invokeJobTransformer({ job })
-
-    const chunkGenerators = this.context.getComponents('chunk-generator')
-    if (!chunkGenerators.length) {
-      throw new Error('No chunk-generator components configured')
-    }
-
-    const generated = await pMap(jobTransformed.chunks.values(), async chunk => {
-      for (let i = 0, { length } = chunkGenerators; i < length; i++) {
-        const generator = chunkGenerators[i]
-        const result = await generator.callback({
-          job: jobTransformed,
-          chunk,
-          context: this.context,
-        })
-        if (result) {
-          return result.map(item => ({
-            ...item,
-            id: getChunkKey(chunk),
-            fileName: this.context.getFileName({
-              ...chunk,
-              format: item.format,
-            }),
-          }))
-        }
-      }
-      throw new Error(
-        `All generators refused to generate chunk of format '${chunk.format}' with label '${chunk.label}' and entry '${
-          chunk.entry
-        }'`,
-      )
-    })
-
-    return flatten(generated)
+  async generate(job: Job): Promise<ChunksGenerated> {
+    const transformed = await this.context.invokeJobTransformers({ job })
+    return this.context.invokeChunkGenerators({ job: transformed })
   }
   async transformChunk(chunk: Chunk, job: Job): Promise<void> {
     const { entry } = chunk
