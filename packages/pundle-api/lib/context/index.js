@@ -245,7 +245,7 @@ export default class Context {
     })
 
     return {
-      directory: this.config.rootDirectory,
+      directory: this.config.output.rootDirectory,
       outputs: everything,
     }
   }
