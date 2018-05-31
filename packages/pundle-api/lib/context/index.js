@@ -78,6 +78,11 @@ export default class Context {
         request,
         requestFile,
         ignoredResolvers,
+        resolve: (resolveRequest: ImportRequest) =>
+          this.invokeFileResolvers({
+            ...resolveRequest,
+            ignoredResolvers: ignoredResolvers.concat(resolveRequest.ignoredResolvers),
+          }),
       })
       if (!resolved) continue
 

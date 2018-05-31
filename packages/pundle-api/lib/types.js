@@ -89,6 +89,7 @@ export type ComponentFileResolverCallback = (params: {
   request: string,
   requestFile: ?string,
   ignoredResolvers: Array<string>,
+  resolve(request: ImportRequest): Promise<ImportResolved>,
 }) => Promise<?ComponentFileResolverResult> | ?ComponentFileResolverResult
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
 
