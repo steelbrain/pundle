@@ -182,7 +182,7 @@ export default class Master implements PundleWorker {
     }
     return result
   }
-  async report(issue: $FlowFixMe): Promise<void> {
-    console.log('issue reported', issue)
+  async report(issue: any): Promise<void> {
+    await this.context.invokeIssueReporters(this, issue)
   }
 }

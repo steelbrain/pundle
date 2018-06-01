@@ -66,7 +66,7 @@ export type ChunksGenerated = {
 export interface PundleWorker {
   resolve(payload: ImportRequest): Promise<ImportResolved>;
   transform(payload: ImportResolved): Promise<ImportTransformed>;
-  report(issue: $FlowFixMe): Promise<void>;
+  report(issue: any): Promise<void>;
 }
 
 export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-transformer' | 'job-transformer' | 'chunk-generator'
@@ -81,7 +81,11 @@ export type Component<T1: ComponentType, T2> = {|
   apiVersion: number,
 |}
 
-export type ComponentIssueReporterCallback = (issue: any) => void | Promise<void>
+export type ComponentIssueReporterCallback = (params: {
+  context: Context,
+  worker: PundleWorker,
+  issue: any,
+}) => void | Promise<void>
 export type ComponentIssueReporter = Component<'issue-reporter', ComponentIssueReporterCallback>
 
 export type ComponentFileResolverResult = {|
