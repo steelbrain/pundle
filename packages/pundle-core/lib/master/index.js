@@ -11,6 +11,7 @@ import {
   getChunkKey,
   type Chunk,
   type Context,
+  type PundleWorker,
   type ImportResolved,
   type ImportRequest,
   type ImportTransformed,
@@ -20,7 +21,7 @@ import {
 import WorkerDelegate from '../worker/delegate'
 
 // TODO: Locks for files and chunks
-export default class Master {
+export default class Master implements PundleWorker {
   context: Context
   resolverWorker: WorkerDelegate
   transformWorkers: Array<WorkerDelegate>
@@ -70,9 +71,6 @@ export default class Master {
       worker.dispose()
     })
   }
-  report(issue: $FlowFixMe) {
-    console.log('issue reported to master', issue)
-  }
 
   async execute(): Promise<void> {
     const job = new Job()
@@ -92,7 +90,7 @@ export default class Master {
     return generated
   }
   async generate(job: Job): Promise<ChunksGenerated> {
-    return this.context.invokeChunkGenerators({ job: await this.context.invokeJobTransformers({ job }) })
+    return this.context.invokeChunkGenerators(this, { job: await this.context.invokeJobTransformers(this, { job }) })
   }
   async transformChunk(chunk: Chunk, job: Job): Promise<void> {
     const { entry } = chunk
@@ -139,7 +137,7 @@ export default class Master {
     job.locks.add(lockKey)
 
     try {
-      const newFile = await this.queuedTransform(request)
+      const newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
       await Promise.all([
         pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job)),
@@ -156,10 +154,11 @@ export default class Master {
       job.locks.delete(lockKey)
     }
   }
+  // Compilation methods below
   async resolve(request: ImportRequest): Promise<ImportResolved> {
     return this.resolverWorker.resolve(request)
   }
-  async queuedTransform(payload: ImportResolved): Promise<ImportTransformed> {
+  async transform(payload: ImportResolved): Promise<ImportTransformed> {
     const currentWorker = this.transformWorkers.find(worker => worker.busyTransforming === 0)
     let promise
     if (currentWorker) {
@@ -182,5 +181,8 @@ export default class Master {
       }
     }
     return result
+  }
+  async report(issue: $FlowFixMe): Promise<void> {
+    console.log('issue reported', issue)
   }
 }

@@ -8,8 +8,10 @@ import Job from '../job'
 import PundleError from '../pundle-error'
 import { getFileName, getFileKey, getChunkKey } from '../common'
 import type {
+  Loc,
   Chunk,
   Component,
+  PundleWorker,
   ComponentType,
   ImportRequest,
   ImportResolved,
@@ -59,7 +61,10 @@ export default class Context {
   getFileName(payload: Chunk) {
     return getFileName(this.config.output.formats, payload)
   }
-  async invokeFileResolvers({ request, requestFile, ignoredResolvers }: ImportRequest): Promise<ImportResolved> {
+  async invokeFileResolvers(
+    worker: PundleWorker,
+    { request, requestFile, ignoredResolvers }: ImportRequest,
+  ): Promise<ImportResolved> {
     const allResolvers = this.getComponents('file-resolver')
     const resolvers = allResolvers.filter(c => !ignoredResolvers.includes(c.name))
 
@@ -78,11 +83,7 @@ export default class Context {
         request,
         requestFile,
         ignoredResolvers,
-        resolve: (resolveRequest: ImportRequest) =>
-          this.invokeFileResolvers({
-            ...resolveRequest,
-            ignoredResolvers: ignoredResolvers.concat(resolveRequest.ignoredResolvers),
-          }),
+        worker,
       })
       if (!resolved) continue
 
@@ -105,7 +106,10 @@ export default class Context {
     }
     return resolved
   }
-  async invokeFileTransformers({ filePath, format, contents, resolve }: TransformRequest): Promise<TransformResult> {
+  async invokeFileTransformers(
+    worker: PundleWorker,
+    { filePath, format, contents }: TransformRequest,
+  ): Promise<TransformResult> {
     const fileChunks = new Map()
     const fileImports = new Map()
 
@@ -116,7 +120,15 @@ export default class Context {
       const result = await transformer.callback({
         file: { ...transformed, filePath, format },
         context: this,
-        resolve,
+        worker,
+        // TODO: Inject loc into errors?
+        // eslint-disable-next-line no-unused-vars
+        resolve(request: string, loc: ?Loc = null) {
+          return worker.resolve({ request, requestFile: filePath, ignoredResolvers: [] }).then(resolved => ({
+            ...resolved,
+            format,
+          }))
+        },
         async addImport(fileImport) {
           try {
             await validators.resolved(fileImport)
@@ -179,13 +191,14 @@ export default class Context {
       sourceMap: transformed.sourceMap,
     }
   }
-  async invokeJobTransformers({ job }: { job: Job }): Promise<Job> {
+  async invokeJobTransformers(worker: PundleWorker, { job }: { job: Job }): Promise<Job> {
     let transformed = job
 
     const transformers = this.getComponents('job-transformer')
     for (const transformer of transformers) {
       const result = await transformer.callback({
         context: this,
+        worker,
         job: transformed,
       })
       if (!result) continue
@@ -201,7 +214,7 @@ export default class Context {
 
     return job
   }
-  async invokeChunkGenerators({ job }: { job: Job }): Promise<ChunksGenerated> {
+  async invokeChunkGenerators(worker: PundleWorker, { job }: { job: Job }): Promise<ChunksGenerated> {
     const everything = []
 
     const generators = this.getComponents('chunk-generator')
@@ -217,6 +230,7 @@ export default class Context {
           job,
           chunk,
           context: this,
+          worker,
         })
         if (generated) {
           break

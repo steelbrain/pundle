@@ -43,10 +43,9 @@ export type ImportTransformed = {
 }
 
 export type TransformRequest = {
-  filePath: string,
   format: string,
+  filePath: string,
   contents: Buffer | string,
-  resolve: (request: string) => Promise<ImportResolved>,
 }
 export type TransformResult = {|
   contents: Buffer | string,
@@ -62,6 +61,12 @@ export type ChunksGenerated = {
     contents: string | Buffer,
     fileName: string | false,
   }>,
+}
+
+export interface PundleWorker {
+  resolve(payload: ImportRequest): Promise<ImportResolved>;
+  transform(payload: ImportResolved): Promise<ImportTransformed>;
+  report(issue: $FlowFixMe): Promise<void>;
 }
 
 export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-transformer' | 'job-transformer' | 'chunk-generator'
@@ -89,7 +94,7 @@ export type ComponentFileResolverCallback = (params: {
   request: string,
   requestFile: ?string,
   ignoredResolvers: Array<string>,
-  resolve(request: ImportRequest): Promise<ImportResolved>,
+  worker: PundleWorker,
 }) => Promise<?ComponentFileResolverResult> | ?ComponentFileResolverResult
 export type ComponentFileResolver = Component<'file-resolver', ComponentFileResolverCallback>
 
@@ -106,6 +111,7 @@ export type ComponentFileTransformerCallback = (params: {
     sourceMap: ?Object,
   },
   context: Context,
+  worker: PundleWorker,
   resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
   addImport(fileImport: ImportResolved): Promise<void>,
   addChunk(chunk: Chunk): Promise<void>,
@@ -113,7 +119,7 @@ export type ComponentFileTransformerCallback = (params: {
 export type ComponentFileTransformer = Component<'file-transformer', ComponentFileTransformerCallback>
 
 export type ComponentJobTransformerResult = { job: Job }
-export type ComponentJobTransformerCallback = (params: { context: Context, job: Job }) =>
+export type ComponentJobTransformerCallback = (params: { context: Context, worker: PundleWorker, job: Job }) =>
   | Promise<?ComponentJobTransformerResult>
   | ?ComponentJobTransformerResult
 export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
@@ -126,5 +132,6 @@ export type ComponentChunkGeneratorCallback = (params: {
   job: Job,
   chunk: Chunk,
   context: Context,
+  worker: PundleWorker,
 }) => Promise<?ComponentChunkGeneratorResult> | ?ComponentChunkGeneratorResult
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>
