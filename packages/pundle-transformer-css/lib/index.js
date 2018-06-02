@@ -69,7 +69,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
 
         return {
           contents: css,
-          sourceMap: processed.map,
+          sourceMap: processed.map.toJSON(),
         }
       }
       throw new Error(`Unknown format for css files '${file.format}' encountered in loader-css`)
