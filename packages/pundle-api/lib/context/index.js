@@ -184,7 +184,7 @@ export default class Context {
       transformed = { sourceMap: newSourceMap, contents: result.contents }
     }
 
-    if (transformed.sourceMap) {
+    if (transformed.sourceMap && (!transformed.sourceMap.sourcesContent || !transformed.sourceMap.sourcesContent.length)) {
       Object.assign(transformed.sourceMap, {
         sources: [filePath],
         sourcesContent: [typeof contents === 'string' ? contents : contents.toString()],

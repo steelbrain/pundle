@@ -11,7 +11,7 @@ export default function({
   exclude = DEFAULT_EXCLUDE,
   processOutsideProjectRoot,
   options = {},
-}: { exclude?: Array<string | RegExp>, processOutsideProjectRoot?: boolean, options: ?Object } = {}) {
+}: { exclude?: Array<string | RegExp>, processOutsideProjectRoot?: boolean, options?: Object } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-babel',
     version: manifest.version,
