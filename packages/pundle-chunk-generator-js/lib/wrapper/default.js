@@ -49,17 +49,25 @@ function sbPundleModuleGenerate(from) {
   const require = sbPundleModuleRequire.bind(null, from)
   require.cache = sbPundleCache
   require.resolve = path => path
-  require.chunk = id => {
+  require.chunk = (chunkId, fileId) => {
     // TOOD: Append as a script to page if not present already
-    let deferred = sbPundleChunks[id]
+    let deferred = sbPundleChunks[chunkId]
     if (!deferred) {
       deferred = {}
-      sbPundleChunks[id] = deferred
+      sbPundleChunks[chunkId] = deferred
       deferred.promise = new Promise(function(resolve) {
         deferred.resolve = resolve
       })
+      const script = document.createElement('script')
+      script.type = 'application/javascript'
+      script.src = chunkId
+      if (document.body) {
+        document.body.appendChild(script)
+      } else {
+        document.appendChild(script)
+      }
     }
-    return deferred.promise
+    return deferred.promise.then(() => require(fileId))
   }
   return require
 }

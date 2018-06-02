@@ -38,12 +38,9 @@ export default function() {
       // TODO: Invoke chunk loaded success callbacks if available?
       if (chunk.entry) {
         const chunkEntryId = getUniqueHash(chunk)
-        output.push(
-          `sbPundleChunkLoaded(${JSON.stringify(
-            context.getFileName(chunk),
-          )}, sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)}));`,
-        )
+        output.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)
       }
+      output.push(`sbPundleChunkLoaded(${JSON.stringify(context.getFileName(chunk))});`)
 
       output.push('})();')
 
