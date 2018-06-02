@@ -1,10 +1,11 @@
 // @flow
 
 import invariant from 'assert'
+import { SourceMapConsumer } from 'source-map'
 import { NEWLINE_REGEXP, getFileKey, type Chunk, type Job, type ImportResolved, type ImportTransformed } from 'pundle-api'
 
 export function getLinesCount(text: string): number {
-  return text.split(NEWLINE_REGEXP).filter(Boolean).length
+  return text.split(NEWLINE_REGEXP).length
 }
 
 export function getContentForOutput(
@@ -12,10 +13,8 @@ export function getContentForOutput(
   job: Job,
 ): {
   files: Array<ImportTransformed>,
-  chunks: Array<Chunk>,
 } {
   const relevantFiles = new Set()
-  const relevantChunks = new Set()
 
   function iterateImports(fileImport: ImportResolved) {
     const file = job.files.get(getFileKey(fileImport))
@@ -25,13 +24,6 @@ export function getContentForOutput(
     relevantFiles.add(file)
 
     file.imports.forEach(iterateImports)
-    file.chunks.forEach(function(relevantChunk) {
-      if (relevantChunk.format !== fileImport.format) {
-        // Do not include chunks of other formats
-        return
-      }
-      relevantChunks.add(relevantChunk)
-    })
   }
 
   if (chunk.entry) {
@@ -44,6 +36,25 @@ export function getContentForOutput(
 
   return {
     files: Array.from(relevantFiles),
-    chunks: Array.from(relevantChunks),
   }
+}
+
+export function mergeSourceMap(sourceMap: Object, targetMap: Object, offset: number, filePath: string): Promise<void> {
+  return SourceMapConsumer.with(sourceMap, null, function(entryMap) {
+    entryMap.eachMapping(function(mapping) {
+      targetMap.addMapping({
+        source: filePath,
+        original: { line: mapping.originalLine, column: mapping.originalColumn },
+        generated: { line: offset + mapping.generatedLine, column: mapping.generatedColumn },
+      })
+    })
+
+    const sources = (sourceMap.sources || []).filter(Boolean)
+    const sourcesContent = (sourceMap.sourcesContent || []).filter(Boolean)
+    if (sources.length === sourcesContent.length) {
+      sources.forEach((item, index) => {
+        targetMap.setSourceContent(item, sourcesContent[index])
+      })
+    }
+  })
 }

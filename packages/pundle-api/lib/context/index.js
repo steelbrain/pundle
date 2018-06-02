@@ -184,6 +184,13 @@ export default class Context {
       transformed = { sourceMap: newSourceMap, contents: result.contents }
     }
 
+    if (transformed.sourceMap) {
+      Object.assign(transformed.sourceMap, {
+        sources: [filePath],
+        sourcesContent: [typeof contents === 'string' ? contents : contents.toString()],
+      })
+    }
+
     return {
       imports: Array.from(fileImports.values()),
       chunks: Array.from(fileChunks.values()),

@@ -2,7 +2,6 @@
 
 ## Note to self
 
-- Implement chunk dependency on each other
 - pundle-transformer-postcss with plugin support, like autoprefixer and flexbugs-fixes
 - split commons as chunk with configurable name
 - "ModuleScopePlugin" to limit direct import of files

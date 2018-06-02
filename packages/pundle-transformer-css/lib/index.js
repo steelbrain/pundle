@@ -63,7 +63,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
         if (processed.map) {
           const sourceMapUrl = context.getFileName({ ...cssChunk, format: 'css.map' })
           if (sourceMapUrl) {
-            css += `\n$/*# sourceMappingURL=${sourceMapUrl} */`
+            css += `\n/*# sourceMappingURL=${sourceMapUrl} */`
           }
         }
 

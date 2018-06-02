@@ -2,6 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import { SourceMapGenerator } from 'source-map'
 import { createChunkGenerator, getUniqueHash } from 'pundle-api'
 
 import * as Helpers from './helpers'
@@ -17,25 +18,30 @@ export default function() {
     async callback({ chunk, job, context }) {
       if (chunk.format !== 'js') return null
 
+      const sourceMap = new SourceMapGenerator({
+        skipValidation: true,
+      })
       const sourceMapPath = context.getFileName({
         ...chunk,
         format: `${chunk.format}.map`,
       })
-      const { files, chunks } = Helpers.getContentForOutput(chunk, job)
+      const { files } = Helpers.getContentForOutput(chunk, job)
 
       const output = [';(function(){', wrapper]
       let sourceMapOffset = Helpers.getLinesCount(output.join('\n')) + 1
 
-      files.forEach(function(file) {
+      for (const file of files) {
         const fileContents = `sbPundleModuleRegister(${JSON.stringify(
           getUniqueHash(file),
         )}, function(module, require, exports, __filename, __dirname) {\n${file.contents.toString()}\n});`
         if (sourceMapPath) {
-          // TODO: Process source map because enabled
+          if (file.sourceMap) {
+            await Helpers.mergeSourceMap(file.sourceMap, sourceMap, sourceMapOffset, file.filePath)
+          }
+          sourceMapOffset += Helpers.getLinesCount(fileContents)
         }
         output.push(fileContents)
-      })
-      // TODO: Invoke chunk loaded success callbacks if available?
+      }
       if (chunk.entry) {
         const chunkEntryId = getUniqueHash(chunk)
         output.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)
@@ -44,16 +50,17 @@ export default function() {
 
       output.push('})();')
 
-      const outputs = [
-        {
-          format: chunk.format,
-          contents: output.join('\n'),
-        },
-      ]
+      const outputs = []
 
       if (sourceMapPath) {
-        // Push the source map output
+        outputs.push({ contents: JSON.stringify(sourceMap.toJSON()), format: `${chunk.format}.map` })
+        output.push(`//# sourceMappingURL=${sourceMapPath}`)
       }
+
+      outputs.push({
+        format: chunk.format,
+        contents: output.join('\n'),
+      })
 
       return outputs
     },
