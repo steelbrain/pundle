@@ -25,6 +25,8 @@ export function topologicallySortChunks(chunks: Array<Chunk>, job: Job): Array<C
   const chunksMap = {}
   chunks.forEach(chunk => {
     const chunkHash = getChunkKey(chunk)
+    // NOTE: Fix for when an item is not required or requires anything else
+    graph.push([chunkHash, null])
     chunksMap[chunkHash] = chunk
     if (chunk.entry) {
       iterateImports(
