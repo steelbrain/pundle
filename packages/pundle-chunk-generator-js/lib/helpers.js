@@ -1,12 +1,10 @@
 // @flow
 
 import invariant from 'assert'
-import { getFileKey, type Chunk, type Job, type ImportResolved, type ImportTransformed } from 'pundle-api'
-
-export const REGEX_NEWLINE = /(\r?\n)/g
+import { NEWLINE_REGEXP, getFileKey, type Chunk, type Job, type ImportResolved, type ImportTransformed } from 'pundle-api'
 
 export function getLinesCount(text: string): number {
-  return text.split(REGEX_NEWLINE).filter(Boolean).length
+  return text.split(NEWLINE_REGEXP).filter(Boolean).length
 }
 
 export function getContentForOutput(

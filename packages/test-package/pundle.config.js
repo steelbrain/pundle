@@ -6,6 +6,7 @@ import transformerCSS from 'pundle-transformer-css'
 import transformerJSON from 'pundle-transformer-json'
 import transformerBabel from 'pundle-transformer-babel'
 import transformerStatic from 'pundle-transformer-static'
+import transformerTypescript from 'pundle-transformer-typescript'
 import chunkGeneratorJs from 'pundle-chunk-generator-js'
 import chunkGeneratorHtml from 'pundle-chunk-generator-html'
 import chunkGeneratorStatic from 'pundle-chunk-generator-static'
@@ -17,7 +18,7 @@ export default {
     cliReporter(),
     resolverDefault({
       formats: {
-        js: ['.js', '.mjs', '.json'],
+        js: ['.js', '.mjs', '.json', '.ts', '.tsx'],
         html: ['.html'],
         css: ['.css'],
         static: ['.png'],
@@ -33,6 +34,7 @@ export default {
     transformerStatic({
       extensionsOrMimes: ['.png'],
     }),
+    transformerTypescript(),
     chunkGeneratorJs(),
     chunkGeneratorHtml(),
     chunkGeneratorStatic({ formats: ['css'] }),

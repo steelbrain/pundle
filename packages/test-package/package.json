@@ -6,20 +6,22 @@
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-chunk-generator-js": "0.0.0",
     "pundle-chunk-generator-html": "0.0.0",
+    "pundle-chunk-generator-js": "0.0.0",
     "pundle-chunk-generator-static": "0.0.0",
     "pundle-core": "0.0.0",
     "pundle-reporter-cli": "0.0.0",
-    "pundle-resolver-default": "0.0.0",
     "pundle-resolver-aliases-browser": "0.0.0",
+    "pundle-resolver-default": "0.0.0",
     "pundle-transformer-babel": "0.0.0",
     "pundle-transformer-css": "0.0.0",
     "pundle-transformer-js": "0.0.0",
     "pundle-transformer-json": "0.0.0",
     "pundle-transformer-static": "0.0.0",
+    "pundle-transformer-typescript": "0.0.0",
     "react": "^16.3.2",
-    "react-dom": "^16.3.2"
+    "react-dom": "^16.3.2",
+    "typescript": "^2.9.1"
   },
   "author": "steelbrain",
   "license": "MIT"
