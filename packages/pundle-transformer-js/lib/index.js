@@ -5,7 +5,7 @@ import generate from '@babel/generator'
 import * as t from '@babel/types'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
-import { createFileTransformer, getChunk, getFileImportHash } from 'pundle-api'
+import { createFileTransformer, getChunk, getUniqueHash } from 'pundle-api'
 
 import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
 
@@ -52,7 +52,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                 if (!t.isStringLiteral(source)) return
                 promises.push(
                   resolve(source.value, source.loc).then(resolved => {
-                    source.value = getFileImportHash(resolved)
+                    source.value = getUniqueHash(resolved)
                     return addImport(resolved)
                   }),
                 )
@@ -67,7 +67,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                 if (t.isImport(callee)) {
                   promises.push(
                     resolve(arg.value, arg.loc).then(resolved => {
-                      const chunk = getChunk(resolved.format, null, resolved.filePath)
+                      const chunk = getChunk(resolved.format, null, null, [resolved])
                       node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
                       arg.value = context.getFileName(chunk)
                       return addChunk(chunk)
@@ -83,7 +83,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                 // Handling require + require.resolve
                 promises.push(
                   resolve(arg.value, arg.loc).then(resolved => {
-                    arg.value = getFileImportHash(resolved)
+                    arg.value = getUniqueHash(resolved)
                     return addImport(resolved)
                   }),
                 )
@@ -118,7 +118,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
         invariant(sourceModule, 'sourceModule for Injection was not found?')
         promises.push(
           resolve(sourceModule).then(resolved => {
-            injectionImports.set(sourceModule, getFileImportHash(resolved))
+            injectionImports.set(sourceModule, getUniqueHash(resolved))
             return addImport(resolved)
           }),
         )

@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { createChunkGenerator, getFileImportHash, getChunkHash } from 'pundle-api'
+import { createChunkGenerator, getUniqueHash } from 'pundle-api'
 
 import * as Helpers from './helpers'
 import manifest from '../package.json'
@@ -28,7 +28,7 @@ export default function() {
 
       files.forEach(function(file) {
         const fileContents = `sbPundleModuleRegister(${JSON.stringify(
-          getFileImportHash(file),
+          getUniqueHash(file),
         )}, function(module, require, exports, __filename, __dirname) {\n${file.contents.toString()}\n});`
         if (sourceMapPath) {
           // TODO: Process source map because enabled
@@ -37,7 +37,7 @@ export default function() {
       })
       // TODO: Invoke chunk loaded success callbacks if available?
       if (chunk.entry) {
-        const chunkEntryId = getFileImportHash(chunk)
+        const chunkEntryId = getUniqueHash(chunk)
         output.push(
           `sbPundleChunkLoaded(${JSON.stringify(
             context.getFileName(chunk),

@@ -93,11 +93,6 @@ export default class Master implements PundleWorker {
     return this.context.invokeChunkGenerators(this, { job: await this.context.invokeJobTransformers(this, { job }) })
   }
   async transformChunk(chunk: Chunk, job: Job): Promise<void> {
-    const { entry } = chunk
-    if (!entry) {
-      // TODO: Return silently instead?
-      throw new Error('Cannot process chunk without entry')
-    }
     const lockKey = getChunkKey(chunk)
     if (job.locks.has(lockKey)) {
       return
@@ -110,13 +105,11 @@ export default class Master implements PundleWorker {
     try {
       job.chunks.set(lockKey, chunk)
 
-      await this.transformFileTree(
-        {
-          format: chunk.format,
-          filePath: entry,
-        },
-        job,
-      )
+      const filesToProcess = chunk.imports
+      if (chunk.entry) {
+        filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
+      }
+      await pMap(filesToProcess, file => this.transformFileTree(file, job))
     } catch (error) {
       job.chunks.delete(lockKey)
       throw error

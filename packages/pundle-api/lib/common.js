@@ -6,48 +6,45 @@ import Imurmurhash from 'imurmurhash'
 import type { Loc, Chunk, ImportResolved } from './types'
 
 export const NEWLINE_REGEXP = /\r\n|[\n\r\u2028\u2029]/
-export function getChunkHash(chunk: Chunk): string {
-  const hash = new Imurmurhash()
-    .hash(chunk.label || chunk.entry || '')
-    .result()
-    .toString()
-  return `${chunk.format}_${hash}`
-}
 
-export function getChunkKey(chunk: Chunk): string {
-  return `chunk_${chunk.format}_${getChunkHash(chunk)}`
-}
-
-export function getFileImportHash(item: ImportResolved | Chunk): string {
-  let entry = ''
+export function getUniqueHash(item: ImportResolved | Chunk): string {
+  let stringKey = ''
   if (typeof item.filePath === 'string') {
-    entry = item.filePath
+    stringKey = item.filePath
+  } else if (typeof item.label === 'string') {
+    stringKey = item.label
   } else if (typeof item.entry === 'string') {
-    // TODO: Eslint bug?
-    // eslint-disable-next-line prefer-destructuring
-    entry = item.entry
+    stringKey = item.entry
+  } else if (Array.isArray(item.imports)) {
+    stringKey += `${JSON.stringify(item.imports)}`
   }
 
   const hash = new Imurmurhash()
-    .hash(entry)
+    .hash(stringKey)
     .result()
     .toString()
   return `${item.format}_${hash}`
 }
 
-export function getFileKey(item: ImportResolved | Chunk): string {
-  return `file_${item.format}_${getFileImportHash(item)}`
+export function getChunkKey(chunk: Chunk): string {
+  return `chunk_${getUniqueHash(chunk)}`
 }
 
-export function getChunk(format: string, label: ?string = null, entry: ?string = null): Chunk {
-  if (!label && !entry) {
-    throw new Error('Either label or entry are required to make a chunk')
-  }
+export function getFileKey(item: ImportResolved | Chunk): string {
+  return `file_${getUniqueHash(item)}`
+}
+
+export function getChunk(
+  format: string,
+  label: ?string = null,
+  entry: ?string = null,
+  imports: Array<ImportResolved> = [],
+): Chunk {
   return {
     format,
     entry,
     label,
-    imports: [],
+    imports,
   }
 }
 
@@ -69,7 +66,7 @@ export function getFileName(formats: { [string]: string | false }, output: Chunk
   if (typeof formatOutput === 'undefined') {
     throw new Error(`Unable to find output path for format '${output.format}' in config file`)
   }
-  const [, hash] = getChunkHash(output).split('_')
+  const [, hash] = getUniqueHash(output).split('_')
 
   const format = formats[formatOutput]
   if (format === false) {

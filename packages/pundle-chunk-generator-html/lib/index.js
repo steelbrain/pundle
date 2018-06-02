@@ -55,7 +55,10 @@ export default function() {
       const file = job.files.get(getFileKey(chunk))
       invariant(file, 'entry file not found')
 
-      const chunks = Array.from(job.chunks.values()).filter(i => i.entry !== chunk.entry && i.format !== chunk.format)
+      const chunks = Array.from(job.chunks.values()).filter(
+        i => i.entry && i.entry !== chunk.entry && i.format !== chunk.format,
+      )
+
       const contents = typeof file.contents === 'string' ? file.contents : file.contents.toString()
 
       const transformedContents = contents.replace(CHUNK_INJECTION_REGEXP, function(match, g1 = '') {
