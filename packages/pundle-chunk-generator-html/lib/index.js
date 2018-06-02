@@ -1,32 +1,14 @@
 // @flow
 
-import globrex from 'globrex'
 import invariant from 'assert'
-import { createChunkGenerator, getFileKey, type Chunk } from 'pundle-api'
+import { createChunkGenerator, getFileKey } from 'pundle-api'
 
 import manifest from '../package.json'
+import { getChunksMatchingFilter, topologicallySortChunks } from './helpers'
 
 const CHUNK_INJECTION_REGEXP = / *<!-- chunk-import(.*)? -->/gi
 
-const chunkMatchingCache = {}
-function getChunksMatchingFilter(chunks: Array<Chunk>, filter: string, entry: string): Array<Chunk> {
-  const [key, value] = filter.split(':')
-  if (!key || !value) {
-    throw new Error(`Invalid chunks filter: '${filter}' in HTML file '${entry}'`)
-  }
-
-  let regex = chunkMatchingCache[value]
-  if (!regex) {
-    const result = globrex(value)
-    regex = result.regex // eslint-disable-line prefer-destructuring
-    chunkMatchingCache[value] = result.regex
-  }
-
-  return chunks.filter(chunk => regex.test(chunk[key]))
-}
-
 // TODO: have a config?
-// TODO: Topo sort because some chunks depend on others?
 export default function() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
@@ -69,12 +51,9 @@ export default function() {
         const prefix = ' '.repeat(spacesBefore)
 
         const filter = g1.trim()
-        const chunksToWrite = filter ? getChunksMatchingFilter(chunks, filter, entry) : chunks
+        const chunksToWrite = topologicallySortChunks(filter ? getChunksMatchingFilter(chunks, filter, entry) : chunks, job)
 
-        return chunksToWrite
-          .map(getChunkImportLine)
-          .map(line => `${prefix}${line}`)
-          .join('\n')
+        return chunksToWrite.map(item => `${prefix}${getChunkImportLine(item)}`).join('\n')
       })
 
       return [{ format: chunk.format, contents: transformedContents }]
