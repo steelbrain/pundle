@@ -27,7 +27,7 @@ const { validate: transformed } = validate({
       'Contents must be valid string or Buffer',
       val => typeof val === 'string' || Buffer.isBuffer(val),
     ),
-  sourceMap: yup.object().nullable(),
+  sourceMap: yup.mixed().nullable(),
 })
 const { validate: chunk } = validate({
   format: yup.string().required(),

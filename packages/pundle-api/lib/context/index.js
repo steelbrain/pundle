@@ -114,7 +114,7 @@ export default class Context {
     const fileImports = new Map()
 
     const transformers = this.getComponents('file-transformer')
-    let transformed: { contents: string | Buffer, sourceMap: ?Object } = { contents, sourceMap: null }
+    let transformed: { contents: string | Buffer, sourceMap: ?Object | false } = { contents, sourceMap: null }
 
     for (const transformer of transformers) {
       const result = await transformer.callback({
@@ -176,7 +176,11 @@ export default class Context {
       }
 
       let newSourceMap = null
-      if (result.sourceMap && !transformed.sourceMap) {
+      if (transformed.sourceMap === false) {
+        newSourceMap = false
+      } else if (result.sourceMap === false) {
+        newSourceMap = false
+      } else if (result.sourceMap && !transformed.sourceMap) {
         newSourceMap = result.sourceMap
       } else if (result.sourceMap && transformed.sourceMap) {
         newSourceMap = mergeSourceMap(transformed.sourceMap, result.sourceMap)
@@ -184,7 +188,7 @@ export default class Context {
       transformed = { sourceMap: newSourceMap, contents: result.contents }
     }
 
-    if (transformed.sourceMap && (!transformed.sourceMap.sourcesContent || !transformed.sourceMap.sourcesContent.length)) {
+    if (transformed.sourceMap) {
       Object.assign(transformed.sourceMap, {
         sources: [filePath],
         sourcesContent: [typeof contents === 'string' ? contents : contents.toString()],

@@ -37,7 +37,7 @@ export type ImportTransformed = {
   format: string,
   filePath: string,
   contents: Buffer | string,
-  sourceMap: ?Object,
+  sourceMap: ?Object | false,
   chunks: Array<Chunk>,
   imports: Array<ImportResolved>,
 }
@@ -49,7 +49,7 @@ export type TransformRequest = {
 }
 export type TransformResult = {|
   contents: Buffer | string,
-  sourceMap: ?Object,
+  sourceMap: ?Object | false,
   chunks: Array<Chunk>,
   imports: Array<ImportResolved>,
 |}
@@ -105,14 +105,14 @@ export type ComponentFileResolver = Component<'file-resolver', ComponentFileReso
 // TODO: Maybe transform original error to have a loc?
 export type ComponentFileTransformerResult = {|
   contents: Buffer | string,
-  sourceMap: ?Object,
+  sourceMap: ?Object | false,
 |}
 export type ComponentFileTransformerCallback = (params: {
   file: {
     filePath: string,
     format: string,
     contents: Buffer | string,
-    sourceMap: ?Object,
+    sourceMap: ?Object | false,
   },
   context: Context,
   worker: PundleWorker,

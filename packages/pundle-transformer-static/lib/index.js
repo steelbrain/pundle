@@ -65,7 +65,7 @@ export default function({
         // required in a JS file
         return {
           contents: `module.exports = ${JSON.stringify(url)}`,
-          sourceMap: null,
+          sourceMap: false,
         }
       }
 

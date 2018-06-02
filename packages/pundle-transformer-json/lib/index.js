@@ -26,7 +26,12 @@ export default function({ extensions = ['.json'] }: { extensions?: Array<string>
       }
       return {
         contents: `module.exports = ${JSON.stringify(parsed)}`,
-        sourceMap: null,
+        sourceMap: {
+          version: 3,
+          sources: [file.filePath],
+          names: ['$'],
+          mappings: 'AAAAA',
+        },
       }
     },
   })

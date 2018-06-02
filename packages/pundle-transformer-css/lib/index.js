@@ -55,7 +55,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
 
         return {
           contents: moduleMap ? `module.exports = ${JSON.stringify(moduleMap)}` : '',
-          sourceMap: null,
+          sourceMap: false,
         }
       } else if (file.format === 'css') {
         // entry or was imported from a css file
