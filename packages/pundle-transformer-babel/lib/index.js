@@ -36,9 +36,11 @@ export default function({
         babelCore.transform(
           file.contents,
           {
+            root: context.config.rootDirectory,
             babelrc: true,
             filename: file.filePath,
             sourceMap: true,
+            sourceType: 'module',
             highlightCode: false,
             sourceFileName: file.filePath,
           },
