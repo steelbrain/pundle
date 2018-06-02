@@ -10,7 +10,8 @@ const DEFAULT_EXCLUDE = ['node_modules/**']
 export default function({
   exclude = DEFAULT_EXCLUDE,
   processOutsideProjectRoot,
-}: { exclude?: Array<string | RegExp>, processOutsideProjectRoot?: boolean } = {}) {
+  options = {},
+}: { exclude?: Array<string | RegExp>, processOutsideProjectRoot?: boolean, options: ?Object } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-babel',
     version: manifest.version,
@@ -43,6 +44,7 @@ export default function({
             sourceType: 'module',
             highlightCode: false,
             sourceFileName: file.filePath,
+            ...options,
           },
           function(err, result) {
             if (err) {
