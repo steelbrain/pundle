@@ -39,11 +39,10 @@ export default function() {
       if (chunk.entry) {
         const chunkEntryId = getFileImportHash(chunk)
         output.push(
-          `Object.assign(sbPundleEntries, ${JSON.stringify({
-            [chunkEntryId]: context.getFileName(chunk),
-          })})`,
+          `sbPundleChunkLoaded(${JSON.stringify(
+            context.getFileName(chunk),
+          )}, sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)}));`,
         )
-        output.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)
       }
 
       output.push('})();')

@@ -2,9 +2,7 @@
   "plugins": ["@babel/plugin-syntax-dynamic-import"],
   "presets": [
     ["@babel/preset-env", {
-      "targets": {
-        "chrome": 50
-      }
+      "targets": ["chrome"]
     }],
     "@babel/preset-flow"
   ]

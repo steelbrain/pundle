@@ -5,7 +5,7 @@ import generate from '@babel/generator'
 import * as t from '@babel/types'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
-import { createFileTransformer, getChunk, getChunkHash, getFileImportHash } from 'pundle-api'
+import { createFileTransformer, getChunk, getFileImportHash } from 'pundle-api'
 
 import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
 

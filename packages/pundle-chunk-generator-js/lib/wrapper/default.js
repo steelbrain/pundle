@@ -7,9 +7,12 @@ const sbPundle = global.sbPundle || {
   chunks: {},
   entries: {},
 }
+if (!global.sbPundle) {
+  global.sbPundle = sbPundle
+}
+
 const sbPundleCache = sbPundle.cache
 const sbPundleChunks = sbPundle.chunks
-const sbPundleEntries = sbPundle.entries
 function sbPundleModuleRegister(moduleId, callback) {
   sbPundleCache[moduleId] = {
     id: moduleId,
@@ -17,6 +20,15 @@ function sbPundleModuleRegister(moduleId, callback) {
     callback,
     exports: {},
     parents: sbPundleCache[moduleId] ? sbPundleCache[moduleId].parents : [],
+  }
+}
+function sbPundleChunkLoaded(id, entry) {
+  if (sbPundleChunks[id]) {
+    sbPundleChunks[id].resolve(entry)
+  } else {
+    sbPundleChunks[id] = {
+      promise: Promise.resolve(entry),
+    }
   }
 }
 function sbPundleModuleRequire(from, request) {
@@ -38,13 +50,15 @@ function sbPundleModuleGenerate(from) {
   require.cache = sbPundleCache
   require.resolve = path => path
   require.chunk = id => {
-    const deferred = {}
-    deferred.promise = new Promise(function(resolve) {
-      deferred.resolve = resolve
-    })
-
-    // TODO: Implement this
-
+    // TOOD: Append as a script to page if not present already
+    let deferred = sbPundleChunks[id]
+    if (!deferred) {
+      deferred = {}
+      sbPundleChunks[id] = deferred
+      deferred.promise = new Promise(function(resolve) {
+        deferred.resolve = resolve
+      })
+    }
     return deferred.promise
   }
   return require
