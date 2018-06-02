@@ -29,7 +29,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
     name: 'pundle-transformer-js',
     version: manifest.version,
     priority: 1000,
-    async callback({ file, resolve, addImport, addChunk }) {
+    async callback({ file, resolve, context, addImport, addChunk }) {
       if (file.format !== 'js') return null
 
       const promises = []
@@ -69,7 +69,7 @@ export default function({ transformCore }: { transformCore: boolean }) {
                     resolve(arg.value, arg.loc).then(resolved => {
                       const chunk = getChunk(resolved.format, null, resolved.filePath)
                       node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
-                      arg.value = getChunkHash(chunk)
+                      arg.value = context.getFileName(chunk)
                       return addChunk(chunk)
                     }),
                   )
