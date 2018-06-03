@@ -2,10 +2,10 @@
 
 import resolveFrom from 'resolve-from'
 
-export function getTypescript(rootDirectory: string): ?Object {
+export function getLess(rootDirectory: string): ?Object {
   let resolved = null
   try {
-    resolved = resolveFrom(rootDirectory, 'typescript')
+    resolved = resolveFrom(rootDirectory, 'less')
   } catch (_) {
     /* No Op */
   }

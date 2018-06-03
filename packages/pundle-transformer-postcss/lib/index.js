@@ -5,7 +5,7 @@ import { createFileTransformer } from 'pundle-api'
 import manifest from '../package.json'
 import { getPostcss } from './helpers'
 
-export default function({ plugins = [] }: { extensions?: Array<string>, plugins?: Array<any> } = {}) {
+export default function({ plugins = [] }: { plugins?: Array<any> } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-postcss',
     version: manifest.version,

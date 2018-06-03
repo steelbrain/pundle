@@ -24,6 +24,7 @@ console.log('react', require('react'), 'react-dom', require('react-dom'), setImm
 
 console.log(process.env.NODE_ENV === 'development' ? 'development' : 'production')
 
+console.log('test less', require('../styles/test.less'))
 console.log('indexCss', require('../styles/index.module.css'))
 console.log('nonModuleCss', require('../styles/non-module.css'))
 console.log('json', require('./haha'))
