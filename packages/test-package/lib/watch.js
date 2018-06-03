@@ -14,7 +14,7 @@ async function main() {
     ready() {
       console.log('Ready!')
     },
-    compiled() {
+    generate() {
       console.log('Compiled & ready to be generated')
     },
   })

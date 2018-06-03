@@ -18,7 +18,7 @@ export default function({ formats }: { formats: Array<string> }) {
 
       let { contents } = file
       const outputs = []
-      const sourceMapUrl = context.getFileName({ ...chunk, format: 'css.map' })
+      const sourceMapUrl = context.getPublicPath({ ...chunk, format: 'css.map' })
 
       if (sourceMapUrl && file.sourceMap) {
         if (chunk.format === 'css') {

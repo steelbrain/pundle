@@ -3,6 +3,7 @@
 import os from 'os'
 import pMap from 'p-map'
 import promiseDefer from 'promise.defer'
+import PromiseQueue from 'sb-promise-queue'
 import differenceBy from 'lodash/differenceBy'
 import {
   Job,
@@ -195,9 +196,15 @@ export default class Master implements PundleWorker {
     await this.context.invokeIssueReporters(this, issue)
   }
   // Dangerous territory beyond this point. May God help us all
-  async watch(options: WatchOptions): Promise<() => void> {
+  async watch({ adapter = 'chokidar', tick, ready, generate }: WatchOptions = {}): Promise<{
+    job: Job,
+    queue: Object,
+    context: Context,
+    dispose(): void,
+  }> {
     const job = new Job()
     const { context } = this
+    const queue = new PromiseQueue()
 
     const configChunks = (await Promise.all(
       this.context.config.entry.map(entry =>
@@ -243,11 +250,11 @@ export default class Master implements PundleWorker {
         })
       }
       try {
-        if (options.tick) {
-          options.tick({ context, job, oldFile, newFile })
+        if (tick) {
+          tick({ context, job, oldFile, newFile })
         }
       } catch (error) {
-        this.context.invokeIssueReporters(error)
+        await this.report(error)
       }
     }
 
@@ -279,7 +286,6 @@ export default class Master implements PundleWorker {
           }
         }
       })
-      if (!parents.chunks.length && !parents.imports.length) return false
 
       await Promise.all(
         []
@@ -287,39 +293,47 @@ export default class Master implements PundleWorker {
           .concat(parents.imports.map(request => this.transformFileTree(request, job, tickCallback, forcedOverwrite))),
       )
 
-      return true
+      return parents.chunks.length || parents.imports.length
     }
 
-    // TODO: Evaluate if we need a queue here
-    let compiled = false
-    let compilationId = 0
-    const watcher = getWatcher(options.adapter, this.context.config.rootDirectory, filePath => {
-      const currentCompilationId = ++compilationId
-      onChange(filePath)
-        .then(wasCompiled => {
-          if (wasCompiled) {
-            compiled = true
-          }
-          if (compilationId === currentCompilationId && (wasCompiled || compiled)) {
-            compiled = false
-            return options.compiled({ context, job })
-          }
-          return null
-        })
-        .catch(e => this.context.invokeIssueReporters(this, e))
+    let shouldGenerate = false
+    queue.onIdle(() => {
+      if (shouldGenerate && generate) {
+        shouldGenerate = false
+        try {
+          Promise.resolve(generate({ context, job })).catch(error => this.report(error))
+        } catch (error) {
+          this.report(error)
+        }
+      }
+    })
+
+    const watcher = getWatcher(adapter, this.context.config.rootDirectory, filePath => {
+      queue
+        .add(() =>
+          onChange(filePath).then(processed => {
+            if (processed) shouldGenerate = true
+          }),
+        )
+        .catch(error => this.report(error))
     })
     await pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback))
 
-    if (options.ready) {
-      await options.ready({ context, job })
+    if (ready) {
+      await ready({ context, job })
     }
-    if (options.compiled) {
-      await options.compiled({ context, job })
+    if (generate) {
+      await generate({ context, job })
     }
     await watcher.watch()
 
-    return function() {
-      watcher.close()
+    return {
+      job,
+      queue,
+      context,
+      dispose() {
+        watcher.close()
+      },
     }
   }
 }

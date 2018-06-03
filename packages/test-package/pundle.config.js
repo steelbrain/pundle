@@ -55,10 +55,10 @@ export default {
   output: {
     rootDirectory: path.join(__dirname, 'dist'),
     formats: {
-      '*.map': '[id].[format]',
+      '*.map': 'assets/[id].[format]',
+      static: 'assets/[id][ext]',
+      '*': 'assets/[id].[format]',
       html: '[name].[format]',
-      static: '[id][ext]',
-      '*': '[id].[format]',
     },
   },
 }

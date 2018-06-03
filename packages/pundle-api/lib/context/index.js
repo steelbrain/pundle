@@ -6,7 +6,7 @@ import type { Config } from 'pundle-core-load-config'
 
 import Job from '../job'
 import PundleError from '../pundle-error'
-import { getFileName, getFileKey, getChunkKey } from '../common'
+import { getPublicPath, getFileKey, getChunkKey } from '../common'
 import type {
   Loc,
   Chunk,
@@ -58,8 +58,8 @@ export default class Context {
   getComponents<T1: ComponentType, T2>(type: T1): Array<Component<T1, T2>> {
     return this.config.components.filter(c => c.type === type)
   }
-  getFileName(payload: Chunk) {
-    return getFileName(this.config.output.formats, payload)
+  getPublicPath(payload: Chunk) {
+    return getPublicPath(this.config.output.formats, payload)
   }
   async invokeFileResolvers(
     worker: PundleWorker,
@@ -269,7 +269,7 @@ export default class Context {
           chunk,
           format: item.format,
           contents: item.contents,
-          fileName: this.getFileName({ ...chunk, format: item.format }),
+          fileName: this.getPublicPath({ ...chunk, format: item.format }),
         }),
       )
     })

@@ -20,7 +20,7 @@ export default function() {
       if (!entry) return null
 
       function getChunkImportLine(chunkToWrite): string {
-        const outputPath = context.getFileName(chunkToWrite)
+        const outputPath = context.getPublicPath(chunkToWrite)
         if (outputPath) {
           if (chunkToWrite.format === 'js') {
             return `<script src="${outputPath}" type="application/javascript"></script>`

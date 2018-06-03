@@ -21,7 +21,7 @@ export default function() {
       const sourceMap = new SourceMapGenerator({
         skipValidation: true,
       })
-      const sourceMapPath = context.getFileName({
+      const sourceMapPath = context.getPublicPath({
         ...chunk,
         format: `${chunk.format}.map`,
       })
@@ -46,7 +46,7 @@ export default function() {
         const chunkEntryId = getUniqueHash(chunk)
         output.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)
       }
-      output.push(`sbPundleChunkLoaded(${JSON.stringify(context.getFileName(chunk))});`)
+      output.push(`sbPundleChunkLoaded(${JSON.stringify(context.getPublicPath(chunk))});`)
 
       output.push('})();')
 

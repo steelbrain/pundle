@@ -24,3 +24,4 @@ export default async function getPundle({
   await master.spawnWorkers()
   return master
 }
+export type { Master }

@@ -13,7 +13,8 @@
     "pundle-api": "0.0.0",
     "pundle-core-load-config": "0.0.0",
     "sb-communication": "5",
-    "sb-fs": "^3.0.0"
+    "sb-fs": "^3.0.0",
+    "sb-promise-queue": "^1.0.1"
   },
   "author": "steelbrain",
   "license": "MIT"

@@ -49,7 +49,7 @@ export function getChunk(
 }
 
 const outputFormatCache = {}
-export function getFileName(formats: { [string]: string | false }, output: Chunk): string | false {
+export function getPublicPath(formats: { [string]: string | false }, output: Chunk): string | false {
   const formatKeys = Object.keys(formats).sort((a, b) => b.length - a.length)
 
   const formatOutput = formatKeys.find(formatKey => {

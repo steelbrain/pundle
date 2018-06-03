@@ -58,7 +58,7 @@ export default function({
       } else {
         const chunk = getChunk('static', null, file.filePath)
         await addChunk(chunk)
-        url = context.getFileName(chunk)
+        url = context.getPublicPath(chunk)
       }
 
       if (file.format === 'js') {

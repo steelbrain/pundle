@@ -10,10 +10,10 @@ export type WorkerRequestType = 'resolve'
 
 export type WatchAdapter = 'chokidar'
 export type WatchOptions = {
-  adapter: WatchAdapter,
-  tick(params: { job: Job, context: Context, oldFile: ?ImportTransformed, newFile: ImportTransformed }): Promise<
+  adapter?: WatchAdapter,
+  tick?: (params: { job: Job, context: Context, oldFile: ?ImportTransformed, newFile: ImportTransformed }) => Promise<
     void,
   > | void,
-  ready(params: { job: Job, context: Context }): Promise<void> | void,
-  compiled(params: { job: Job, context: Context }): Promise<void> | void,
+  ready?: (params: { job: Job, context: Context }) => Promise<void> | void,
+  generate?: (params: { job: Job, context: Context }) => Promise<void> | void,
 }
