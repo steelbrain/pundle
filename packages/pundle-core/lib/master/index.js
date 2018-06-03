@@ -137,7 +137,6 @@ export default class Master implements PundleWorker {
     if (job.locks.has(lockKey)) {
       return
     }
-    console.log('forcedOverwrite', forcedOverwrite, request.filePath)
     if (oldFile && !forcedOverwrite.includes(request.filePath)) {
       return
     }
@@ -289,12 +288,19 @@ export default class Master implements PundleWorker {
       )
     }
 
-    let queue = Promise.resolve()
-    const queueize = callback => (...args) => {
-      queue = queue.then(() => callback(...args)).catch(e => this.context.invokeIssueReporters(e))
-    }
-
-    const watcher = getWatcher(options.adapter, this.context.config.rootDirectory, onChange)
+    // TODO: Evaluate if we need a queue here
+    let compilationId = 0
+    const watcher = getWatcher(options.adapter, this.context.config.rootDirectory, filePath => {
+      const currentCompilationId = ++compilationId
+      onChange(filePath)
+        .then(() => {
+          if (compilationId === currentCompilationId) {
+            return options.compiled({ context, job })
+          }
+          return null
+        })
+        .catch(e => this.context.invokeIssueReporters(this, e))
+    })
     await pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback))
 
     if (options.ready) {
