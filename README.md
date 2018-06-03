@@ -3,8 +3,10 @@
 ## Top Priority
 
 - Watcher
-- FileSizeReporter
+- Dev Server
 - CLI
+- Boot from cache
+- FileSizeReporter
 - create-pundle-app
 - create-pundle-react-app
 - create-pundle-vue-app
