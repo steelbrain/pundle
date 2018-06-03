@@ -114,7 +114,7 @@ export default class Master implements PundleWorker {
     try {
       job.chunks.set(lockKey, chunk)
 
-      const filesToProcess = chunk.imports
+      const filesToProcess = chunk.imports.slice()
       if (chunk.entry) {
         filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
       }
