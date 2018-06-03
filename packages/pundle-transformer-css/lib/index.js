@@ -21,7 +21,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
 
       let moduleMap = null
       const plugins = []
-      const fileIsModule = file.filePath.endsWith('.module.css')
+      const fileIsModule = file.filePath.endsWith(`.module${extName}`)
 
       if (fileIsModule) {
         plugins.push(
