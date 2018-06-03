@@ -215,7 +215,6 @@ export default class Master implements PundleWorker {
         const removedImports = differenceBy(oldFile.imports, newFile.imports, getFileKey)
         removedImports.forEach((fileImport: ImportResolved) => {
           const fileImportKey = getFileKey(fileImport)
-          // TODO: Test this
           let found = configChunks.find(chunk => getFileKey(chunk) === fileImportKey)
           if (found) {
             // DO NOT DELETE ENTRIES
@@ -280,21 +279,29 @@ export default class Master implements PundleWorker {
           }
         }
       })
+      if (!parents.chunks.length && !parents.imports.length) return false
 
       await Promise.all(
         []
           .concat(parents.chunks.map(chunk => this.transformChunk(chunk, job, tickCallback, forcedOverwrite)))
           .concat(parents.imports.map(request => this.transformFileTree(request, job, tickCallback, forcedOverwrite))),
       )
+
+      return true
     }
 
     // TODO: Evaluate if we need a queue here
+    let compiled = false
     let compilationId = 0
     const watcher = getWatcher(options.adapter, this.context.config.rootDirectory, filePath => {
       const currentCompilationId = ++compilationId
       onChange(filePath)
-        .then(() => {
-          if (compilationId === currentCompilationId) {
+        .then(wasCompiled => {
+          if (wasCompiled) {
+            compiled = true
+          }
+          if (compilationId === currentCompilationId && (wasCompiled || compiled)) {
+            compiled = false
             return options.compiled({ context, job })
           }
           return null
