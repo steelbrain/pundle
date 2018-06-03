@@ -15,7 +15,7 @@ export default class Worker implements PundleWorker {
   async resolveLocally(request: ImportRequest): Promise<ImportResolved> {
     return this.context.invokeFileResolvers(this, request)
   }
-  // Compilation methods below
+  // PundleWorker methods below
   async resolve(payload: ImportRequest) {
     return this.bridge.send('resolve', payload)
   }

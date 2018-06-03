@@ -8,7 +8,7 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 - Dev Server
 - CLI
 - Boot from cache
-- FileSizeReporter
+- visualize dependency file size
 - create-pundle-app
 - create-pundle-react-app
 - create-pundle-vue-app
@@ -23,7 +23,7 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 - load .graphql files?
 - enforce case sensitivity?
 - fix for https://github.com/facebook/create-react-app/issues/186 ?
-- FileSizeReporter
+- FileSizeReporter (or https://github.com/webpack-contrib/webpack-bundle-analyzer?)
 
 ## Features to include
 
@@ -54,5 +54,6 @@ Types of components:
 
 ## Post-initial demo goals
 
+- Explore chokidar alternatives (perhaps write own abstraction on top of https://www.npmjs.com/package/nsfw (is sfw, just weird name))
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs

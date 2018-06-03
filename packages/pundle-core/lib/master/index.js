@@ -18,7 +18,11 @@ import {
   type ChunksGenerated,
 } from 'pundle-api'
 
+import getWatcher from '../watcher'
 import WorkerDelegate from '../worker/delegate'
+import type { WatchOptions } from '../types'
+
+type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed) => Promise<void>
 
 // TODO: Locks for files and chunks
 export default class Master implements PundleWorker {
@@ -72,9 +76,9 @@ export default class Master implements PundleWorker {
     })
   }
 
-  async execute(): Promise<void> {
+  async execute(): Promise<ChunksGenerated> {
     const job = new Job()
-    const entries = await Promise.all(
+    const configChunks = (await Promise.all(
       this.context.config.entry.map(entry =>
         this.resolve({
           request: entry,
@@ -82,17 +86,15 @@ export default class Master implements PundleWorker {
           ignoredResolvers: [],
         }),
       ),
-    )
-    await pMap(entries, entry => this.transformChunk(getChunk(entry.format, null, entry.filePath), job))
-    const generated = await this.generate(job)
+    )).map(resolved => getChunk(resolved.format, null, resolved.filePath))
+    await pMap(configChunks, chunk => this.transformChunk(chunk, job))
 
-    // TODO: Maybe do something else?
-    return generated
+    return this.generate(job)
   }
   async generate(job: Job): Promise<ChunksGenerated> {
     return this.context.invokeChunkGenerators(this, { job: await this.context.invokeJobTransformers(this, { job }) })
   }
-  async transformChunk(chunk: Chunk, job: Job): Promise<void> {
+  async transformChunk(chunk: Chunk, job: Job, tickCallback: ?TickCallback = null): Promise<void> {
     const lockKey = getChunkKey(chunk)
     if (job.locks.has(lockKey)) {
       return
@@ -109,7 +111,7 @@ export default class Master implements PundleWorker {
       if (chunk.entry) {
         filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
       }
-      await pMap(filesToProcess, file => this.transformFileTree(file, job))
+      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback))
     } catch (error) {
       job.chunks.delete(lockKey)
       throw error
@@ -118,7 +120,12 @@ export default class Master implements PundleWorker {
     }
   }
   // TODO: Use cached old files here if present on the job?
-  async transformFileTree(request: ImportResolved, job: Job, forcedOverwrite: boolean = false): Promise<void> {
+  async transformFileTree(
+    request: ImportResolved,
+    job: Job,
+    tickCallback: ?TickCallback = null,
+    forcedOverwrite: boolean = false,
+  ): Promise<void> {
     const lockKey = getFileKey(request)
     const oldFile = job.files.get(lockKey)
     if (job.locks.has(lockKey)) {
@@ -133,9 +140,12 @@ export default class Master implements PundleWorker {
       const newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
       await Promise.all([
-        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job)),
-        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job)),
+        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback)),
+        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback)),
       ])
+      if (tickCallback) {
+        await tickCallback(oldFile, newFile)
+      }
     } catch (error) {
       if (oldFile) {
         job.files.set(lockKey, oldFile)
@@ -147,7 +157,7 @@ export default class Master implements PundleWorker {
       job.locks.delete(lockKey)
     }
   }
-  // Compilation methods below
+  // PundleWorker methods below
   async resolve(request: ImportRequest): Promise<ImportResolved> {
     return this.resolverWorker.resolve(request)
   }
@@ -177,5 +187,52 @@ export default class Master implements PundleWorker {
   }
   async report(issue: any): Promise<void> {
     await this.context.invokeIssueReporters(this, issue)
+  }
+  // Dangerous territory beyond this point. May God help us all
+  async watch(options: WatchOptions): Promise<() => void> {
+    const job = new Job()
+    const { context } = this
+
+    const configChunks = (await Promise.all(
+      this.context.config.entry.map(entry =>
+        this.resolve({
+          request: entry,
+          requestFile: null,
+          ignoredResolvers: [],
+        }),
+      ),
+    )).map(resolved => getChunk(resolved.format, null, resolved.filePath))
+
+    const tickCallback = async (oldFile: ?ImportTransformed, newFile: ImportTransformed) => {
+      console.log('oldFile', oldFile ? oldFile.filePath : null, 'newFile', newFile.filePath)
+      try {
+        if (options.tick) {
+          options.tick({ context, job, oldFile, newFile })
+        }
+      } catch (error) {
+        this.context.invokeIssueReporters(error)
+      }
+    }
+    let queue = Promise.resolve()
+    const queueize = callback => (...args) => {
+      queue = queue.then(() => callback(...args)).catch(e => this.context.invokeIssueReporters(e))
+    }
+
+    const watcher = getWatcher(options.adapter, this.context.config.rootDirectory, file => {
+      console.log('changed', file)
+    })
+    await pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback))
+
+    if (options.ready) {
+      await options.ready({ context, job })
+    }
+    if (options.compiled) {
+      await options.compiled({ context, job })
+    }
+    await watcher.watch()
+
+    return function() {
+      watcher.close()
+    }
   }
 }
