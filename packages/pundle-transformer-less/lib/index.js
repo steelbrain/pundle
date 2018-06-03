@@ -17,7 +17,7 @@ export default function({ extensions = ['.less'], options = {} }: { extensions?:
 
       const less = getLess(context.config.rootDirectory)
       if (!less) {
-        throw new Error(`Less not found in '${context.config.rootDirectory}'`)
+        throw new Error(`'less' not found in '${context.config.rootDirectory}'`)
       }
 
       const processed = await less.render(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {

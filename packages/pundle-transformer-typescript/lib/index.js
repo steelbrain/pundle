@@ -34,7 +34,7 @@ export default function({
 
       const typescript = getTypescript(context.config.rootDirectory)
       if (!typescript) {
-        throw new Error(`Typescript not found in '${context.config.rootDirectory}'`)
+        throw new Error(`'typescript' not found in '${context.config.rootDirectory}'`)
       }
 
       const transformed = typescript.transpileModule(

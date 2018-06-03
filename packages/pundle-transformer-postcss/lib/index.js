@@ -15,7 +15,7 @@ export default function({ plugins = [] }: { plugins?: Array<any> } = {}) {
 
       const postcss = getPostcss(context.config.rootDirectory)
       if (!postcss) {
-        throw new Error(`Postcss not found in '${context.config.rootDirectory}'`)
+        throw new Error(`'postcss' not found in '${context.config.rootDirectory}'`)
       }
 
       const processed = await postcss(plugins).process(
