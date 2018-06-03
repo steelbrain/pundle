@@ -9,22 +9,30 @@ export default function({ formats }: { formats: Array<string> }) {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
     version: manifest.version,
-    async callback({ chunk, job }) {
+    async callback({ chunk, job, context }) {
       const formatMatch = chunk.format === 'static' || formats.includes(chunk.format)
       if (!formatMatch || !chunk.entry) return null
 
       const file = job.files.get(getFileKey(chunk))
       invariant(file, 'Entry for chunk not found in generator-static')
 
-      const outputs = [
-        {
-          format: chunk.format,
-          contents: file.contents,
-        },
-      ]
-      if (file.sourceMap) {
+      let { contents } = file
+      const outputs = []
+      const sourceMapUrl = context.getFileName({ ...chunk, format: 'css.map' })
+
+      if (sourceMapUrl && file.sourceMap) {
+        if (chunk.format === 'css') {
+          contents = `${
+            typeof contents === 'string' ? contents : contents.toString()
+          }\n/*# sourceMappingURL=${sourceMapUrl} */`
+        }
         outputs.push({ contents: JSON.stringify(file.sourceMap), format: `${chunk.format}.map` })
       }
+
+      outputs.push({
+        format: chunk.format,
+        contents,
+      })
 
       return outputs
     },

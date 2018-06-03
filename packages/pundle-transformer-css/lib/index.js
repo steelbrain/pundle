@@ -13,7 +13,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
     name: 'pundle-transformer-css',
     version: manifest.version,
     priority: 1500,
-    async callback({ file, context, resolve, addChunk }) {
+    async callback({ file, resolve, addChunk }) {
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) {
         return null
@@ -59,17 +59,9 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
         }
       } else if (file.format === 'css') {
         // entry or was imported from a css file
-        let { css } = processed
-        if (processed.map) {
-          const sourceMapUrl = context.getFileName({ ...cssChunk, format: 'css.map' })
-          if (sourceMapUrl) {
-            // TODO: Move this to generator-css?
-            css += `\n/*# sourceMappingURL=${sourceMapUrl} */`
-          }
-        }
 
         return {
-          contents: css,
+          contents: processed.css,
           sourceMap: processed.map.toJSON(),
         }
       }
