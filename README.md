@@ -4,7 +4,6 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Top Priority
 
-- Watcher
 - Dev Server
 - CLI
 - Boot from cache
@@ -25,7 +24,7 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 - fix for https://github.com/facebook/create-react-app/issues/186 ?
 - FileSizeReporter (or https://github.com/webpack-contrib/webpack-bundle-analyzer?)
 
-## Features to include
+## Features Included
 
 - less
 - scss
@@ -40,6 +39,7 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 - resolve (browser fields?)
 - statics in a chunk (blobs?)
 - node builtin modules in browser
+- watcher to automatically recompile
 - we have chunk specific file types {js,html,css,blob}
 
 Types of components:
