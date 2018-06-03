@@ -1,5 +1,16 @@
 # Pundle - NG (pre-alpha)
 
+## Top Priority
+
+- Watcher
+- FileSizeReporter
+- CLI
+- create-pundle-app
+- create-pundle-react-app
+- create-pundle-vue-app
+- pundle-transformer-webassembly
+- pundle-transformer-webassembly-rust
+
 ## Note to self
 
 - split commons as chunk with configurable name
