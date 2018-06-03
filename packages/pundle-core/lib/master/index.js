@@ -3,6 +3,7 @@
 import os from 'os'
 import pMap from 'p-map'
 import promiseDefer from 'promise.defer'
+import differenceBy from 'lodash/differenceBy'
 import {
   Job,
   PundleError,
@@ -94,7 +95,12 @@ export default class Master implements PundleWorker {
   async generate(job: Job): Promise<ChunksGenerated> {
     return this.context.invokeChunkGenerators(this, { job: await this.context.invokeJobTransformers(this, { job }) })
   }
-  async transformChunk(chunk: Chunk, job: Job, tickCallback: ?TickCallback = null): Promise<void> {
+  async transformChunk(
+    chunk: Chunk,
+    job: Job,
+    tickCallback: ?TickCallback = null,
+    forcedOverwrite: Array<string> = [],
+  ): Promise<void> {
     const lockKey = getChunkKey(chunk)
     if (job.locks.has(lockKey)) {
       return
@@ -111,7 +117,7 @@ export default class Master implements PundleWorker {
       if (chunk.entry) {
         filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
       }
-      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback))
+      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback, forcedOverwrite))
     } catch (error) {
       job.chunks.delete(lockKey)
       throw error
@@ -124,14 +130,15 @@ export default class Master implements PundleWorker {
     request: ImportResolved,
     job: Job,
     tickCallback: ?TickCallback = null,
-    forcedOverwrite: boolean = false,
+    forcedOverwrite: Array<string> = [],
   ): Promise<void> {
     const lockKey = getFileKey(request)
     const oldFile = job.files.get(lockKey)
     if (job.locks.has(lockKey)) {
       return
     }
-    if (oldFile && !forcedOverwrite) {
+    console.log('forcedOverwrite', forcedOverwrite, request.filePath)
+    if (oldFile && !forcedOverwrite.includes(request.filePath)) {
       return
     }
     job.locks.add(lockKey)
@@ -140,8 +147,8 @@ export default class Master implements PundleWorker {
       const newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
       await Promise.all([
-        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback)),
-        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback)),
+        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback, forcedOverwrite)),
+        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback, forcedOverwrite)),
       ])
       if (tickCallback) {
         await tickCallback(oldFile, newFile)
@@ -204,7 +211,39 @@ export default class Master implements PundleWorker {
     )).map(resolved => getChunk(resolved.format, null, resolved.filePath))
 
     const tickCallback = async (oldFile: ?ImportTransformed, newFile: ImportTransformed) => {
-      console.log('oldFile', oldFile ? oldFile.filePath : null, 'newFile', newFile.filePath)
+      if (oldFile) {
+        const removedChunks = differenceBy(oldFile.chunks, newFile.chunks, getChunkKey)
+        const removedImports = differenceBy(oldFile.imports, newFile.imports, getFileKey)
+        removedImports.forEach((fileImport: ImportResolved) => {
+          const fileImportKey = getFileKey(fileImport)
+          // TODO: Test this
+          let found = configChunks.find(chunk => getFileKey(chunk) === fileImportKey)
+          if (found) {
+            // DO NOT DELETE ENTRIES
+            return
+          }
+          job.files.forEach((file: ImportTransformed) => {
+            found = found || file.imports.some(item => getFileKey(item) === fileImportKey) !== -1
+          })
+          if (!found) {
+            job.files.delete(fileImportKey)
+          }
+        })
+        removedChunks.forEach((chunk: Chunk) => {
+          const chunkKey = getChunkKey(chunk)
+          let found = configChunks.find(configChunk => getChunkKey(configChunk) === chunkKey)
+          if (found) {
+            // DO NOT DELETE ENTRIES
+            return
+          }
+          job.files.forEach((file: ImportTransformed) => {
+            found = found || file.chunks.some(item => getChunkKey(item) === chunkKey)
+          })
+          if (!found) {
+            job.chunks.delete(chunkKey)
+          }
+        })
+      }
       try {
         if (options.tick) {
           options.tick({ context, job, oldFile, newFile })
@@ -213,14 +252,49 @@ export default class Master implements PundleWorker {
         this.context.invokeIssueReporters(error)
       }
     }
+
+    const onChange = async filePath => {
+      const parents = { imports: [], chunks: [] }
+      const forcedOverwrite = [filePath]
+
+      function findInImports(imports: Array<ImportResolved>) {
+        return imports.find(resolved => resolved.filePath === filePath)
+      }
+
+      job.files.forEach(file => {
+        if (
+          findInImports(file.imports) ||
+          file.chunks.some(chunk => chunk.entry === filePath || findInImports(chunk.imports))
+        ) {
+          forcedOverwrite.push(file.filePath)
+          parents.imports.push({ format: file.format, filePath: file.filePath })
+        }
+      })
+      configChunks.forEach(chunk => {
+        const found = findInImports(chunk.imports)
+        if (chunk.entry === filePath || found) {
+          parents.chunks.push(chunk)
+          if (found) {
+            forcedOverwrite.push(found.filePath)
+          } else if (chunk.entry) {
+            forcedOverwrite.push(chunk.entry)
+          }
+        }
+      })
+
+      await Promise.all(
+        []
+          .concat(parents.chunks.map(chunk => this.transformChunk(chunk, job, tickCallback, forcedOverwrite)))
+          .concat(parents.imports.map(request => this.transformFileTree(request, job, tickCallback, forcedOverwrite))),
+      )
+    }
+
     let queue = Promise.resolve()
     const queueize = callback => (...args) => {
       queue = queue.then(() => callback(...args)).catch(e => this.context.invokeIssueReporters(e))
     }
 
-    const watcher = getWatcher(options.adapter, this.context.config.rootDirectory, file => {
-      console.log('changed', file)
-    })
+    const watcher = getWatcher(options.adapter, this.context.config.rootDirectory, onChange)
     await pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback))
 
     if (options.ready) {
