@@ -225,7 +225,10 @@ export default class Context {
 
     return job
   }
-  async invokeChunkGenerators(worker: PundleWorker, { job }: { job: Job }): Promise<ChunksGenerated> {
+  async invokeChunkGenerators(
+    worker: PundleWorker,
+    { job, chunks }: { job: Job, chunks: Array<Chunk> },
+  ): Promise<ChunksGenerated> {
     const everything = []
 
     const generators = this.getComponents('chunk-generator')
@@ -233,7 +236,7 @@ export default class Context {
       throw new PundleError('WORK', 'GENERATE_FAILED', 'No chunk generators configured')
     }
 
-    await pMap(job.chunks.values(), async chunk => {
+    await pMap(chunks, async chunk => {
       let generated = null
 
       for (const generator of generators) {

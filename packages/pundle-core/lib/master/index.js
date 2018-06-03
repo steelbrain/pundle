@@ -91,10 +91,13 @@ export default class Master implements PundleWorker {
     )).map(resolved => getChunk(resolved.format, null, resolved.filePath))
     await pMap(configChunks, chunk => this.transformChunk(chunk, job))
 
-    return this.generate(job)
+    return this.generate(await this.transformJob(job))
   }
-  async generate(job: Job): Promise<ChunksGenerated> {
-    return this.context.invokeChunkGenerators(this, { job: await this.context.invokeJobTransformers(this, { job }) })
+  async generate(job: Job, chunks: Array<Chunk> = Array.from(job.chunks.values())): Promise<ChunksGenerated> {
+    return this.context.invokeChunkGenerators(this, { job, chunks })
+  }
+  async transformJob(job: Job): Promise<Job> {
+    return this.context.invokeJobTransformers(this, { job })
   }
   async transformChunk(
     chunk: Chunk,
