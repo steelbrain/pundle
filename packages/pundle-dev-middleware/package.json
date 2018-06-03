@@ -8,10 +8,10 @@
   "dependencies": {
     "express": "^4.16.3",
     "lodash": "^4.17.10",
-    "mime": "^2.3.1",
-    "p-debounce": "^1.0.0"
+    "mime": "^2.3.1"
   },
   "peerDependencies": {
+    "pundle-api": "0.0.0",
     "pundle-core": "0.0.0"
   },
   "author": "steelbrain",

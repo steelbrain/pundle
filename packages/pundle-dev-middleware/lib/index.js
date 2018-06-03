@@ -3,9 +3,10 @@
 import path from 'path'
 import mime from 'mime/lite'
 import pick from 'lodash/pick'
-import pDebounce from 'p-debounce'
-import getPundle, { type Master } from 'pundle-core'
 import { Router } from 'express'
+
+import { getChunkKey } from 'pundle-api'
+import getPundle, { type Master } from 'pundle-core'
 
 type Payload = {
   config?: Object,
@@ -22,6 +23,7 @@ const PUNDLE_OPTIONS = ['config', 'configFileName', 'configLoadFile', 'directory
 
 export default async function getPundleDevMiddleware(options: Payload) {
   let cachedTransformedJob = null
+  const urlToChunkHash = {}
   const router = new Router()
 
   const master: Master = await getPundle(pick(options, PUNDLE_OPTIONS))
@@ -39,32 +41,30 @@ export default async function getPundleDevMiddleware(options: Payload) {
       })
     }
   }
-  const getTransformedJob = pDebounce(
-    async () => {
-      if (!cachedTransformedJob) {
-        const chunkPathMap = {}
-        const transformedJob = await master.transformJob(job)
-        transformedJob.chunks.forEach(chunk => {
-          const publicPath = context.getPublicPath(chunk)
-          if (publicPath) {
-            chunkPathMap[`/${publicPath}`] = chunk
-          }
-        })
-        cachedTransformedJob = {
-          transformedJob,
-          chunkPathMap,
-        }
+  async function getTransformedJobAsync() {
+    const chunkPathMap = {}
+    const transformedJob = await master.transformJob(job)
+    transformedJob.chunks.forEach(chunk => {
+      const publicPath = context.getPublicPath(chunk)
+      if (publicPath) {
+        chunkPathMap[publicPath] = chunk
       }
-      return cachedTransformedJob
-    },
-    0,
-    { leading: true },
-  )
+    })
+    return {
+      transformedJob,
+      chunkPathMap,
+    }
+  }
+  function getTransformedJob() {
+    if (!cachedTransformedJob) {
+      cachedTransformedJob = getTransformedJobAsync()
+    }
+    return cachedTransformedJob
+  }
 
   router.get('/hmr', function(req, res) {
     res.json({ enabled: !!options.hmr })
   })
-  // TODO: Figure out a strategy for .map links
   router.get(
     '*',
     asyncRoute(async function(req, res, next) {
@@ -76,7 +76,11 @@ export default async function getPundleDevMiddleware(options: Payload) {
       await queue.waitTillIdle()
       const { transformedJob, chunkPathMap } = await getTransformedJob()
 
-      const chunk = chunkPathMap[url]
+      let chunk = chunkPathMap[url]
+      if (!chunk && urlToChunkHash[url]) {
+        const chunkHash = urlToChunkHash[url]
+        chunk = Array.from(transformedJob.chunks.values()).find(item => getChunkKey(item) === chunkHash)
+      }
       if (!chunk) {
         // TODO: Log here
         next()
@@ -84,6 +88,11 @@ export default async function getPundleDevMiddleware(options: Payload) {
       }
       // TODO: cache the generation?
       const { outputs } = await master.generate(transformedJob, [chunk])
+      outputs.forEach(item => {
+        if (item.fileName) {
+          urlToChunkHash[item.fileName || ''] = getChunkKey(item.chunk)
+        }
+      })
       const mimeType = mime.getType(path.extname(url)) || 'application/octet-stream'
       const output = outputs.find(item => url.endsWith(item.fileName || '#'))
       if (!output) {
