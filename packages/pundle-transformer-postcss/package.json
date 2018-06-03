@@ -1,0 +1,14 @@
+{
+  "name": "pundle-transformer-postcss",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "dependencies": {
+    "pundle-api": "0.0.0",
+    "resolve-from": "^4.0.0"
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}

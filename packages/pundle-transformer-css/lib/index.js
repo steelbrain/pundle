@@ -63,6 +63,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
         if (processed.map) {
           const sourceMapUrl = context.getFileName({ ...cssChunk, format: 'css.map' })
           if (sourceMapUrl) {
+            // TODO: Move this to generator-css?
             css += `\n/*# sourceMappingURL=${sourceMapUrl} */`
           }
         }
