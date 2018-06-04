@@ -59,7 +59,7 @@ export type ChunksGenerated = {
     chunk: Chunk,
     format: string,
     contents: string | Buffer,
-    fileName: string | false,
+    filePath: string | false,
   }>,
 }
 

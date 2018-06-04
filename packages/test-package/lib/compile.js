@@ -11,12 +11,12 @@ async function main() {
   console.timeEnd('execute')
   console.log('Compiled and writing to fs')
   result.outputs.forEach(output => {
-    const { fileName } = output
-    if (!fileName) {
+    const { filePath } = output
+    if (!filePath) {
       // Ignore this one
       return
     }
-    fs.writeFileSync(path.join(result.directory, fileName), output.contents)
+    fs.writeFileSync(path.join(result.directory, filePath), output.contents)
   })
 }
 main().catch(console.error)

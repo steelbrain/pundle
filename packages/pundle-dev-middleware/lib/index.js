@@ -3,6 +3,7 @@
 import path from 'path'
 import mime from 'mime/lite'
 import pick from 'lodash/pick'
+import differenceBy from 'lodash/differenceBy'
 import { Router } from 'express'
 
 import { getChunkKey } from 'pundle-api'
@@ -21,8 +22,6 @@ type Payload = {
 const PUNDLE_OPTIONS = ['configFileName', 'configLoadFile', 'directory']
 
 export default async function getPundleDevMiddleware(options: Payload) {
-  let cachedTransformedJob = null
-  const urlToChunkHash = {}
   const router = new Router()
 
   let { publicPath = '/' } = options
@@ -33,9 +32,37 @@ export default async function getPundleDevMiddleware(options: Payload) {
   const master: Master = await getPundle({
     ...pick(options, PUNDLE_OPTIONS),
   })
-  const { job, queue, context } = await master.watch({
-    generate() {
-      cachedTransformedJob = null
+
+  let transformedJob
+  const urlToGeneratedContents = {}
+
+  async function regenerateUrlCache({ context, chunks }) {
+    const { outputs } = await master.generate(transformedJob, chunks)
+    outputs.forEach(({ chunk, filePath }) => {
+      if (filePath) {
+        urlToChunkHash[path.posix.join(publicPath, filePath)] = chunk
+      }
+      if (chunkPublicPath) {
+      }
+    })
+  }
+
+  let lastChunks
+  const { queue } = await master.watch({
+    async generate({ job, context }) {
+      transformedJob = await master.transformJob(job)
+      const currentChunks = Array.from(transformedJob.chunks.values())
+      if (!lastChunks) {
+        lastChunks = currentChunks
+        await regenerateUrlCache({ context, chunks: currentChunks })
+        return
+      }
+      const addedChunks = differenceBy(currentChunks, lastChunks, getChunkKey)
+      lastChunks = currentChunks
+
+      if (addedChunks.length) {
+        await regenerateUrlCache({ context, chunks: currentChunks })
+      }
     },
   })
 
@@ -46,26 +73,6 @@ export default async function getPundleDevMiddleware(options: Payload) {
         next(error)
       })
     }
-  }
-  async function getTransformedJobAsync() {
-    const chunkPathMap = {}
-    const transformedJob = await master.transformJob(job)
-    transformedJob.chunks.forEach(chunk => {
-      const chunkPublicPath = context.getPublicPath(chunk)
-      if (chunkPublicPath) {
-        chunkPathMap[path.posix.join(publicPath, chunkPublicPath)] = chunk
-      }
-    })
-    return {
-      transformedJob,
-      chunkPathMap,
-    }
-  }
-  function getTransformedJob() {
-    if (!cachedTransformedJob) {
-      cachedTransformedJob = getTransformedJobAsync()
-    }
-    return cachedTransformedJob
   }
 
   router.get(`${publicPath}hmr`, function(req, res) {
@@ -80,13 +87,9 @@ export default async function getPundleDevMiddleware(options: Payload) {
       }
 
       await queue.waitTillIdle()
-      const { transformedJob, chunkPathMap } = await getTransformedJob()
 
-      let chunk = chunkPathMap[url]
-      if (!chunk && urlToChunkHash[url]) {
-        const chunkHash = urlToChunkHash[url]
-        chunk = Array.from(transformedJob.chunks.values()).find(item => getChunkKey(item) === chunkHash)
-      }
+      const chunkHash = urlToChunkHash[url]
+      const chunk = Array.from(transformedJob.chunks.values()).find(item => getChunkKey(item) === chunkHash)
       if (!chunk) {
         // TODO: Log here
         next()

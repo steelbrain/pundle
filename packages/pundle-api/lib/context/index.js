@@ -272,7 +272,7 @@ export default class Context {
           chunk,
           format: item.format,
           contents: item.contents,
-          fileName: this.getPublicPath({ ...chunk, format: item.format }),
+          filePath: this.getPublicPath({ ...chunk, format: item.format }),
         }),
       )
     })

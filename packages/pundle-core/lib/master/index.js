@@ -3,6 +3,7 @@
 import os from 'os'
 import pMap from 'p-map'
 import uniq from 'lodash/uniq'
+import uniqBy from 'lodash/uniqBy'
 import promiseDefer from 'promise.defer'
 import PromiseQueue from 'sb-promise-queue'
 import differenceBy from 'lodash/differenceBy'
@@ -264,66 +265,50 @@ export default class Master implements PundleWorker {
       }
     }
 
+    const changed = { imports: [], chunks: [], files: [] }
     const onChange = async filePath => {
-      const parents = { imports: [], chunks: [] }
-      let forcedOverwrite = [filePath]
+      changed.files.push(filePath)
 
-      function findInImports(imports: Array<ImportResolved>) {
-        return imports.find(resolved => resolved.filePath === filePath)
+      function existsInImports(imports: Array<ImportResolved>) {
+        return imports.some(resolved => resolved.filePath === filePath)
+      }
+      function existsInChunk(chunk: Chunk) {
+        return chunk.entry === filePath || existsInImports(chunk.imports)
       }
 
       job.files.forEach(file => {
-        if (
-          findInImports(file.imports) ||
-          file.chunks.some(chunk => chunk.entry === filePath || findInImports(chunk.imports))
-        ) {
-          forcedOverwrite.push(file.filePath)
-          parents.imports.push({ format: file.format, filePath: file.filePath })
+        if (existsInImports(file.imports) || file.chunks.some(existsInChunk)) {
+          changed.files.push(file.filePath)
+          changed.imports.push({ format: file.format, filePath: file.filePath })
         }
       })
-      configChunks.forEach(chunk => {
-        const found = findInImports(chunk.imports)
-        if (chunk.entry === filePath || found) {
-          parents.chunks.push(chunk)
-          if (found) {
-            forcedOverwrite.push(found.filePath)
-          } else if (chunk.entry) {
-            forcedOverwrite.push(chunk.entry)
-          }
-        }
-      })
-
-      forcedOverwrite = uniq(forcedOverwrite)
-
-      await Promise.all(
-        []
-          .concat(parents.chunks.map(chunk => this.transformChunk(chunk, job, tickCallback, forcedOverwrite)))
-          .concat(parents.imports.map(request => this.transformFileTree(request, job, tickCallback, forcedOverwrite))),
-      )
-
-      return parents.chunks.length || parents.imports.length
+      changed.chunks.push(...configChunks.filter(existsInChunk))
     }
 
-    let shouldGenerate = false
-    queue.onIdle(() => {
-      if (shouldGenerate && generate) {
-        shouldGenerate = false
-        try {
-          Promise.resolve(generate({ context, job })).catch(error => this.report(error))
-        } catch (error) {
-          this.report(error)
-        }
+    queue.onIdle(async () => {
+      if (!generate || !(changed.files.length || changed.chunks.length || changed.imports.length)) return
+
+      const changedUniq = {
+        chunks: uniqBy(changed.chunks, getChunkKey),
+        imports: uniqBy(changed.imports, getFileKey),
+        files: uniq(changed.files),
+      }
+      Object.assign(changed, { files: [], chunks: [], imports: [] })
+
+      try {
+        await Promise.all(
+          []
+            .concat(changed.chunks.map(chunk => this.transformChunk(chunk, job, tickCallback, changedUniq.files)))
+            .concat(changed.imports.map(request => this.transformFileTree(request, job, tickCallback, changedUniq.files))),
+        )
+        queue.add(() => generate({ context, job, changed: changedUniq })).catch(error => this.report(error))
+      } catch (error) {
+        this.report(error)
       }
     })
 
     const watcher = getWatcher(adapter, this.context.config.rootDirectory, filePath => {
-      queue
-        .add(() =>
-          onChange(filePath).then(processed => {
-            if (processed) shouldGenerate = true
-          }),
-        )
-        .catch(error => this.report(error))
+      queue.add(() => onChange(filePath)).catch(error => this.report(error))
     })
     await pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback))
 
@@ -331,7 +316,7 @@ export default class Master implements PundleWorker {
       await ready({ context, job })
     }
     if (generate) {
-      await generate({ context, job })
+      await generate({ context, job, changed })
     }
     await watcher.watch()
 

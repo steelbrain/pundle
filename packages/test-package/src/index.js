@@ -31,5 +31,5 @@ console.log('nonModuleCss', require('../styles/non-module.css'))
 console.log('json', require('./haha'))
 console.log('typescript', require('./typescript.ts'))
 
-console.log('photos inline', appendPhotoToBody(require('../photos/small-photo.png')))
 console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))
+console.log('photos inline', appendPhotoToBody(require('../photos/small-photo.png')))
