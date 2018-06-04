@@ -9,6 +9,8 @@ import { Router } from 'express'
 import { getChunkKey } from 'pundle-api'
 import getPundle, { type Master } from 'pundle-core'
 
+import { getOutputFormats } from './helpers'
+
 type Payload = {
   configFileName?: string,
   configLoadFile?: boolean,
@@ -31,37 +33,41 @@ export default async function getPundleDevMiddleware(options: Payload) {
 
   const master: Master = await getPundle({
     ...pick(options, PUNDLE_OPTIONS),
+    config: {
+      output: {
+        formats: await getOutputFormats(pick(options, PUNDLE_OPTIONS), publicPath),
+        rootDirectory: '/tmp',
+      },
+    },
   })
 
   let transformedJob
   const urlToGeneratedContents = {}
 
-  async function regenerateUrlCache({ context, chunks }) {
+  async function regenerateUrlCache({ chunks }) {
     const { outputs } = await master.generate(transformedJob, chunks)
-    outputs.forEach(({ chunk, filePath }) => {
+    outputs.forEach(({ filePath, contents }) => {
       if (filePath) {
-        urlToChunkHash[path.posix.join(publicPath, filePath)] = chunk
-      }
-      if (chunkPublicPath) {
+        urlToGeneratedContents[filePath] = contents
       }
     })
   }
 
   let lastChunks
   const { queue } = await master.watch({
-    async generate({ job, context }) {
+    async generate({ job }) {
       transformedJob = await master.transformJob(job)
       const currentChunks = Array.from(transformedJob.chunks.values())
       if (!lastChunks) {
         lastChunks = currentChunks
-        await regenerateUrlCache({ context, chunks: currentChunks })
+        await regenerateUrlCache({ chunks: currentChunks })
         return
       }
       const addedChunks = differenceBy(currentChunks, lastChunks, getChunkKey)
       lastChunks = currentChunks
 
       if (addedChunks.length) {
-        await regenerateUrlCache({ context, chunks: currentChunks })
+        await regenerateUrlCache({ chunks: currentChunks })
       }
     },
   })
@@ -88,29 +94,14 @@ export default async function getPundleDevMiddleware(options: Payload) {
 
       await queue.waitTillIdle()
 
-      const chunkHash = urlToChunkHash[url]
-      const chunk = Array.from(transformedJob.chunks.values()).find(item => getChunkKey(item) === chunkHash)
-      if (!chunk) {
-        // TODO: Log here
+      const contents = urlToGeneratedContents[url]
+      if (typeof contents === 'undefined') {
         next()
         return
       }
-      // TODO: cache the generation?
-      const { outputs } = await master.generate(transformedJob, [chunk])
-      outputs.forEach(item => {
-        if (item.fileName) {
-          urlToChunkHash[item.fileName || ''] = getChunkKey(item.chunk)
-        }
-      })
       const mimeType = mime.getType(path.extname(url)) || 'application/octet-stream'
-      const output = outputs.find(item => url.endsWith(item.fileName || '#'))
-      if (!output) {
-        // TODO: Log here
-        next()
-        return
-      }
       res.set('content-type', mimeType)
-      res.end(output.contents)
+      res.end(contents)
     }),
   )
 
