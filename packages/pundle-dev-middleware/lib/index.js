@@ -3,13 +3,11 @@
 import path from 'path'
 import mime from 'mime/lite'
 import pick from 'lodash/pick'
-import differenceBy from 'lodash/differenceBy'
 import { Router } from 'express'
 
-import { getChunkKey } from 'pundle-api'
 import getPundle, { type Master } from 'pundle-core'
 
-import { getOutputFormats } from './helpers'
+import { getOutputFormats, getChunksAffectedByImports } from './helpers'
 
 type Payload = {
   configFileName?: string,
@@ -55,7 +53,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
 
   let lastChunks
   const { queue } = await master.watch({
-    async generate({ job }) {
+    async generate({ job, changed }) {
       transformedJob = await master.transformJob(job)
       const currentChunks = Array.from(transformedJob.chunks.values())
       if (!lastChunks) {
@@ -63,11 +61,11 @@ export default async function getPundleDevMiddleware(options: Payload) {
         await regenerateUrlCache({ chunks: currentChunks })
         return
       }
-      const addedChunks = differenceBy(currentChunks, lastChunks, getChunkKey)
+      const chunksToRegenerate = changed.chunks.concat(getChunksAffectedByImports(job, currentChunks, changed.imports))
       lastChunks = currentChunks
 
-      if (addedChunks.length) {
-        await regenerateUrlCache({ chunks: currentChunks })
+      if (chunksToRegenerate.length) {
+        await regenerateUrlCache({ chunks: chunksToRegenerate })
       }
     },
   })
