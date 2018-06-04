@@ -2,6 +2,7 @@
 
 import os from 'os'
 import pMap from 'p-map'
+import uniq from 'lodash/uniq'
 import promiseDefer from 'promise.defer'
 import PromiseQueue from 'sb-promise-queue'
 import differenceBy from 'lodash/differenceBy'
@@ -109,7 +110,7 @@ export default class Master implements PundleWorker {
     if (job.locks.has(lockKey)) {
       return
     }
-    if (job.chunks.has(lockKey)) {
+    if (job.chunks.has(lockKey) && !forcedOverwrite.length) {
       return
     }
 
@@ -263,7 +264,7 @@ export default class Master implements PundleWorker {
 
     const onChange = async filePath => {
       const parents = { imports: [], chunks: [] }
-      const forcedOverwrite = [filePath]
+      let forcedOverwrite = [filePath]
 
       function findInImports(imports: Array<ImportResolved>) {
         return imports.find(resolved => resolved.filePath === filePath)
@@ -289,6 +290,8 @@ export default class Master implements PundleWorker {
           }
         }
       })
+
+      forcedOverwrite = uniq(forcedOverwrite)
 
       await Promise.all(
         []
