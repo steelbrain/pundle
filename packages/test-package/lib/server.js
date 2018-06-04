@@ -9,17 +9,7 @@ async function main() {
   app.use(
     await getPundleDevMiddleware({
       directory: path.dirname(__dirname),
-      config: {
-        output: {
-          rootDirectory: '/',
-          formats: {
-            '*.map': '/assets/[id].[format]',
-            static: '/assets/[id][ext]',
-            '*': '/assets/[id].[format]',
-            html: '/[name].[format]',
-          },
-        },
-      },
+      publicPath: '/pundle',
     }),
   )
   await new Promise(function(resolve) {

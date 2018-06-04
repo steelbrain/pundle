@@ -11,7 +11,7 @@ export default async function getPundle({
   configFileName = CONFIG_FILE_NAME,
   configLoadFile = true,
   directory = process.cwd(),
-}: $FlowFixMe = {}) {
+}: { config?: Object, configFileName?: string, configLoadFile?: boolean, directory?: string } = {}) {
   const context: Context = new Context({
     config: ({}: Object),
     configInline,

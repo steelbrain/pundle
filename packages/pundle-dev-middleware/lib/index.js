@@ -9,7 +9,6 @@ import { getChunkKey } from 'pundle-api'
 import getPundle, { type Master } from 'pundle-core'
 
 type Payload = {
-  config?: Object,
   configFileName?: string,
   configLoadFile?: boolean,
   directory?: string,
@@ -19,14 +18,21 @@ type Payload = {
   publicPath?: string,
   hmr?: boolean,
 }
-const PUNDLE_OPTIONS = ['config', 'configFileName', 'configLoadFile', 'directory']
+const PUNDLE_OPTIONS = ['configFileName', 'configLoadFile', 'directory']
 
 export default async function getPundleDevMiddleware(options: Payload) {
   let cachedTransformedJob = null
   const urlToChunkHash = {}
   const router = new Router()
 
-  const master: Master = await getPundle(pick(options, PUNDLE_OPTIONS))
+  let { publicPath = '/' } = options
+  if (!publicPath.endsWith('/')) {
+    publicPath = `${publicPath}/`
+  }
+
+  const master: Master = await getPundle({
+    ...pick(options, PUNDLE_OPTIONS),
+  })
   const { job, queue, context } = await master.watch({
     generate() {
       cachedTransformedJob = null
@@ -45,9 +51,9 @@ export default async function getPundleDevMiddleware(options: Payload) {
     const chunkPathMap = {}
     const transformedJob = await master.transformJob(job)
     transformedJob.chunks.forEach(chunk => {
-      const publicPath = context.getPublicPath(chunk)
-      if (publicPath) {
-        chunkPathMap[publicPath] = chunk
+      const chunkPublicPath = context.getPublicPath(chunk)
+      if (chunkPublicPath) {
+        chunkPathMap[path.posix.join(publicPath, chunkPublicPath)] = chunk
       }
     })
     return {
@@ -62,11 +68,11 @@ export default async function getPundleDevMiddleware(options: Payload) {
     return cachedTransformedJob
   }
 
-  router.get('/hmr', function(req, res) {
+  router.get(`${publicPath}hmr`, function(req, res) {
     res.json({ enabled: !!options.hmr })
   })
   router.get(
-    '*',
+    `${publicPath}*`,
     asyncRoute(async function(req, res, next) {
       let { url } = req
       if (url.endsWith('/')) {
