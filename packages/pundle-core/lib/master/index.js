@@ -288,20 +288,18 @@ export default class Master implements PundleWorker {
     queue.onIdle(async () => {
       if (!generate || !(changed.files.length || changed.chunks.length || changed.imports.length)) return
 
-      const unique = {
-        chunks: uniqBy(changed.chunks, getChunkKey),
-        imports: uniqBy(changed.imports, getFileKey),
-        files: uniq(changed.files),
-      }
+      const changedChunks = uniqBy(changed.chunks, getChunkKey)
+      const changedImports = uniqBy(changed.imports, getFileKey)
+      const changedFiles = uniq(changed.files)
       Object.assign(changed, { files: [], chunks: [], imports: [] })
 
       try {
         await Promise.all(
           []
-            .concat(unique.chunks.map(chunk => this.transformChunk(chunk, job, tickCallback, unique.files)))
-            .concat(unique.imports.map(request => this.transformFileTree(request, job, tickCallback, unique.files))),
+            .concat(changedChunks.map(chunk => this.transformChunk(chunk, job, tickCallback, changedFiles)))
+            .concat(changedImports.map(request => this.transformFileTree(request, job, tickCallback, changedFiles))),
         )
-        queue.add(() => generate({ context, job, changed: unique })).catch(error => this.report(error))
+        queue.add(() => generate({ context, job, changed: changedFiles })).catch(error => this.report(error))
       } catch (error) {
         this.report(error)
       }
@@ -316,7 +314,7 @@ export default class Master implements PundleWorker {
       await ready({ context, job })
     }
     if (generate) {
-      await generate({ context, job, changed })
+      await generate({ context, job, changed: [] })
     }
     await watcher.watch()
 

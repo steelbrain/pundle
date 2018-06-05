@@ -18,6 +18,6 @@ export type WatchOptions = {
   generate?: (params: {
     job: Job,
     context: Context,
-    changed: { files: Array<string>, imports: Array<ImportResolved>, chunks: Array<Chunk> },
+    changed: Array<string>,
   }) => Promise<void> | void,
 }

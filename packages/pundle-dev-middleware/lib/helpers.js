@@ -22,9 +22,8 @@ export async function getOutputFormats(pundleOptions: Object, publicPath: string
   return newFormats
 }
 
-export function getChunksAffectedByImports(job: Job, chunks: Array<Chunk>, imports: Array<ImportResolved>): Array<Chunk> {
+export function getChunksAffectedByFiles(job: Job, chunks: Array<Chunk>, files: Array<string>): Array<Chunk> {
   const affected = []
-  const filePaths = imports.map(i => i.filePath)
 
   chunks.forEach(chunk => {
     const relevantFiles = new Set()
@@ -49,7 +48,7 @@ export function getChunksAffectedByImports(job: Job, chunks: Array<Chunk>, impor
     }
     chunk.imports.forEach(iterateImports)
 
-    if (filePaths.some(item => relevantFilePaths.has(item))) {
+    if (files.some(item => relevantFilePaths.has(item))) {
       affected.push(chunk)
     }
   })

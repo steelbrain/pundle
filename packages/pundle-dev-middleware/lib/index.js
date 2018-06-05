@@ -7,7 +7,7 @@ import { Router } from 'express'
 
 import getPundle, { type Master } from 'pundle-core'
 
-import { getOutputFormats, getChunksAffectedByImports } from './helpers'
+import { getOutputFormats, getChunksAffectedByFiles } from './helpers'
 
 type Payload = {
   configFileName?: string,
@@ -61,7 +61,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
         await regenerateUrlCache({ chunks: currentChunks })
         return
       }
-      const chunksToRegenerate = changed.chunks.concat(getChunksAffectedByImports(job, currentChunks, changed.imports))
+      const chunksToRegenerate = getChunksAffectedByFiles(job, currentChunks, changed)
       lastChunks = currentChunks
 
       if (chunksToRegenerate.length) {
