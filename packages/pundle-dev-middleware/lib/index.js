@@ -43,7 +43,6 @@ export default async function getPundleDevMiddleware(options: Payload) {
   const urlToGeneratedContents = {}
 
   async function regenerateUrlCache({ chunks }) {
-    console.log('regenerating', chunks.length, 'chunks')
     const { outputs } = await master.generate(transformedJob, chunks)
     outputs.forEach(({ filePath, contents }) => {
       if (filePath) {
