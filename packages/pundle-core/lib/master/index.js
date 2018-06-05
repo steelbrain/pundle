@@ -26,7 +26,11 @@ import getWatcher from '../watcher'
 import WorkerDelegate from '../worker/delegate'
 import type { WatchOptions } from '../types'
 
-type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed) => Promise<void>
+type Overwrite = {
+  files: Array<string>,
+  chunks: Array<Chunk>,
+}
+type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed, overwrite: Overwrite) => Promise<void>
 
 // TODO: Locks for files and chunks
 export default class Master implements PundleWorker {
@@ -105,13 +109,13 @@ export default class Master implements PundleWorker {
     chunk: Chunk,
     job: Job,
     tickCallback: ?TickCallback = null,
-    forcedOverwrite: Array<string> = [],
+    overwrite: Overwrite = { files: [], chunks: [] },
   ): Promise<void> {
     const lockKey = getChunkKey(chunk)
     if (job.locks.has(lockKey)) {
       return
     }
-    if (job.chunks.has(lockKey) && !forcedOverwrite.length) {
+    if (job.chunks.has(lockKey) && !overwrite.files.length) {
       return
     }
 
@@ -123,7 +127,7 @@ export default class Master implements PundleWorker {
       if (chunk.entry) {
         filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
       }
-      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback, forcedOverwrite))
+      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback, overwrite))
     } catch (error) {
       job.chunks.delete(lockKey)
       throw error
@@ -136,14 +140,14 @@ export default class Master implements PundleWorker {
     request: ImportResolved,
     job: Job,
     tickCallback: ?TickCallback = null,
-    forcedOverwrite: Array<string> = [],
+    overwrite: Overwrite = { files: [], chunks: [] },
   ): Promise<void> {
     const lockKey = getFileKey(request)
     const oldFile = job.files.get(lockKey)
     if (job.locks.has(lockKey)) {
       return
     }
-    if (oldFile && !forcedOverwrite.includes(request.filePath)) {
+    if (oldFile && !overwrite.files.includes(request.filePath)) {
       return
     }
     job.locks.add(lockKey)
@@ -152,11 +156,11 @@ export default class Master implements PundleWorker {
       const newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
       await Promise.all([
-        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback, forcedOverwrite)),
-        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback, forcedOverwrite)),
+        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback, overwrite)),
+        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback, overwrite)),
       ])
       if (tickCallback) {
-        await tickCallback(oldFile, newFile)
+        await tickCallback(oldFile, newFile, overwrite)
       }
     } catch (error) {
       if (oldFile) {
@@ -210,6 +214,7 @@ export default class Master implements PundleWorker {
     const job = new Job()
     const { context } = this
     const queue = new PromiseQueue()
+    const changed = { imports: [], chunks: [], files: [] }
 
     const configChunks = (await Promise.all(
       this.context.config.entry.map(entry =>
@@ -221,12 +226,20 @@ export default class Master implements PundleWorker {
       ),
     )).map(resolved => getChunk(resolved.format, null, resolved.filePath))
 
-    const tickCallback = async (oldFile: ?ImportTransformed, newFile: ImportTransformed) => {
+    const tickCallback = async (oldFile: ?ImportTransformed, newFile: ImportTransformed, overwrite: Overwrite) => {
       let removedChunks = []
       let removedImports = []
       if (oldFile) {
         removedChunks = differenceBy(oldFile.chunks, newFile.chunks, getChunkKey)
         removedImports = differenceBy(oldFile.imports, newFile.imports, getFileKey)
+        newFile.chunks.forEach(chunk => {
+          if (
+            (chunk.entry && overwrite.files.includes(chunk.entry)) ||
+            chunk.imports.some(item => overwrite.files.includes(item.filePath))
+          ) {
+            overwrite.chunks.push(chunk)
+          }
+        })
       }
       removedImports.forEach((fileImport: ImportResolved) => {
         const fileImportKey = getFileKey(fileImport)
@@ -265,7 +278,6 @@ export default class Master implements PundleWorker {
       }
     }
 
-    const changed = { imports: [], chunks: [], files: [] }
     const onChange = async filePath => {
       changed.files.push(filePath)
 
@@ -293,14 +305,16 @@ export default class Master implements PundleWorker {
         imports: uniqBy(changed.imports, getFileKey),
         files: uniq(changed.files),
       }
+      const overwrite = { files: unique.files, chunks: [] }
       Object.assign(changed, { files: [], chunks: [], imports: [] })
 
       try {
         await Promise.all(
           []
-            .concat(unique.chunks.map(chunk => this.transformChunk(chunk, job, tickCallback, unique.files)))
-            .concat(unique.imports.map(request => this.transformFileTree(request, job, tickCallback, unique.files))),
+            .concat(unique.chunks.map(chunk => this.transformChunk(chunk, job, tickCallback, overwrite)))
+            .concat(unique.imports.map(request => this.transformFileTree(request, job, tickCallback, overwrite))),
         )
+        unique.chunks = uniqBy(unique.chunks.concat(overwrite.chunks), getChunkKey)
         queue.add(() => generate({ context, job, changed: unique })).catch(error => this.report(error))
       } catch (error) {
         this.report(error)
