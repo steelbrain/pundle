@@ -28,6 +28,7 @@ export function getChunksAffectedByImports(job: Job, chunks: Array<Chunk>, impor
 
   chunks.forEach(chunk => {
     const relevantFiles = new Set()
+    const relevantFilePaths = new Set()
 
     function iterateImports(fileImport: ImportResolved) {
       const file = job.files.get(getFileKey(fileImport))
@@ -35,6 +36,7 @@ export function getChunksAffectedByImports(job: Job, chunks: Array<Chunk>, impor
 
       if (relevantFiles.has(file)) return
       relevantFiles.add(file)
+      relevantFilePaths.add(file.filePath)
 
       file.imports.forEach(iterateImports)
     }
@@ -47,7 +49,7 @@ export function getChunksAffectedByImports(job: Job, chunks: Array<Chunk>, impor
     }
     chunk.imports.forEach(iterateImports)
 
-    if (filePaths.some(item => relevantFiles.has(item))) {
+    if (filePaths.some(item => relevantFilePaths.has(item))) {
       affected.push(chunk)
     }
   })
