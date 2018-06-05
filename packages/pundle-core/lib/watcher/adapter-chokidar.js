@@ -11,8 +11,8 @@ export default class AdapterChokdiar {
     this.handle = chokidar.watch([], {
       ignoreInitial: true,
       awaitWriteFinish: {
-        pollInterval: 50,
-        stabilityThreshold: 250,
+        pollInterval: 30,
+        stabilityThreshold: 60,
       },
     })
     this.handle.on('change', path => onChange(path))
