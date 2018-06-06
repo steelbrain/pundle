@@ -28,11 +28,11 @@ export default async function loadConfig(context: Context): Promise<Config> {
     },
     components: [],
   }
+  if (inlineConfig.entry) {
+    config.entry = config.entry.concat(inlineConfig.entry)
+  }
   if (fileConfig.entry) {
     config.entry = config.entry.concat(fileConfig.entry)
-  }
-  if (typeof inlineConfig.entry === 'string') {
-    config.entry = config.entry.concat(inlineConfig.entry)
   }
   if (fileConfig.output) {
     Object.assign(config.output, fileConfig.output)
