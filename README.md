@@ -4,7 +4,6 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Top Priority
 
-- Lazy init in dev server
 - HMR
 - CLI
 - Boot from cache
