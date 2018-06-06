@@ -6,6 +6,7 @@ const sbPundle = global.sbPundle || {
   cache: {},
   chunks: {},
   entries: {},
+  moduleHooks: [],
 }
 if (!global.sbPundle) {
   global.sbPundle = sbPundle
@@ -14,12 +15,18 @@ if (!global.sbPundle) {
 const sbPundleCache = sbPundle.cache
 const sbPundleChunks = sbPundle.chunks
 function sbPundleModuleRegister(moduleId, callback) {
-  sbPundleCache[moduleId] = {
+  const newModule = {
     id: moduleId,
     invoked: false,
     callback,
     exports: {},
     parents: sbPundleCache[moduleId] ? sbPundleCache[moduleId].parents : [],
+  }
+  sbPundleCache[moduleId] = newModule
+  if (sbPundle.moduleHooks.length) {
+    sbPundle.moduleHooks.forEach(moduleHook => {
+      moduleHook(newModule)
+    })
   }
 }
 function sbPundleChunkLoaded(id, entry) {
