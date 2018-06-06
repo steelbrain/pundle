@@ -10,6 +10,7 @@ async function main() {
     await getPundleDevMiddleware({
       directory: path.dirname(__dirname),
       publicPath: '/pundle',
+      lazy: true,
     }),
   )
   await new Promise(function(resolve) {

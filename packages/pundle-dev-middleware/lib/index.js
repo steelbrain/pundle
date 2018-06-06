@@ -4,6 +4,7 @@ import path from 'path'
 import mime from 'mime/lite'
 import invariant from 'assert'
 import pick from 'lodash/pick'
+import uniq from 'lodash/uniq'
 import { Router } from 'express'
 
 import getPundle, { type Master } from 'pundle-core'
@@ -17,6 +18,7 @@ type Payload = {
   // ^ Either directory to initialize pundle from or an instance
 
   hmr?: boolean,
+  lazy?: boolean,
   // Used for chunk/image loading and HMR
   publicPath: string,
 }
@@ -55,20 +57,42 @@ export default async function getPundleDevMiddleware(options: Payload) {
   }
 
   let lastChunks
+  async function generateJobAsync({ job, changed }) {
+    transformedJob = await master.transformJob(job)
+    const currentChunks = Array.from(transformedJob.chunks.values())
+    if (!lastChunks) {
+      lastChunks = currentChunks
+      await regenerateUrlCache({ chunks: currentChunks })
+      return
+    }
+    const chunksToRegenerate = getChunksAffectedByFiles(job, currentChunks, changed)
+    lastChunks = currentChunks
+
+    if (chunksToRegenerate.length) {
+      await regenerateUrlCache({ chunks: chunksToRegenerate })
+    }
+  }
+  let generated
+  let lastChanged = []
+  function generateJob({ job }) {
+    if (!generated) {
+      generated = generateJobAsync({ job, changed: uniq(lastChanged) })
+      lastChanged = []
+    }
+    return generated
+  }
+
+  let lastJob
   const { queue } = await master.watch({
     async generate({ job, changed }) {
-      transformedJob = await master.transformJob(job)
-      const currentChunks = Array.from(transformedJob.chunks.values())
-      if (!lastChunks) {
-        lastChunks = currentChunks
-        await regenerateUrlCache({ chunks: currentChunks })
-        return
-      }
-      const chunksToRegenerate = getChunksAffectedByFiles(job, currentChunks, changed)
-      lastChunks = currentChunks
+      const firstTime = !lastJob
 
-      if (chunksToRegenerate.length) {
-        await regenerateUrlCache({ chunks: chunksToRegenerate })
+      lastJob = job
+      lastChanged = lastChanged.concat(changed)
+      generated = null
+
+      if (firstTime && !options.lazy) {
+        await generateJob({ job })
       }
     },
   })
@@ -94,6 +118,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
       }
 
       await queue.waitTillIdle()
+      await generateJob({ job: lastJob })
 
       const contents = urlToGeneratedContents[url]
       if (typeof contents === 'undefined') {
