@@ -2,6 +2,7 @@
 
 import path from 'path'
 import mime from 'mime/lite'
+import invariant from 'assert'
 import pick from 'lodash/pick'
 import { Router } from 'express'
 
@@ -15,13 +16,15 @@ type Payload = {
   directory?: string,
   // ^ Either directory to initialize pundle from or an instance
 
-  // Used for chunk/image loading and HMR
-  publicPath?: string,
   hmr?: boolean,
+  // Used for chunk/image loading and HMR
+  publicPath: string,
 }
 const PUNDLE_OPTIONS = ['configFileName', 'configLoadFile', 'directory']
 
 export default async function getPundleDevMiddleware(options: Payload) {
+  invariant(typeof options.publicPath === 'string', 'options.publicPath must be a string')
+
   const router = new Router()
 
   let { publicPath = '/' } = options
