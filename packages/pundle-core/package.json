@@ -8,6 +8,7 @@
   "dependencies": {
     "chokidar": "^2.0.3",
     "lodash": "^4.17.10",
+    "nsfw": "^1.0.16",
     "p-map": "^1.2.0",
     "promise.defer": "^1.0.1",
     "pundle-api": "0.0.0",

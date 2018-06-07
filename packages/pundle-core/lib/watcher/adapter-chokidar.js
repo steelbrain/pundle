@@ -1,11 +1,12 @@
 // @flow
 
 import chokidar from 'chokidar'
+import type { ChangeCallback } from './'
 
 export default class AdapterChokdiar {
   handle: Object
   rootDirectory: string
-  constructor(rootDirectory: string, onChange: (path: string) => void) {
+  constructor(rootDirectory: string, onChange: ChangeCallback) {
     this.rootDirectory = rootDirectory
 
     this.handle = chokidar.watch([], {
@@ -15,7 +16,9 @@ export default class AdapterChokdiar {
         stabilityThreshold: 60,
       },
     })
-    this.handle.on('change', path => onChange(path))
+    this.handle.on('add', path => onChange('add', path, null))
+    this.handle.on('unlink', path => onChange('delete', path, null))
+    this.handle.on('change', path => onChange('modify', path, null))
   }
   watch(): Promise<void> {
     return new Promise(resolve => {

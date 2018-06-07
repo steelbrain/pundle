@@ -266,7 +266,10 @@ export default class Master implements PundleWorker {
     }
 
     const changed = { imports: [], chunks: [], files: [] }
-    const onChange = async filePath => {
+    // eslint-disable-next-line no-unused-vars
+    const onChange = async (event, filePath, newPath) => {
+      if (event !== 'change') return
+
       changed.files.push(filePath)
 
       function existsInImports(imports: Array<ImportResolved>) {
@@ -305,8 +308,8 @@ export default class Master implements PundleWorker {
       }
     })
 
-    const watcher = getWatcher(adapter, this.context.config.rootDirectory, filePath => {
-      queue.add(() => onChange(filePath)).catch(error => this.report(error))
+    const watcher = getWatcher(adapter, this.context.config.rootDirectory, (...args) => {
+      queue.add(() => onChange(...args)).catch(error => this.report(error))
     })
     await pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback))
 
