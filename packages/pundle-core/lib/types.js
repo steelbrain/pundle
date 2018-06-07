@@ -1,6 +1,6 @@
 // @flow
 
-import type { Job, Chunk, Context, ImportResolved, ImportTransformed } from 'pundle-api'
+import type { Job, Context, ImportTransformed } from 'pundle-api'
 
 // Tasks assigned to the worker
 export type WorkerJobType = 'resolve' | 'transform'
@@ -8,7 +8,7 @@ export type WorkerJobType = 'resolve' | 'transform'
 // Tasks worker can request from master
 export type WorkerRequestType = 'resolve'
 
-export type WatchAdapter = 'chokidar'
+export type WatchAdapter = 'chokidar' | 'nsfw'
 export type WatchOptions = {
   adapter?: WatchAdapter,
   tick?: (params: { job: Job, context: Context, oldFile: ?ImportTransformed, newFile: ImportTransformed }) => Promise<

@@ -67,7 +67,6 @@ export default async function getPundleDevMiddleware(options: Payload) {
       return
     }
     const chunksToRegenerate = getChunksAffectedByFiles(job, currentChunks, changed)
-    console.log('chunksToRegenerate', chunksToRegenerate)
     lastChunks = currentChunks
 
     if (chunksToRegenerate.length) {

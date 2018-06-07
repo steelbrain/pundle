@@ -1,5 +1,6 @@
 // @flow
 
+import AdapterNSFW from './adapter-nsfw'
 import AdapterChokdiar from './adapter-chokidar'
 import type { WatchAdapter } from '../types'
 
@@ -12,6 +13,7 @@ declare class Adapter {
 }
 
 const Adapters: { [WatchAdapter]: $FlowFixMe } = {
+  nsfw: AdapterNSFW,
   chokidar: AdapterChokdiar,
 }
 

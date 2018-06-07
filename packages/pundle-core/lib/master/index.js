@@ -201,7 +201,7 @@ export default class Master implements PundleWorker {
     await this.context.invokeIssueReporters(this, issue)
   }
   // Dangerous territory beyond this point. May God help us all
-  async watch({ adapter = 'chokidar', tick, ready, generate }: WatchOptions = {}): Promise<{
+  async watch({ adapter = 'nsfw', tick, ready, generate }: WatchOptions = {}): Promise<{
     job: Job,
     queue: Object,
     context: Context,
@@ -268,7 +268,7 @@ export default class Master implements PundleWorker {
     const changed = { imports: [], chunks: [], files: [] }
     // eslint-disable-next-line no-unused-vars
     const onChange = async (event, filePath, newPath) => {
-      if (event !== 'change') return
+      if (event !== 'modify') return
 
       changed.files.push(filePath)
 
