@@ -35,6 +35,7 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
       }
       plugins.push(
         pluginImportResolver({
+          file,
           resolve,
           addChunk,
         }),

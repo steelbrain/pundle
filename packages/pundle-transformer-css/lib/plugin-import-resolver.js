@@ -3,7 +3,7 @@
 import { plugin } from 'postcss'
 import { getChunk } from 'pundle-api'
 
-export default plugin('pundle-transformer-css', function({ resolve, addChunk }) {
+export default plugin('pundle-transformer-css', function({ file, resolve, addChunk }) {
   return function(css) {
     let promise
 
@@ -18,11 +18,12 @@ export default plugin('pundle-transformer-css', function({ resolve, addChunk }) 
         request = `./${request}`
       }
 
-      promise = resolve(request, rule.source.start).then(resolved => {
-        const importChunk = getChunk(resolved.format, null, resolved.filePath)
-        rule.remove()
-        return addChunk(importChunk)
-      })
+      rule.remove()
+      if (file.format === 'css') {
+        promise = resolve(request, rule.source.start).then(resolved =>
+          addChunk(getChunk(resolved.format, null, resolved.filePath)),
+        )
+      }
     })
 
     return promise
