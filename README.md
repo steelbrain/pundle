@@ -54,6 +54,5 @@ Types of components:
 
 ## Post-initial demo goals
 
-- Explore chokidar alternatives (perhaps write own abstraction on top of https://www.npmjs.com/package/nsfw (is sfw, just weird name))
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
