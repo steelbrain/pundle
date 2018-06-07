@@ -73,6 +73,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
       await regenerateUrlCache({ chunks: chunksToRegenerate })
     }
   }
+
   let generated
   let lastChanged = []
   function generateJob({ job }) {
@@ -84,6 +85,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
   }
 
   let lastJob
+  let importsToHmr = []
   const { queue } = await master.watch({
     async generate({ job, changed }) {
       const firstTime = !lastJob
@@ -92,10 +94,24 @@ export default async function getPundleDevMiddleware(options: Payload) {
       lastChanged = lastChanged.concat(changed)
       generated = null
 
-      if (firstTime && !options.lazy) {
-        await generateJob({ job })
+      if (firstTime) {
+        if (!options.lazy) {
+          await generateJob({ job })
+        }
+      } else if (options.hmr) {
+        console.log('send hmr now....', importsToHmr)
+        importsToHmr = []
       }
     },
+    ...(options.hmr
+      ? {
+          async tick({ newFile }) {
+            if (lastJob) {
+              importsToHmr.push({ format: newFile.format, filePath: newFile.filePath })
+            }
+          },
+        }
+      : {}),
   })
 
   function asyncRoute(callback: (req: Object, res: Object, next: Function) => Promise<void>) {
@@ -110,6 +126,14 @@ export default async function getPundleDevMiddleware(options: Payload) {
   router.get(`${publicPath}hmr`, function(req, res) {
     res.json({ enabled: !!options.hmr })
   })
+  if (options.hmr) {
+    router.get(`${publicPath}hmr/listen`, function(req, res) {
+      res.on('close', function() {
+        console.log('res request ended')
+      })
+    })
+  }
+
   router.get(
     `${publicPath}*`,
     asyncRoute(async function(req, res, next) {
