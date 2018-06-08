@@ -7,7 +7,7 @@ import pick from 'lodash/pick'
 import { Router } from 'express'
 
 import getPundle, { type Master } from 'pundle-core'
-import type { ImportResolved } from 'pundle-api'
+import { getChunk, getUniqueHash, type Job, type ImportResolved } from 'pundle-api'
 
 import { getOutputFormats, getChunksAffectedByImports } from './helpers'
 
@@ -44,19 +44,47 @@ export default async function getPundleDevMiddleware(options: Payload) {
       },
     },
   })
+
+  let firstTime = true
+  let generated = null
   const filesChanged: Set<ImportResolved> = new Set()
-  const urlToGeneratedContents = {}
+  const hmrConnectedClients = new Set()
+  const urlToContents = {}
+  const urlToHMRContents = {}
 
   async function regenerateUrlCache({ chunks, job }) {
     const { outputs } = await master.generate(job, chunks)
     outputs.forEach(({ filePath, contents }) => {
       if (filePath) {
-        urlToGeneratedContents[filePath] = contents
+        urlToContents[filePath] = contents
       }
     })
   }
+  async function generateForHMR({ changed, job }: { changed: Array<ImportResolved>, job: Job }) {
+    if (!(changed.length && options.hmr && hmrConnectedClients.size)) {
+      return
+    }
+    const hmrId = Date.now()
+    const hmrChunksByFormat = {}
+    changed.forEach(fileImport => {
+      if (!hmrChunksByFormat[fileImport.format]) {
+        hmrChunksByFormat[fileImport.format] = getChunk(fileImport.format, `hmr-${hmrId}`)
+      }
+      hmrChunksByFormat[fileImport.format].imports.push(fileImport)
+    })
+    const hmrChunks: $FlowFixMe = Object.values(hmrChunksByFormat)
+    const { outputs } = await master.generate(job, hmrChunks)
+    outputs.forEach(({ filePath, contents }) => {
+      if (filePath) {
+        urlToHMRContents[filePath] = contents
+      }
+    })
+    const clientInfo = { changedFiles: changed.map(item => getUniqueHash(item)), urls: outputs.map(item => item.filePath) }
+    hmrConnectedClients.forEach(client => {
+      client.write(`${JSON.stringify(clientInfo)}\n`)
+    })
+  }
 
-  let firstTime = true
   async function generateJobAsync({ job, changed }) {
     const transformedJob = await master.transformJob(job)
     const chunks = Array.from(transformedJob.chunks.values())
@@ -72,7 +100,6 @@ export default async function getPundleDevMiddleware(options: Payload) {
     }
   }
 
-  let generated = null
   function generateJob({ job }) {
     if (!generated) {
       generated = generateJobAsync({ job, changed: Array.from(filesChanged.values()) })
@@ -87,9 +114,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
         filesChanged.add(fileImport)
       })
       generated = null
-      if (options.hmr) {
-        console.log('send hmr now....', changed)
-      }
+      await generateForHMR({ job, changed })
     },
   })
   if (!options.lazy) {
@@ -110,8 +135,9 @@ export default async function getPundleDevMiddleware(options: Payload) {
   })
   if (options.hmr) {
     router.get(`${publicPath}hmr/listen`, function(req, res) {
+      hmrConnectedClients.add(res)
       res.on('close', function() {
-        console.log('res request ended')
+        hmrConnectedClients.delete(res)
       })
     })
   }
@@ -124,17 +150,27 @@ export default async function getPundleDevMiddleware(options: Payload) {
         url = `${url}index.html`
       }
 
+      function respondWith(output) {
+        const mimeType = mime.getType(path.extname(url)) || 'application/octet-stream'
+        res.set('content-type', mimeType)
+        res.end(output)
+      }
+
+      const hmrContents = urlToHMRContents[url]
+      if (hmrContents) {
+        respondWith(hmrContents)
+        return
+      }
+
       await queue.waitTillIdle()
       await generateJob({ job })
 
-      const contents = urlToGeneratedContents[url]
-      if (typeof contents === 'undefined') {
-        next()
+      const contents = urlToContents[url]
+      if (contents) {
+        respondWith(contents)
         return
       }
-      const mimeType = mime.getType(path.extname(url)) || 'application/octet-stream'
-      res.set('content-type', mimeType)
-      res.end(contents)
+      next()
     }),
   )
 

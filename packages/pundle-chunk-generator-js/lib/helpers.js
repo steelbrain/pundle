@@ -16,14 +16,16 @@ export function getContentForOutput(
 } {
   const relevantFiles = new Set()
 
-  function iterateImports(fileImport: ImportResolved) {
+  function iterateImports(fileImport: ImportResolved, topLevelOnly: boolean = false) {
     const file = job.files.get(getFileKey(fileImport))
     invariant(file, `File referenced in chunk ('${fileImport.filePath}') not found in local cache!?`)
 
     if (relevantFiles.has(file)) return
     relevantFiles.add(file)
 
-    file.imports.forEach(iterateImports)
+    if (!topLevelOnly) {
+      file.imports.forEach(item => iterateImports(item))
+    }
   }
 
   if (chunk.entry) {
@@ -32,7 +34,7 @@ export function getContentForOutput(
       filePath: chunk.entry,
     })
   }
-  chunk.imports.forEach(iterateImports)
+  chunk.imports.forEach(item => iterateImports(item, true))
 
   return {
     files: Array.from(relevantFiles),
