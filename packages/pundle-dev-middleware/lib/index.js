@@ -79,10 +79,15 @@ export default async function getPundleDevMiddleware(options: Payload) {
         urlToHMRContents[filePath] = contents
       }
     })
-    const clientInfo = { changedFiles: changed.map(item => getUniqueHash(item)), urls: outputs.map(item => item.filePath) }
+    const clientInfo = {
+      type: 'update',
+      changedFiles: changed.map(item => getUniqueHash(item)),
+      urls: outputs.map(item => item.filePath),
+    }
     hmrConnectedClients.forEach(client => {
-      client.write(`${JSON.stringify(clientInfo)}\n`)
+      client.write(`${JSON.stringify(clientInfo)}`)
     })
+    console.log(`Writing ${outputs.length} chunks to ${hmrConnectedClients.size} clients`)
 
     // Remove HMR contents from memory after 60 seconds
     setTimeout(() => {
@@ -139,21 +144,22 @@ export default async function getPundleDevMiddleware(options: Payload) {
     }
   }
 
-  router.get(`${publicPath}hmr`, function(req, res) {
-    res.json({ enabled: !!options.hmr })
-  })
-  if (options.hmr) {
-    router.get(`${publicPath}hmr/listen`, function(req, res) {
-      hmrConnectedClients.add(res)
-      res.on('close', function() {
-        hmrConnectedClients.delete(res)
-      })
-    })
-  }
-
   router.get(
     `${publicPath}*`,
     asyncRoute(async function(req, res, next) {
+      if (req.url.endsWith('.pundle.hmr')) {
+        res.write(JSON.stringify({ type: 'status', enabled: !!options.hmr }))
+        if (!options.hmr) {
+          res.end()
+          return
+        }
+        hmrConnectedClients.add(res)
+        res.on('close', function() {
+          hmrConnectedClients.delete(res)
+        })
+        return
+      }
+
       let { url } = req
       if (url.endsWith('/')) {
         url = `${url}index.html`
