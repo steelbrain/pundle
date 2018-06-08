@@ -83,6 +83,15 @@ export default async function getPundleDevMiddleware(options: Payload) {
     hmrConnectedClients.forEach(client => {
       client.write(`${JSON.stringify(clientInfo)}\n`)
     })
+
+    // Remove HMR contents from memory after 60 seconds
+    setTimeout(() => {
+      outputs.forEach(({ filePath }) => {
+        if (filePath) {
+          urlToHMRContents[filePath] = null
+        }
+      })
+    }, 60 * 1000)
   }
 
   async function generateJobAsync({ job, changed }) {
