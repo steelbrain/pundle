@@ -4,12 +4,12 @@ import path from 'path'
 import mime from 'mime/lite'
 import invariant from 'assert'
 import pick from 'lodash/pick'
-import uniq from 'lodash/uniq'
 import { Router } from 'express'
 
 import getPundle, { type Master } from 'pundle-core'
+import type { ImportResolved } from 'pundle-api'
 
-import { getOutputFormats, getChunksAffectedByFiles } from './helpers'
+import { getOutputFormats, getChunksAffectedByImports } from './helpers'
 
 type Payload = {
   configFileName?: string,
@@ -44,12 +44,11 @@ export default async function getPundleDevMiddleware(options: Payload) {
       },
     },
   })
-
-  let transformedJob
+  const filesChanged: Set<ImportResolved> = new Set()
   const urlToGeneratedContents = {}
 
-  async function regenerateUrlCache({ chunks }) {
-    const { outputs } = await master.generate(transformedJob, chunks)
+  async function regenerateUrlCache({ chunks, job }) {
+    const { outputs } = await master.generate(job, chunks)
     outputs.forEach(({ filePath, contents }) => {
       if (filePath) {
         urlToGeneratedContents[filePath] = contents
@@ -57,62 +56,45 @@ export default async function getPundleDevMiddleware(options: Payload) {
     })
   }
 
-  let lastChunks
+  let firstTime = true
   async function generateJobAsync({ job, changed }) {
-    transformedJob = await master.transformJob(job)
-    const currentChunks = Array.from(transformedJob.chunks.values())
-    if (!lastChunks) {
-      lastChunks = currentChunks
-      await regenerateUrlCache({ chunks: currentChunks })
+    const transformedJob = await master.transformJob(job)
+    const chunks = Array.from(transformedJob.chunks.values())
+    if (firstTime) {
+      firstTime = false
+      await regenerateUrlCache({ job: transformedJob, chunks })
       return
     }
-    const chunksToRegenerate = getChunksAffectedByFiles(job, currentChunks, changed)
-    lastChunks = currentChunks
+    const chunksToRegenerate = getChunksAffectedByImports(job, chunks, changed)
 
     if (chunksToRegenerate.length) {
-      await regenerateUrlCache({ chunks: chunksToRegenerate })
+      await regenerateUrlCache({ job: transformedJob, chunks: chunksToRegenerate })
     }
   }
 
-  let generated
-  let lastChanged = []
+  let generated = null
   function generateJob({ job }) {
     if (!generated) {
-      generated = generateJobAsync({ job, changed: uniq(lastChanged) })
-      lastChanged = []
+      generated = generateJobAsync({ job, changed: Array.from(filesChanged.values()) })
+      filesChanged.clear()
     }
     return generated
   }
 
-  let lastJob
-  let importsToHmr = []
-  const { queue } = await master.watch({
-    async generate({ job, changed }) {
-      const firstTime = !lastJob
-
-      lastJob = job
-      lastChanged = lastChanged.concat(changed)
+  const { queue, job } = await master.watch({
+    async generate({ changed }) {
+      changed.forEach(fileImport => {
+        filesChanged.add(fileImport)
+      })
       generated = null
-
-      if (firstTime) {
-        if (!options.lazy) {
-          await generateJob({ job })
-        }
-      } else if (options.hmr) {
-        console.log('send hmr now....', importsToHmr)
-        importsToHmr = []
+      if (options.hmr) {
+        console.log('send hmr now....', changed)
       }
     },
-    ...(options.hmr
-      ? {
-          async tick({ newFile }) {
-            if (lastJob) {
-              importsToHmr.push({ format: newFile.format, filePath: newFile.filePath })
-            }
-          },
-        }
-      : {}),
   })
+  if (!options.lazy) {
+    await generateJob({ job })
+  }
 
   function asyncRoute(callback: (req: Object, res: Object, next: Function) => Promise<void>) {
     return function(req, res, next) {
@@ -143,7 +125,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
       }
 
       await queue.waitTillIdle()
-      await generateJob({ job: lastJob })
+      await generateJob({ job })
 
       const contents = urlToGeneratedContents[url]
       if (typeof contents === 'undefined') {

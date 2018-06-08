@@ -22,20 +22,24 @@ export async function getOutputFormats(pundleOptions: Object, publicPath: string
   return newFormats
 }
 
-export function getChunksAffectedByFiles(job: Job, chunks: Array<Chunk>, files: Array<string>): Array<Chunk> {
+export function getChunksAffectedByImports(
+  job: Job,
+  chunks: Array<Chunk>,
+  changedImports: Array<ImportResolved>,
+): Array<Chunk> {
   const affected = []
+  const changedImportsKeys = changedImports.map(getFileKey)
 
   chunks.forEach(chunk => {
     const relevantFiles = new Set()
-    const relevantFilePaths = new Set()
 
     function iterateImports(fileImport: ImportResolved) {
-      const file = job.files.get(getFileKey(fileImport))
+      const fileKey = getFileKey(fileImport)
+      const file = job.files.get(fileKey)
       invariant(file, `File referenced in chunk ('${fileImport.filePath}') not found in local cache!?`)
 
-      if (relevantFiles.has(file)) return
-      relevantFiles.add(file)
-      relevantFilePaths.add(file.filePath)
+      if (relevantFiles.has(fileKey)) return
+      relevantFiles.add(fileKey)
 
       file.imports.forEach(iterateImports)
     }
@@ -48,7 +52,7 @@ export function getChunksAffectedByFiles(job: Job, chunks: Array<Chunk>, files: 
     }
     chunk.imports.forEach(iterateImports)
 
-    if (files.some(item => relevantFilePaths.has(item))) {
+    if (changedImportsKeys.some(item => relevantFiles.has(item))) {
       affected.push(chunk)
     }
   })

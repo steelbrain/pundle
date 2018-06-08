@@ -328,9 +328,6 @@ export default class Master implements PundleWorker {
     if (ready) {
       await ready({ context, job })
     }
-    if (generate) {
-      await generate({ context, job, changed: [] })
-    }
     await watcher.watch()
 
     return {
