@@ -1,4 +1,70 @@
+import toposort from 'toposort'
+
 const HMR_URL = `${document.currentScript.src}.pundle.hmr`
+
+function isHMRAccepted(oldModules, moduleId, matchAgainst = moduleId) {
+  const oldModule = oldModules[moduleId] || require.cache[moduleId]
+  if (oldModule.hot.declined.includes('*') || oldModule.hot.declined.includes(matchAgainst)) {
+    return 'no'
+  }
+  if (oldModule.hot.accepted.includes('*') || oldModule.hot.accepted.includes(matchAgainst)) {
+    return 'direct'
+  }
+  if (oldModule.parents.some(item => isHMRAccepted(oldModules, item, matchAgainst) !== 'no')) {
+    return 'parent'
+  }
+  return 'no'
+}
+function getHMROrder(oldModules, moduleIds) {
+  let rejected = false
+  const nodes = []
+
+  function iterate(moduleId) {
+    const hmrAccepted = isHMRAccepted(oldModules, moduleId)
+    if (hmrAccepted === 'no') {
+      rejected = true
+    }
+
+    const { parents } = oldModules[moduleId] || require.cache[moduleId]
+
+    nodes.push([moduleId, null])
+    if (hmrAccepted === 'direct') return
+
+    parents.forEach(parent => {
+      nodes.push([moduleId, parent])
+      iterate(parent)
+    })
+  }
+  moduleIds.forEach(iterate)
+  if (rejected) {
+    throw new Error(`HMR not applied because some modules rejected/did not accept it`)
+  }
+
+  // Remove null at the end
+  return toposort(nodes).slice(0, -1)
+}
+
+function applyHMR(oldModules, moduleIds) {
+  const updateOrder = getHMROrder(oldModules, moduleIds)
+  updateOrder.forEach(moduleId => {
+    const oldModule = oldModules[moduleId] || null
+    const newModule = require.cache[moduleId]
+    oldModule.hot.disposeHandlers.forEach(function(callback) {
+      callback(newModule.hot.data)
+    })
+    try {
+      sbPundleModuleRequire('$root', moduleId)
+      oldModule.hot.successHandlers.forEach(function(callback) {
+        callback()
+      })
+    } catch (error) {
+      oldModule.hot.errorHandlers.forEach(callback => {
+        callback(error)
+      })
+      throw error
+    }
+  })
+}
 
 async function handleResponse(response) {
   if (response.type === 'status') {
@@ -48,7 +114,7 @@ async function handleResponse(response) {
     })
     await Promise.all(promises)
     console.log('[HMR] Loaded updated files - Applying changes now')
-    console.log(paths, changedFiles, changedModules, oldModules)
+    applyHMR(oldModules, changedModules)
 
     return
   }
@@ -80,10 +146,12 @@ async function main() {
 }
 
 main().catch(console.error)
+
 sbPundle.moduleHooks.push(function(newModule) {
   const accepted = []
   const declined = []
   const errorHandlers = []
+  const successHandlers = []
   const disposeHandlers = []
 
   function addDisposeHandler(callback) {
@@ -106,6 +174,7 @@ sbPundle.moduleHooks.push(function(newModule) {
     accepted,
     declined,
     errorHandlers,
+    successHandlers,
     disposeHandlers,
     status() {
       return 'check'
@@ -117,7 +186,7 @@ sbPundle.moduleHooks.push(function(newModule) {
         } else {
           accepted.push(arg1)
         }
-        disposeHandlers.push(arg2)
+        successHandlers.push(arg2)
       } else {
         if (typeof arg1 === 'function') {
           errorHandlers.push(arg1)

@@ -1,6 +1,7 @@
 {
   "globals": {
-    "sbPundle": true
+    "sbPundle": true,
+    "sbPundleModuleRequire": true
   },
   "rules": {
     "no-param-reassign": "off"
