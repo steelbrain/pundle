@@ -1,5 +1,8 @@
 {
   "globals": {
     "sbPundle": true
+  },
+  "rules": {
+    "no-param-reassign": "off"
   }
 }

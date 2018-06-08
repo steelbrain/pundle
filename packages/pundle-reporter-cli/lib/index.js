@@ -11,7 +11,7 @@ export default function() {
     name: 'pundle-reporter-cli',
     version: manifest.version,
     callback(issue) {
-      console.log('Issue Encountered', normalizeError(issue))
+      console.log('Issue Encountered', issue, normalizeError(issue))
     },
   })
 }

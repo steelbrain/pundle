@@ -81,8 +81,11 @@ export default async function getPundleDevMiddleware(options: Payload) {
     })
     const clientInfo = {
       type: 'update',
-      changedFiles: changed.map(item => getUniqueHash(item)),
-      urls: outputs.map(item => item.filePath),
+      paths: outputs
+        .filter(item => !item.format.endsWith('.map'))
+        .map(item => ({ url: item.filePath, format: item.format })),
+      changedFiles: changed,
+      changedModules: changed.map(item => getUniqueHash(item)),
     }
     hmrConnectedClients.forEach(client => {
       client.write(`${JSON.stringify(clientInfo)}`)
