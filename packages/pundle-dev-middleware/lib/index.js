@@ -157,6 +157,8 @@ export default async function getPundleDevMiddleware(options: Payload) {
           return
         }
         hmrConnectedClients.add(res)
+        // 24 hours
+        req.setTimeout(1000 * 60 * 60 * 24)
         res.on('close', function() {
           hmrConnectedClients.delete(res)
         })
