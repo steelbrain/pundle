@@ -1,6 +1,6 @@
 // @flow
 
-import type { Job, Context, ImportTransformed } from 'pundle-api'
+import type { Job, Context, ImportResolved, ImportTransformed } from 'pundle-api'
 
 // Tasks assigned to the worker
 export type WorkerJobType = 'resolve' | 'transform'
@@ -18,6 +18,6 @@ export type WatchOptions = {
   generate?: (params: {
     job: Job,
     context: Context,
-    changed: Array<string>,
+    changed: Array<ImportResolved>,
   }) => Promise<void> | void,
 }

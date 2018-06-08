@@ -2,8 +2,6 @@
 
 import os from 'os'
 import pMap from 'p-map'
-import uniq from 'lodash/uniq'
-import uniqBy from 'lodash/uniqBy'
 import promiseDefer from 'promise.defer'
 import PromiseQueue from 'sb-promise-queue'
 import differenceBy from 'lodash/differenceBy'
@@ -26,6 +24,7 @@ import getWatcher from '../watcher'
 import WorkerDelegate from '../worker/delegate'
 import type { WatchOptions } from '../types'
 
+type ChangedFiles = Map<string, ImportResolved>
 type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed) => Promise<void>
 
 // TODO: Locks for files and chunks
@@ -105,13 +104,13 @@ export default class Master implements PundleWorker {
     chunk: Chunk,
     job: Job,
     tickCallback: ?TickCallback = null,
-    forcedOverwrite: Array<string> = [],
+    changedImports: ChangedFiles = new Map(),
   ): Promise<void> {
     const lockKey = getChunkKey(chunk)
     if (job.locks.has(lockKey)) {
       return
     }
-    if (job.chunks.has(lockKey) && !forcedOverwrite.length) {
+    if (job.chunks.has(lockKey) && !changedImports.size) {
       return
     }
 
@@ -123,7 +122,7 @@ export default class Master implements PundleWorker {
       if (chunk.entry) {
         filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
       }
-      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback, forcedOverwrite))
+      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback, changedImports))
     } catch (error) {
       job.chunks.delete(lockKey)
       throw error
@@ -136,24 +135,25 @@ export default class Master implements PundleWorker {
     request: ImportResolved,
     job: Job,
     tickCallback: ?TickCallback = null,
-    forcedOverwrite: Array<string> = [],
+    changedImports: ChangedFiles = new Map(),
   ): Promise<void> {
     const lockKey = getFileKey(request)
     const oldFile = job.files.get(lockKey)
     if (job.locks.has(lockKey)) {
       return
     }
-    if (oldFile && !forcedOverwrite.includes(request.filePath)) {
+    if (oldFile && !changedImports.has(lockKey)) {
       return
     }
     job.locks.add(lockKey)
+    changedImports.delete(lockKey)
 
     try {
       const newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
       await Promise.all([
-        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback, forcedOverwrite)),
-        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback, forcedOverwrite)),
+        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback, changedImports)),
+        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback, changedImports)),
       ])
       if (tickCallback) {
         await tickCallback(oldFile, newFile)
@@ -265,44 +265,56 @@ export default class Master implements PundleWorker {
       }
     }
 
-    const changed = { imports: [], chunks: [], files: [] }
+    const changed: ChangedFiles = new Map()
     // eslint-disable-next-line no-unused-vars
     const onChange = async (event, filePath, newPath) => {
       if (event !== 'modify') return
 
-      changed.files.push(filePath)
-
-      function existsInImports(imports: Array<ImportResolved>) {
-        return imports.some(resolved => resolved.filePath === filePath)
-      }
-      function existsInChunk(chunk: Chunk) {
-        return chunk.entry === filePath || existsInImports(chunk.imports)
-      }
-
-      job.files.forEach(file => {
-        if (existsInImports(file.imports) || file.chunks.some(existsInChunk)) {
-          changed.files.push(file.filePath)
-          changed.imports.push({ format: file.format, filePath: file.filePath })
+      function processChunk(chunk: Chunk) {
+        if (chunk.entry && chunk.entry === filePath) {
+          const chunkImport = { format: chunk.format, filePath: chunk.entry }
+          changed.set(getFileKey(chunkImport), chunkImport)
         }
+        if (chunk.imports.length) {
+          chunk.imports.forEach(chunkImport => {
+            if (chunkImport.filePath === filePath) {
+              changed.set(getFileKey(chunkImport), chunkImport)
+            }
+          })
+        }
+      }
+      function processFile(file: ImportTransformed) {
+        if (file.filePath !== filePath && !file.imports.some(item => item.filePath === filePath)) return
+
+        const fileImport = { format: file.format, filePath: file.filePath }
+        const fileKey = getFileKey(fileImport)
+        if (changed.has(fileKey)) return
+
+        changed.set(fileKey, fileImport)
+        file.chunks.forEach(processChunk)
+      }
+
+      configChunks.forEach(processChunk)
+      job.files.forEach(file => {
+        file.chunks.forEach(chunk => {
+          processChunk(chunk)
+        })
+        processFile(file)
       })
-      changed.chunks.push(...configChunks.filter(existsInChunk))
     }
 
     queue.onIdle(async () => {
-      if (!generate || !(changed.files.length || changed.chunks.length || changed.imports.length)) return
+      if (!generate || !changed.size) return
 
-      const changedChunks = uniqBy(changed.chunks, getChunkKey)
-      const changedImports = uniqBy(changed.imports, getFileKey)
-      const changedFiles = uniq(changed.files)
-      Object.assign(changed, { files: [], chunks: [], imports: [] })
+      const currentChanged = new Map(changed)
+      const currentChangedVals = Array.from(currentChanged.values())
+      changed.clear()
 
       try {
         await Promise.all(
-          []
-            .concat(changedChunks.map(chunk => this.transformChunk(chunk, job, tickCallback, changedFiles)))
-            .concat(changedImports.map(request => this.transformFileTree(request, job, tickCallback, changedFiles))),
+          currentChangedVals.map(request => this.transformFileTree(request, job, tickCallback, currentChanged)),
         )
-        queue.add(() => generate({ context, job, changed: changedFiles })).catch(error => this.report(error))
+        queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(error => this.report(error))
       } catch (error) {
         this.report(error)
       }
