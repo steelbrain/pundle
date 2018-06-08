@@ -3,7 +3,12 @@ import toposort from 'toposort'
 const HMR_URL = `${document.currentScript.src}.pundle.hmr`
 
 function isHMRAccepted(oldModules, moduleId, matchAgainst = moduleId) {
-  const oldModule = oldModules[moduleId] || require.cache[moduleId]
+  const oldModule = oldModules[moduleId]
+  if (!oldModule) {
+    // New module, allow HMR
+    return 'direct'
+  }
+
   if (oldModule.hot.declined.includes('*') || oldModule.hot.declined.includes(matchAgainst)) {
     return 'no'
   }
@@ -25,11 +30,10 @@ function getHMROrder(oldModules, moduleIds) {
       rejected = true
     }
 
-    const { parents } = oldModules[moduleId] || require.cache[moduleId]
-
     nodes.push([moduleId, null])
     if (hmrAccepted === 'direct') return
 
+    const { parents } = oldModules[moduleId]
     parents.forEach(parent => {
       nodes.push([moduleId, parent])
       iterate(parent)
@@ -49,18 +53,24 @@ function applyHMR(oldModules, moduleIds) {
   updateOrder.forEach(moduleId => {
     const oldModule = oldModules[moduleId] || null
     const newModule = require.cache[moduleId]
-    oldModule.hot.disposeHandlers.forEach(function(callback) {
-      callback(newModule.hot.data)
-    })
+    if (oldModule) {
+      oldModule.hot.disposeHandlers.forEach(function(callback) {
+        callback(newModule.hot.data)
+      })
+    }
     try {
       sbPundleModuleRequire('$root', moduleId)
-      oldModule.hot.successHandlers.forEach(function(callback) {
-        callback()
-      })
+      if (oldModule) {
+        oldModule.hot.successHandlers.forEach(function(callback) {
+          callback()
+        })
+      }
     } catch (error) {
-      oldModule.hot.errorHandlers.forEach(callback => {
-        callback(error)
-      })
+      if (oldModule) {
+        oldModule.hot.errorHandlers.forEach(callback => {
+          callback(error)
+        })
+      }
       throw error
     }
   })
@@ -75,13 +85,10 @@ async function handleResponse(response) {
   }
   if (response.type === 'update') {
     const promises = []
-    const oldModules = {}
+    const oldModules = { ...require.cache }
     const { paths, changedFiles, changedModules } = response
 
     console.log(`[HMR] Affected files ${changedFiles.map(item => `${item.format}:${item.filePath}`).join(', ')}`)
-    changedModules.forEach(moduleId => {
-      oldModules[moduleId] = require.cache[moduleId]
-    })
 
     paths.forEach(({ url, format }) => {
       if (format === 'js') {

@@ -48,6 +48,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
   let firstTime = true
   let generated = null
   const filesChanged: Set<ImportResolved> = new Set()
+  const filesChangedHMR: Set<ImportResolved> = new Set()
   const hmrConnectedClients = new Set()
   const urlToContents = {}
   const urlToHMRContents = {}
@@ -60,12 +61,16 @@ export default async function getPundleDevMiddleware(options: Payload) {
       }
     })
   }
-  async function generateForHMR({ changed, job }: { changed: Array<ImportResolved>, job: Job }) {
-    if (!(changed.length && options.hmr && hmrConnectedClients.size)) {
+  async function generateForHMR({ job }: { job: Job }) {
+    if (!(filesChangedHMR.size && options.hmr && hmrConnectedClients.size)) {
       return
     }
+    const changed = Array.from(filesChangedHMR)
+    filesChangedHMR.clear()
+
     const hmrId = Date.now()
     const hmrChunksByFormat = {}
+
     changed.forEach(fileImport => {
       if (!hmrChunksByFormat[fileImport.format]) {
         hmrChunksByFormat[fileImport.format] = getChunk(fileImport.format, `hmr-${hmrId}`)
@@ -131,7 +136,12 @@ export default async function getPundleDevMiddleware(options: Payload) {
         filesChanged.add(fileImport)
       })
       generated = null
-      await generateForHMR({ job, changed })
+      await generateForHMR({ job })
+    },
+    tick({ newFile }) {
+      if (options.hmr && !firstTime) {
+        filesChangedHMR.add({ format: newFile.format, filePath: newFile.filePath })
+      }
     },
   })
   if (!options.lazy) {
