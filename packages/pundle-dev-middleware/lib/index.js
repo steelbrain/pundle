@@ -18,6 +18,7 @@ type Payload = {
   // ^ Either directory to initialize pundle from or an instance
 
   hmr?: boolean,
+  lazy?: boolean,
   // Used for chunk/image loading and HMR
   publicPath: string,
 }
@@ -143,6 +144,15 @@ export default async function getPundleDevMiddleware(options: Payload) {
       }
     },
   })
+
+  try {
+    if (!options.lazy) {
+      await initialCompile()
+    }
+  } catch (_) {
+    // Pre-compile if you can, otherwise move on
+    // If there's an error, it'll be caught/shown to user on request
+  }
 
   function asyncRoute(callback: (req: Object, res: Object, next: Function) => Promise<void>) {
     return function(req, res, next) {

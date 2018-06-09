@@ -90,7 +90,13 @@ export default class Master implements PundleWorker {
         }),
       ),
     )).map(resolved => getChunk(resolved.format, null, resolved.filePath))
-    await pMap(configChunks, chunk => this.transformChunk(chunk, job))
+    await pMap(configChunks, chunk =>
+      this.transformChunk({
+        job,
+        chunk,
+        locks: new Set(),
+      }),
+    )
 
     return this.generate(await this.transformJob(job))
   }
@@ -100,21 +106,28 @@ export default class Master implements PundleWorker {
   async transformJob(job: Job): Promise<Job> {
     return this.context.invokeJobTransformers(this, { job })
   }
-  async transformChunk(
-    chunk: Chunk,
+  async transformChunk({
+    job,
+    chunk,
+    locks,
+    tickCallback,
+    changedImports = new Map(),
+  }: {
     job: Job,
-    tickCallback: ?TickCallback = null,
-    changedImports: ChangedFiles = new Map(),
-  ): Promise<void> {
+    chunk: Chunk,
+    locks: Set<string>,
+    tickCallback?: ?TickCallback,
+    changedImports?: ChangedFiles,
+  }): Promise<void> {
     const lockKey = getChunkKey(chunk)
-    if (job.locks.has(lockKey)) {
+    if (locks.has(lockKey)) {
       return
     }
     if (job.chunks.has(lockKey) && !changedImports.size) {
       return
     }
 
-    job.locks.add(lockKey)
+    locks.add(lockKey)
     try {
       job.chunks.set(lockKey, chunk)
 
@@ -122,51 +135,74 @@ export default class Master implements PundleWorker {
       if (chunk.entry) {
         filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
       }
-      await pMap(filesToProcess, file => this.transformFileTree(file, job, tickCallback, changedImports))
+      await pMap(filesToProcess, fileImport =>
+        this.transformFileTree({
+          job,
+          locks,
+          request: fileImport,
+          tickCallback,
+          changedImports,
+        }),
+      )
     } catch (error) {
       job.chunks.delete(lockKey)
       throw error
-    } finally {
-      job.locks.delete(lockKey)
     }
   }
   // TODO: Use cached old files here if present on the job?
-  async transformFileTree(
-    request: ImportResolved,
+  async transformFileTree({
+    job,
+    locks,
+    request,
+    tickCallback,
+    changedImports = new Map(),
+  }: {
     job: Job,
-    tickCallback: ?TickCallback = null,
-    changedImports: ChangedFiles = new Map(),
-  ): Promise<void> {
+    locks: Set<string>,
+    request: ImportResolved,
+    tickCallback?: ?TickCallback,
+    changedImports?: ChangedFiles,
+  }): Promise<void> {
     const lockKey = getFileKey(request)
     const oldFile = job.files.get(lockKey)
-    if (job.locks.has(lockKey)) {
+
+    if (locks.has(lockKey)) {
       return
     }
-    if (oldFile && !changedImports.has(lockKey)) {
-      return
-    }
-    job.locks.add(lockKey)
+    locks.add(lockKey)
+
     changedImports.delete(lockKey)
 
-    try {
-      const newFile = await this.transform(request)
+    let newFile
+    if (oldFile && !changedImports.has(lockKey)) {
+      newFile = oldFile
+    } else {
+      newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
-      await Promise.all([
-        pMap(newFile.imports, fileImport => this.transformFileTree(fileImport, job, tickCallback, changedImports)),
-        pMap(newFile.chunks, fileChunk => this.transformChunk(fileChunk, job, tickCallback, changedImports)),
-      ])
-      if (tickCallback) {
-        await tickCallback(oldFile, newFile)
-      }
-    } catch (error) {
-      if (oldFile) {
-        job.files.set(lockKey, oldFile)
-      } else {
-        job.files.delete(lockKey)
-      }
-      throw error
-    } finally {
-      job.locks.delete(lockKey)
+    }
+
+    await Promise.all([
+      pMap(newFile.imports, fileImport =>
+        this.transformFileTree({
+          job,
+          locks,
+          request: fileImport,
+          tickCallback,
+          changedImports,
+        }),
+      ),
+      pMap(newFile.chunks, fileChunk =>
+        this.transformChunk({
+          job,
+          chunk: fileChunk,
+          locks,
+          tickCallback,
+          changedImports,
+        }),
+      ),
+    ])
+    if (oldFile !== newFile && tickCallback) {
+      await tickCallback(oldFile, newFile)
     }
   }
   // PundleWorker methods below
@@ -313,7 +349,15 @@ export default class Master implements PundleWorker {
 
       try {
         await Promise.all(
-          currentChangedVals.map(request => this.transformFileTree(request, job, tickCallback, currentChanged)),
+          currentChangedVals.map(request =>
+            this.transformFileTree({
+              job,
+              locks: new Set(),
+              request,
+              tickCallback,
+              currentChanged,
+            }),
+          ),
         )
         queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(error => this.report(error))
       } catch (error) {
@@ -334,7 +378,14 @@ export default class Master implements PundleWorker {
       context,
       initialCompile: () => {
         if (!initialCompilePromise) {
-          initialCompilePromise = pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback)).catch(error => {
+          initialCompilePromise = pMap(configChunks, chunk =>
+            this.transformChunk({
+              job,
+              chunk,
+              locks: new Set(),
+              tickCallback,
+            }),
+          ).catch(error => {
             initialCompilePromise = null
             throw error
           })
