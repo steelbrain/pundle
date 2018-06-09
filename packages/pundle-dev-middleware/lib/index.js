@@ -129,7 +129,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
     return generated
   }
 
-  const { queue, job } = await master.watch({
+  const { queue, job, initialCompile } = await master.watch({
     async generate({ changed }) {
       changed.forEach(fileImport => {
         filesChanged.add(fileImport)
@@ -156,6 +156,8 @@ export default async function getPundleDevMiddleware(options: Payload) {
   router.get(
     `${publicPath}*`,
     asyncRoute(async function(req, res, next) {
+      await initialCompile()
+
       if (req.url.endsWith('.pundle.hmr')) {
         res.write(JSON.stringify({ type: 'status', enabled: !!options.hmr }))
         if (!options.hmr) {

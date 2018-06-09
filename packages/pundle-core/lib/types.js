@@ -14,7 +14,6 @@ export type WatchOptions = {
   tick?: (params: { job: Job, context: Context, oldFile: ?ImportTransformed, newFile: ImportTransformed }) => Promise<
     void,
   > | void,
-  ready?: (params: { job: Job, context: Context }) => Promise<void> | void,
   generate?: (params: {
     job: Job,
     context: Context,

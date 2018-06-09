@@ -201,10 +201,11 @@ export default class Master implements PundleWorker {
     await this.context.invokeIssueReporters(this, issue)
   }
   // Dangerous territory beyond this point. May God help us all
-  async watch({ adapter = 'nsfw', tick, ready, generate }: WatchOptions = {}): Promise<{
+  async watch({ adapter = 'nsfw', tick, generate }: WatchOptions = {}): Promise<{
     job: Job,
     queue: Object,
     context: Context,
+    initialCompile(): Promise<void>,
     dispose(): void,
   }> {
     const job = new Job()
@@ -323,17 +324,23 @@ export default class Master implements PundleWorker {
     const watcher = getWatcher(adapter, this.context.config.rootDirectory, (...args) => {
       queue.add(() => onChange(...args)).catch(error => this.report(error))
     })
-    await pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback))
 
-    if (ready) {
-      await ready({ context, job })
-    }
     await watcher.watch()
+    let initialCompilePromise = null
 
     return {
       job,
       queue,
       context,
+      initialCompile: () => {
+        if (!initialCompilePromise) {
+          initialCompilePromise = pMap(configChunks, chunk => this.transformChunk(chunk, job, tickCallback)).catch(error => {
+            initialCompilePromise = null
+            throw error
+          })
+        }
+        return initialCompilePromise
+      },
       dispose() {
         watcher.close()
       },
