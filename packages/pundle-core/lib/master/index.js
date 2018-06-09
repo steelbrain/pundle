@@ -171,12 +171,11 @@ export default class Master implements PundleWorker {
     }
     locks.add(lockKey)
 
-    changedImports.delete(lockKey)
-
     let newFile
     if (oldFile && !changedImports.has(lockKey)) {
       newFile = oldFile
     } else {
+      changedImports.delete(lockKey)
       newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
     }
@@ -247,6 +246,7 @@ export default class Master implements PundleWorker {
     const job = new Job()
     const { context } = this
     const queue = new PromiseQueue()
+    let initialCompilePromise = null
 
     const configChunks = (await Promise.all(
       this.context.config.entry.map(entry =>
@@ -341,21 +341,24 @@ export default class Master implements PundleWorker {
     }
 
     queue.onIdle(async () => {
-      if (!generate || !changed.size) return
+      if (!generate || !changed.size || !initialCompilePromise) return
+
+      await initialCompilePromise
 
       const currentChanged = new Map(changed)
       const currentChangedVals = Array.from(currentChanged.values())
       changed.clear()
 
       try {
+        const locks = new Set()
         await Promise.all(
           currentChangedVals.map(request =>
             this.transformFileTree({
               job,
-              locks: new Set(),
+              locks,
               request,
               tickCallback,
-              currentChanged,
+              changedImports: currentChanged,
             }),
           ),
         )
@@ -370,7 +373,6 @@ export default class Master implements PundleWorker {
     })
 
     await watcher.watch()
-    let initialCompilePromise = null
 
     return {
       job,
