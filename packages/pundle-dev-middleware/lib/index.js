@@ -18,7 +18,6 @@ type Payload = {
   // ^ Either directory to initialize pundle from or an instance
 
   hmr?: boolean,
-  lazy?: boolean,
   // Used for chunk/image loading and HMR
   publicPath: string,
 }
@@ -144,9 +143,6 @@ export default async function getPundleDevMiddleware(options: Payload) {
       }
     },
   })
-  if (!options.lazy) {
-    await generateJob({ job })
-  }
 
   function asyncRoute(callback: (req: Object, res: Object, next: Function) => Promise<void>) {
     return function(req, res, next) {
