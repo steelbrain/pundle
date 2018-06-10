@@ -22,6 +22,7 @@ function createComponent({ extensions = ['.less'], options = {} }: { extensions?
 
       const processed = await less.render(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         sourceMap: {},
+        paths: [path.dirname(file.filePath)],
         ...options,
       })
 

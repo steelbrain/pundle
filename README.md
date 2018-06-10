@@ -15,6 +15,7 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Note to self
 
+- url() in css. Fix it
 - split commons as chunk with configurable name
 - "ModuleScopePlugin" to limit direct import of files
 - ESlint to lint files
