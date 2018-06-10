@@ -1,10 +1,9 @@
 // @flow
 import path from 'path'
 import nanomatch from 'nanomatch'
-import { PundleError, characterOffsetToLoc, createFileTransformer } from 'pundle-api'
+import { PundleError, characterOffsetToLoc, createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getTypescript } from './helpers'
 
 const DEFAULT_EXCLUDE = ['node_modules/**']
 const DEFAULT_EXTENSIONS = ['.ts', '.tsx']
@@ -32,12 +31,12 @@ function createComponent({
         return null
       }
 
-      const typescript = getTypescript(context.config.rootDirectory)
-      if (!typescript) {
+      const { name, exported } = loadLocalFromContext(context, ['typescript'])
+      if (!name) {
         throw new Error(`'typescript' not found in '${context.config.rootDirectory}'`)
       }
 
-      const transformed = typescript.transpileModule(
+      const transformed = exported.transpileModule(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
         {
           fileName: file.filePath,

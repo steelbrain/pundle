@@ -7,8 +7,7 @@
   "scripts": {},
   "dependencies": {
     "nanomatch": "^1.2.9",
-    "pundle-api": "0.0.0",
-    "resolve-from": "^4.0.0"
+    "pundle-api": "0.0.0"
   },
   "author": "steelbrain",
   "license": "MIT"

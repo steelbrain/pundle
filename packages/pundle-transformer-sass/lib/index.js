@@ -1,10 +1,9 @@
 // @flow
 
 import path from 'path'
-import { NEWLINE_REGEXP, createFileTransformer } from 'pundle-api'
+import { NEWLINE_REGEXP, createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getNodeSass } from './helpers'
 
 function createComponent({ extensions = ['.scss'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
@@ -15,13 +14,13 @@ function createComponent({ extensions = ['.scss'], options = {} }: { extensions?
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const sass = getNodeSass(context.config.rootDirectory)
-      if (!sass) {
+      const { name, exported } = loadLocalFromContext(context, ['node-sass'])
+      if (!name) {
         throw new Error(`'node-sass' not found in '${context.config.rootDirectory}'`)
       }
 
       const processed = await new Promise(function(resolve, reject) {
-        sass.render(
+        exported.render(
           {
             data: typeof file.contents === 'string' ? file.contents : file.contents.toString(),
             includePaths: [path.dirname(file.filePath)],

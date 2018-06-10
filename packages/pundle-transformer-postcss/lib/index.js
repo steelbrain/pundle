@@ -1,9 +1,8 @@
 // @flow
 
-import { createFileTransformer } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getPostcss } from './helpers'
 
 function createComponent({ plugins = [] }: { plugins?: Array<any> } = {}) {
   return createFileTransformer({
@@ -13,12 +12,12 @@ function createComponent({ plugins = [] }: { plugins?: Array<any> } = {}) {
     async callback({ file, context }) {
       if (file.format !== 'css') return null
 
-      const postcss = getPostcss(context.config.rootDirectory)
-      if (!postcss) {
+      const { name, exported } = loadLocalFromContext(context, ['postcss'])
+      if (!name) {
         throw new Error(`'postcss' not found in '${context.config.rootDirectory}'`)
       }
 
-      const processed = await postcss(plugins).process(
+      const processed = await exported(plugins).process(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
         {
           from: file.filePath,

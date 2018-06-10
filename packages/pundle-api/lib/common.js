@@ -2,7 +2,10 @@
 
 import path from 'path'
 import globrex from 'globrex'
+import resolveFrom from 'resolve-from'
 import Imurmurhash from 'imurmurhash'
+
+import type Context from './context'
 import type { Loc, Chunk, ImportResolved } from './types'
 
 export const NEWLINE_REGEXP = /\r\n|[\n\r\u2028\u2029]/
@@ -102,4 +105,24 @@ export function characterOffsetToLoc(contents: string, characterOffset: number):
   }
 
   return null
+}
+
+export function loadLocalFromContext(context: Context, names: Array<string>): { name: ?string, exported: any } {
+  const { rootDirectory } = context.config
+
+  for (let i = 0, { length } = names; i < length; i++) {
+    const name = names[i]
+    let resolved
+    try {
+      resolved = resolveFrom(rootDirectory, name)
+    } catch (_) {
+      continue
+    }
+    // $FlowFixMe: Dynamic require :)
+    const exported = require(resolved) // eslint-disable-line global-require,import/no-dynamic-require
+
+    return { name, exported }
+  }
+
+  return { name: null, exported: {} }
 }

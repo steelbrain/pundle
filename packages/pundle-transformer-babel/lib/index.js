@@ -1,10 +1,9 @@
 // @flow
 
 import nanomatch from 'nanomatch'
-import { createFileTransformer } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getBabelCore } from './helpers'
 
 const DEFAULT_EXCLUDE = ['node_modules/**']
 function createComponent({
@@ -28,22 +27,22 @@ function createComponent({
         return null
       }
 
-      const babelCore = getBabelCore(context.config.rootDirectory)
-      if (!babelCore) {
+      const { name, exported } = loadLocalFromContext(context, ['@babel/core', 'babel-core'])
+      if (!name) {
         throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried @babel/core & babel-core)`)
       }
 
       const transformed = await new Promise((resolve, reject) => {
-        babelCore.transform(
+        exported.transform(
           file.contents,
           {
-            root: context.config.rootDirectory,
             babelrc: true,
             filename: file.filePath,
-            sourceMap: true,
+            sourceMaps: true,
             sourceType: 'module',
             highlightCode: false,
             sourceFileName: file.filePath,
+            ...(name === '@babel/core' ? { root: context.config.rootDirectory } : {}),
             ...options,
           },
           function(err, result) {

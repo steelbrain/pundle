@@ -1,10 +1,9 @@
 // @flow
 
 import path from 'path'
-import { createFileTransformer } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getLess } from './helpers'
 
 function createComponent({ extensions = ['.less'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
@@ -15,12 +14,12 @@ function createComponent({ extensions = ['.less'], options = {} }: { extensions?
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const less = getLess(context.config.rootDirectory)
-      if (!less) {
+      const { name, exported } = loadLocalFromContext(context, ['less'])
+      if (!name) {
         throw new Error(`'less' not found in '${context.config.rootDirectory}'`)
       }
 
-      const processed = await less.render(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
+      const processed = await exported.render(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         sourceMap: {},
         paths: [path.dirname(file.filePath)],
         ...options,

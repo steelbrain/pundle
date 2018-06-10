@@ -1,10 +1,9 @@
 // @flow
 
 import path from 'path'
-import { createFileTransformer } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getStylus } from './helpers'
 
 function createComponent({ extensions = ['.styl'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
@@ -15,12 +14,12 @@ function createComponent({ extensions = ['.styl'], options = {} }: { extensions?
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const stylus = getStylus(context.config.rootDirectory)
-      if (!stylus) {
+      const { name, exported } = loadLocalFromContext(context, ['stylus'])
+      if (!name) {
         throw new Error(`'stylus' not found in '${context.config.rootDirectory}'`)
       }
 
-      const renderer = stylus(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
+      const renderer = exported(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         sourcemap: true,
         filename: file.filePath,
         paths: [path.dirname(file.filePath)],

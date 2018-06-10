@@ -2,10 +2,9 @@
 
 import path from 'path'
 import nanomatch from 'nanomatch'
-import { createFileTransformer } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getCoffeeScript } from './helpers'
 
 const DEFAULT_EXCLUDE = ['node_modules/**']
 function createComponent({
@@ -32,18 +31,15 @@ function createComponent({
         return null
       }
 
-      const coffeescript = getCoffeeScript(context.config.rootDirectory)
-      if (!coffeescript) {
-        throw new Error(`Coffeescript not found in '${context.config.rootDirectory}'`)
+      const { name, exported } = loadLocalFromContext(context, ['coffeescript'])
+      if (!name) {
+        throw new Error(`'coffeescript' not found in '${context.config.rootDirectory}'`)
       }
 
-      const transformed = coffeescript.compile(
-        typeof file.contents === 'string' ? file.contents : file.contents.toString(),
-        {
-          filename: file.filePath,
-          sourceMap: true,
-        },
-      )
+      const transformed = exported.compile(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
+        filename: file.filePath,
+        sourceMap: true,
+      })
 
       return {
         contents: transformed.js,
