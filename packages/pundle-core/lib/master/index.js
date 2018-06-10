@@ -224,6 +224,7 @@ export default class Master implements PundleWorker {
     }
 
     const result = await promise
+    // Node IPC converts Buffer to array of ints
     if (typeof result.contents === 'object' && result.contents) {
       return {
         ...result,
@@ -305,7 +306,13 @@ export default class Master implements PundleWorker {
     const changed: ChangedFiles = new Map()
     // eslint-disable-next-line no-unused-vars
     const onChange = async (event, filePath, newPath) => {
-      if (event !== 'modify') return
+      if (event === 'delete') {
+        job.files.forEach((file, key) => {
+          if (file.filePath === filePath) {
+            job.files.delete(key)
+          }
+        })
+      }
 
       function processChunk(chunk: Chunk) {
         if (chunk.entry && chunk.entry === filePath) {

@@ -4,7 +4,7 @@ import AdapterNSFW from './adapter-nsfw'
 import AdapterChokdiar from './adapter-chokidar'
 import type { WatchAdapter } from '../types'
 
-export type ChangeType = 'add' | 'delete' | 'modify' | 'rename'
+export type ChangeType = 'add' | 'delete' | 'modify'
 export type ChangeCallback = (type: ChangeType, newPath: string, oldPath: ?string) => void
 declare class Adapter {
   constructor(rootDirectory: string, onChange: ChangeCallback): void;

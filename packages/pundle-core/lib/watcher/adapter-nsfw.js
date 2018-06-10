@@ -20,20 +20,18 @@ export default class AdapterChokdiar {
       events => {
         events.forEach(event => {
           let type = null
-          if (event.action === nsfw.actions.MODIFIED) {
+          if (event.action === nsfw.actions.MODIFIED || event.action === nsfw.actions.RENAMED) {
             type = 'modify'
           } else if (event.action === nsfw.actions.CREATED) {
             type = 'add'
           } else if (event.action === nsfw.actions.DELETED) {
             type = 'delete'
-          } else if (event.action === nsfw.actions.RENAMED) {
-            type = 'rename'
           }
 
           if (type) {
             this.onChange(
               type,
-              path.join(event.directory, event.file || event.newFile),
+              path.join(event.directory, event.newFile || event.file),
               event.oldFile ? path.join(event.directory, event.oldFile) : null,
             )
           } else {
