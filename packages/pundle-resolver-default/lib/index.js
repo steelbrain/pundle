@@ -7,7 +7,7 @@ import { createFileResolver } from 'pundle-api'
 
 import manifest from '../package.json'
 
-export default function({ formats, aliases = {} }: { formats: { [string]: string }, aliases: { [string]: string } }) {
+function createComponent({ formats, aliases = {} }: { formats: { [string]: string }, aliases: { [string]: string } }) {
   // TODO: validation of config?
 
   return createFileResolver({
@@ -51,3 +51,5 @@ export default function({ formats, aliases = {} }: { formats: { [string]: string
     },
   })
 }
+
+module.exports = createComponent

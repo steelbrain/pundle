@@ -24,7 +24,7 @@ INJECTIONS.forEach(function(names, sourceModule) {
 const transformAsync = promisify(transform)
 
 // TODO: have a config?
-export default function({ transformCore }: { transformCore: boolean }) {
+function createComponent({ transformCore }: { transformCore: boolean }) {
   return createFileTransformer({
     name: 'pundle-transformer-js',
     version: manifest.version,
@@ -166,3 +166,5 @@ export default function({ transformCore }: { transformCore: boolean }) {
     },
   })
 }
+
+module.exports = createComponent

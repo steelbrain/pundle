@@ -6,7 +6,7 @@ import invariant from 'assert'
 import pick from 'lodash/pick'
 import { Router } from 'express'
 
-import getPundle, { getWatcher } from 'pundle-core'
+import { getPundle, getWatcher } from 'pundle-core'
 import { getChunk, getUniqueHash, type Job, type ImportResolved } from 'pundle-api'
 
 import { getOutputFormats, getChunksAffectedByImports } from './helpers'
@@ -24,7 +24,7 @@ type Payload = {
 }
 const PUNDLE_OPTIONS = ['configFileName', 'configLoadFile', 'directory']
 
-export default async function getPundleDevMiddleware(options: Payload) {
+async function getPundleDevMiddleware(options: Payload) {
   invariant(typeof options.publicPath === 'string', 'options.publicPath must be a string')
 
   const router = new Router()
@@ -215,3 +215,5 @@ export default async function getPundleDevMiddleware(options: Payload) {
 
   return router
 }
+
+module.exports = getPundleDevMiddleware

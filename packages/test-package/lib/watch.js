@@ -1,5 +1,5 @@
 import path from 'path'
-import getPundle, { getWatcher } from 'pundle-core'
+import { getPundle, getWatcher } from 'pundle-core'
 
 async function main() {
   const pundle = await getPundle({

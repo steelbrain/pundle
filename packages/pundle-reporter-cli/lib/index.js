@@ -6,7 +6,7 @@ import normalizeError from 'pundle-reporter-base'
 import manifest from '../package.json'
 
 // TODO: have a config?
-export default function() {
+function createComponent() {
   return createIssueReporter({
     name: 'pundle-reporter-cli',
     version: manifest.version,
@@ -15,3 +15,5 @@ export default function() {
     },
   })
 }
+
+module.exports = createComponent

@@ -11,7 +11,7 @@ import manifest from '../package.json'
 const wrapper = fs.readFileSync(path.join(__dirname, 'wrapper', 'default.js'))
 
 // TODO: have a config?
-export default function() {
+function createComponent() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-js',
     version: manifest.version,
@@ -66,3 +66,5 @@ export default function() {
     },
   })
 }
+
+module.exports = createComponent

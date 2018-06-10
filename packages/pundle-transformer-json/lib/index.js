@@ -5,7 +5,7 @@ import { createFileTransformer } from 'pundle-api'
 
 import manifest from '../package.json'
 
-export default function({ extensions = ['.json'] }: { extensions?: Array<string> } = {}) {
+function createComponent({ extensions = ['.json'] }: { extensions?: Array<string> } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-json',
     version: manifest.version,
@@ -36,3 +36,5 @@ export default function({ extensions = ['.json'] }: { extensions?: Array<string>
     },
   })
 }
+
+module.exports = createComponent

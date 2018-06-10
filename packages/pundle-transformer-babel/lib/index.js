@@ -7,7 +7,7 @@ import manifest from '../package.json'
 import { getBabelCore } from './helpers'
 
 const DEFAULT_EXCLUDE = ['node_modules/**']
-export default function({
+function createComponent({
   exclude = DEFAULT_EXCLUDE,
   processOutsideProjectRoot,
   options = {},
@@ -61,3 +61,5 @@ export default function({
     },
   })
 }
+
+module.exports = createComponent

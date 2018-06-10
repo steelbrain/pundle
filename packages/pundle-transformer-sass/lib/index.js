@@ -6,7 +6,7 @@ import { NEWLINE_REGEXP, createFileTransformer } from 'pundle-api'
 import manifest from '../package.json'
 import { getNodeSass } from './helpers'
 
-export default function({ extensions = ['.scss'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
+function createComponent({ extensions = ['.scss'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-sass',
     version: manifest.version,
@@ -49,3 +49,5 @@ export default function({ extensions = ['.scss'], options = {} }: { extensions?:
     },
   })
 }
+
+module.exports = createComponent

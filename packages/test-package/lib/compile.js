@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import getPundle from 'pundle-core'
+import { getPundle } from 'pundle-core'
 
 async function main() {
   const pundle = await getPundle({

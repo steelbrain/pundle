@@ -9,7 +9,7 @@ import { getTypescript } from './helpers'
 const DEFAULT_EXCLUDE = ['node_modules/**']
 const DEFAULT_EXTENSIONS = ['.ts', '.tsx']
 
-export default function({
+function createComponent({
   exclude = DEFAULT_EXCLUDE,
   extensions = DEFAULT_EXTENSIONS,
   processOutsideProjectRoot,
@@ -62,3 +62,5 @@ export default function({
     },
   })
 }
+
+module.exports = createComponent

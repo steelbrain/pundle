@@ -6,7 +6,7 @@ import { createFileTransformer } from 'pundle-api'
 import manifest from '../package.json'
 import { getLess } from './helpers'
 
-export default function({ extensions = ['.less'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
+function createComponent({ extensions = ['.less'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-less',
     version: manifest.version,
@@ -32,3 +32,5 @@ export default function({ extensions = ['.less'], options = {} }: { extensions?:
     },
   })
 }
+
+module.exports = createComponent

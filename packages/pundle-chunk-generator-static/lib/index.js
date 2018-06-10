@@ -5,7 +5,7 @@ import { createChunkGenerator, getFileKey } from 'pundle-api'
 
 import manifest from '../package.json'
 
-export default function({ formats }: { formats: Array<string> }) {
+function createComponent({ formats }: { formats: Array<string> }) {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
     version: manifest.version,
@@ -38,3 +38,5 @@ export default function({ formats }: { formats: Array<string> }) {
     },
   })
 }
+
+module.exports = createComponent

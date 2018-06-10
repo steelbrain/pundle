@@ -15,7 +15,7 @@ import manifest from '../package.json'
 
 const DEFAULT_INLINE_LIMIT = 8 * 1024 // 8kb
 
-export default function({
+function createComponent({
   extensionsOrMimes,
   inlineLimit = DEFAULT_INLINE_LIMIT,
 }: { extensionsOrMimes: Array<string> | { [string]: string }, inlineLimit: number } = {}) {
@@ -73,3 +73,5 @@ export default function({
     },
   })
 }
+
+module.exports = createComponent

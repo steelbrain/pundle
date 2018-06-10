@@ -26,7 +26,7 @@ export async function getPundleConfig({
   return loadConfig(context)
 }
 
-export default async function getPundle({
+export async function getPundle({
   config: configInline = {},
   configFileName = CONFIG_FILE_NAME,
   configLoadFile = true,

@@ -8,7 +8,7 @@ import { createFileTransformer, getChunk } from 'pundle-api'
 import manifest from '../package.json'
 import pluginImportResolver from './plugin-import-resolver'
 
-export default function({ extensions = ['.css'] }: { extensions?: Array<string> } = {}) {
+function createComponent({ extensions = ['.css'] }: { extensions?: Array<string> } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-css',
     version: manifest.version,
@@ -70,3 +70,5 @@ export default function({ extensions = ['.css'] }: { extensions?: Array<string> 
     },
   })
 }
+
+module.exports = createComponent

@@ -9,7 +9,7 @@ import { getChunksMatchingFilter, topologicallySortChunks } from './helpers'
 const CHUNK_INJECTION_REGEXP = / *<!-- chunk-import(.*)? -->/gi
 
 // TODO: have a config?
-export default function() {
+function createComponent() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-html',
     version: manifest.version,
@@ -60,3 +60,5 @@ export default function() {
     },
   })
 }
+
+module.exports = createComponent
