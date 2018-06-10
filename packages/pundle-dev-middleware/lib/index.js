@@ -95,7 +95,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
     hmrConnectedClients.forEach(client => {
       client.write(`${JSON.stringify(clientInfo)}`)
     })
-    console.log(`Writing ${outputs.length} chunks to ${hmrConnectedClients.size} clients`)
+    console.log(`Writing ${clientInfo.paths.length} chunks to ${hmrConnectedClients.size} clients`)
 
     // Remove HMR contents from memory after 60 seconds
     setTimeout(() => {
