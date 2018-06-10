@@ -15,17 +15,21 @@ function processBooleanConditional(path: $FlowFixMe) {
 
   function visitIfNode(leafNode) {
     if (!t.isBooleanLiteral(leafNode.test)) return
-    const { test, consequent, alternate } = node
+    const { test, consequent, alternate } = leafNode
 
     if (test.value) {
-      path.replaceWithMultiple(consequent.body)
+      if (t.isBlockStatement(consequent)) {
+        path.replaceWithMultiple(consequent.body)
+      } else path.replaceWith(consequent)
       return
     }
-    node.consequent.body = []
+    consequent.body = []
     if (t.isIfStatement(alternate)) {
       visitIfNode(alternate)
     } else if (t.isBlockStatement(alternate)) {
       path.replaceWithMultiple(alternate.body)
+    } else if (t.isExpressionStatement(alternate)) {
+      path.replaceWith(alternate)
     }
   }
 
