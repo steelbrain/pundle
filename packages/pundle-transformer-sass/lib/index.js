@@ -24,6 +24,7 @@ function createComponent({ extensions = ['.scss'], options = {} }: { extensions?
         sass.render(
           {
             data: typeof file.contents === 'string' ? file.contents : file.contents.toString(),
+            includePaths: [path.dirname(file.filePath)],
             outFile: '/dev/null',
             sourceMap: true,
             ...options,
