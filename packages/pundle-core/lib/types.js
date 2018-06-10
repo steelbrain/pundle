@@ -20,3 +20,12 @@ export type WatchOptions = {
     changed: Array<ImportResolved>,
   }) => Promise<void> | void,
 }
+
+export type InternalChangedFiles = Map<string, ImportResolved>
+export type InternalWatcherResult = {
+  job: Job,
+  queue: Object,
+  context: Context,
+  initialCompile(): Promise<void>,
+  dispose(): void,
+}
