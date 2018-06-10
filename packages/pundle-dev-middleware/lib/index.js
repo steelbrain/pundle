@@ -37,7 +37,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
   const pundle = await getPundle({
     ...pick(options, PUNDLE_OPTIONS),
     config: {
-      entry: [require.resolve('./client/hmr-client')],
+      entry: options.hmr ? [require.resolve('./client/hmr-client')] : [],
       output: {
         formats: await getOutputFormats(pick(options, PUNDLE_OPTIONS), publicPath),
         rootDirectory: '/tmp',
