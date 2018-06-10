@@ -14,7 +14,12 @@ function processBooleanConditional(path: $FlowFixMe) {
   if (!t.isBooleanLiteral(node.test)) return
 
   function visitIfNode(leafNode) {
-    if (!t.isBooleanLiteral(leafNode.test)) return
+    if (!t.isBooleanLiteral(leafNode.test)) {
+      if (leafNode !== node) {
+        path.replaceWith(leafNode)
+      }
+      return
+    }
     const { test, consequent, alternate } = leafNode
 
     if (test.value) {
