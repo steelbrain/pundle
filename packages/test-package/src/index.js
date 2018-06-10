@@ -26,6 +26,7 @@ console.log(process.env.NODE_ENV === 'development' ? 'development' : 'production
 
 console.log('test less', require('../styles/test.less'))
 console.log('test sass', require('../styles/test.scss'))
+console.log('test stylus', require('../styles/test.styl'))
 console.log('indexCss', require('../styles/index.module.css'))
 console.log('nonModuleCss', require('../styles/non-module.css'))
 console.log('cson', require('./test.cson'))

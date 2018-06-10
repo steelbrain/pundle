@@ -13,6 +13,7 @@ import transformerJSON from 'pundle-transformer-json'
 import transformerJSON5 from 'pundle-transformer-json5'
 import transformerBabel from 'pundle-transformer-babel'
 import transformerStatic from 'pundle-transformer-static'
+import transformerStylus from 'pundle-transformer-stylus'
 import transformerPostcss from 'pundle-transformer-postcss'
 import transformerTypescript from 'pundle-transformer-typescript'
 import chunkGeneratorJs from 'pundle-chunk-generator-js'
@@ -28,14 +29,14 @@ export default {
       formats: {
         js: ['.js', '.mjs', '.json', '.ts', '.tsx', '.json5', '.cson', '.coffee'],
         html: ['.html'],
-        css: ['.css', '.less', '.scss'],
+        css: ['.css', '.less', '.scss', '.styl'],
         static: ['.png'],
       },
       aliases: browserAliases,
     }),
     transformerCSON(),
     transformerCSS({
-      extensions: ['.css', '.less', '.scss'],
+      extensions: ['.css', '.less', '.scss', '.styl'],
     }),
     transformerCoffee(),
     transformerJSON(),
@@ -49,6 +50,7 @@ export default {
     transformerStatic({
       extensionsOrMimes: ['.png'],
     }),
+    transformerStylus(),
     transformerPostcss({
       plugins: [cssnano({ preset: 'default' })],
     }),
