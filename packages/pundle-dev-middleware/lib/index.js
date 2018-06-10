@@ -6,7 +6,7 @@ import invariant from 'assert'
 import pick from 'lodash/pick'
 import { Router } from 'express'
 
-import getPundle, { getWatcher, type Master } from 'pundle-core'
+import getPundle, { getWatcher } from 'pundle-core'
 import { getChunk, getUniqueHash, type Job, type ImportResolved } from 'pundle-api'
 
 import { getOutputFormats, getChunksAffectedByImports } from './helpers'
@@ -34,7 +34,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
     publicPath = `${publicPath}/`
   }
 
-  const master: Master = await getPundle({
+  const pundle = await getPundle({
     ...pick(options, PUNDLE_OPTIONS),
     config: {
       entry: [require.resolve('./client/hmr-client')],
@@ -54,7 +54,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
   const urlToHMRContents = {}
 
   async function regenerateUrlCache({ chunks, job }) {
-    const { outputs } = await master.generate(job, chunks)
+    const { outputs } = await pundle.generate(job, chunks)
     outputs.forEach(({ filePath, contents }) => {
       if (filePath) {
         urlToContents[filePath] = contents
@@ -78,7 +78,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
       hmrChunksByFormat[fileImport.format].imports.push(fileImport)
     })
     const hmrChunks: $FlowFixMe = Object.values(hmrChunksByFormat)
-    const { outputs } = await master.generate(job, hmrChunks)
+    const { outputs } = await pundle.generate(job, hmrChunks)
     outputs.forEach(({ filePath, contents }) => {
       if (filePath) {
         urlToHMRContents[filePath] = contents
@@ -108,7 +108,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
   }
 
   async function generateJobAsync({ job, changed }) {
-    const transformedJob = await master.transformJob(job)
+    const transformedJob = await pundle.transformJob(job)
     const chunks = Array.from(transformedJob.chunks.values())
     if (firstTime) {
       firstTime = false
@@ -131,7 +131,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
   }
 
   const { queue, job, initialCompile } = await getWatcher({
-    pundle: master,
+    pundle,
     async generate({ changed }) {
       changed.forEach(fileImport => {
         filesChanged.add(fileImport)
@@ -158,7 +158,7 @@ export default async function getPundleDevMiddleware(options: Payload) {
   function asyncRoute(callback: (req: Object, res: Object, next: Function) => Promise<void>) {
     return function(req, res, next) {
       callback(req, res, next).catch(error => {
-        master.report(error)
+        pundle.report(error)
         next(error)
       })
     }
