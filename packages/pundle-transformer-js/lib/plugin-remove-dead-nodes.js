@@ -10,17 +10,29 @@ import * as t from '@babel/types'
 
 function processBooleanConditional(path: $FlowFixMe) {
   const { node } = path
-  const { test, consequent, alternate } = node
 
-  if (!t.isBooleanLiteral(test)) return
-  const { value } = test
+  if (!t.isBooleanLiteral(node.test)) return
+
+  function visitIfNode(leafNode) {
+    if (!t.isBooleanLiteral(leafNode.test)) return
+    const { test, consequent, alternate } = node
+
+    if (test.value) {
+      path.replaceWithMultiple(consequent.body)
+      return
+    }
+    node.consequent.body = []
+    if (t.isIfStatement(alternate)) {
+      visitIfNode(alternate)
+    } else if (t.isBlockStatement(alternate)) {
+      path.replaceWithMultiple(alternate.body)
+    }
+  }
 
   if (t.isIfStatement(node)) {
-    if (value) {
-      node.alternate = null
-    } else consequent.body = []
+    visitIfNode(node)
   } else {
-    path.replaceWith(value ? consequent : alternate)
+    path.replaceWith(node.test.value ? node.consequent : node.alternate)
   }
 }
 
