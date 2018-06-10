@@ -29,6 +29,7 @@ console.log('test sass', require('../styles/test.scss'))
 console.log('indexCss', require('../styles/index.module.css'))
 console.log('nonModuleCss', require('../styles/non-module.css'))
 console.log('json', require('./haha'))
+console.log('json5', require('./test.json5'))
 console.log('typescript', require('./typescript.ts'))
 
 console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))

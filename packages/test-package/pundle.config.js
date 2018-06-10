@@ -8,6 +8,7 @@ import transformerCSS from 'pundle-transformer-css'
 import transformerSass from 'pundle-transformer-sass'
 import transformerLess from 'pundle-transformer-less'
 import transformerJSON from 'pundle-transformer-json'
+import transformerJSON5 from 'pundle-transformer-json5'
 import transformerBabel from 'pundle-transformer-babel'
 import transformerStatic from 'pundle-transformer-static'
 import transformerPostcss from 'pundle-transformer-postcss'
@@ -23,7 +24,7 @@ export default {
     cliReporter(),
     resolverDefault({
       formats: {
-        js: ['.js', '.mjs', '.json', '.ts', '.tsx'],
+        js: ['.js', '.mjs', '.json', '.ts', '.tsx', '.json5'],
         html: ['.html'],
         css: ['.css', '.less', '.scss'],
         static: ['.png'],
@@ -31,6 +32,7 @@ export default {
       aliases: browserAliases,
     }),
     transformerJSON(),
+    transformerJSON5(),
     transformerBabel(),
     transformerJS({
       transformCore: true,
