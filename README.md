@@ -4,8 +4,9 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Top Priority
 
-- CLI
+- Chunk minifieirs for HTML / CSS / JS
 - Boot from cache
+- CLI
 - visualize dependency file size
 - create-pundle-app
 - create-pundle-react-app
