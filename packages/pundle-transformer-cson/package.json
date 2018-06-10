@@ -1,0 +1,14 @@
+{
+  "name": "pundle-transformer-cson",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {},
+  "dependencies": {
+    "cson-parser": "^3.0.0",
+    "pundle-api": "0.0.0"
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}

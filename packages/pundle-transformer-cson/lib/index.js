@@ -1,14 +1,14 @@
 // @flow
 
 import path from 'path'
-import JSON5 from 'json5'
+import CSON from 'cson-parser'
 import { createFileTransformer } from 'pundle-api'
 
 import manifest from '../package.json'
 
-function createComponent({ extensions = ['.json5'] }: { extensions?: Array<string> } = {}) {
+function createComponent({ extensions = ['.cson'] }: { extensions?: Array<string> } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-json5',
+    name: 'pundle-transformer-cson',
     version: manifest.version,
     priority: 1500,
     callback({ file }) {
@@ -16,8 +16,8 @@ function createComponent({ extensions = ['.json5'] }: { extensions?: Array<strin
       if (!extensions.includes(extName) || file.format !== 'js') {
         return null
       }
-      // TODO: Error handling
-      const parsed = JSON5.parse(file.contents.toString())
+      // TODO: error handling
+      const parsed = CSON.parse(file.contents.toString())
 
       return {
         contents: `module.exports = ${JSON.stringify(parsed)}`,

@@ -22,6 +22,7 @@
     "pundle-transformer-babel": "0.0.0",
     "pundle-transformer-css": "0.0.0",
     "pundle-transformer-js": "0.0.0",
+    "pundle-transformer-cson": "0.0.0",
     "pundle-transformer-json": "0.0.0",
     "pundle-transformer-json5": "0.0.0",
     "pundle-transformer-less": "0.0.0",
