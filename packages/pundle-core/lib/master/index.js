@@ -1,6 +1,7 @@
 // @flow
 
 import os from 'os'
+import path from 'path'
 import pMap from 'p-map'
 import promiseDefer from 'promise.defer'
 import PromiseQueue from 'sb-promise-queue'
@@ -171,6 +172,7 @@ export default class Master implements PundleWorker {
     }
     locks.add(lockKey)
 
+    console.log('processing', request)
     let newFile
     if (oldFile && !changedImports.has(lockKey)) {
       newFile = oldFile
@@ -247,6 +249,7 @@ export default class Master implements PundleWorker {
     const job = new Job()
     const { context } = this
     const queue = new PromiseQueue()
+    let lastProcessError = null
     let initialCompilePromise = null
 
     const configChunks = (await Promise.all(
@@ -314,14 +317,14 @@ export default class Master implements PundleWorker {
         })
       }
 
-      function processChunk(chunk: Chunk) {
-        if (chunk.entry && chunk.entry === filePath) {
+      function processChunk(chunk: Chunk, force: boolean) {
+        if (chunk.entry && (chunk.entry === filePath || force)) {
           const chunkImport = { format: chunk.format, filePath: chunk.entry }
           changed.set(getFileKey(chunkImport), chunkImport)
         }
         if (chunk.imports.length) {
           chunk.imports.forEach(chunkImport => {
-            if (chunkImport.filePath === filePath) {
+            if (chunkImport.filePath === filePath || force) {
               changed.set(getFileKey(chunkImport), chunkImport)
             }
           })
@@ -335,16 +338,27 @@ export default class Master implements PundleWorker {
         if (changed.has(fileKey)) return
 
         changed.set(fileKey, fileImport)
-        file.chunks.forEach(processChunk)
+        file.chunks.forEach(chunk => processChunk(chunk, false))
       }
 
-      configChunks.forEach(processChunk)
+      configChunks.forEach(chunk => processChunk(chunk, false))
       job.files.forEach(file => {
         file.chunks.forEach(chunk => {
-          processChunk(chunk)
+          processChunk(chunk, false)
         })
         processFile(file)
       })
+
+      if (
+        event === 'modify' &&
+        lastProcessError &&
+        filePath.endsWith('package.json') &&
+        filePath === path.join(this.context.config.rootDirectory, 'package.json')
+      ) {
+        // Root level package.json modified, an unresolved resolved could have been npm installed?
+        lastProcessError = null
+        configChunks.forEach(chunk => processChunk(chunk, true))
+      }
     }
 
     queue.onIdle(async () => {
@@ -358,17 +372,23 @@ export default class Master implements PundleWorker {
 
       try {
         const locks = new Set()
-        await Promise.all(
-          currentChangedVals.map(request =>
-            this.transformFileTree({
-              job,
-              locks,
-              request,
-              tickCallback,
-              changedImports: currentChanged,
-            }),
-          ),
-        )
+        lastProcessError = null
+        try {
+          await Promise.all(
+            currentChangedVals.map(request =>
+              this.transformFileTree({
+                job,
+                locks,
+                request,
+                tickCallback,
+                changedImports: currentChanged,
+              }),
+            ),
+          )
+        } catch (error) {
+          lastProcessError = error
+          throw error
+        }
         queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(error => this.report(error))
       } catch (error) {
         this.report(error)

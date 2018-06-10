@@ -20,7 +20,6 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 - ESlint to lint files
 - load .graphql files?
 - enforce case sensitivity?
-- fix for https://github.com/facebook/create-react-app/issues/186 ?
 - FileSizeReporter (or https://github.com/webpack-contrib/webpack-bundle-analyzer?)
 
 ## Features Included
