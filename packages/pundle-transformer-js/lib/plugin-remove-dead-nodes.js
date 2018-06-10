@@ -29,11 +29,15 @@ function processBooleanConditional(path: $FlowFixMe) {
       return
     }
     consequent.body = []
+    if (!alternate) {
+      path.remove()
+      return
+    }
     if (t.isIfStatement(alternate)) {
       visitIfNode(alternate)
     } else if (t.isBlockStatement(alternate)) {
       path.replaceWithMultiple(alternate.body)
-    } else if (t.isExpressionStatement(alternate)) {
+    } else {
       path.replaceWith(alternate)
     }
   }
