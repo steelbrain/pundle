@@ -19,8 +19,7 @@ import {
 } from 'pundle-api'
 
 import WorkerDelegate from '../worker/delegate'
-import type { WatchOptions, InternalChangedFiles as ChangedFiles, InternalWatcherResult as WatcherResult } from '../types'
-import startWatching from './startWatching'
+import type { InternalChangedFiles as ChangedFiles } from '../types'
 
 type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed) => Promise<void>
 
@@ -231,9 +230,5 @@ export default class Master implements PundleWorker {
   }
   async report(issue: any): Promise<void> {
     await this.context.invokeIssueReporters(this, issue)
-  }
-  // Dangerous territory beyond this point. May God help us all
-  async watch(options: WatchOptions = {}): Promise<WatcherResult> {
-    return startWatching({ ...options, master: this })
   }
 }

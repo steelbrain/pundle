@@ -11,6 +11,7 @@ async function main() {
       directory: path.dirname(__dirname),
       publicPath: '/pundle',
       hmr: true,
+      lazy: true,
     }),
   )
   await new Promise(function(resolve) {

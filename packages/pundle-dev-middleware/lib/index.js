@@ -6,7 +6,7 @@ import invariant from 'assert'
 import pick from 'lodash/pick'
 import { Router } from 'express'
 
-import getPundle, { type Master } from 'pundle-core'
+import getPundle, { getWatcher, type Master } from 'pundle-core'
 import { getChunk, getUniqueHash, type Job, type ImportResolved } from 'pundle-api'
 
 import { getOutputFormats, getChunksAffectedByImports } from './helpers'
@@ -130,7 +130,8 @@ export default async function getPundleDevMiddleware(options: Payload) {
     return generated
   }
 
-  const { queue, job, initialCompile } = await master.watch({
+  const { queue, job, initialCompile } = await getWatcher({
+    pundle: master,
     async generate({ changed }) {
       changed.forEach(fileImport => {
         filesChanged.add(fileImport)

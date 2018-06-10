@@ -1,13 +1,13 @@
 import path from 'path'
-import getPundle from 'pundle-core'
+import getPundle, { getWatcher } from 'pundle-core'
 
 async function main() {
   const pundle = await getPundle({
     directory: path.dirname(__dirname),
   })
   console.time('execute')
-  await pundle.watch({
-    adapter: 'chokidar',
+  await getWatcher({
+    pundle,
     tick({ newFile }) {
       console.log('ticked', newFile.filePath)
     },

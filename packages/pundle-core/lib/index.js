@@ -4,6 +4,7 @@ import { Context } from 'pundle-api'
 import loadConfig, { type Config } from 'pundle-core-load-config'
 
 import Master from './master'
+import getWatcher from './watcher'
 import { CONFIG_FILE_NAME } from './constants'
 
 export async function getPundleConfig({
@@ -43,4 +44,5 @@ export default async function getPundle({
   await master.spawnWorkers()
   return master
 }
+export { getWatcher }
 export type { Master }

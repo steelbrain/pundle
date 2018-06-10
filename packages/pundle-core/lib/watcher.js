@@ -4,28 +4,44 @@ import path from 'path'
 import pMap from 'p-map'
 import PromiseQueue from 'sb-promise-queue'
 import differenceBy from 'lodash/differenceBy'
-import { Job, getChunk, getFileKey, getChunkKey, type Chunk, type ImportResolved, type ImportTransformed } from 'pundle-api'
+import {
+  Job,
+  getChunk,
+  getFileKey,
+  getChunkKey,
+  type Chunk,
+  type Context,
+  type ImportResolved,
+  type ImportTransformed,
+} from 'pundle-api'
 
-import getWatcher from '../watcher'
+import getFileWatcher from './file-watcher'
 
-import type Master from './'
-import type { WatchOptions, InternalChangedFiles as ChangedFiles, InternalWatcherResult as WatcherResult } from '../types'
+import type Master from './master'
+import type { WatchOptions, InternalChangedFiles as ChangedFiles } from './types'
 
-export default async function startWatching({
+// Dangerous territory beyond this point. May God help us all
+export default async function getWatcher({
   adapter = 'nsfw',
   tick,
   generate,
-  master,
-}: WatchOptions & { master: Master } = {}): Promise<WatcherResult> {
+  pundle,
+}: WatchOptions & { pundle: Master } = {}): Promise<{
+  job: Job,
+  queue: Object,
+  context: Context,
+  initialCompile(): Promise<void>,
+  dispose(): void,
+}> {
   const job = new Job()
-  const { context } = master
+  const { context } = pundle
   const queue = new PromiseQueue()
   let lastProcessError = null
   let initialCompilePromise = null
 
   const configChunks = (await Promise.all(
     context.config.entry.map(entry =>
-      master.resolve({
+      pundle.resolve({
         request: entry,
         requestFile: null,
         ignoredResolvers: [],
@@ -73,7 +89,7 @@ export default async function startWatching({
         tick({ context, job, oldFile, newFile })
       }
     } catch (error) {
-      await master.report(error)
+      await pundle.report(error)
     }
   }
 
@@ -147,7 +163,7 @@ export default async function startWatching({
       try {
         await Promise.all(
           currentChangedVals.map(request =>
-            master.transformFileTree({
+            pundle.transformFileTree({
               job,
               locks,
               request,
@@ -160,14 +176,14 @@ export default async function startWatching({
         lastProcessError = error
         throw error
       }
-      queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(error => master.report(error))
+      queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(error => pundle.report(error))
     } catch (error) {
-      master.report(error)
+      pundle.report(error)
     }
   })
 
-  const watcher = getWatcher(adapter, context.config.rootDirectory, (...args) => {
-    queue.add(() => onChange(...args)).catch(error => master.report(error))
+  const watcher = getFileWatcher(adapter, context.config.rootDirectory, (...args) => {
+    queue.add(() => onChange(...args)).catch(error => pundle.report(error))
   })
 
   await watcher.watch()
@@ -179,7 +195,7 @@ export default async function startWatching({
     initialCompile: () => {
       if (!initialCompilePromise) {
         initialCompilePromise = pMap(configChunks, chunk =>
-          master.transformChunk({
+          pundle.transformChunk({
             job,
             chunk,
             locks: new Set(),
