@@ -4,7 +4,6 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Top Priority
 
-- Boot from cache
 - Chunk minifieirs for HTML / CSS / JS
 - CLI
 - visualize dependency file size
