@@ -34,6 +34,16 @@ export default async function validateAndTransformConfig({
 
   const faults = []
 
+  if (typeof config.cache !== 'undefined') {
+    if (config.cache !== false && !(config.cache || typeof config.cache === 'object')) {
+      faults.push(`config.cache must be false or an object`)
+    } else if (config.cache && config.cache.rootDirectory) {
+      if (typeof config.cache.rootDirectory !== 'string') {
+        faults.push(`config.cache.rootDirectory must be a valid string`)
+      }
+    }
+  }
+
   if (config.entry) {
     if (Array.isArray(config.entry)) {
       if (!config.entry.every(item => typeof item === 'string' && item)) {

@@ -1,5 +1,8 @@
 // @flow
 
+import os from 'os'
+import path from 'path'
+
 import { PundleError, type Context } from 'pundle-api'
 import type { Config, AcceptedConfig } from './types'
 import readConfigFile from './readConfigFile'
@@ -20,6 +23,10 @@ export default async function loadConfig(context: Context): Promise<Config> {
   }
 
   const config = {
+    cache: {
+      enabled: false,
+      rootDirectory: path.join(os.homedir(), '.pundle'),
+    },
     entry: [],
     rootDirectory: fileConfig.rootDirectory,
     output: {
@@ -27,6 +34,20 @@ export default async function loadConfig(context: Context): Promise<Config> {
       rootDirectory: '',
     },
     components: [],
+  }
+  if (typeof fileConfig.cache !== 'undefined') {
+    if (fileConfig.cache === false) {
+      config.cache.enabled = false
+    } else {
+      Object.assign(config.cache, fileConfig.cache)
+    }
+  }
+  if (typeof inlineConfig.cache !== 'undefined') {
+    if (inlineConfig.cache === false) {
+      config.cache.enabled = false
+    } else {
+      Object.assign(config.cache, inlineConfig.cache)
+    }
   }
   if (inlineConfig.entry) {
     config.entry = config.entry.concat(inlineConfig.entry)
