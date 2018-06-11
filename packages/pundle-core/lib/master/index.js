@@ -5,7 +5,6 @@ import pMap from 'p-map'
 import promiseDefer from 'promise.defer'
 import {
   Job,
-  PundleError,
   getChunk,
   getFileKey,
   getChunkKey,
@@ -18,18 +17,21 @@ import {
   type ChunksGenerated,
 } from 'pundle-api'
 
+import Cache from '../cache'
 import WorkerDelegate from '../worker/delegate'
 import type { InternalChangedFiles as ChangedFiles } from '../types'
 
 type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed) => Promise<void>
 
 export default class Master implements PundleWorker {
+  cache: Cache
   context: Context
   resolverWorker: WorkerDelegate
   transformWorkers: Array<WorkerDelegate>
   transformQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>
 
   constructor(context: Context) {
+    this.cache = new Cache(context)
     this.context = context
     this.transformQueue = []
 
@@ -51,22 +53,19 @@ export default class Master implements PundleWorker {
   getAllWorkers(): Array<WorkerDelegate> {
     return [this.resolverWorker].concat(this.transformWorkers)
   }
-  async spawnWorkers() {
-    try {
-      await Promise.all(
-        this.getAllWorkers().map(async worker => {
-          if (worker.isAlive()) return
-          try {
-            await worker.spawn()
-          } catch (error) {
-            worker.dispose()
-            throw error
-          }
-        }),
-      )
-    } catch (error) {
-      throw new PundleError('DAEMON', 'WORKER_CRASHED', `Worker crashed during initial spawn: ${error.message}`)
-    }
+  async initialize() {
+    await Promise.all([
+      this.cache.load(),
+      ...this.getAllWorkers().map(async worker => {
+        if (worker.isAlive()) return
+        try {
+          await worker.spawn()
+        } catch (error) {
+          worker.dispose()
+          throw error
+        }
+      }),
+    ])
   }
   dispose() {
     this.getAllWorkers().forEach(function(worker) {

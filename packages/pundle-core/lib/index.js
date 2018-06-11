@@ -41,7 +41,7 @@ export async function getPundle({
   })
   context.config = await loadConfig(context)
   const master = new Master(context)
-  await master.spawnWorkers()
+  await master.initialize()
   return master
 }
 export { getWatcher }

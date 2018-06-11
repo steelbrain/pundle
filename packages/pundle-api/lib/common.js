@@ -10,6 +10,13 @@ import type { Loc, Chunk, ImportResolved } from './types'
 
 export const NEWLINE_REGEXP = /\r\n|[\n\r\u2028\u2029]/
 
+export function getStringHash(str: string): string {
+  return new Imurmurhash()
+    .hash(str)
+    .result()
+    .toString()
+}
+
 export function getUniqueHash(item: ImportResolved | Chunk): string {
   let stringKey = ''
   if (typeof item.filePath === 'string') {
