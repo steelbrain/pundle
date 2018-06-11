@@ -76,7 +76,7 @@ export default class WorkerDelegate {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 
-    const result = bridge.send('resolve', processPayload(request))
+    const result = await bridge.send('resolve', processPayload(request))
     return processReceived(result)
   }
   async spawn() {
