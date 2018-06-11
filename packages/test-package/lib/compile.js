@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import mkdirp from 'mkdirp'
 import { getPundle } from 'pundle-core'
 
 async function main() {
@@ -16,7 +17,9 @@ async function main() {
       // Ignore this one
       return
     }
-    fs.writeFileSync(path.join(result.directory, filePath), output.contents)
+    const outputPath = path.join(result.directory, filePath)
+    mkdirp.sync(path.dirname(outputPath))
+    fs.writeFileSync(outputPath, output.contents)
   })
 }
 main().catch(console.error)

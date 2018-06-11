@@ -11,6 +11,7 @@
     "cssnano": "^3.10.0",
     "express": "^4.16.3",
     "less": "^3.0.4",
+    "mkdirp": "^0.5.1",
     "node-sass": "^4.9.0",
     "pundle-chunk-generator-html": "0.0.0",
     "pundle-chunk-generator-js": "0.0.0",
