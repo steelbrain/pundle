@@ -45,17 +45,22 @@ export default class Cache {
 
     let stats
     try {
-      stats = fs.stat(fileImport.filePath)
+      stats = await fs.stat(fileImport.filePath)
     } catch (_) {
       return null
     }
 
     const fileKey = getFileKey(fileImport)
-    const cachedVal = adapter.get(`posts.${fileKey}`).value()
+    const cachedVal = adapter.get(`files.${fileKey}`).value()
     if (!cachedVal) return null
     const mtime = parseInt(stats.mtime / 1000, 10)
     if (mtime !== cachedVal.mtime) return null
-    return cachedVal.value
+
+    const fileTransformed = cachedVal.value
+    if (typeof fileTransformed.contents === 'object' && fileTransformed.contents) {
+      fileTransformed.contents = Buffer.from(fileTransformed.contents)
+    }
+    return fileTransformed
   }
   setFile(fileImport: ImportResolved, file: ImportTransformed): void {
     const { adapter } = this
@@ -64,7 +69,7 @@ export default class Cache {
     fs.stat(fileImport.filePath).then(stats => {
       const mtime = parseInt(stats.mtime / 1000, 10)
       const fileKey = getFileKey(fileImport)
-      adapter.set(`posts.${fileKey}`, { mtime, value: file }).value()
+      adapter.set(`files.${fileKey}`, { mtime, value: file }).value()
       this.write()
     })
   }

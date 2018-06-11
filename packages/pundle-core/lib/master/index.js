@@ -175,6 +175,7 @@ export default class Master implements PundleWorker {
       newFile = oldFile
     } else if (cachedFile && !fileChanged) {
       newFile = cachedFile
+      job.files.set(lockKey, newFile)
     } else {
       changedImports.delete(lockKey)
       newFile = await this.transform(request)
