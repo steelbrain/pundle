@@ -12,6 +12,7 @@ import type {
   ChunkGenerated,
   ComponentChunkTransformerResult,
 } from 'pundle-api'
+import { processReceived } from '../helpers'
 
 type Payload = {|
   // eslint-disable-next-line no-use-before-define
@@ -47,7 +48,10 @@ export default class WorkerDelegate {
 
     this.busyProcessing++
     try {
-      return await bridge.send('transform', request)
+      const result = await bridge.send('transform', request)
+      return processReceived(result, {
+        buffers: ['contents'],
+      })
     } finally {
       this.busyProcessing--
       this.processQueue()
@@ -59,7 +63,10 @@ export default class WorkerDelegate {
 
     this.busyProcessing++
     try {
-      return await bridge.send('transformChunkGenerated', chunkGenerated)
+      const result = await bridge.send('transformChunkGenerated', chunkGenerated)
+      return processReceived(result, {
+        buffers: ['contents', 'sourceMap.contents'],
+      })
     } finally {
       this.busyProcessing--
       this.processQueue()
