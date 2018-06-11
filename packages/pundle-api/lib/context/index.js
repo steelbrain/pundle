@@ -269,14 +269,13 @@ export default class Context {
         )
       }
 
-      generated.forEach(item =>
-        everything.push({
-          chunk,
-          format: item.format,
-          contents: item.contents,
-          filePath: this.getPublicPath({ ...chunk, format: item.format }),
-        }),
-      )
+      everything.push({
+        chunk,
+        format: generated.format,
+        contents: generated.contents,
+        filePath: this.getPublicPath({ ...chunk, format: generated.format }),
+        sourceMap: generated.sourceMap || null,
+      })
     })
 
     return {

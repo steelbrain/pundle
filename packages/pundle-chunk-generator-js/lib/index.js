@@ -27,8 +27,8 @@ function createComponent() {
       })
       const { files } = Helpers.getContentForOutput(chunk, job)
 
-      const output = [';(function(){', wrapper]
-      let sourceMapOffset = Helpers.getLinesCount(output.join('\n')) + 1
+      const contents = [';(function(){', wrapper]
+      let sourceMapOffset = Helpers.getLinesCount(contents.join('\n')) + 1
 
       for (const file of files) {
         const fileContents = `sbPundleModuleRegister(${JSON.stringify(
@@ -40,29 +40,28 @@ function createComponent() {
           }
           sourceMapOffset += Helpers.getLinesCount(fileContents)
         }
-        output.push(fileContents)
+        contents.push(fileContents)
       }
       if (chunk.entry) {
         const chunkEntryId = getUniqueHash(chunk)
-        output.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)
+        contents.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)
       }
-      output.push(`sbPundleChunkLoaded(${JSON.stringify(context.getPublicPath(chunk))});`)
+      contents.push(`sbPundleChunkLoaded(${JSON.stringify(context.getPublicPath(chunk))});`)
 
-      output.push('})();')
+      contents.push('})();')
 
-      const outputs = []
+      const output = {
+        contents: ('': any),
+        sourceMap: (null: any),
+        format: chunk.format,
+      }
 
       if (sourceMapPath) {
-        outputs.push({ contents: JSON.stringify(sourceMap.toJSON()), format: `${chunk.format}.map` })
-        output.push(`//# sourceMappingURL=${sourceMapPath}`)
+        output.sourceMap = { contents: JSON.stringify(sourceMap.toJSON()) }
+        contents.push(`//# sourceMappingURL=${sourceMapPath}`)
       }
-
-      outputs.push({
-        format: chunk.format,
-        contents: output.join('\n'),
-      })
-
-      return outputs
+      output.contents = contents.join('\n')
+      return output
     },
   })
 }

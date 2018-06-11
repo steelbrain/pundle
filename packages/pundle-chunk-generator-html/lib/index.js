@@ -56,7 +56,7 @@ function createComponent() {
         return chunksToWrite.map(item => `${prefix}${getChunkImportLine(item)}`).join('\n')
       })
 
-      return [{ format: chunk.format, contents: transformedContents }]
+      return { format: chunk.format, contents: transformedContents }
     },
   })
 }

@@ -57,6 +57,10 @@ export type ChunkGenerated = {|
   format: string,
   contents: string | Buffer,
   filePath: string | false,
+  sourceMap?: {
+    contents: string | Buffer,
+    filePath: string | false,
+  },
 |}
 export type ChunksGenerated = {
   directory: string,
@@ -133,10 +137,13 @@ export type ComponentJobTransformerCallback = (params: { context: Context, worke
   | ?ComponentJobTransformerResult
 export type ComponentJobTransformer = Component<'job-transformer', ComponentJobTransformerCallback>
 
-export type ComponentChunkGeneratorResult = Array<{
+export type ComponentChunkGeneratorResult = {
   format: string,
   contents: string | Buffer,
-}>
+  sourceMap?: {
+    contents: string | Buffer,
+  },
+}
 export type ComponentChunkGeneratorCallback = (params: {
   job: Job,
   chunk: Chunk,

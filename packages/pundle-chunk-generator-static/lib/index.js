@@ -17,7 +17,11 @@ function createComponent({ formats }: { formats: Array<string> }) {
       invariant(file, 'Entry for chunk not found in generator-static')
 
       let { contents } = file
-      const outputs = []
+      const output = {
+        contents: ('': any),
+        sourceMap: (null: any),
+        format: chunk.format,
+      }
       const sourceMapUrl = context.getPublicPath({ ...chunk, format: 'css.map' })
 
       if (sourceMapUrl && file.sourceMap) {
@@ -26,15 +30,14 @@ function createComponent({ formats }: { formats: Array<string> }) {
             typeof contents === 'string' ? contents : contents.toString()
           }\n/*# sourceMappingURL=${sourceMapUrl} */`
         }
-        outputs.push({ contents: JSON.stringify(file.sourceMap), format: `${chunk.format}.map` })
+        output.sourceMap = {
+          contents: JSON.stringify(file.sourceMap),
+        }
       }
 
-      outputs.push({
-        format: chunk.format,
-        contents,
-      })
+      output.contents = contents
 
-      return outputs
+      return output
     },
   })
 }

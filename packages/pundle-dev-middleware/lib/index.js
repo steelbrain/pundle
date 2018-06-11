@@ -55,9 +55,12 @@ async function getPundleDevMiddleware(options: Payload) {
 
   async function regenerateUrlCache({ chunks, job }) {
     const { outputs } = await pundle.generate(job, chunks)
-    outputs.forEach(({ filePath, contents }) => {
+    outputs.forEach(({ filePath, contents, sourceMap }) => {
       if (filePath) {
         urlToContents[filePath] = contents
+        if (sourceMap) {
+          urlToContents[`${filePath}.map`] = sourceMap.contents
+        }
       }
     })
   }
@@ -79,23 +82,24 @@ async function getPundleDevMiddleware(options: Payload) {
     })
     const hmrChunks: $FlowFixMe = Object.values(hmrChunksByFormat)
     const { outputs } = await pundle.generate(job, hmrChunks)
-    outputs.forEach(({ filePath, contents }) => {
+    outputs.forEach(({ filePath, contents, sourceMap }) => {
       if (filePath) {
         urlToHMRContents[filePath] = contents
+        if (sourceMap) {
+          urlToHMRContents[`${filePath}.map`] = sourceMap.contents
+        }
       }
     })
     const clientInfo = {
       type: 'update',
-      paths: outputs
-        .filter(item => !item.format.endsWith('.map'))
-        .map(item => ({ url: item.filePath, format: item.format })),
+      paths: outputs.map(item => ({ url: item.filePath, format: item.format })),
       changedFiles: changed,
       changedModules: changed.map(item => getUniqueHash(item)),
     }
     hmrConnectedClients.forEach(client => {
       client.write(`${JSON.stringify(clientInfo)}`)
     })
-    console.log(`Writing ${clientInfo.paths.length} chunks to ${hmrConnectedClients.size} clients`)
+    console.log(`Writing ${outputs.length} chunks to ${hmrConnectedClients.size} clients`)
 
     // Remove HMR contents from memory after 60 seconds
     setTimeout(() => {
