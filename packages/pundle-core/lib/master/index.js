@@ -157,6 +157,7 @@ export default class Master implements PundleWorker {
     changedImports?: ChangedFiles,
   }): Promise<void> {
     const lockKey = getFileKey(request)
+    const fileChanged = changedImports.has(lockKey)
     const oldFile = job.files.get(lockKey)
 
     if (locks.has(lockKey)) {
@@ -164,13 +165,21 @@ export default class Master implements PundleWorker {
     }
     locks.add(lockKey)
 
+    let cachedFile = null
+    if (!fileChanged) {
+      cachedFile = await this.cache.getFile(request)
+    }
+
     let newFile
-    if (oldFile && !changedImports.has(lockKey)) {
+    if (oldFile && !fileChanged) {
       newFile = oldFile
+    } else if (cachedFile && !fileChanged) {
+      newFile = cachedFile
     } else {
       changedImports.delete(lockKey)
       newFile = await this.transform(request)
       job.files.set(lockKey, newFile)
+      this.cache.setFile(request, newFile)
     }
 
     await Promise.all([
@@ -193,7 +202,8 @@ export default class Master implements PundleWorker {
         }),
       ),
     ])
-    if (oldFile !== newFile && tickCallback) {
+
+    if (oldFile !== newFile && cachedFile !== newFile && tickCallback) {
       await tickCallback(oldFile, newFile)
     }
   }
