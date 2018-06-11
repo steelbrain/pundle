@@ -15,6 +15,8 @@ import {
   type ImportRequest,
   type ImportTransformed,
   type ChunksGenerated,
+  type ChunkGenerated,
+  type ComponentChunkTransformerResult,
 } from 'pundle-api'
 
 import Cache from '../cache'
@@ -223,6 +225,17 @@ export default class Master implements PundleWorker {
     if (oldFile !== newFile && cachedFile !== newFile && tickCallback) {
       await tickCallback(oldFile, newFile)
     }
+  }
+  async transformChunkGenerated(chunkGenerated: ChunkGenerated): Promise<ComponentChunkTransformerResult> {
+    const result = await this._queuedProcess(worker => worker.transformChunkGenerated(chunkGenerated))
+    // Node IPC converts Buffer to array of ints
+    if (typeof result.contents === 'object' && result.contents) {
+      return {
+        ...result,
+        contents: Buffer.from(result.contents),
+      }
+    }
+    return result
   }
   // PundleWorker methods below
   async resolve(request: ImportRequest): Promise<ImportResolved> {

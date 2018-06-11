@@ -4,7 +4,14 @@ import path from 'path'
 import invariant from 'assert'
 import Communication from 'sb-communication'
 import { fork, type ChildProcess } from 'child_process'
-import type { Context, ImportResolved, ImportTransformed, ImportRequest } from 'pundle-api'
+import type {
+  Context,
+  ImportResolved,
+  ImportTransformed,
+  ImportRequest,
+  ChunkGenerated,
+  ComponentChunkTransformerResult,
+} from 'pundle-api'
 
 type Payload = {|
   // eslint-disable-next-line no-use-before-define
@@ -41,6 +48,18 @@ export default class WorkerDelegate {
     this.busyProcessing++
     try {
       return await bridge.send('transform', request)
+    } finally {
+      this.busyProcessing--
+      this.processQueue()
+    }
+  }
+  async transformChunkGenerated(chunkGenerated: ChunkGenerated): Promise<ComponentChunkTransformerResult> {
+    const { bridge } = this
+    invariant(bridge, 'Cannot send job to dead worker')
+
+    this.busyProcessing++
+    try {
+      return await bridge.send('transformChunkGenerated', chunkGenerated)
     } finally {
       this.busyProcessing--
       this.processQueue()

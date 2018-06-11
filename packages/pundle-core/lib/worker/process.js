@@ -33,4 +33,5 @@ communication.on('init', async function(options) {
 init.promise.then((worker: Worker) => {
   communication.on('resolve', payload => worker.resolveLocally(payload))
   communication.on('transform', payload => worker.transformFile(payload))
+  communication.on('transformChunkGenerated', payload => worker.transformChunkGenerated(payload))
 })

@@ -1,7 +1,15 @@
 // @flow
 
 import fs from 'sb-fs'
-import type { PundleWorker, Context, ImportResolved, ImportRequest, ImportTransformed } from 'pundle-api'
+import type {
+  PundleWorker,
+  Context,
+  ImportResolved,
+  ImportRequest,
+  ImportTransformed,
+  ChunkGenerated,
+  ComponentChunkTransformerResult,
+} from 'pundle-api'
 import type Communication from 'sb-communication'
 
 export default class Worker implements PundleWorker {
@@ -14,6 +22,9 @@ export default class Worker implements PundleWorker {
   }
   async resolveLocally(request: ImportRequest): Promise<ImportResolved> {
     return this.context.invokeFileResolvers(this, request)
+  }
+  async transformChunkGenerated(chunkGenerated: ChunkGenerated): Promise<ComponentChunkTransformerResult> {
+    return this.context.invokeChunkTransformers(this, chunkGenerated)
   }
   // PundleWorker methods below
   async resolve(payload: ImportRequest) {
