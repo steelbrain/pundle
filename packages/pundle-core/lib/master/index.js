@@ -113,7 +113,13 @@ export default class Master implements PundleWorker {
     return this.generate(await this.transformJob(job))
   }
   async generate(job: Job, chunks: Array<Chunk> = Array.from(job.chunks.values())): Promise<ChunksGenerated> {
-    return this.context.invokeChunkGenerators(this, { job, chunks })
+    const { directory, outputs } = await this.context.invokeChunkGenerators(this, { job, chunks })
+    const transformedOutputs = await pMap(outputs, async output => ({
+      ...output,
+      contents: (await this.transformChunkGenerated(output)).contents,
+    }))
+
+    return { directory, outputs: transformedOutputs }
   }
   async transformJob(job: Job): Promise<Job> {
     return this.context.invokeJobTransformers(this, { job })
