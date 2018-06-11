@@ -93,18 +93,16 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
               },
               ...(transformCore
                 ? {
-                    Identifier: {
-                      exit(path) {
-                        const { node } = path
-                        if (
-                          INJECTIONS_NAMES.has(node.name) &&
-                          !injectionNames.has(node.name) &&
-                          path.isReferencedIdentifier() &&
-                          !path.scope.hasBinding(node.name)
-                        ) {
-                          injectionNames.add(node.name)
-                        }
-                      },
+                    Identifier(path) {
+                      const { node } = path
+                      if (
+                        INJECTIONS_NAMES.has(node.name) &&
+                        !injectionNames.has(node.name) &&
+                        path.isReferencedIdentifier() &&
+                        !path.scope.hasBinding(node.name)
+                      ) {
+                        injectionNames.add(node.name)
+                      }
                     },
                   }
                 : {}),
