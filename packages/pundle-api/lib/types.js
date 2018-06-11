@@ -52,14 +52,15 @@ export type TransformResult = {|
   chunks: Array<Chunk>,
   imports: Array<ImportResolved>,
 |}
+export type ChunkGenerated = {
+  chunk: Chunk,
+  format: string,
+  contents: string | Buffer,
+  filePath: string | false,
+}
 export type ChunksGenerated = {
   directory: string,
-  outputs: Array<{
-    chunk: Chunk,
-    format: string,
-    contents: string | Buffer,
-    filePath: string | false,
-  }>,
+  outputs: Array<ChunkGenerated>,
 }
 
 export interface PundleWorker {
@@ -68,7 +69,13 @@ export interface PundleWorker {
   report(issue: any): Promise<void>;
 }
 
-export type ComponentType = 'issue-reporter' | 'file-resolver' | 'file-transformer' | 'job-transformer' | 'chunk-generator'
+export type ComponentType =
+  | 'issue-reporter'
+  | 'file-resolver'
+  | 'file-transformer'
+  | 'job-transformer'
+  | 'chunk-generator'
+  | 'chunk-transformer'
 export type Component<T1: ComponentType, T2> = {|
   name: string,
   version: string,
@@ -137,3 +144,14 @@ export type ComponentChunkGeneratorCallback = (params: {
   worker: PundleWorker,
 }) => Promise<?ComponentChunkGeneratorResult> | ?ComponentChunkGeneratorResult
 export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChunkGeneratorCallback>
+
+export type ComponentChunkTransformerResult = {
+  contents: string | Buffer,
+}
+export type ComponentChunkTransformerCallback = (
+  params: ChunkGenerated & {
+    context: Context,
+    worker: PundleWorker,
+  },
+) => Promise<?ComponentChunkTransformerResult> | ?ComponentChunkTransformerResult
+export type ComponentChunkTransformer = Component<'chunk-transformer', ComponentChunkTransformerCallback>

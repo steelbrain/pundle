@@ -15,6 +15,8 @@ import type {
   ComponentJobTransformer,
   ComponentChunkGeneratorCallback,
   ComponentChunkGenerator,
+  ComponentChunkTransformerCallback,
+  ComponentChunkTransformer,
 } from './types'
 
 const apiVersion = parseInt(manifest.version.split('.').shift(), 10)
@@ -91,4 +93,8 @@ export function createJobTransformer(payload: Payload<ComponentJobTransformerCal
 
 export function createChunkGenerator(payload: Payload<ComponentChunkGeneratorCallback>): ComponentChunkGenerator {
   return createComponent('chunk-generator', payload)
+}
+
+export function createChunkTransformer(payload: Payload<ComponentChunkTransformerCallback>): ComponentChunkTransformer {
+  return createComponent('chunk-transformer', payload)
 }
