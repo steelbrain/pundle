@@ -6,7 +6,7 @@ import Communication from 'sb-communication'
 import loadConfig from 'pundle-core-load-config'
 
 import Worker from './'
-import { processReceived } from '../helpers'
+import { processPayload, processReceived } from '../helpers'
 
 process.title = 'pundle-worker'
 
@@ -32,13 +32,15 @@ communication.on('init', async function(options) {
   return 'ok'
 })
 init.promise.then((worker: Worker) => {
-  communication.on('resolve', payload => worker.resolveLocally(payload))
-  communication.on('transform', payload => worker.transformFile(payload))
+  communication.on('resolve', payload => worker.resolveLocally(processReceived(payload)).then(processPayload))
+  communication.on('transform', payload => worker.transformFile(processReceived(payload)).then(processPayload))
   communication.on('transformChunkGenerated', payload =>
-    worker.transformChunkGenerated(
-      processReceived(payload, {
-        buffers: ['contents', 'sourceMap.contents'],
-      }),
-    ),
+    worker
+      .transformChunkGenerated(
+        processReceived(payload, {
+          buffers: ['contents', 'sourceMap.contents'],
+        }),
+      )
+      .then(processPayload),
   )
 })

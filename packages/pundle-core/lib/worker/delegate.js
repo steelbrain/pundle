@@ -12,7 +12,7 @@ import type {
   ChunkGenerated,
   ComponentChunkTransformerResult,
 } from 'pundle-api'
-import { processReceived } from '../helpers'
+import { processPayload, processReceived } from '../helpers'
 
 type Payload = {|
   // eslint-disable-next-line no-use-before-define
@@ -48,7 +48,7 @@ export default class WorkerDelegate {
 
     this.busyProcessing++
     try {
-      const result = await bridge.send('transform', request)
+      const result = await bridge.send('transform', processPayload(request))
       return processReceived(result, {
         buffers: ['contents'],
       })
@@ -63,7 +63,7 @@ export default class WorkerDelegate {
 
     this.busyProcessing++
     try {
-      const result = await bridge.send('transformChunkGenerated', chunkGenerated)
+      const result = await bridge.send('transformChunkGenerated', processPayload(chunkGenerated))
       return processReceived(result, {
         buffers: ['contents', 'sourceMap.contents'],
       })
@@ -76,7 +76,8 @@ export default class WorkerDelegate {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 
-    return bridge.send('resolve', request)
+    const result = bridge.send('resolve', processPayload(request))
+    return processReceived(result)
   }
   async spawn() {
     if (this.isAlive()) {
