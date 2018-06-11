@@ -9,7 +9,7 @@ import { createFileTransformer, getChunk, getUniqueHash } from 'pundle-api'
 
 import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
 
-import { pluginBefore, pluginAfter } from './plugin-remove-dead-nodes'
+import pluginRemoveDeadNodes from './plugin-remove-dead-nodes'
 import manifest from '../package.json'
 import { getName } from './helpers'
 
@@ -44,8 +44,7 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
         highlightCode: false,
         plugins: [
           pluginTransformNodeEnvInline,
-          pluginBefore,
-          pluginAfter,
+          pluginRemoveDeadNodes,
           {
             visitor: {
               ImportDeclaration({ node }) {
