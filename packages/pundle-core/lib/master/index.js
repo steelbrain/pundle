@@ -232,7 +232,14 @@ export default class Master implements PundleWorker {
       await tickCallback(oldFile, newFile)
     }
   }
-  async transformChunkGenerated(chunkGenerated: ChunkGenerated): Promise<ComponentChunkTransformerResult> {
+  async transformChunkGenerated(
+    chunkGenerated: ChunkGenerated,
+    threaded: boolean = false,
+  ): Promise<ComponentChunkTransformerResult> {
+    if (!threaded) {
+      return this.context.invokeChunkTransformers(this, chunkGenerated)
+    }
+
     const result = await this._queuedProcess(worker => worker.transformChunkGenerated(chunkGenerated))
     // Node IPC converts Buffer to array of ints
     if (typeof result.contents === 'object' && result.contents) {
