@@ -7,8 +7,9 @@ import { fork, type ChildProcess } from 'child_process'
 import type { Context, ImportResolved, ImportTransformed, ImportRequest } from 'pundle-api'
 
 type Payload = {|
+  // eslint-disable-next-line no-use-before-define
+  queue: Array<(worker: WorkerDelegate) => void>,
   context: Context,
-  transformQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>,
   handleResolve: (request: ImportRequest) => Promise<ImportResolved>,
 |}
 
@@ -25,10 +26,12 @@ export default class WorkerDelegate {
   isAlive(): boolean {
     return !!(this.handle && this.bridge)
   }
-  transformQueue(): void {
-    const queueItem = this.options.transformQueue.pop()
+  processQueue(): void {
+    if (this.busyProcessing > 0) return
+
+    const queueItem = this.options.queue.pop()
     if (queueItem) {
-      this.transform(queueItem.payload).then(queueItem.resolve, queueItem.reject)
+      queueItem(this)
     }
   }
   async transform(request: ImportResolved): Promise<ImportTransformed> {
@@ -40,7 +43,7 @@ export default class WorkerDelegate {
       return await bridge.send('transform', request)
     } finally {
       this.busyProcessing--
-      this.transformQueue()
+      this.processQueue()
     }
   }
   async resolve(request: ImportRequest): Promise<ImportResolved> {

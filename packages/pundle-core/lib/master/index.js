@@ -28,12 +28,12 @@ export default class Master implements PundleWorker {
   context: Context
   resolverWorker: WorkerDelegate
   transformWorkers: Array<WorkerDelegate>
-  transformQueue: Array<{| payload: ImportResolved, resolve: Function, reject: Function |}>
+  workersQueue: Array<(worker: WorkerDelegate) => void>
 
   constructor(context: Context) {
     this.cache = new Cache(context)
     this.context = context
-    this.transformQueue = []
+    this.workersQueue = []
 
     this.resolverWorker = this._createWorker()
     this.transformWorkers = os
@@ -45,13 +45,29 @@ export default class Master implements PundleWorker {
   }
   _createWorker(): WorkerDelegate {
     return new WorkerDelegate({
+      queue: this.workersQueue,
       context: this.context,
-      transformQueue: this.transformQueue,
       handleResolve: req => this.resolve(req),
     })
   }
   getAllWorkers(): Array<WorkerDelegate> {
     return [this.resolverWorker].concat(this.transformWorkers)
+  }
+  async _queuedProcess<T>(callback: (worker: WorkerDelegate) => Promise<T>): Promise<T> {
+    const currentWorker = this.transformWorkers.find(worker => worker.busyProcessing === 0)
+
+    let promise
+    if (currentWorker) {
+      promise = callback(currentWorker)
+    } else {
+      const { promise: deferredPromise, resolve, reject } = promiseDefer()
+      this.workersQueue.push(worker => {
+        callback(worker).then(resolve, reject)
+      })
+      promise = deferredPromise
+    }
+
+    return promise
   }
   async initialize() {
     await Promise.all([
@@ -213,21 +229,7 @@ export default class Master implements PundleWorker {
     return this.resolverWorker.resolve(request)
   }
   async transform(payload: ImportResolved): Promise<ImportTransformed> {
-    const currentWorker = this.transformWorkers.find(worker => worker.busyProcessing === 0)
-    let promise
-    if (currentWorker) {
-      promise = currentWorker.transform(payload)
-    } else {
-      const { promise: deferredPromise, resolve, reject } = promiseDefer()
-      this.transformQueue.push({
-        payload,
-        resolve,
-        reject,
-      })
-      promise = deferredPromise
-    }
-
-    const result = await promise
+    const result = await this._queuedProcess(worker => worker.transform(payload))
     // Node IPC converts Buffer to array of ints
     if (typeof result.contents === 'object' && result.contents) {
       return {
