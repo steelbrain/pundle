@@ -38,4 +38,6 @@ console.log('coffeescript', require('./test.coffee'))
 console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))
 console.log('photos inline', appendPhotoToBody(require('../photos/small-photo.png')))
 
-module.hot.accept()
+if (module.hot) {
+  module.hot.accept()
+}
