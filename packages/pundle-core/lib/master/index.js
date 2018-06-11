@@ -213,7 +213,7 @@ export default class Master implements PundleWorker {
     return this.resolverWorker.resolve(request)
   }
   async transform(payload: ImportResolved): Promise<ImportTransformed> {
-    const currentWorker = this.transformWorkers.find(worker => worker.busyTransforming === 0)
+    const currentWorker = this.transformWorkers.find(worker => worker.busyProcessing === 0)
     let promise
     if (currentWorker) {
       promise = currentWorker.transform(payload)

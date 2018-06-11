@@ -16,11 +16,11 @@ export default class WorkerDelegate {
   handle: ?ChildProcess
   bridge: ?Communication
   options: Payload
-  busyTransforming: number
+  busyProcessing: number
 
   constructor(options: Payload) {
     this.options = options
-    this.busyTransforming = 0
+    this.busyProcessing = 0
   }
   isAlive(): boolean {
     return !!(this.handle && this.bridge)
@@ -35,11 +35,11 @@ export default class WorkerDelegate {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 
-    this.busyTransforming++
+    this.busyProcessing++
     try {
       return await bridge.send('transform', request)
     } finally {
-      this.busyTransforming--
+      this.busyProcessing--
       this.transformQueue()
     }
   }
