@@ -59,3 +59,21 @@ export default {
     },
   },
 }
+
+export const pluginBefore = {
+  visitor: {
+    IfStatement: processBooleanConditional,
+    ConditionalExpression: processBooleanConditional,
+  },
+}
+
+export const pluginAfter = {
+  visitor: {
+    IfStatement: {
+      exit: processBooleanConditional,
+    },
+    ConditionalExpression: {
+      exit: processBooleanConditional,
+    },
+  },
+}
