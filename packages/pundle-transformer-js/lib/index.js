@@ -57,50 +57,54 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
                   }),
                 )
               },
-              CallExpression(path) {
-                const { node } = path
-                const { callee } = node
-                const [arg] = node.arguments
+              CallExpression: {
+                exit(path) {
+                  const { node } = path
+                  const { callee } = node
+                  const [arg] = node.arguments
 
-                if (!t.isStringLiteral(arg)) return
+                  if (!t.isStringLiteral(arg)) return
 
-                if (t.isImport(callee)) {
+                  if (t.isImport(callee)) {
+                    promises.push(
+                      resolve(arg.value, arg.loc).then(resolved => {
+                        const chunk = getChunk(resolved.format, null, null, [resolved])
+                        node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
+                        arg.value = context.getPublicPath(chunk)
+                        node.arguments.splice(1, 0, t.stringLiteral(getUniqueHash(resolved)))
+                        return addChunk(chunk)
+                      }),
+                    )
+                    return
+                  }
+
+                  if (!['require', 'require.resolve'].includes(getName(callee)) || path.scope.hasBinding('require')) {
+                    return
+                  }
+
+                  // Handling require + require.resolve
                   promises.push(
                     resolve(arg.value, arg.loc).then(resolved => {
-                      const chunk = getChunk(resolved.format, null, null, [resolved])
-                      node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
-                      arg.value = context.getPublicPath(chunk)
-                      node.arguments.splice(1, 0, t.stringLiteral(getUniqueHash(resolved)))
-                      return addChunk(chunk)
+                      arg.value = getUniqueHash(resolved)
+                      return addImport(resolved)
                     }),
                   )
-                  return
-                }
-
-                if (!['require', 'require.resolve'].includes(getName(callee)) || path.scope.hasBinding('require')) {
-                  return
-                }
-
-                // Handling require + require.resolve
-                promises.push(
-                  resolve(arg.value, arg.loc).then(resolved => {
-                    arg.value = getUniqueHash(resolved)
-                    return addImport(resolved)
-                  }),
-                )
+                },
               },
               ...(transformCore
                 ? {
-                    Identifier(path) {
-                      const { node } = path
-                      if (
-                        INJECTIONS_NAMES.has(node.name) &&
-                        !injectionNames.has(node.name) &&
-                        path.isReferencedIdentifier() &&
-                        !path.scope.hasBinding(node.name)
-                      ) {
-                        injectionNames.add(node.name)
-                      }
+                    Identifier: {
+                      exit(path) {
+                        const { node } = path
+                        if (
+                          INJECTIONS_NAMES.has(node.name) &&
+                          !injectionNames.has(node.name) &&
+                          path.isReferencedIdentifier() &&
+                          !path.scope.hasBinding(node.name)
+                        ) {
+                          injectionNames.add(node.name)
+                        }
+                      },
                     },
                   }
                 : {}),
