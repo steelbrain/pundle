@@ -194,7 +194,7 @@ export default class Master implements PundleWorker {
       job.files.set(lockKey, newFile)
     } else {
       changedImports.delete(lockKey)
-      newFile = await this.transform(request)
+      newFile = await this.transformFile(request)
       job.files.set(lockKey, newFile)
       this.cache.setFile(request, newFile)
     }
@@ -228,8 +228,8 @@ export default class Master implements PundleWorker {
   async resolve(request: ImportRequest): Promise<ImportResolved> {
     return this.resolverWorker.resolve(request)
   }
-  async transform(payload: ImportResolved): Promise<ImportTransformed> {
-    const result = await this._queuedProcess(worker => worker.transform(payload))
+  async transformFile(payload: ImportResolved): Promise<ImportTransformed> {
+    const result = await this._queuedProcess(worker => worker.transformFile(payload))
     // Node IPC converts Buffer to array of ints
     if (typeof result.contents === 'object' && result.contents) {
       return {

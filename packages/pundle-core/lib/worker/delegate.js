@@ -34,7 +34,7 @@ export default class WorkerDelegate {
       queueItem(this)
     }
   }
-  async transform(request: ImportResolved): Promise<ImportTransformed> {
+  async transformFile(request: ImportResolved): Promise<ImportTransformed> {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 

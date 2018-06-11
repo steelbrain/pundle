@@ -19,7 +19,7 @@ export default class Worker implements PundleWorker {
   async resolve(payload: ImportRequest) {
     return this.bridge.send('resolve', payload)
   }
-  async transform({ filePath, format }: ImportResolved): Promise<ImportTransformed> {
+  async transformFile({ filePath, format }: ImportResolved): Promise<ImportTransformed> {
     const transformed = await this.context.invokeFileTransformers(this, {
       format,
       filePath,

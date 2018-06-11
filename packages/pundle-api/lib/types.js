@@ -65,7 +65,7 @@ export type ChunksGenerated = {
 
 export interface PundleWorker {
   resolve(payload: ImportRequest): Promise<ImportResolved>;
-  transform(payload: ImportResolved): Promise<ImportTransformed>;
+  transformFile(payload: ImportResolved): Promise<ImportTransformed>;
   report(issue: any): Promise<void>;
 }
 
