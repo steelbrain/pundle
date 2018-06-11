@@ -22,6 +22,9 @@ import chunkGeneratorStatic from 'pundle-chunk-generator-static'
 import browserAliases from 'pundle-resolver-aliases-browser'
 
 export default {
+  cache: {
+    enabled: true,
+  },
   entry: ['./src', './index.html'],
   components: [
     cliReporter(),

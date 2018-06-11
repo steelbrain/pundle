@@ -32,14 +32,13 @@ export default class Cache {
         files: {},
       },
     })
-    const adapter = lowdb(fileAdapter)
-    await adapter.read()
 
-    this.adapter = adapter
+    this.adapter = await lowdb(fileAdapter)
   }
   getFile(key: string): ?ImportTransformed {
     const { adapter } = this
     if (!adapter) return null
+
     return adapter
       .get('posts')
       .get(key)
