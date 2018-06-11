@@ -82,7 +82,6 @@ export type Component<T1: ComponentType, T2> = {|
 
 export type ComponentIssueReporterCallback = (params: {
   context: Context,
-  worker: PundleWorker,
   issue: any,
 }) => void | Promise<void>
 export type ComponentIssueReporter = Component<'issue-reporter', ComponentIssueReporterCallback>

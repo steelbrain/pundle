@@ -33,6 +33,6 @@ export default class Worker implements PundleWorker {
     }
   }
   async report(issue: $FlowFixMe): Promise<void> {
-    await this.context.invokeIssueReporters(this, issue)
+    await this.context.invokeIssueReporters(issue)
   }
 }

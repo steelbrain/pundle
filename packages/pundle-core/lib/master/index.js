@@ -143,7 +143,6 @@ export default class Master implements PundleWorker {
       throw error
     }
   }
-  // TODO: Use cached old files here if present on the job?
   async transformFileTree({
     job,
     locks,
@@ -228,6 +227,6 @@ export default class Master implements PundleWorker {
     return result
   }
   async report(issue: any): Promise<void> {
-    await this.context.invokeIssueReporters(this, issue)
+    await this.context.invokeIssueReporters(issue)
   }
 }

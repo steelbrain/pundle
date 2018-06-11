@@ -1,11 +1,12 @@
 // @flow
 
+import fs from 'sb-fs'
 import path from 'path'
 import lowdb from 'lowdb'
 import mkdirp from 'mkdirp'
 import debounce from 'lodash/debounce'
 import FileAsync from 'lowdb/adapters/FileAsync'
-import { getStringHash, type Context, type ImportTransformed } from 'pundle-api'
+import { getStringHash, getFileKey, type Context, type ImportResolved, type ImportTransformed } from 'pundle-api'
 
 export default class Cache {
   adapter: ?Object
@@ -15,6 +16,9 @@ export default class Cache {
     this.adapter = null
     this.context = context
     this.filePath = path.join(context.config.cache.rootDirectory, `${getStringHash(context.config.rootDirectory)}.json`)
+  }
+  _report = (issue: any) => {
+    this.context.invokeIssueReporters(issue)
   }
   async load() {
     if (!this.context.config.cache.enabled) return
@@ -35,31 +39,38 @@ export default class Cache {
 
     this.adapter = await lowdb(fileAdapter)
   }
-  getFile(key: string): ?ImportTransformed {
+  async getFile(fileImport: ImportResolved): Promise<?ImportTransformed> {
     const { adapter } = this
     if (!adapter) return null
 
-    return adapter
-      .get('posts')
-      .get(key)
-      .value()
+    let stats
+    try {
+      stats = fs.stat(fileImport.filePath)
+    } catch (_) {
+      return null
+    }
+
+    const fileKey = getFileKey(fileImport)
+    const cachedVal = adapter.get(`posts.${fileKey}`).value()
+    if (!cachedVal) return null
+    const mtime = parseInt(stats.mtime / 1000, 10)
+    if (mtime !== cachedVal.mtime) return null
+    return cachedVal.value
   }
-  setFile(key: string, file: ImportTransformed): void {
+  setFile(fileImport: ImportResolved, file: ImportTransformed): void {
     const { adapter } = this
     if (!adapter) return
 
-    adapter.set(`posts.${key}`, file).value()
-    this.write()
+    fs.stat(fileImport.filePath).then(stats => {
+      const mtime = parseInt(stats.mtime / 1000, 10)
+      const fileKey = getFileKey(fileImport)
+      adapter.set(`posts.${fileKey}`, { mtime, value: file }).value()
+      this.write()
+    })
   }
-  write = debounce(
-    () => {
-      this.writeNow().catch(console.error)
-    },
-    1000,
-    {
-      trailing: true,
-    },
-  )
+  write = debounce(() => this.writeNow().catch(this._report), 1000, {
+    trailing: true,
+  })
   async writeNow() {
     this.write.cancel()
 

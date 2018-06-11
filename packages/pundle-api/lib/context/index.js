@@ -282,7 +282,7 @@ export default class Context {
       outputs: everything,
     }
   }
-  async invokeIssueReporters(worker: PundleWorker, issue: any): Promise<void> {
+  async invokeIssueReporters(issue: any): Promise<void> {
     const issueReporters = this.getComponents('issue-reporter')
 
     if (!issueReporters.length) {
@@ -293,7 +293,6 @@ export default class Context {
     await pMap(issueReporters, issueReporter =>
       issueReporter.callback({
         issue,
-        worker,
         context: this,
       }),
     )
