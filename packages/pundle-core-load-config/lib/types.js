@@ -6,6 +6,7 @@ export type AcceptedConfig = {|
   cache?:
     | false
     | {
+        reset?: boolean,
         rootDirectory: string,
       },
   entry?: Array<string> | string,
@@ -18,6 +19,7 @@ export type AcceptedConfig = {|
 |}
 export type Config = {|
   cache: {
+    reset: boolean,
     enabled: boolean,
     rootDirectory: string,
   },

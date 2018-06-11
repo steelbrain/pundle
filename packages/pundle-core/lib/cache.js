@@ -21,7 +21,8 @@ export default class Cache {
     this.context.invokeIssueReporters(issue)
   }
   async load() {
-    if (!this.context.config.cache.enabled) return
+    const cacheConfig = this.context.config.cache
+    if (!cacheConfig.enabled) return
 
     await new Promise((resolve, reject) => {
       mkdirp(path.dirname(this.filePath), err => {
@@ -30,6 +31,10 @@ export default class Cache {
         } else resolve()
       })
     })
+
+    if (cacheConfig.reset && (await fs.exists(this.filePath))) {
+      await fs.unlink(this.filePath)
+    }
 
     const fileAdapter = new FileAsync(this.filePath, {
       defaultValue: {
