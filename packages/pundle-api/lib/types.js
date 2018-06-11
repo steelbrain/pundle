@@ -52,12 +52,12 @@ export type TransformResult = {|
   chunks: Array<Chunk>,
   imports: Array<ImportResolved>,
 |}
-export type ChunkGenerated = {
+export type ChunkGenerated = {|
   chunk: Chunk,
   format: string,
   contents: string | Buffer,
   filePath: string | false,
-}
+|}
 export type ChunksGenerated = {
   directory: string,
   outputs: Array<ChunkGenerated>,

@@ -17,7 +17,9 @@ import type {
   ImportResolved,
   TransformRequest,
   TransformResult,
+  ChunkGenerated,
   ChunksGenerated,
+  ComponentChunkTransformerResult,
 } from '../types'
 import * as validators from './validators'
 
@@ -281,6 +283,37 @@ export default class Context {
       directory: this.config.output.rootDirectory,
       outputs: everything,
     }
+  }
+  async invokeChunkTransformers(
+    worker: PundleWorker,
+    chunkGenerated: ChunkGenerated,
+  ): Promise<ComponentChunkTransformerResult> {
+    let transformedChunk = chunkGenerated.contents
+
+    const transformers = this.getComponents('chunk-transformer')
+    for (const transformer of transformers) {
+      const result = await transformer.callback({
+        context: this,
+        worker,
+        ...chunkGenerated,
+        contents: transformedChunk,
+      })
+      if (!result) continue
+      if (
+        typeof result !== 'object' ||
+        !result ||
+        !(typeof result.contents === 'string' || Buffer.isBuffer(result.contents))
+      ) {
+        throw new PundleError(
+          'WORK',
+          'TRANSFORM_FAILED',
+          `Chunk Transformer '${transformer.name}' returned invalid results: result.contents must be valid string or buffer`,
+        )
+      }
+      transformedChunk = result.contents
+    }
+
+    return { contents: transformedChunk }
   }
   async invokeIssueReporters(issue: any): Promise<void> {
     const issueReporters = this.getComponents('issue-reporter')
