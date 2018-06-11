@@ -8,4 +8,5 @@ export const COMPONENT_TYPES: Array<ComponentType> = [
   'file-transformer',
   'job-transformer',
   'chunk-generator',
+  'chunk-transformer',
 ]

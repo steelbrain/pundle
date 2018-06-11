@@ -288,6 +288,7 @@ export default class Context {
     chunkGenerated: ChunkGenerated,
   ): Promise<ComponentChunkTransformerResult> {
     let transformedChunk = chunkGenerated.contents
+    let transformedSourceMap = null
 
     const transformers = this.getComponents('chunk-transformer')
     for (const transformer of transformers) {
@@ -310,9 +311,12 @@ export default class Context {
         )
       }
       transformedChunk = result.contents
+      if (result.sourceMap) {
+        transformedSourceMap = result.sourceMap
+      } else transformedSourceMap = null
     }
 
-    return { contents: transformedChunk }
+    return { contents: transformedChunk, sourceMap: transformedSourceMap }
   }
   async invokeIssueReporters(issue: any): Promise<void> {
     const issueReporters = this.getComponents('issue-reporter')

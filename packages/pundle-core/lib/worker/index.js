@@ -24,7 +24,15 @@ export default class Worker implements PundleWorker {
     return this.context.invokeFileResolvers(this, request)
   }
   async transformChunkGenerated(chunkGenerated: ChunkGenerated): Promise<ComponentChunkTransformerResult> {
-    return this.context.invokeChunkTransformers(this, chunkGenerated)
+    const chunk = { ...chunkGenerated }
+    if (typeof chunk.contents === 'object' && chunk.contents) {
+      chunk.contents = Buffer.from(chunk.contents)
+    }
+    if (chunk.sourceMap && typeof chunk.sourceMap.contents === 'object' && chunk.sourceMap.contents) {
+      // $FlowFixMe deep prop access paranoia?
+      chunk.sourceMap.contents = Buffer.from(chunk.sourceMap.contents)
+    }
+    return this.context.invokeChunkTransformers(this, chunk)
   }
   // PundleWorker methods below
   async resolve(payload: ImportRequest) {

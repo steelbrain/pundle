@@ -58,8 +58,8 @@ export type ChunkGenerated = {|
   contents: string | Buffer,
   filePath: string | false,
   sourceMap?: {
-    contents: string | Buffer,
     filePath: string | false,
+    contents: string,
   },
 |}
 export type ChunksGenerated = {
@@ -141,7 +141,8 @@ export type ComponentChunkGeneratorResult = {
   format: string,
   contents: string | Buffer,
   sourceMap?: {
-    contents: string | Buffer,
+    filePath: string | false,
+    contents: string,
   },
 }
 export type ComponentChunkGeneratorCallback = (params: {
@@ -154,6 +155,9 @@ export type ComponentChunkGenerator = Component<'chunk-generator', ComponentChun
 
 export type ComponentChunkTransformerResult = {
   contents: string | Buffer,
+  sourceMap: ?{
+    contents: string,
+  },
 }
 export type ComponentChunkTransformerCallback = (
   params: ChunkGenerated & {

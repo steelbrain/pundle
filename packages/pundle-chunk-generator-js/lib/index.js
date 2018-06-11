@@ -57,7 +57,7 @@ function createComponent() {
       }
 
       if (sourceMapPath) {
-        output.sourceMap = { contents: JSON.stringify(sourceMap.toJSON()) }
+        output.sourceMap = { contents: JSON.stringify(sourceMap.toJSON()), filePath: sourceMapPath }
         contents.push(`//# sourceMappingURL=${sourceMapPath}`)
       }
       output.contents = contents.join('\n')

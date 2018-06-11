@@ -236,10 +236,11 @@ export default class Master implements PundleWorker {
     const result = await this._queuedProcess(worker => worker.transformChunkGenerated(chunkGenerated))
     // Node IPC converts Buffer to array of ints
     if (typeof result.contents === 'object' && result.contents) {
-      return {
-        ...result,
-        contents: Buffer.from(result.contents),
-      }
+      result.contents = Buffer.from(result.contents)
+    }
+    if (result.sourceMap && typeof result.sourceMap.contents === 'object' && result.sourceMap.contents) {
+      // $FlowFixMe deep prop access paranoia?
+      result.sourceMap.contents = Buffer.from(result.sourceMap.contents)
     }
     return result
   }
@@ -251,10 +252,7 @@ export default class Master implements PundleWorker {
     const result = await this._queuedProcess(worker => worker.transformFile(payload))
     // Node IPC converts Buffer to array of ints
     if (typeof result.contents === 'object' && result.contents) {
-      return {
-        ...result,
-        contents: Buffer.from(result.contents),
-      }
+      result.contents = Buffer.from(result.contents)
     }
     return result
   }

@@ -31,6 +31,7 @@ function createComponent({ formats }: { formats: Array<string> }) {
           }\n/*# sourceMappingURL=${sourceMapUrl} */`
         }
         output.sourceMap = {
+          filePath: sourceMapUrl,
           contents: JSON.stringify(file.sourceMap),
         }
       }
