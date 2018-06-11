@@ -15,7 +15,10 @@ export default class Cache {
   constructor(context: Context) {
     this.adapter = null
     this.context = context
-    this.filePath = path.join(context.config.cache.rootDirectory, `${getStringHash(context.config.rootDirectory)}.json`)
+    this.filePath = path.join(
+      context.config.cache.rootDirectory,
+      `${getStringHash(`${context.config.rootDirectory}-${process.env.NODE_ENV || 'development'}`)}.json`,
+    )
   }
   _report = (issue: any) => {
     this.context.invokeIssueReporters(issue)
