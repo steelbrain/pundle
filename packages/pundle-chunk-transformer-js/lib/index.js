@@ -1,6 +1,6 @@
 // @flow
 
-import minify from 'babel-minify'
+import { minify } from 'uglify-es'
 import { createChunkTransformer } from 'pundle-api'
 
 import manifest from '../package.json'
@@ -13,11 +13,10 @@ function createComponent() {
     async callback({ format, contents }) {
       if (format !== 'js') return null
 
-      const { code } = minify(typeof contents === 'string' ? contents : contents.toString(), {
-        mangle: {
-          keepClassName: true,
-        },
-      })
+      const { code, error } = minify(typeof contents === 'string' ? contents : contents.toString())
+      if (error) {
+        throw new Error(error)
+      }
 
       return {
         contents: code,
