@@ -1,9 +1,9 @@
 // @flow
 
+import pick from 'lodash/pick'
 import path from 'path'
 import mime from 'mime/lite'
 import invariant from 'assert'
-import pick from 'lodash/pick'
 import { Router } from 'express'
 
 import { getPundle, getWatcher } from 'pundle-core'
@@ -12,6 +12,7 @@ import { getChunk, getUniqueHash, type Job, type ImportResolved } from 'pundle-a
 import { getOutputFormats, getChunksAffectedByImports } from './helpers'
 
 type Payload = {
+  cache?: Object | false,
   configFileName?: string,
   configLoadFile?: boolean,
   directory?: string,
@@ -42,6 +43,14 @@ async function getPundleDevMiddleware(options: Payload) {
         formats: await getOutputFormats(pick(options, PUNDLE_OPTIONS), publicPath),
         rootDirectory: '/tmp',
       },
+
+      cache:
+        options.cache !== false
+          ? {
+              cacheKey: `watcher-${process.env.NODE_ENV || 'development'}`,
+              ...options.cache,
+            }
+          : false,
     },
   })
 

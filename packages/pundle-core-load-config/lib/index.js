@@ -26,6 +26,7 @@ export default async function loadConfig(context: Context): Promise<Config> {
     cache: {
       reset: false,
       enabled: false,
+      cacheKey: process.env.NODE_ENV || 'development',
       rootDirectory: path.join(os.homedir(), '.pundle'),
     },
     entry: [],

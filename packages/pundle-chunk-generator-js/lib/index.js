@@ -50,9 +50,9 @@ function createComponent() {
 
       contents.push('})();')
 
-      const output = {
-        contents: ('': any),
-        sourceMap: (null: any),
+      const output: Object = {
+        contents: '',
+        sourceMap: null,
         format: chunk.format,
       }
 

@@ -37,9 +37,12 @@ export default async function validateAndTransformConfig({
   if (typeof config.cache !== 'undefined') {
     if (config.cache !== false && !(config.cache || typeof config.cache === 'object')) {
       faults.push(`config.cache must be false or an object`)
-    } else if (config.cache && config.cache.rootDirectory) {
-      if (typeof config.cache.rootDirectory !== 'string') {
+    } else if (config.cache) {
+      if (typeof config.cache.rootDirectory !== 'undefined' && typeof config.cache.rootDirectory !== 'string') {
         faults.push(`config.cache.rootDirectory must be a valid string`)
+      }
+      if (typeof config.cache.cacheKey !== 'undefined' && typeof config.cache.cacheKey !== 'string') {
+        faults.push('config.cache.cacheKey must be a valid string')
       }
     }
   }

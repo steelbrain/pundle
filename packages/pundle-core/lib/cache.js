@@ -11,14 +11,9 @@ import { getStringHash, getFileKey, type Context, type ImportResolved, type Impo
 export default class Cache {
   adapter: ?Object
   context: Context
-  filePath: string
   constructor(context: Context) {
     this.adapter = null
     this.context = context
-    this.filePath = path.join(
-      context.config.cache.rootDirectory,
-      `${getStringHash(`${context.config.rootDirectory}-${process.env.NODE_ENV || 'development'}`)}.json`,
-    )
   }
   _report = (issue: any) => {
     this.context.invokeIssueReporters(issue)
@@ -27,19 +22,23 @@ export default class Cache {
     const cacheConfig = this.context.config.cache
     if (!cacheConfig.enabled) return
 
+    const filePath = path.join(
+      cacheConfig.rootDirectory,
+      `${getStringHash(`${this.context.config.rootDirectory}-${cacheConfig.cacheKey}`)}.json`,
+    )
     await new Promise((resolve, reject) => {
-      mkdirp(path.dirname(this.filePath), err => {
+      mkdirp(path.dirname(filePath), err => {
         if (err) {
           reject(err)
         } else resolve()
       })
     })
 
-    if (cacheConfig.reset && (await fs.exists(this.filePath))) {
-      await fs.unlink(this.filePath)
+    if (cacheConfig.reset && (await fs.exists(filePath))) {
+      await fs.unlink(filePath)
     }
 
-    const fileAdapter = new FileAsync(this.filePath, {
+    const fileAdapter = new FileAsync(filePath, {
       defaultValue: {
         files: {},
       },
