@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev-middleware",
-  "version": "0.0.0",
+  "version": "3.0.0-alpha1",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
@@ -12,8 +12,8 @@
     "toposort": "^2.0.2"
   },
   "peerDependencies": {
-    "pundle-api": "0.0.0",
-    "pundle-core": "0.0.0"
+    "pundle-api": "3.0.0-alpha1",
+    "pundle-core": "3.0.0-alpha1"
   },
   "author": "steelbrain",
   "license": "MIT"

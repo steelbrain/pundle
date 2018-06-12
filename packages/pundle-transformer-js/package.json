@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-js",
-  "version": "0.0.0",
+  "version": "3.0.0-alpha1",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
@@ -10,7 +10,7 @@
     "@babel/generator": "^7.0.0-beta.49",
     "@babel/types": "^7.0.0-beta.49",
     "babel-plugin-transform-node-env-inline": "^0.4.3",
-    "pundle-api": "0.0.0"
+    "pundle-api": "3.0.0-alpha1"
   },
   "author": "steelbrain",
   "license": "MIT"

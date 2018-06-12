@@ -1,12 +1,12 @@
 {
   "name": "pundle-transformer-less",
-  "version": "0.0.0",
+  "version": "3.0.0-alpha1",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "0.0.0"
+    "pundle-api": "3.0.0-alpha1"
   },
   "author": "steelbrain",
   "license": "MIT"

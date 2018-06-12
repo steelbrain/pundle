@@ -1,13 +1,13 @@
 {
   "name": "pundle-transformer-babel",
-  "version": "0.0.0",
+  "version": "3.0.0-alpha1",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
     "nanomatch": "^1.2.9",
-    "pundle-api": "0.0.0"
+    "pundle-api": "3.0.0-alpha1"
   },
   "author": "steelbrain",
   "license": "MIT"
