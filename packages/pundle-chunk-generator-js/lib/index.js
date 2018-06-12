@@ -56,9 +56,10 @@ function createComponent() {
         format: chunk.format,
       }
 
+      const publicPath = context.getPublicPath(chunk)
       if (sourceMapPath) {
         output.sourceMap = { contents: JSON.stringify(sourceMap.toJSON()), filePath: sourceMapPath }
-        contents.push(`//# sourceMappingURL=${sourceMapPath}`)
+        contents.push(`//# sourceMappingURL=${path.posix.relative(path.dirname(publicPath), sourceMapPath)}`)
       }
       output.contents = contents.join('\n')
       return output

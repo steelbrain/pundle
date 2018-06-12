@@ -1,6 +1,7 @@
 // @flow
 
 import invariant from 'assert'
+import { posix as path } from 'path'
 import { createChunkGenerator, getFileKey } from 'pundle-api'
 
 import manifest from '../package.json'
@@ -22,13 +23,15 @@ function createComponent({ formats }: { formats: Array<string> }) {
         sourceMap: (null: any),
         format: chunk.format,
       }
+      const publicPath = context.getPublicPath(chunk)
       const sourceMapUrl = context.getPublicPath({ ...chunk, format: 'css.map' })
 
       if (sourceMapUrl && file.sourceMap) {
         if (chunk.format === 'css') {
-          contents = `${
-            typeof contents === 'string' ? contents : contents.toString()
-          }\n/*# sourceMappingURL=${sourceMapUrl} */`
+          contents = `${typeof contents === 'string' ? contents : contents.toString()}\n/*# sourceMappingURL=${path.relative(
+            path.dirname(publicPath),
+            sourceMapUrl,
+          )} */`
         }
         output.sourceMap = {
           filePath: sourceMapUrl,
