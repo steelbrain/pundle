@@ -234,7 +234,7 @@ export default class Master implements PundleWorker {
   }
   async transformChunkGenerated(
     chunkGenerated: ChunkGenerated,
-    threaded: boolean = false,
+    threaded: boolean = true,
   ): Promise<ComponentChunkTransformerResult> {
     if (!threaded) {
       return this.context.invokeChunkTransformers(this, chunkGenerated)
