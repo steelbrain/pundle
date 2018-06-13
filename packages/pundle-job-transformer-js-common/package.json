@@ -1,7 +1,6 @@
 {
   "name": "pundle-job-transformer-js-common",
   "version": "3.0.0-alpha1",
-  "private": true,
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
