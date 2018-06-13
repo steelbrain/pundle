@@ -19,7 +19,7 @@ import transformerTypescript from 'pundle-transformer-typescript'
 import chunkGeneratorJs from 'pundle-chunk-generator-js'
 import chunkGeneratorHtml from 'pundle-chunk-generator-html'
 import chunkGeneratorStatic from 'pundle-chunk-generator-static'
-// import chunkTransformerJSUglify from 'pundle-chunk-transformer-js-uglify'
+import chunkTransformerJSUglify from 'pundle-chunk-transformer-js-uglify'
 import browserAliases from 'pundle-resolver-aliases-browser'
 import jobTransformerJSCommon from 'pundle-job-transformer-js-common'
 
@@ -64,7 +64,7 @@ export default {
     chunkGeneratorJs(),
     chunkGeneratorHtml(),
     chunkGeneratorStatic({ formats: ['css'] }),
-    // chunkTransformerJSUglify(),
+    chunkTransformerJSUglify(),
     jobTransformerJSCommon(),
   ],
   rootDirectory: __dirname,
