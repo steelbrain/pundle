@@ -19,6 +19,7 @@
     "pundle-chunk-transformer-js-uglify": "3.0.0-alpha1",
     "pundle-core": "3.0.0-alpha1",
     "pundle-dev-middleware": "3.0.0-alpha1",
+    "pundle-job-transformer-js-common": "3.0.0-alpha1",
     "pundle-reporter-cli": "3.0.0-alpha1",
     "pundle-resolver-aliases-browser": "3.0.0-alpha1",
     "pundle-resolver-default": "3.0.0-alpha1",
