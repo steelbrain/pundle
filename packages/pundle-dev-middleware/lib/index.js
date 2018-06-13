@@ -1,5 +1,6 @@
 // @flow
 
+import get from 'lodash/get'
 import pick from 'lodash/pick'
 import path from 'path'
 import mime from 'mime/lite'
@@ -12,11 +13,11 @@ import { getChunk, getUniqueHash, type Job, type ImportResolved } from 'pundle-a
 import { getOutputFormats, getChunksAffectedByImports } from './helpers'
 
 type Payload = {
-  cache?: Object | false,
   configFilePath?: string,
   configLoadFile?: boolean,
   directory?: string,
   // ^ Either directory to initialize pundle from or an instance
+  config?: Object,
 
   hmr?: boolean,
   lazy?: boolean,
@@ -35,22 +36,28 @@ async function getPundleDevMiddleware(options: Payload) {
     publicPath = `${publicPath}/`
   }
 
+  const configEntry = get(options, 'config.entry', []).slice()
+  if (options.hmr) {
+    configEntry.unshift(require.resolve('./client/hmr-client'))
+  }
+  const configCache = get(options, 'config.cache', {})
+  if (configCache) {
+    configCache.cacheKey = configCache.cacheKey
+      ? `${configCache.cacheKey}-watcher`
+      : `watcher-${process.env.NODE_ENV || 'development'}`
+  }
+
   const pundle = await getPundle({
     ...pick(options, PUNDLE_OPTIONS),
     config: {
-      entry: options.hmr ? [require.resolve('./client/hmr-client')] : [],
+      ...get(options, 'config', {}),
+      entry: configEntry,
       output: {
         formats: await getOutputFormats(pick(options, PUNDLE_OPTIONS), publicPath),
         rootDirectory: '/tmp',
       },
 
-      cache:
-        options.cache !== false
-          ? {
-              cacheKey: `watcher-${process.env.NODE_ENV || 'development'}`,
-              ...options.cache,
-            }
-          : false,
+      cache: configCache,
     },
   })
 
