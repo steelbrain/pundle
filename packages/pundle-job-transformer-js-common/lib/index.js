@@ -16,7 +16,7 @@ function fileToImport(file: ImportTransformed): ImportResolved {
   return { filePath: file.filePath, format: file.format }
 }
 
-function createComponent() {
+function createComponent({ name = '_common_' }: { name?: string }) {
   return createJobTransformer({
     name: 'pundle-job-transformer-js-common',
     version: manifest.version,
@@ -69,7 +69,7 @@ function createComponent() {
 
       const clonedJob = job.clone()
       const clonedChunks = new Map()
-      const commonChunk = getChunk('js', '_commons_', null, duplicateFiles.map(fileToImport))
+      const commonChunk = getChunk('js', name, null, duplicateFiles.map(fileToImport))
 
       chunkToFiles.forEach((files, chunk) => {
         let hadOne = false
