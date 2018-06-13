@@ -40,8 +40,19 @@ export function topologicallySortChunks(chunks: Array<Chunk>, job: Job): Array<C
     chunk.imports.forEach(item => iterateImports(item, chunkHash))
   })
 
+  const singles = graph
+    .reduce((agg, curr) => agg.concat(curr), [])
+    .filter((item, index, curr) => curr.indexOf(item) === curr.lastIndexOf(item))
+    .map(i => (i ? chunksMap[i] : null))
+    .filter(Boolean)
+
   const sorted = toposort(graph).reverse()
-  return sorted.map(item => chunksMap[item]).filter(Boolean)
+  return singles.concat(
+    sorted
+      .map(item => chunksMap[item])
+      .filter(Boolean)
+      .filter(i => singles.indexOf(i) === -1),
+  )
 }
 
 const chunkMatchingCache = {}
