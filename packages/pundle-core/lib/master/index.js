@@ -232,14 +232,7 @@ export default class Master implements PundleWorker {
       await tickCallback(oldFile, newFile)
     }
   }
-  async transformChunkGenerated(
-    chunkGenerated: ChunkGenerated,
-    threaded: boolean = true,
-  ): Promise<ComponentChunkTransformerResult> {
-    if (!threaded) {
-      return this.context.invokeChunkTransformers(this, chunkGenerated)
-    }
-
+  async transformChunkGenerated(chunkGenerated: ChunkGenerated): Promise<ComponentChunkTransformerResult> {
     return this._queuedProcess(worker => worker.transformChunkGenerated(chunkGenerated))
   }
   // PundleWorker methods below
