@@ -16,7 +16,7 @@
     "pundle-chunk-generator-html": "3.0.0-alpha1",
     "pundle-chunk-generator-js": "3.0.0-alpha1",
     "pundle-chunk-generator-static": "3.0.0-alpha1",
-    "pundle-chunk-transformer-js": "3.0.0-alpha1",
+    "pundle-chunk-transformer-js-uglify": "3.0.0-alpha1",
     "pundle-core": "3.0.0-alpha1",
     "pundle-dev-middleware": "3.0.0-alpha1",
     "pundle-reporter-cli": "3.0.0-alpha1",

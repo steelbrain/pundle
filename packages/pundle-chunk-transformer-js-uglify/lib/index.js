@@ -8,7 +8,7 @@ import manifest from '../package.json'
 // TODO: Fix source maps
 function createComponent() {
   return createChunkTransformer({
-    name: 'pundle-chunk-transformer-js',
+    name: 'pundle-chunk-transformer-js-uglify',
     version: manifest.version,
     async callback({ format, contents }) {
       if (format !== 'js') return null
