@@ -69,6 +69,7 @@ function createComponent() {
 
       const clonedJob = job.clone()
       const clonedChunks = new Map()
+      const commonChunk = getChunk('js', '_commons_', null, duplicateFiles.map(fileToImport))
 
       chunkToFiles.forEach((files, chunk) => {
         let hadOne = false
@@ -87,7 +88,6 @@ function createComponent() {
         clonedChunks.set(getChunkKey(clonedChunk), clonedChunk)
       })
 
-      const commonChunk = getChunk('js', '_commons_', null, duplicateFiles.map(fileToImport))
       clonedChunks.set(getChunkKey(commonChunk), commonChunk)
 
       clonedJob.chunks = clonedChunks

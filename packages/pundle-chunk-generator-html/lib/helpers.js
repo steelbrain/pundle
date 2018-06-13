@@ -40,7 +40,7 @@ export function topologicallySortChunks(chunks: Array<Chunk>, job: Job): Array<C
     chunk.imports.forEach(item => iterateImports(item, chunkHash))
   })
 
-  const sorted = toposort(graph)
+  const sorted = toposort(graph).reverse()
   return sorted.map(item => chunksMap[item]).filter(Boolean)
 }
 

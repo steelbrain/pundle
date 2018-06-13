@@ -26,14 +26,10 @@ export function getUniqueHash(item: ImportResolved | Chunk): string {
   } else if (typeof item.entry === 'string') {
     stringKey = item.entry
   } else if (Array.isArray(item.imports)) {
-    stringKey += `${JSON.stringify(item.imports)}`
+    stringKey = `${JSON.stringify(item.imports)}`
   }
 
-  const hash = new Imurmurhash()
-    .hash(stringKey)
-    .result()
-    .toString()
-  return `${item.format}_${hash}`
+  return `${item.format}_${getStringHash(stringKey)}`
 }
 
 export function getChunkKey(chunk: Chunk): string {
@@ -49,8 +45,10 @@ export function getChunk(
   label: ?string = null,
   entry: ?string = null,
   imports: Array<ImportResolved> = [],
+  root: boolean = true,
 ): Chunk {
   return {
+    root,
     format,
     entry,
     label,

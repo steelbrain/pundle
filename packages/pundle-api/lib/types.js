@@ -26,6 +26,7 @@ export type ImportRequest = {
   ignoredResolvers: Array<string>,
 }
 export type Chunk = {
+  root: boolean,
   format: string,
   label: ?string,
   entry: ?string,
