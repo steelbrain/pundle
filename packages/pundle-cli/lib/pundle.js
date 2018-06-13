@@ -13,6 +13,7 @@ import chalk from 'chalk'
 import mkdirp from 'mkdirp'
 import express from 'express'
 import minimist from 'minimist'
+import coolTrim from 'cool-trim'
 import gzipSize from 'gzip-size'
 import stripAnsi from 'strip-ansi'
 import prettyBytes from 'pretty-bytes'
@@ -20,6 +21,7 @@ import { getPundle, getWatcher } from 'pundle-core'
 import { getPundleDevMiddleware, getChunksAffectedByImports } from 'pundle-dev-middleware'
 import type { Context, ChunksGenerated } from 'pundle-api'
 
+import manifest from '../package.json'
 import { getNextPort } from './helpers'
 
 const PUNDLE_ARGS = ['directory', 'configFilePath', 'configLoadFile']
@@ -100,7 +102,37 @@ async function generateForWatcher({ pundle, job, changed }) {
 // TODO: Try to break this with errors in different places
 let pundle
 async function main() {
+  if (argv.v || argv.version) {
+    console.log(`Pundle v${manifest.version} - The Next Generation Module Bundler`)
+    process.exit(0)
+  }
   if (argv.help || argv.h) {
+    log(coolTrim`
+    Usage: pundle [--version] [--help] [--watch] [--dev]
+
+    These are the most commonly used option combinations:
+      pundle                    Compile the contents of a project and write to output directory
+      pundle --watch            Just like compile but watches and recompiles on changes
+      pundle --dev              Compile the contents and start an http server on a port (3000 by default)
+                                but do not write to output directory
+      pundle --directory <path> Start Pundle in a specific directory (supports other options)
+
+    These are the most popular used options (but others/all are supported from Pundle in dot notation):
+      --version                 Print the version of the program
+      --help                    Show this help text
+      --directory               Start pundle in a specific directory (is process.cwd() by default)
+      --configFilePath          File path to Pundle config file (by default it's 'pundle.config.js')
+                                resolved from above mentioned directory
+      --configLoadFile          Controls config loading behavior, set to false to disable loading
+                                config file
+      --dev.hmr                 Controls availability of HMR APIs in dev server (enabled by default)
+      --dev.lazy                Controls if the dev server waits for first request to compile or
+                                compiles instantly
+      --watch.adapter           Choose between nsfw and chokidar. Adapters used to watch filesystem changes
+      --cache                   Controls whether to enable or disable caching (enabled by default)
+      --cache.reset             Controls whether to reset cache on boot
+      --output.rootDirectory    Override control defined output directory to use this one
+    `)
     process.exit(1)
   }
   pundle = await getPundle({

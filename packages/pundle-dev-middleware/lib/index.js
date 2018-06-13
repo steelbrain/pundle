@@ -41,9 +41,9 @@ async function getPundleDevMiddleware(options: Payload) {
     publicPath = `${publicPath}/`
   }
 
-  const configEntry = get(options, 'config.entry', []).slice()
+  let configEntry = get(options, 'config.entry', []).slice()
   if (options.hmr) {
-    configEntry.unshift(require.resolve('./client/hmr-client'))
+    configEntry = [require.resolve('./client/hmr-client')].concat(configEntry)
   }
   const configCache = get(options, 'config.cache', {})
   if (configCache) {
