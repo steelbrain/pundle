@@ -57,6 +57,14 @@ async function writeFile(context: Context, filePath: string, contents: string | 
     )} (${chalk.red(prettyBytes(gzipSizeOfFile))} gzipped) `,
   )
 }
+async function logFile(filePath: string, contents: string | Buffer): Promise<void> {
+  const gzipSizeOfFile = await gzipSize(contents)
+  log(
+    `  ${chalk.blue(filePath)} - ${chalk.green(prettyBytes(contents.length))} (${chalk.red(
+      prettyBytes(gzipSizeOfFile),
+    )} gzipped) `,
+  )
+}
 async function writeCompiledChunks(context: Context, generated: ChunksGenerated) {
   await pMap(
     generated.outputs,
@@ -153,6 +161,15 @@ async function main() {
       ...argv.dev,
       config: pundleConfig,
       watchConfig,
+      changedCallback(changed) {
+        const changedFiles = uniq(changed.map(i => i.filePath)).map(i =>
+          path.relative(pundle.context.config.rootDirectory, i),
+        )
+        log(`  Files affected:\n${changedFiles.map(i => `    - ${i}`).join('\n')}`)
+      },
+      generatedCallback(url, contents) {
+        logFile(url, contents).catch(pundle.report)
+      },
     }),
   )
   await new Promise((resolve, reject) => {

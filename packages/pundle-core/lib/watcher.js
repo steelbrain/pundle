@@ -176,14 +176,14 @@ export default async function getWatcher({
         lastProcessError = error
         throw error
       }
-      queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(error => pundle.report(error))
+      queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(pundle.report)
     } catch (error) {
       pundle.report(error)
     }
   })
 
   const watcher = getFileWatcher(adapter, context.config.rootDirectory, (...args) => {
-    queue.add(() => onChange(...args)).catch(error => pundle.report(error))
+    queue.add(() => onChange(...args)).catch(pundle.report)
   })
 
   await watcher.watch()

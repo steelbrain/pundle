@@ -25,12 +25,14 @@ type Payload = {
   lazy?: boolean,
   // Used for chunk/image loading and HMR
   publicPath: string,
+  changedCallback?: (changed: Array<ImportResolved>) => void,
+  generatedCallback?: (url: string, contents: string | Buffer) => void,
 }
 const PUNDLE_OPTIONS = ['configFilePath', 'configLoadFile', 'directory']
 
 async function getPundleDevMiddleware(options: Payload) {
   invariant(typeof options.publicPath === 'string', 'options.publicPath must be a string')
-  defaults(options, { hmr: true, lazy: true })
+  defaults(options, { hmr: true })
 
   const router = new Router()
 
@@ -74,11 +76,19 @@ async function getPundleDevMiddleware(options: Payload) {
 
   async function regenerateUrlCache({ chunks, job }) {
     const { outputs } = await pundle.generate(job, chunks)
+
+    function setToUrlContents(filePath: string, contents: string | Buffer) {
+      urlToContents[filePath] = contents
+      if (options.generatedCallback) {
+        options.generatedCallback(filePath, contents)
+      }
+    }
+
     outputs.forEach(({ filePath, contents, sourceMap }) => {
       if (filePath) {
-        urlToContents[filePath] = contents
-        if (sourceMap) {
-          urlToContents[`${filePath}.map`] = sourceMap.contents
+        setToUrlContents(filePath, contents)
+        if (sourceMap && sourceMap.filePath) {
+          setToUrlContents(sourceMap.filePath, sourceMap.contents)
         }
       }
     })
@@ -87,6 +97,14 @@ async function getPundleDevMiddleware(options: Payload) {
     if (!(filesChangedHMR.size && options.hmr && hmrConnectedClients.size)) {
       return
     }
+
+    function setToHMRUrlContents(filePath: string, contents: string | Buffer) {
+      urlToHMRContents[filePath] = contents
+      if (options.generatedCallback) {
+        options.generatedCallback(filePath, contents)
+      }
+    }
+
     const transformedJob = await pundle.transformJob(job)
     const changed = Array.from(filesChangedHMR)
     filesChangedHMR.clear()
@@ -104,9 +122,9 @@ async function getPundleDevMiddleware(options: Payload) {
     const { outputs } = await pundle.generate(transformedJob, hmrChunks)
     outputs.forEach(({ filePath, contents, sourceMap }) => {
       if (filePath) {
-        urlToHMRContents[filePath] = contents
-        if (sourceMap) {
-          urlToHMRContents[`${filePath}.map`] = sourceMap.contents
+        setToHMRUrlContents(filePath, contents)
+        if (sourceMap && sourceMap.filePath) {
+          setToHMRUrlContents(sourceMap.filePath, sourceMap.contents)
         }
       }
     })
@@ -119,7 +137,9 @@ async function getPundleDevMiddleware(options: Payload) {
     hmrConnectedClients.forEach(client => {
       client.write(`${JSON.stringify(clientInfo)}`)
     })
-    console.log(`Writing ${outputs.length} chunks to ${hmrConnectedClients.size} clients`)
+    console.log(
+      `  [HMR] Writing ${outputs.length} chunk${outputs.length > 1 ? 's' : ''} to ${hmrConnectedClients.size} clients`,
+    )
 
     // Remove HMR contents from memory after 60 seconds
     setTimeout(() => {
@@ -163,6 +183,9 @@ async function getPundleDevMiddleware(options: Payload) {
       })
       generated = null
       await generateForHMR({ job })
+      if (options.changedCallback) {
+        options.changedCallback(changed)
+      }
     },
     tick({ newFile }) {
       if (options.hmr && !firstTime) {

@@ -242,7 +242,7 @@ export default class Master implements PundleWorker {
   async transformFile(payload: ImportResolved): Promise<ImportTransformed> {
     return this._queuedProcess(worker => worker.transformFile(payload))
   }
-  async report(issue: any): Promise<void> {
+  report = async (issue: any): Promise<void> => {
     await this.context.invokeIssueReporters(issue)
   }
 }
