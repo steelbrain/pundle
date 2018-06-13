@@ -25,7 +25,6 @@ import jobTransformerJSCommon from 'pundle-job-transformer-js-common'
 
 export default {
   cache: {
-    reset: true,
     enabled: true,
   },
   entry: ['./src', './index.html'],

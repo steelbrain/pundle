@@ -5,7 +5,6 @@ async function main() {
   const pundle = await getPundle({
     directory: path.dirname(__dirname),
   })
-  console.time('execute')
   await getWatcher({
     pundle,
     tick({ newFile }) {

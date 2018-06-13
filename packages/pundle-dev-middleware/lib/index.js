@@ -238,4 +238,4 @@ async function getPundleDevMiddleware(options: Payload) {
   return router
 }
 
-module.exports = getPundleDevMiddleware
+module.exports = { getPundleDevMiddleware, getChunksAffectedByImports }

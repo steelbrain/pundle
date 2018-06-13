@@ -2,7 +2,7 @@
 
 import path from 'path'
 import express from 'express'
-import getPundleDevMiddleware from 'pundle-dev-middleware'
+import { getPundleDevMiddleware } from 'pundle-dev-middleware'
 
 async function main() {
   const app = express()
