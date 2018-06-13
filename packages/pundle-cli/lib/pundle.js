@@ -10,13 +10,16 @@ import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import chalk from 'chalk'
 import mkdirp from 'mkdirp'
+import express from 'express'
 import minimist from 'minimist'
 import gzipSize from 'gzip-size'
 import stripAnsi from 'strip-ansi'
 import prettyBytes from 'pretty-bytes'
 import { getPundle, getWatcher } from 'pundle-core'
-import { getChunksAffectedByImports } from 'pundle-dev-middleware'
+import { getPundleDevMiddleware, getChunksAffectedByImports } from 'pundle-dev-middleware'
 import type { Context, ChunksGenerated } from 'pundle-api'
+
+import { getNextPort } from './helpers'
 
 const PUNDLE_ARGS = ['directory', 'configFilePath', 'configLoadFile']
 const OMIT_ARGS = PUNDLE_ARGS.concat(['_', 'dev', 'watch'])
@@ -25,6 +28,8 @@ const argv = minimist(process.argv.slice(2), {
   string: ['configFilePath', 'directory'],
   boolean: ['configLoadFile'],
   default: {
+    dev: {},
+    watch: {},
     configLoadFile: true,
   },
 })
@@ -76,32 +81,38 @@ async function generateForWatcher({ pundle, job, changed }) {
 }
 
 // TODO: Use report for all errors
+// TODO: Try to break this with errors in different places
+let pundle
 async function main() {
   if (argv.help || argv.h) {
     process.exit(1)
   }
-  const pundle = await getPundle({
+  pundle = await getPundle({
     ...pundleArgs,
     config: pundleConfig,
   })
 
-  if (argv.watch || !argv.dev) {
-    const cacheText = `${pundle.context.config.cache.enabled ? 'with' : 'without'}${
-      pundle.context.config.cache.reset ? ' resetted' : ''
-    } cache`
+  const isDev = argv.dev === true || Object.keys(argv.dev).length > 0
+  const isWatch = argv.watch === true || Object.keys(argv.watch).length > 0
 
-    if (argv.watch) {
-      const adapter = get(argv, 'watch.adapter')
+  const watchAdapter = get(argv, 'watch.adapter')
+  const watchConfig = { ...(watchAdapter ? { adapter: watchAdapter } : {}) }
 
-      console.log(`Watching (${cacheText}${adapter ? ` and with adapter ${adapter}` : ''})`)
+  const headerText = `${pundle.context.config.cache.enabled ? 'with' : 'without'}${
+    pundle.context.config.cache.reset ? ' resetted' : ''
+  } cache${watchAdapter ? ` and with adapter ${watchAdapter}` : ''}`
+
+  if (!isDev) {
+    if (isWatch) {
+      log(`Watching (${headerText})`)
       const { job, initialCompile } = await getWatcher({
-        ...(adapter ? { adapter } : {}),
+        ...watchConfig,
         pundle,
         generate({ changed }) {
           const changedFiles = uniq(changed.map(i => i.filePath)).map(i =>
             path.relative(pundle.context.config.rootDirectory, i),
           )
-          console.log(`Files affected:\n${changedFiles.map(i => `  - ${i}`).join('\n')}`)
+          log(`Files affected:\n${changedFiles.map(i => `  - ${i}`).join('\n')}`)
           return generateForWatcher({ pundle, job, changed })
         },
       })
@@ -114,7 +125,7 @@ async function main() {
       await generateForWatcher({ pundle, job, changed: null })
       return
     }
-    console.log(`Compiling (${cacheText})`)
+    log(`Compiling (${headerText})`)
     console.time('Compiled')
     const result = await pundle.execute()
     console.timeEnd('Compiled')
@@ -122,7 +133,39 @@ async function main() {
     pundle.dispose()
     return
   }
-  console.log('dev mode')
+
+  const specifiedDevPort = parseInt(get(argv, 'dev.port', 0), 10)
+  const devPort = specifiedDevPort || 3000
+  const devHost = get(argv, 'dev.host', '127.0.0.1')
+
+  const devPortToUse = await getNextPort(devPort)
+  if (devPortToUse !== devPort && specifiedDevPort) {
+    log(chalk.yellow(`Unable to listen on port ${specifiedDevPort} - Is another program using that port?`))
+  }
+
+  log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
+
+  const app = express()
+  app.use(
+    await getPundleDevMiddleware({
+      ...pundleArgs,
+      publicPath: '/',
+      ...argv.dev,
+      config: pundleConfig,
+      watchConfig,
+    }),
+  )
+  await new Promise((resolve, reject) => {
+    const server = app.listen(devPort, devHost)
+    server.on('error', reject)
+    server.on('listening', resolve)
+  })
+  log('Started Successfully')
 }
 
-main().catch(console.error)
+main().catch(error => {
+  if (pundle) {
+    pundle.dispose()
+  }
+  console.error(error)
+})

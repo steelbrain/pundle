@@ -19,6 +19,7 @@ type Payload = {
   directory?: string,
   // ^ Either directory to initialize pundle from or an instance
   config?: Object,
+  watchConfig?: Object,
 
   hmr?: boolean, // enabled by default
   lazy?: boolean,
@@ -29,7 +30,7 @@ const PUNDLE_OPTIONS = ['configFilePath', 'configLoadFile', 'directory']
 
 async function getPundleDevMiddleware(options: Payload) {
   invariant(typeof options.publicPath === 'string', 'options.publicPath must be a string')
-  defaults(options, { hmr: true })
+  defaults(options, { hmr: true, lazy: true })
 
   const router = new Router()
 
@@ -154,6 +155,7 @@ async function getPundleDevMiddleware(options: Payload) {
   }
 
   const { queue, job, initialCompile } = await getWatcher({
+    ...(options.watchConfig || {}),
     pundle,
     async generate({ changed }) {
       changed.forEach(fileImport => {
