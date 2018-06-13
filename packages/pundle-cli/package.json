@@ -1,10 +1,10 @@
 {
   "name": "pundle-cli",
-  "version": "3.0.0-alpha1",
+  "version": "3.0.0-alpha2",
   "description": "TODO",
   "main": "lib/index.js",
   "bin": {
-    "pundle": "./lib/pundle"
+    "pundle": "./lib/pundle.js"
   },
   "scripts": {},
   "dependencies": {
