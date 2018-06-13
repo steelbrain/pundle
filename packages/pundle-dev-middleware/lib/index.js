@@ -2,6 +2,7 @@
 
 import get from 'lodash/get'
 import pick from 'lodash/pick'
+import defaults from 'lodash/defaults'
 import path from 'path'
 import mime from 'mime/lite'
 import invariant from 'assert'
@@ -19,7 +20,7 @@ type Payload = {
   // ^ Either directory to initialize pundle from or an instance
   config?: Object,
 
-  hmr?: boolean,
+  hmr?: boolean, // enabled by default
   lazy?: boolean,
   // Used for chunk/image loading and HMR
   publicPath: string,
@@ -28,6 +29,7 @@ const PUNDLE_OPTIONS = ['configFilePath', 'configLoadFile', 'directory']
 
 async function getPundleDevMiddleware(options: Payload) {
   invariant(typeof options.publicPath === 'string', 'options.publicPath must be a string')
+  defaults(options, { hmr: true })
 
   const router = new Router()
 
