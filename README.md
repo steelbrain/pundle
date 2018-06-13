@@ -10,8 +10,6 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 - create-pundle-app
 - create-pundle-react-app
 - create-pundle-vue-app
-- pundle-transformer-webassembly
-- pundle-transformer-webassembly-rust
 
 ## Note to self
 
