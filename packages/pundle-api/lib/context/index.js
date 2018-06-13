@@ -215,7 +215,7 @@ export default class Context {
         job: transformed,
       })
       if (!result) continue
-      if (typeof result !== 'object' || typeof result.job !== 'object' || !(result.job instanceof Job)) {
+      if (typeof result !== 'object' || typeof result.job !== 'object' || !(result.job instanceof job.constructor)) {
         throw new PundleError(
           'WORK',
           'TRANSFORM_FAILED',
@@ -225,7 +225,7 @@ export default class Context {
       transformed = result.job
     }
 
-    return job
+    return transformed
   }
   async invokeChunkGenerators(
     worker: PundleWorker,

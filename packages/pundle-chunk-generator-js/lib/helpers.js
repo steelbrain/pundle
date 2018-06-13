@@ -16,7 +16,7 @@ export function getContentForOutput(
 } {
   const relevantFiles = new Set()
 
-  function iterateImports(fileImport: ImportResolved, topLevelOnly: boolean = false) {
+  function iterateImports(fileImport: ImportResolved, topLevelOnly: boolean) {
     const file = job.files.get(getFileKey(fileImport))
     invariant(file, `File referenced in chunk ('${fileImport.filePath}') not found in local cache!?`)
 
@@ -24,15 +24,18 @@ export function getContentForOutput(
     relevantFiles.add(file)
 
     if (!topLevelOnly) {
-      file.imports.forEach(item => iterateImports(item))
+      file.imports.forEach(item => iterateImports(item, false))
     }
   }
 
   if (chunk.entry) {
-    iterateImports({
-      format: chunk.format,
-      filePath: chunk.entry,
-    })
+    iterateImports(
+      {
+        format: chunk.format,
+        filePath: chunk.entry,
+      },
+      !!chunk.imports.length,
+    )
   }
   chunk.imports.forEach(item => iterateImports(item, true))
 
