@@ -4,6 +4,7 @@
 import fs from 'sb-fs'
 import path from 'path'
 import pMap from 'p-map'
+import mapValues from 'lodash/mapValues'
 import get from 'lodash/get'
 import omit from 'lodash/omit'
 import pick from 'lodash/pick'
@@ -24,15 +25,22 @@ import { getNextPort } from './helpers'
 const PUNDLE_ARGS = ['directory', 'configFilePath', 'configLoadFile']
 const OMIT_ARGS = PUNDLE_ARGS.concat(['_', 'dev', 'watch'])
 
-const argv = minimist(process.argv.slice(2), {
-  string: ['configFilePath', 'directory'],
-  boolean: ['configLoadFile'],
-  default: {
-    dev: {},
-    watch: {},
-    configLoadFile: true,
+const argv = mapValues(
+  minimist(process.argv.slice(2), {
+    string: ['configFilePath', 'directory'],
+    boolean: ['configLoadFile'],
+    default: {
+      dev: {},
+      watch: {},
+      configLoadFile: true,
+    },
+  }),
+  value => {
+    if (value === 'true') return true
+    if (value === 'false') return false
+    return value
   },
-})
+)
 
 const pundleArgs = pick(argv, PUNDLE_ARGS)
 const pundleConfig = omit(argv, OMIT_ARGS)
