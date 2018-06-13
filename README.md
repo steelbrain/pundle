@@ -4,7 +4,6 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Top Priority
 
-- Chunk minifieirs for HTML / CSS / JS
 - CLI
 - visualize dependency file size
 - create-pundle-app
@@ -51,5 +50,6 @@ Types of components:
 
 ## Post-initial demo goals
 
+- Chunk minifers for HTML / CSS
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
