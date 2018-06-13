@@ -16,7 +16,7 @@ function fileToImport(file: ImportTransformed): ImportResolved {
   return { filePath: file.filePath, format: file.format }
 }
 
-function createComponent({ name = '_common_' }: { name?: string }) {
+function createComponent({ name = '_common_' }: { name?: string } = {}) {
   return createJobTransformer({
     name: 'pundle-job-transformer-js-common',
     version: manifest.version,

@@ -12,7 +12,7 @@ export default async function readConfigFile(context: Context): Promise<Object> 
   if (!configLoadFile) {
     return { rootDirectory: directory }
   }
-  const configFilePath = path.join(directory, configFileName)
+  const configFilePath = path.resolve(directory, configFileName)
   if (!(await fs.exists(configFilePath))) {
     throw new PundleError('CONFIG', 'CONFIG_NOT_FOUND', 'Unable to find Config File', configFilePath)
   }
