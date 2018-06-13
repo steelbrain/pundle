@@ -19,7 +19,7 @@ export default async function validateAndTransformConfig({
   context,
   config: configGiven,
 }: Payload): Promise<AcceptedConfig> {
-  const { configFileName } = context
+  const { configFilePath } = context
 
   const config = { ...configGiven }
   const extraConfigKeys = difference(Object.keys(config), ALLOWED_CONFIG_FILE_KEYS)
@@ -28,7 +28,7 @@ export default async function validateAndTransformConfig({
       'CONFIG',
       'INVALID_CONFIG',
       `Unknown config keys recieved: ${extraConfigKeys.join(', ')}`,
-      configFileName,
+      configFilePath,
     )
   }
 
@@ -116,7 +116,7 @@ export default async function validateAndTransformConfig({
   }
 
   if (faults.length) {
-    throw new PundleError('CONFIG', 'INVALID_CONFIG', faults.join(', '), configFileName)
+    throw new PundleError('CONFIG', 'INVALID_CONFIG', faults.join(', '), configFilePath)
   }
   return config
 }

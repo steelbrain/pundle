@@ -13,7 +13,7 @@ import { getOutputFormats, getChunksAffectedByImports } from './helpers'
 
 type Payload = {
   cache?: Object | false,
-  configFileName?: string,
+  configFilePath?: string,
   configLoadFile?: boolean,
   directory?: string,
   // ^ Either directory to initialize pundle from or an instance
@@ -23,7 +23,7 @@ type Payload = {
   // Used for chunk/image loading and HMR
   publicPath: string,
 }
-const PUNDLE_OPTIONS = ['configFileName', 'configLoadFile', 'directory']
+const PUNDLE_OPTIONS = ['configFilePath', 'configLoadFile', 'directory']
 
 async function getPundleDevMiddleware(options: Payload) {
   invariant(typeof options.publicPath === 'string', 'options.publicPath must be a string')

@@ -7,19 +7,19 @@ import { fromStack } from 'sb-callsite'
 import { PundleError, type Context } from 'pundle-api'
 
 export default async function readConfigFile(context: Context): Promise<Object> {
-  const { directory, configFileName, configLoadFile } = context
+  const { directory, configFilePath, configLoadFile } = context
 
   if (!configLoadFile) {
     return { rootDirectory: directory }
   }
-  const configFilePath = path.resolve(directory, configFileName)
-  if (!(await fs.exists(configFilePath))) {
-    throw new PundleError('CONFIG', 'CONFIG_NOT_FOUND', 'Unable to find Config File', configFilePath)
+  const resolvedConfigFilePath = path.resolve(directory, configFilePath)
+  if (!(await fs.exists(resolvedConfigFilePath))) {
+    throw new PundleError('CONFIG', 'CONFIG_NOT_FOUND', 'Unable to find Config File', resolvedConfigFilePath)
   }
   let configContents
   try {
     // $FlowFixMe
-    configContents = require(configFilePath) // eslint-disable-line global-require,import/no-dynamic-require
+    configContents = require(resolvedConfigFilePath) // eslint-disable-line global-require,import/no-dynamic-require
   } catch (error) {
     if (error && error.stack) {
       const stackFrame = fromStack(error.stack).find(i => path.isAbsolute(i.file))
@@ -39,13 +39,13 @@ export default async function readConfigFile(context: Context): Promise<Object> 
     throw error
   }
   if (!configContents || typeof configContents !== 'object') {
-    throw new PundleError('CONFIG', 'INVALID_CONFIG', 'Exported config is not a valid object', configFileName)
+    throw new PundleError('CONFIG', 'INVALID_CONFIG', 'Exported config is not a valid object', configFilePath)
   }
 
   // Normalize es export
   const config = configContents.__esModule ? configContents.default : configContents
   if (!config || typeof config !== 'object') {
-    throw new PundleError('CONFIG', 'INVALID_CONFIG', 'Exported ESM config is not a valid object', configFileName)
+    throw new PundleError('CONFIG', 'INVALID_CONFIG', 'Exported ESM config is not a valid object', configFilePath)
   }
 
   return config

@@ -8,18 +8,18 @@ import getWatcher from './watcher'
 import { CONFIG_FILE_NAME } from './constants'
 
 export async function getPundleConfig({
-  configFileName = CONFIG_FILE_NAME,
+  configFilePath = CONFIG_FILE_NAME,
   configLoadFile = true,
   directory = process.cwd(),
 }: {
-  configFileName?: string,
+  configFilePath?: string,
   configLoadFile?: boolean,
   directory?: string,
 }): Promise<Config> {
   const context: Context = new Context({
     config: ({}: Object),
     configInline: {},
-    configFileName,
+    configFilePath,
     configLoadFile,
     directory,
   })
@@ -28,14 +28,14 @@ export async function getPundleConfig({
 
 export async function getPundle({
   config: configInline = {},
-  configFileName = CONFIG_FILE_NAME,
+  configFilePath = CONFIG_FILE_NAME,
   configLoadFile = true,
   directory = process.cwd(),
-}: { config?: Object, configFileName?: string, configLoadFile?: boolean, directory?: string } = {}) {
+}: { config?: Object, configFilePath?: string, configLoadFile?: boolean, directory?: string } = {}) {
   const context: Context = new Context({
     config: ({}: Object),
     configInline,
-    configFileName,
+    configFilePath,
     configLoadFile,
     directory,
   })

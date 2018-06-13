@@ -26,33 +26,33 @@ import * as validators from './validators'
 export default class Context {
   config: Config
   configInline: Object
-  configFileName: string
+  configFilePath: string
   configLoadFile: boolean
   directory: string
 
   constructor({
     config,
     configInline,
-    configFileName,
+    configFilePath,
     configLoadFile,
     directory,
   }: {|
     config: Config,
     configInline: Object,
-    configFileName: string,
+    configFilePath: string,
     configLoadFile: boolean,
     directory: string,
   |}) {
     this.config = config
     this.configInline = configInline
-    this.configFileName = configFileName
+    this.configFilePath = configFilePath
     this.configLoadFile = configLoadFile
     this.directory = directory
   }
   serialize() {
     return {
       configInline: this.configInline,
-      configFileName: this.configFileName,
+      configFilePath: this.configFilePath,
       configLoadFile: this.configLoadFile,
       directory: this.directory,
     }
