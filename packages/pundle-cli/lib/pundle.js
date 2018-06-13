@@ -4,8 +4,10 @@
 import fs from 'sb-fs'
 import path from 'path'
 import pMap from 'p-map'
+import get from 'lodash/get'
 import omit from 'lodash/omit'
 import pick from 'lodash/pick'
+import uniq from 'lodash/uniq'
 import chalk from 'chalk'
 import mkdirp from 'mkdirp'
 import minimist from 'minimist'
@@ -13,6 +15,7 @@ import gzipSize from 'gzip-size'
 import stripAnsi from 'strip-ansi'
 import prettyBytes from 'pretty-bytes'
 import { getPundle, getWatcher } from 'pundle-core'
+import { getChunksAffectedByImports } from 'pundle-dev-middleware'
 import type { Context, ChunksGenerated } from 'pundle-api'
 
 const PUNDLE_ARGS = ['directory', 'configFilePath', 'configLoadFile']
@@ -65,43 +68,61 @@ async function writeCompiledChunks(context: Context, generated: ChunksGenerated)
     { concurrency: 1 },
   )
 }
+async function generateForWatcher({ pundle, job, changed }) {
+  const transformedJob = await pundle.transformJob(job)
+  const chunks = Array.from(transformedJob.chunks.values())
+  const chunksToRegenerate = changed ? getChunksAffectedByImports(job, chunks, changed) : chunks
+  await writeCompiledChunks(pundle.context, await pundle.generate(job, chunksToRegenerate))
+}
 
+// TODO: Use report for all errors
 async function main() {
   if (argv.help || argv.h) {
     process.exit(1)
   }
+  const pundle = await getPundle({
+    ...pundleArgs,
+    config: pundleConfig,
+  })
 
   if (argv.watch || !argv.dev) {
-    const pundle = await getPundle({
-      ...pundleArgs,
-      config: pundleConfig,
-    })
+    const cacheText = `${pundle.context.config.cache.enabled ? 'with' : 'without'}${
+      pundle.context.config.cache.reset ? ' resetted' : ''
+    } cache`
+
     if (argv.watch) {
-      console.log('Watcher mode')
-      const { initialCompile } = await getWatcher({
+      const adapter = get(argv, 'watch.adapter')
+
+      console.log(`Watching (${cacheText}${adapter ? ` and with adapter ${adapter}` : ''})`)
+      const { job, initialCompile } = await getWatcher({
+        ...(adapter ? { adapter } : {}),
         pundle,
-        tick({ newFile }) {
-          console.log('ticked', newFile.filePath)
-        },
-        ready() {
-          console.log('Ready!')
-        },
-        generate() {
-          console.log('Compiled & ready to be generated')
+        generate({ changed }) {
+          const changedFiles = uniq(changed.map(i => i.filePath)).map(i =>
+            path.relative(pundle.context.config.rootDirectory, i),
+          )
+          console.log(`Files affected:\n${changedFiles.map(i => `  - ${i}`).join('\n')}`)
+          return generateForWatcher({ pundle, job, changed })
         },
       })
-      await initialCompile()
-    } else {
-      console.log('Compiling')
-      console.time('Compiled')
-      const result = await pundle.execute()
-      console.timeEnd('Compiled')
-      await writeCompiledChunks(pundle.context, result)
-      pundle.dispose()
+      try {
+        await initialCompile()
+      } catch (error) {
+        // TODO: Report instead
+        console.error(error)
+      }
+      await generateForWatcher({ pundle, job, changed: null })
+      return
     }
-  } else {
-    console.log('dev mode')
+    console.log(`Compiling (${cacheText})`)
+    console.time('Compiled')
+    const result = await pundle.execute()
+    console.timeEnd('Compiled')
+    await writeCompiledChunks(pundle.context, result)
+    pundle.dispose()
+    return
   }
+  console.log('dev mode')
 }
 
 main().catch(console.error)

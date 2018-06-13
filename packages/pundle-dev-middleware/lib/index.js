@@ -86,6 +86,7 @@ async function getPundleDevMiddleware(options: Payload) {
     if (!(filesChangedHMR.size && options.hmr && hmrConnectedClients.size)) {
       return
     }
+    const transformedJob = await pundle.transformJob(job)
     const changed = Array.from(filesChangedHMR)
     filesChangedHMR.clear()
 
@@ -99,7 +100,7 @@ async function getPundleDevMiddleware(options: Payload) {
       hmrChunksByFormat[fileImport.format].imports.push(fileImport)
     })
     const hmrChunks: $FlowFixMe = Object.values(hmrChunksByFormat)
-    const { outputs } = await pundle.generate(job, hmrChunks)
+    const { outputs } = await pundle.generate(transformedJob, hmrChunks)
     outputs.forEach(({ filePath, contents, sourceMap }) => {
       if (filePath) {
         urlToHMRContents[filePath] = contents

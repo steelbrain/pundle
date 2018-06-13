@@ -18,5 +18,8 @@ const Adapters: { [WatchAdapter]: $FlowFixMe } = {
 }
 
 export default function getWatcher(adapter: WatchAdapter, rootDirectory: string, onChange: ChangeCallback): Adapter {
+  if (!Adapters[adapter]) {
+    throw new Error(`Unknown watching adapter: ${adapter}`)
+  }
   return new Adapters[adapter](rootDirectory, onChange)
 }
