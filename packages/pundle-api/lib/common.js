@@ -33,7 +33,7 @@ export function getUniqueHash(item: ImportResolved | Chunk): string {
 }
 
 export function getChunkKey(chunk: Chunk): string {
-  return `chunk_${getUniqueHash(chunk)}`
+  return `chunk_${chunk.root ? '1' : '0'}$${getUniqueHash(chunk)}`
 }
 
 export function getFileKey(item: ImportResolved | Chunk): string {
