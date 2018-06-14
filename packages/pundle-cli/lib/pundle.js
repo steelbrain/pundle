@@ -194,29 +194,29 @@ async function main() {
   log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
 
   const app = express()
-  app.use(
-    await getPundleDevMiddleware({
-      ...pundleArgs,
-      publicPath: '/',
-      ...argv.dev,
-      config: pundleConfig,
-      watchConfig,
-      changedCallback(changed) {
-        const changedFiles = uniq(changed.map(i => i.filePath)).map(i =>
-          path.relative(pundle.context.config.rootDirectory, i),
-        )
-        log(`  Files affected:\n${changedFiles.map(i => `    - ${i}`).join('\n')}`)
-      },
-      generatedCallback(url, contents) {
-        logFile(url, contents).catch(pundle.report)
-      },
-    }),
-  )
+  const middlewarePromise = getPundleDevMiddleware({
+    ...pundleArgs,
+    publicPath: '/',
+    ...argv.dev,
+    config: pundleConfig,
+    watchConfig,
+    changedCallback(changed) {
+      const changedFiles = uniq(changed.map(i => i.filePath)).map(i => path.relative(pundle.context.config.rootDirectory, i))
+      log(`  Files affected:\n${changedFiles.map(i => `    - ${i}`).join('\n')}`)
+    },
+    generatedCallback(url, contents) {
+      logFile(url, contents).catch(pundle.report)
+    },
+  })
+  app.use(function(req, res, next) {
+    middlewarePromise.then(() => next(), next)
+  })
   await new Promise((resolve, reject) => {
     const server = app.listen(devPort, devHost)
     server.on('error', reject)
     server.on('listening', resolve)
   })
+  app.use(await middlewarePromise)
   log('Started Successfully')
 }
 
