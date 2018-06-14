@@ -10,7 +10,13 @@ function createComponent({
   exclude = DEFAULT_EXCLUDE,
   processOutsideProjectRoot,
   options = {},
-}: { exclude?: Array<string | RegExp>, processOutsideProjectRoot?: boolean, options?: Object } = {}) {
+  version = 'both',
+}: {
+  exclude?: Array<string | RegExp>,
+  processOutsideProjectRoot?: boolean,
+  options?: Object,
+  version: 'both' | '6' | '7',
+} = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-babel',
     version: manifest.version,
@@ -27,7 +33,15 @@ function createComponent({
         return null
       }
 
-      const { name, exported } = loadLocalFromContext(context, ['@babel/core', 'babel-core'])
+      const babelsToLookFor = []
+      if (version === 'both') {
+        babelsToLookFor.push('@babel/core', 'babel-core')
+      } else if (version === '7') {
+        babelsToLookFor.push('@babel/core')
+      } else {
+        babelsToLookFor.push('babel-core')
+      }
+      const { name, exported } = loadLocalFromContext(context, babelsToLookFor)
       if (!name) {
         throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried @babel/core & babel-core)`)
       }
