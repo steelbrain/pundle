@@ -1,29 +1,29 @@
-import path from 'path'
+const path = require('path')
 
-import cssnano from 'cssnano'
-import cliReporter from 'pundle-reporter-cli'
-import resolverDefault from 'pundle-resolver-default'
-import transformerJS from 'pundle-transformer-js'
-import transformerCSS from 'pundle-transformer-css'
-import transformerCoffee from 'pundle-transformer-coffee'
-import transformerSass from 'pundle-transformer-sass'
-import transformerLess from 'pundle-transformer-less'
-import transformerCSON from 'pundle-transformer-cson'
-import transformerJSON from 'pundle-transformer-json'
-import transformerJSON5 from 'pundle-transformer-json5'
-import transformerBabel from 'pundle-transformer-babel'
-import transformerStatic from 'pundle-transformer-static'
-import transformerStylus from 'pundle-transformer-stylus'
-import transformerPostcss from 'pundle-transformer-postcss'
-import transformerTypescript from 'pundle-transformer-typescript'
-import chunkGeneratorJs from 'pundle-chunk-generator-js'
-import chunkGeneratorHtml from 'pundle-chunk-generator-html'
-import chunkGeneratorStatic from 'pundle-chunk-generator-static'
-import chunkTransformerJSUglify from 'pundle-chunk-transformer-js-uglify'
-import browserAliases from 'pundle-resolver-aliases-browser'
-import jobTransformerJSCommon from 'pundle-job-transformer-js-common'
+const cssnano = require('cssnano')
+const cliReporter = require('pundle-reporter-cli')
+const resolverDefault = require('pundle-resolver-default')
+const transformerJS = require('pundle-transformer-js')
+const transformerCSS = require('pundle-transformer-css')
+const transformerCoffee = require('pundle-transformer-coffee')
+const transformerSass = require('pundle-transformer-sass')
+const transformerLess = require('pundle-transformer-less')
+const transformerCSON = require('pundle-transformer-cson')
+const transformerJSON = require('pundle-transformer-json')
+const transformerJSON5 = require('pundle-transformer-json5')
+const transformerBabel = require('pundle-transformer-babel')
+const transformerStatic = require('pundle-transformer-static')
+const transformerStylus = require('pundle-transformer-stylus')
+const transformerPostcss = require('pundle-transformer-postcss')
+const transformerTypescript = require('pundle-transformer-typescript')
+const chunkGeneratorJs = require('pundle-chunk-generator-js')
+const chunkGeneratorHtml = require('pundle-chunk-generator-html')
+const chunkGeneratorStatic = require('pundle-chunk-generator-static')
+const chunkTransformerJSUglify = require('pundle-chunk-transformer-js-uglify')
+const browserAliases = require('pundle-resolver-aliases-browser')
+const jobTransformerJSCommon = require('pundle-job-transformer-js-common')
 
-export default {
+module.exports = {
   cache: {
     enabled: true,
   },
