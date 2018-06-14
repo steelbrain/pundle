@@ -2,6 +2,7 @@
 
 import AdapterNSFW from './adapter-nsfw'
 import AdapterChokdiar from './adapter-chokidar'
+import { WatcherUnavailable } from './common'
 import type { WatchAdapter } from '../types'
 
 export type ChangeType = 'add' | 'delete' | 'modify'
@@ -17,9 +18,21 @@ const Adapters: { [WatchAdapter]: $FlowFixMe } = {
   chokidar: AdapterChokdiar,
 }
 
+const ADAPTER_ALTERNATIVES: { [WatchAdapter]: WatchAdapter } = {
+  nsfw: 'chokidar',
+  chokidar: 'nsfw',
+}
+
 export default function getWatcher(adapter: WatchAdapter, rootDirectory: string, onChange: ChangeCallback): Adapter {
   if (!Adapters[adapter]) {
     throw new Error(`Unknown watching adapter: ${adapter}`)
   }
-  return new Adapters[adapter](rootDirectory, onChange)
+  try {
+    return new Adapters[adapter](rootDirectory, onChange)
+  } catch (error) {
+    if (error instanceof WatcherUnavailable) {
+      return new Adapters[ADAPTER_ALTERNATIVES[adapter]](rootDirectory, onChange)
+    }
+    throw error
+  }
 }

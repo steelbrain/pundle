@@ -1,14 +1,27 @@
 // @flow
 
-import nsfw from 'nsfw'
 import path from 'path'
+
+import { WatcherUnavailable } from './common'
 import type { ChangeCallback } from './'
 
-export default class AdapterChokdiar {
+let nsfw
+try {
+  // eslint-disable-next-line
+  nsfw = require('nsfw')
+} catch (_) {
+  /* No Op */
+}
+
+export default class AdapterNSFW {
   handle: ?Object
   onChange: ChangeCallback
   rootDirectory: string
   constructor(rootDirectory: string, onChange: ChangeCallback) {
+    if (!nsfw) {
+      throw new WatcherUnavailable('nsfw')
+    }
+
     this.rootDirectory = rootDirectory
     this.onChange = onChange
 

@@ -9,7 +9,6 @@
     "lodash": "^4.17.10",
     "lowdb": "^1.0.0",
     "mkdirp": "^0.5.1",
-    "nsfw": "^1.0.16",
     "p-map": "^1.2.0",
     "promise.defer": "^1.0.1",
     "pundle-api": "3.0.0-alpha1",
@@ -19,5 +18,8 @@
     "sb-promise-queue": "^1.0.1"
   },
   "author": "steelbrain",
-  "license": "MIT"
+  "license": "MIT",
+  "optionalDependencies": {
+    "nsfw": "^1.0.16"
+  }
 }

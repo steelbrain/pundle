@@ -4414,7 +4414,7 @@ promise@^7.1.1:
 
 promisify-node@^0.3.0:
   version "0.3.0"
-  resolved "http://registry.npmjs.org/promisify-node/-/promisify-node-0.3.0.tgz#b4b55acf90faa7d2b8b90ca396899086c03060cf"
+  resolved "https://registry.yarnpkg.com/promisify-node/-/promisify-node-0.3.0.tgz#b4b55acf90faa7d2b8b90ca396899086c03060cf"
   dependencies:
     nodegit-promise "~4.0.0"
 
