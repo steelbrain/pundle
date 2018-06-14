@@ -1,6 +1,7 @@
 // @flow
 
 import invariant from 'assert'
+import traverse from '@babel/traverse'
 import generate from '@babel/generator'
 import * as t from '@babel/types'
 import { promisify } from 'util'
@@ -42,77 +43,72 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
         sourceMaps: false,
         filename: file.filePath,
         highlightCode: false,
-        plugins: [
-          pluginTransformNodeEnvInline,
-          pluginRemoveDeadNodes,
-          {
-            visitor: {
-              ImportDeclaration({ node }) {
-                const { source } = node
-                if (!t.isStringLiteral(source)) return
-                promises.push(
-                  resolve(source.value, source.loc).then(resolved => {
-                    source.value = getUniqueHash(resolved)
-                    return addImport(resolved)
-                  }),
-                )
-              },
-              CallExpression: {
-                exit(path) {
-                  const { node } = path
-                  const { callee } = node
-                  const [arg] = node.arguments
-
-                  if (!t.isStringLiteral(arg)) return
-
-                  if (t.isImport(callee)) {
-                    promises.push(
-                      resolve(arg.value, arg.loc).then(resolved => {
-                        const chunk = getChunk(resolved.format, null, resolved.filePath, [], false)
-                        node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
-                        arg.value = context.getPublicPath(chunk)
-                        node.arguments.splice(1, 0, t.stringLiteral(getUniqueHash(resolved)))
-                        return addChunk(chunk)
-                      }),
-                    )
-                    return
-                  }
-
-                  if (!['require', 'require.resolve'].includes(getName(callee)) || path.scope.hasBinding('require')) {
-                    return
-                  }
-
-                  // Handling require + require.resolve
-                  promises.push(
-                    resolve(arg.value, arg.loc).then(resolved => {
-                      arg.value = getUniqueHash(resolved)
-                      return addImport(resolved)
-                    }),
-                  )
-                },
-              },
-              ...(transformCore
-                ? {
-                    Identifier(path) {
-                      const { node } = path
-                      if (
-                        INJECTIONS_NAMES.has(node.name) &&
-                        !injectionNames.has(node.name) &&
-                        path.isReferencedIdentifier() &&
-                        !path.scope.hasBinding(node.name)
-                      ) {
-                        injectionNames.add(node.name)
-                      }
-                    },
-                  }
-                : {}),
-            },
-          },
-        ],
+        plugins: [pluginTransformNodeEnvInline],
         sourceType: 'module',
         parserOpts: {
           plugins: ['dynamicImport'],
         },
+      })
+
+      traverse(ast, {
+        ...pluginRemoveDeadNodes,
+        ImportDeclaration({ node }) {
+          const { source } = node
+          if (!t.isStringLiteral(source)) return
+          promises.push(
+            resolve(source.value, source.loc).then(resolved => {
+              source.value = getUniqueHash(resolved)
+              return addImport(resolved)
+            }),
+          )
+        },
+        CallExpression(path) {
+          const { node } = path
+          const { callee } = node
+          const [arg] = node.arguments
+
+          if (!t.isStringLiteral(arg)) return
+
+          if (t.isImport(callee)) {
+            promises.push(
+              resolve(arg.value, arg.loc).then(resolved => {
+                const chunk = getChunk(resolved.format, null, resolved.filePath, [], false)
+                node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
+                arg.value = context.getPublicPath(chunk)
+                node.arguments.splice(1, 0, t.stringLiteral(getUniqueHash(resolved)))
+                return addChunk(chunk)
+              }),
+            )
+            return
+          }
+
+          if (!['require', 'require.resolve'].includes(getName(callee)) || path.scope.hasBinding('require')) {
+            return
+          }
+
+          // Handling require + require.resolve
+          promises.push(
+            resolve(arg.value, arg.loc).then(resolved => {
+              arg.value = getUniqueHash(resolved)
+              return addImport(resolved)
+            }),
+          )
+        },
+        ...(transformCore
+          ? {
+              Identifier(path) {
+                const { node } = path
+                if (
+                  INJECTIONS_NAMES.has(node.name) &&
+                  !injectionNames.has(node.name) &&
+                  path.isReferencedIdentifier() &&
+                  !path.scope.hasBinding(node.name)
+                ) {
+                  injectionNames.add(node.name)
+                }
+              },
+            }
+          : {}),
       })
 
       const injectionImports = new Map()

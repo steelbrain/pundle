@@ -50,14 +50,6 @@ function processBooleanConditional(path: $FlowFixMe) {
 }
 
 export default {
-  visitor: {
-    IfStatement: {
-      enter: processBooleanConditional,
-      exit: processBooleanConditional,
-    },
-    ConditionalExpression: {
-      enter: processBooleanConditional,
-      exit: processBooleanConditional,
-    },
-  },
+  IfStatement: processBooleanConditional,
+  ConditionalExpression: processBooleanConditional,
 }
