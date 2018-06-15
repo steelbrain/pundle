@@ -8,6 +8,10 @@ import debounce from 'lodash/debounce'
 import FileAsync from 'lowdb/adapters/FileAsync'
 import { getStringHash, getFileKey, type Context, type ImportResolved, type ImportTransformed } from 'pundle-api'
 
+import { version } from '../package.json'
+
+const majorVersion = version.split('.')[0]
+
 export default class Cache {
   adapter: ?Object
   context: Context
@@ -40,6 +44,7 @@ export default class Cache {
 
     const fileAdapter = new FileAsync(filePath, {
       defaultValue: {
+        version: majorVersion,
         files: {},
       },
     })
