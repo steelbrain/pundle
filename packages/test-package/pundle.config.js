@@ -63,8 +63,8 @@ module.exports = {
     chunkGeneratorJs(),
     chunkGeneratorHtml(),
     chunkGeneratorStatic({ formats: ['css'] }),
-    chunkTransformerJSUglify(),
     jobTransformerJSCommon(),
+    ...(process.env.NODE_ENV === 'production' ? [chunkTransformerJSUglify()] : []),
   ],
   rootDirectory: __dirname,
   output: {
