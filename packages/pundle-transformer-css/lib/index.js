@@ -7,8 +7,12 @@ import { createFileTransformer, getChunk } from 'pundle-api'
 
 import manifest from '../package.json'
 import pluginImportResolver from './plugin-import-resolver'
+import { getDevelopmentContents } from './helpers'
 
-function createComponent({ extensions = ['.css'] }: { extensions?: Array<string> } = {}) {
+function createComponent({
+  extensions = ['.css'],
+  development = process.env.NODE_ENV !== 'production',
+}: { extensions?: Array<string>, development?: boolean } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-css',
     version: manifest.version,
@@ -51,11 +55,20 @@ function createComponent({ extensions = ['.css'] }: { extensions?: Array<string>
       )
 
       if (file.format === 'js') {
+        const moduleMapContents = moduleMap ? `module.exports = ${JSON.stringify(moduleMap)}\n` : ''
+
+        if (development) {
+          return {
+            contents: `${getDevelopmentContents(processed.css)}\n${moduleMapContents}`,
+            sourceMap: false,
+          }
+        }
+
         // was imported from a JS file
         await addChunk(cssChunk)
 
         return {
-          contents: moduleMap ? `module.exports = ${JSON.stringify(moduleMap)}` : '',
+          contents: moduleMapContents,
           sourceMap: false,
         }
       } else if (file.format === 'css') {
