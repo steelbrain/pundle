@@ -1,15 +1,32 @@
 // @flow
 
-export function getName(obj: Object): string {
-  if (typeof obj.name === 'string') {
-    return obj.name
+export function getName(givenObj: Object, match: Array<string>, maxLength: number = Infinity): string | null {
+  let failed = false
+  const objName = []
+
+  function getNameOfIdentifier(obj: Object) {
+    if (objName.length >= maxLength || failed) return
+
+    if (typeof obj.name === 'string') {
+      const currentIndex = objName.length
+      objName.push(obj.name)
+      if (match.length && match.length > currentIndex && objName[currentIndex] !== match[currentIndex]) {
+        failed = true
+      }
+    }
+    if (typeof obj.object === 'object') {
+      getNameOfIdentifier(obj.object)
+    }
+    if (typeof obj.property === 'object') {
+      getNameOfIdentifier(obj.property)
+    }
   }
-  const chunks = []
-  if (typeof obj.object === 'object') {
-    chunks.push(getName(obj.object))
+
+  getNameOfIdentifier(givenObj)
+
+  if (failed) {
+    return null
   }
-  if (typeof obj.property === 'object') {
-    chunks.push(getName(obj.property))
-  }
-  return chunks.join('.')
+
+  return objName.join('.')
 }

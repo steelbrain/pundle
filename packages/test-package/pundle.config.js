@@ -48,7 +48,7 @@ module.exports = {
     transformerJSON5(),
     transformerBabel(),
     transformerJS({
-      transformCore: true,
+      browser: true,
     }),
     transformerLess(),
     transformerSass(),

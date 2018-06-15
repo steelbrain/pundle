@@ -1,18 +1,17 @@
 // @flow
 
+import * as t from '@babel/types'
 import invariant from 'assert'
 import traverse from '@babel/traverse'
 import generate from '@babel/generator'
-import * as t from '@babel/types'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
 import { createFileTransformer, getChunk, getUniqueHash } from 'pundle-api'
 
-import pluginTransformNodeEnvInline from 'babel-plugin-transform-node-env-inline'
-
-import pluginRemoveDeadNodes from './plugin-remove-dead-nodes'
-import manifest from '../package.json'
 import { getName } from './helpers'
+import manifest from '../package.json'
+import pluginRemoveDeadNodes from './plugin-remove-dead-nodes'
+import getPluginReplaceProcess from './plugin-replace-process'
 
 const INJECTIONS = new Map([['timers', ['setImmediate', 'clearImmediate']], ['buffer', ['Buffer']], ['process', 'process']])
 const INJECTIONS_NAMES = new Map()
@@ -24,8 +23,7 @@ INJECTIONS.forEach(function(names, sourceModule) {
 
 const transformAsync = promisify(transform)
 
-// TODO: have a config?
-function createComponent({ transformCore }: { transformCore: boolean }) {
+function createComponent({ browser, processEnv = {} }: { browser: boolean, processEnv?: { [string]: string } }) {
   return createFileTransformer({
     name: 'pundle-transformer-js',
     version: manifest.version,
@@ -43,7 +41,7 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
         sourceMaps: false,
         filename: file.filePath,
         highlightCode: false,
-        plugins: [pluginTransformNodeEnvInline],
+        plugins: [getPluginReplaceProcess(browser, processEnv)],
         sourceType: 'module',
         parserOpts: {
           plugins: ['dynamicImport'],
@@ -62,6 +60,7 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
             }),
           )
         },
+        // TODO: Support module.hot.accept etc in resolutions
         CallExpression(path) {
           const { node } = path
           const { callee } = node
@@ -82,7 +81,8 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
             return
           }
 
-          if (!['require', 'require.resolve'].includes(getName(callee)) || path.scope.hasBinding('require')) {
+          const calleeName = getName(callee, ['require'], 2)
+          if (!['require', 'require.resolve'].includes(calleeName) || path.scope.hasBinding('require')) {
             return
           }
 
@@ -94,7 +94,7 @@ function createComponent({ transformCore }: { transformCore: boolean }) {
             }),
           )
         },
-        ...(transformCore
+        ...(browser
           ? {
               Identifier(path) {
                 const { node } = path
