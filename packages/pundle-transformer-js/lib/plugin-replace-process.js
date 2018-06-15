@@ -6,7 +6,7 @@ import { getName } from './helpers'
 export default function getPluginReplaceProcess(browser: boolean, givenEnv: Object) {
   const env = {
     ...givenEnv,
-    NODE_ENV: givenEnv.NODE_ENV || 'development',
+    NODE_ENV: givenEnv.NODE_ENV || process.env.NODE_ENV || 'development',
   }
 
   return {
