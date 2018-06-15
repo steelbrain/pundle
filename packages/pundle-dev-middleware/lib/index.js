@@ -113,6 +113,7 @@ async function getPundleDevMiddleware(options: Payload) {
     const hmrChunksByFormat = {}
 
     changed.forEach(fileImport => {
+      if (fileImport.format !== 'js') return
       if (!hmrChunksByFormat[fileImport.format]) {
         hmrChunksByFormat[fileImport.format] = getChunk(fileImport.format, `hmr-${hmrId}`)
       }
