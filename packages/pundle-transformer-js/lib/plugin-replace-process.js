@@ -13,7 +13,7 @@ export default function getPluginReplaceProcess(browser: boolean, givenEnv: Obje
     visitor: {
       MemberExpression(path: Object) {
         const name = getName(path.node, ['process'], 3)
-        if (name === null) return
+        if (name === null || t.isAssignmentExpression(path.parent)) return
         if (name === 'process.browser') {
           if (browser) {
             path.replaceWith(t.booleanLiteral(browser))
