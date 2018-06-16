@@ -13,6 +13,7 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 ## Note to self
 
 - url() in css. Fix it
+- source maps for css in dev
 - "ModuleScopePlugin" to limit direct import of files
 - ESlint to lint files
 - load .graphql files?
