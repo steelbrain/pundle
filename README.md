@@ -12,7 +12,6 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Note to self
 
-- How to inject ENV into bundle?
 - url() in css. Fix it
 - "ModuleScopePlugin" to limit direct import of files
 - ESlint to lint files
