@@ -1,6 +1,6 @@
 {
   "name": "pundle-resolver-aliases-browser",
-  "version": "3.0.0-alpha2",
+  "version": "3.0.0-alpha3",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {

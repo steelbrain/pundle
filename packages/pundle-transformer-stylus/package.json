@@ -1,13 +1,13 @@
 {
   "name": "pundle-transformer-stylus",
-  "version": "3.0.0-alpha2",
+  "version": "3.0.0-alpha3",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {
     "build": "babel src --delete-dir-on-start -d lib --config-file ../../.babelrc"
   },
   "dependencies": {
-    "pundle-api": "3.0.0-alpha2"
+    "pundle-api": "3.0.0-alpha3"
   },
   "author": "steelbrain",
   "license": "MIT",

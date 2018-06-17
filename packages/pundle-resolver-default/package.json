@@ -1,6 +1,6 @@
 {
   "name": "pundle-resolver-default",
-  "version": "3.0.0-alpha2",
+  "version": "3.0.0-alpha3",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "dependencies": {
     "browser-resolve": "^1.11.2",
     "lodash": "^4.17.10",
-    "pundle-api": "3.0.0-alpha2"
+    "pundle-api": "3.0.0-alpha3"
   },
   "author": "steelbrain",
   "license": "MIT",
