@@ -14,10 +14,7 @@ function getPackages() {
       const packageDirectoryStats = fs.statSync(packageDirectory)
       if (packageDirectoryStats.isDirectory()) {
         const packageManifest = require(path.join(packageDirectory, 'package.json'))
-        packagesMap[packageManifest.name] = {
-          dist: path.join(repoRoot, 'dist', packageName),
-          root: path.join(repoRoot, 'node_modules', packageManifest.name),
-        }
+        packagesMap[packageManifest.name] = packageDirectory
       }
     })
   })

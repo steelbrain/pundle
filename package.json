@@ -14,7 +14,6 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "@babel/cli": "^7.0.0-beta.49",
     "@babel/core": "^7.0.0-beta.49",
     "@babel/plugin-proposal-class-properties": "^7.0.0-beta.49",
     "@babel/preset-env": "^7.0.0-beta.49",
@@ -30,7 +29,7 @@
     "build": "lerna exec --parallel -- yarn build",
     "watch": "yarn build -w",
     "dev": "dist/pundle-cli/lib/pundle.js --directory dist/test-package/",
-    "postinstall": "yarn build && node scripts/install"
+    "postinstall": "yarn build"
   },
   "engines": {
     "node": ">=6 <=10"

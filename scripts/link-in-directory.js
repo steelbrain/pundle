@@ -32,9 +32,9 @@ try {
   console.error(`Unable to write to destination folder. Does it exist? Is it writable?`)
   process.exit(1)
 }
-for (const [packageName, packageDirectories] of Object.entries(getPackages())) {
+for (const [packageName, packageDirectory] of Object.entries(getPackages())) {
   console.log(`  Linking ${packageName}`)
   const targetPath = path.join(targetNodeModules, packageName)
   rimraf.sync(targetPath)
-  fs.symlinkSync(packageDirectories.dist, targetPath)
+  fs.symlinkSync(packageDirectory, targetPath)
 }
