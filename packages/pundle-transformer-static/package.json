@@ -3,11 +3,16 @@
   "version": "3.0.0-alpha1",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {},
+  "scripts": {
+    "build": "babel src --delete-dir-on-start -d lib --config-file ../../.babelrc"
+  },
   "dependencies": {
     "mime": "^2.3.1",
     "pundle-api": "3.0.0-alpha1"
   },
   "author": "steelbrain",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.51"
+  }
 }

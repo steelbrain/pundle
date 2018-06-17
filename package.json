@@ -21,6 +21,7 @@
     "@babel/preset-flow": "^7.0.0-beta.49",
     "eslint-config-steelbrain": "^5.0.2",
     "flow-bin": "^0.73.0",
+    "lerna": "^2.11.0",
     "nodemon": "^1.17.3",
     "rimraf": "^2.6.2"
   },

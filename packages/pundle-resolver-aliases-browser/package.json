@@ -3,7 +3,9 @@
   "version": "3.0.0-alpha1",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {},
+  "scripts": {
+    "build": "babel src --delete-dir-on-start -d lib --config-file ../../.babelrc"
+  },
   "author": "steelbrain",
   "license": "MIT",
   "dependencies": {
@@ -30,5 +32,8 @@
     "url": "^0.11.0",
     "util": "^0.10.3",
     "vm-browserify": "^1.0.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.51"
   }
 }
