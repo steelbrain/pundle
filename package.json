@@ -28,8 +28,8 @@
     "test": "echo 'None yet'",
     "build": "lerna exec --parallel -- yarn build",
     "watch": "yarn build -w",
-    "dev": "dist/pundle-cli/lib/pundle.js --directory dist/test-package/",
-    "postinstall": "yarn build"
+    "dev": "packages/pundle-cli/lib/pundle.js --directory packages/test-package",
+    "postinstall": "yarn build && lerna link"
   },
   "engines": {
     "node": ">=6 <=10"

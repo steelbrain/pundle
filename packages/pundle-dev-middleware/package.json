@@ -19,6 +19,8 @@
   "author": "steelbrain",
   "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.51"
+    "@babel/cli": "^7.0.0-beta.51",
+    "pundle-api": "3.0.0-alpha1",
+    "pundle-core": "3.0.0-alpha1"
   }
 }
