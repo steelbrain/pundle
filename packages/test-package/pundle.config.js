@@ -42,6 +42,8 @@ module.exports = {
     transformerCSON(),
     transformerCSS({
       extensions: ['.css', '.less', '.scss', '.styl'],
+      development: false,
+      // ^ Enables HMR support but for now breaks source maps
     }),
     transformerCoffee(),
     transformerJSON(),
