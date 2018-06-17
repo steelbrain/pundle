@@ -1,13 +1,13 @@
 {
   "name": "pundle-job-transformer-js-common",
-  "version": "3.0.0-alpha1",
+  "version": "3.0.0-alpha2",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {
     "build": "babel src --delete-dir-on-start -d lib --config-file ../../.babelrc"
   },
   "dependencies": {
-    "pundle-api": "3.0.0-alpha1"
+    "pundle-api": "3.0.0-alpha2"
   },
   "author": "steelbrain",
   "license": "MIT",
