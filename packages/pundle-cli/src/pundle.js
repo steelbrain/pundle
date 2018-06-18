@@ -22,7 +22,7 @@ import { getPundleDevMiddleware, getChunksAffectedByImports } from 'pundle-dev-m
 import type { Context, ChunksGenerated } from 'pundle-api'
 
 import manifest from '../package.json'
-import { getNextPort } from './helpers'
+import { getNextPort, getStaticMappings } from './helpers'
 
 const PUNDLE_ARGS = ['directory', 'configFilePath', 'configLoadFile']
 const OMIT_ARGS = PUNDLE_ARGS.concat(['_', 'dev', 'watch'])
@@ -111,27 +111,30 @@ async function main() {
     Usage: pundle [--version] [--help] [--watch] [--dev]
 
     These are the most commonly used option combinations:
-      pundle                    Compile the contents of a project and write to output directory
-      pundle --watch            Just like compile but watches and recompiles on changes
-      pundle --dev              Compile the contents and start an http server on a port (3000 by default)
-                                but do not write to output directory
-      pundle --directory <path> Start Pundle in a specific directory (supports other options)
+      pundle                      Compile the contents of a project and write to output directory
+      pundle --watch              Just like compile but watches and recompiles on changes
+      pundle --dev                Compile the contents and start an http server on a port (3000 by default)
+                                  but do not write to output directory
+      pundle --directory <path>   Start Pundle in a specific directory (supports other options)
 
     These are the most popular used options (but others/all are supported from Pundle in dot notation):
-      --version                 Print the version of the program
-      --help                    Show this help text
-      --directory               Start pundle in a specific directory (is process.cwd() by default)
-      --configFilePath          File path to Pundle config file (by default it's 'pundle.config.js')
-                                resolved from above mentioned directory
-      --configLoadFile          Controls config loading behavior, set to false to disable loading
-                                config file
-      --dev.hmr                 Controls availability of HMR APIs in dev server (enabled by default)
-      --dev.lazy                Controls if the dev server waits for first request to compile or
-                                compiles instantly
-      --watch.adapter           Choose between nsfw and chokidar. Adapters used to watch filesystem changes
-      --cache                   Controls whether to enable or disable caching (enabled by default)
-      --cache.reset             Controls whether to reset cache on boot
-      --output.rootDirectory    Override control defined output directory to use this one
+      --version                   Print the version of the program
+      --help                      Show this help text
+      --directory                 Start pundle in a specific directory (is process.cwd() by default)
+      --configFilePath            File path to Pundle config file (by default it's 'pundle.config.js')
+                                  resolved from above mentioned directory
+      --configLoadFile            Controls config loading behavior, set to false to disable loading
+                                  config file
+      --dev.hmr                   Controls availability of HMR APIs in dev server (enabled by default)
+      --dev.lazy                  Controls if the dev server waits for first request to compile or
+                                  compiles instantly
+      --dev.static local::public  Allows mapping local static directories to the dist server. May be specified
+                                  multiple times. Paths may be relative to pundle config's root directory.
+                                  Use '::' to separate local and server paths. (eg. --dev.static ./static::/assets)
+      --watch.adapter             Choose between nsfw and chokidar. Adapters used to watch filesystem changes
+      --cache                     Controls whether to enable or disable caching (enabled by default)
+      --cache.reset               Controls whether to reset cache on boot
+      --output.rootDirectory      Override control defined output directory to use this one
     `)
     process.exit(1)
   }
@@ -185,6 +188,7 @@ async function main() {
   const specifiedDevPort = parseInt(get(argv, 'dev.port', 0), 10)
   const devPort = specifiedDevPort || 3000
   const devHost = get(argv, 'dev.host', '127.0.0.1')
+  const staticMappings = getStaticMappings(pundle, argv)
 
   const devPortToUse = await getNextPort(devPort)
   if (devPortToUse !== devPort && specifiedDevPort) {
@@ -192,6 +196,12 @@ async function main() {
   }
 
   log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
+  if (staticMappings.length) {
+    log(`Static mappings:`)
+    staticMappings.sort((a, b) => a.remote.length - b.remote.length).forEach(item => {
+      log(`  ${item.remote} ~> ${item.local}`)
+    })
+  }
 
   const app = express()
   const middlewarePromise = getPundleDevMiddleware({
@@ -217,6 +227,9 @@ async function main() {
     server.on('listening', resolve)
   })
   app.use(await middlewarePromise)
+  staticMappings.sort((a, b) => b.remote.length - a.remote.length).forEach(item => {
+    app.use(item.remote, express.static(item.local))
+  })
   log('Started Successfully')
 }
 
