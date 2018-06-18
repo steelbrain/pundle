@@ -4,7 +4,7 @@
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {
-    "build": "babel src --delete-dir-on-start -d lib --config-file ../../.babelrc"
+
   },
   "dependencies": {
     "chokidar": "^2.0.3",
@@ -24,7 +24,5 @@
   "optionalDependencies": {
     "nsfw": "^1.0.16"
   },
-  "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.51"
-  }
+  "devDependencies": {}
 }

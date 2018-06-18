@@ -4,7 +4,7 @@
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {
-    "build": "babel src --delete-dir-on-start -d lib --config-file ../../.babelrc"
+
   },
   "dependencies": {
     "@babel/core": "^7.0.0-beta.49",
@@ -15,7 +15,5 @@
   },
   "author": "steelbrain",
   "license": "MIT",
-  "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.51"
-  }
+  "devDependencies": {}
 }

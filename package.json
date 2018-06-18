@@ -14,18 +14,19 @@
   },
   "homepage": "https://github.com/steelbrain/pundle#readme",
   "dependencies": {
-    "@babel/core": "^7.0.0-beta.49",
-    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.49",
-    "@babel/preset-env": "^7.0.0-beta.49",
-    "@babel/preset-flow": "^7.0.0-beta.49",
+    "babel-core": "^6.26.3",
+    "babel-preset-steelbrain": "^5.0.3",
     "eslint-config-steelbrain": "^5.0.2",
     "flow-bin": "^0.73.0",
     "lerna": "^2.11.0",
+    "minimist": "^1.2.0",
     "nodemon": "^1.17.3",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "sb-babel-cli": "^0.1.1"
   },
   "scripts": {
     "test": "echo 'None yet'",
+    "_build": "sb-babel-cli packages/$1/src -o packages/$1/lib --write-flow-sources",
     "build": "lerna exec --parallel -- yarn build",
     "watch": "yarn build -w",
     "dev": "packages/pundle-cli/lib/pundle.js --directory packages/test-package",
