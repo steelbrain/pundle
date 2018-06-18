@@ -31,7 +31,8 @@ for (const [currentPackage, packageDirectory] of Object.entries(packages)) {
     '-o',
     path.join(packageDirectory, 'lib'),
     '--write-flow-sources',
-    '--disable-cache',
+    '--root',
+    path.dirname(__dirname),
   ]
   if (argv.w || argv.watch) {
     args.push('-w')
