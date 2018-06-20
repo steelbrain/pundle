@@ -8,6 +8,11 @@ function isHMRAccepted(oldModules, moduleId, matchAgainst = moduleId) {
     // New module, allow HMR
     return 'direct'
   }
+  if (!oldModule.hot) {
+    // HMR-Client when self updated
+    // has no .hot
+    return 'no'
+  }
 
   if (oldModule.hot.declined.includes('*') || oldModule.hot.declined.includes(matchAgainst)) {
     return 'no'
