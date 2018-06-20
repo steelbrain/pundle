@@ -1,13 +1,9 @@
 {
   "name": "pundle-reporter-base",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha4",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
-  "dependencies": {},
+  "scripts": {},
   "author": "steelbrain",
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "MIT"
 }

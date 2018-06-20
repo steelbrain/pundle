@@ -1,14 +1,12 @@
 {
   "name": "pundle-cli",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha4",
   "description": "TODO",
   "main": "lib/index.js",
   "bin": {
     "pundle": "./lib/pundle.js"
   },
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "chalk": "^2.4.1",
     "cool-trim": "^1.1.1",
@@ -20,13 +18,12 @@
     "mkdirp": "^0.5.1",
     "p-map": "^1.2.0",
     "pretty-bytes": "^5.1.0",
-    "pundle-api": "3.0.0-alpha3",
-    "pundle-core": "3.0.0-alpha3",
-    "pundle-dev-middleware": "3.0.0-alpha3",
+    "pundle-api": "^3.0.0-alpha4",
+    "pundle-core": "^3.0.0-alpha4",
+    "pundle-dev-middleware": "^3.0.0-alpha4",
     "sb-fs": "^3.0.0",
     "strip-ansi": "^4.0.0"
   },
   "author": "steelbrain",
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "MIT"
 }

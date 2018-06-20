@@ -1,16 +1,13 @@
 {
   "name": "pundle-transformer-static",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha4",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "mime": "^2.3.1",
-    "pundle-api": "3.0.0-alpha3"
+    "pundle-api": "^3.0.0-alpha4"
   },
   "author": "steelbrain",
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "MIT"
 }

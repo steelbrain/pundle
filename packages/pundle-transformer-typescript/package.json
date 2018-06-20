@@ -1,16 +1,13 @@
 {
   "name": "pundle-transformer-typescript",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha4",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "nanomatch": "^1.2.9",
-    "pundle-api": "3.0.0-alpha3"
+    "pundle-api": "^3.0.0-alpha4"
   },
   "author": "steelbrain",
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "MIT"
 }

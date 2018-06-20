@@ -1,11 +1,9 @@
 {
   "name": "pundle-api",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha4",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "globrex": "^0.1.1",
     "imurmurhash": "^0.1.4",
@@ -15,6 +13,5 @@
     "yup": "^0.25.1"
   },
   "author": "steelbrain",
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "MIT"
 }

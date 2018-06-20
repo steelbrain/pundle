@@ -1,16 +1,13 @@
 {
   "name": "pundle-chunk-transformer-js-uglify",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha4",
   "description": "TODO",
   "main": "lib/index.js",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
-    "pundle-api": "3.0.0-alpha3",
+    "pundle-api": "^3.0.0-alpha4",
     "uglify-es": "^3.3.9"
   },
   "author": "steelbrain",
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "MIT"
 }
