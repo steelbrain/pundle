@@ -51,14 +51,17 @@ function getHMROrder(oldModules, moduleIds) {
 function applyHMR(oldModules, moduleIds) {
   const updateOrder = getHMROrder(oldModules, moduleIds)
   updateOrder.forEach(moduleId => {
-    const oldModule = oldModules[moduleId] || null
     const newModule = require.cache[moduleId]
+    const oldModule = oldModules[moduleId] || null
     if (oldModule) {
       oldModule.hot.disposeHandlers.forEach(function(callback) {
         callback(newModule.hot.data)
       })
     }
     try {
+      if (newModule.invoked) {
+        sbPundleModuleRegister(moduleId, newModule.callback)
+      }
       sbPundleModuleRequire('$root', moduleId)
       if (oldModule) {
         oldModule.hot.successHandlers.forEach(function(callback) {
