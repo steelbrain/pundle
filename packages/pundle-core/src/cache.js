@@ -66,7 +66,7 @@ export default class Cache {
     const cachedVal = adapter.get(`files.${fileKey}`).value()
     if (!cachedVal) return null
     const mtime = parseInt(stats.mtime / 1000, 10)
-    if (mtime !== cachedVal.mtime) return null
+    if (mtime !== cachedVal.mtime || stats.size !== cachedVal.size) return null
 
     const fileTransformed = cachedVal.value
     if (typeof fileTransformed.contents === 'object' && fileTransformed.contents) {
@@ -81,7 +81,7 @@ export default class Cache {
     fs.stat(fileImport.filePath).then(stats => {
       const mtime = parseInt(stats.mtime / 1000, 10)
       const fileKey = getFileKey(fileImport)
-      adapter.set(`files.${fileKey}`, { mtime, value: file }).value()
+      adapter.set(`files.${fileKey}`, { mtime, size: stats.size, value: file }).value()
       this.write()
     })
   }
