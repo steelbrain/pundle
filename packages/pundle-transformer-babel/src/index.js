@@ -6,17 +6,23 @@ import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 import manifest from '../package.json'
 
 const DEFAULT_EXCLUDE = ['node_modules/**']
+const ALLOWED_VERSIONS = [6, 7]
+
 function createComponent({
   exclude = DEFAULT_EXCLUDE,
   processOutsideProjectRoot,
   options = {},
-  version = 'both',
+  version,
 }: {
   exclude?: Array<string | RegExp>,
   processOutsideProjectRoot?: boolean,
   options?: Object,
-  version: 'both' | '6' | '7',
+  version: 6 | 7,
 } = {}) {
+  if (!ALLOWED_VERSIONS.includes(version)) {
+    throw new Error(`options.version is required to be one of: ${ALLOWED_VERSIONS.join(', ')} got: ${version}`)
+  }
+
   return createFileTransformer({
     name: 'pundle-transformer-babel',
     version: manifest.version,
@@ -34,20 +40,19 @@ function createComponent({
       }
 
       const babelsToLookFor = []
-      if (version === 'both') {
-        babelsToLookFor.push('@babel/core', 'babel-core')
-      } else if (version === '7') {
-        babelsToLookFor.push('@babel/core')
-      } else {
+      if (version === 6) {
         babelsToLookFor.push('babel-core')
+      } else if (version === 7) {
+        babelsToLookFor.push('@babel/core')
       }
+
       const { name, exported } = loadLocalFromContext(context, babelsToLookFor)
       if (!name) {
         throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried @babel/core & babel-core)`)
       }
 
       const transformed = await new Promise((resolve, reject) => {
-        exported.transform(
+        const response = exported.transform(
           file.contents,
           {
             babelrc: true,
@@ -56,7 +61,7 @@ function createComponent({
             sourceType: 'module',
             highlightCode: false,
             sourceFileName: file.filePath,
-            ...(name === '@babel/core' ? { root: context.config.rootDirectory } : {}),
+            ...(version === 7 ? { root: context.config.rootDirectory } : {}),
             ...options,
           },
           function(err, result) {
@@ -65,6 +70,10 @@ function createComponent({
             } else resolve(result)
           },
         )
+
+        if (version === 6) {
+          resolve(response)
+        }
       })
 
       return {

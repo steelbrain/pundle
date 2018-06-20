@@ -48,7 +48,9 @@ module.exports = {
     transformerCoffee(),
     transformerJSON(),
     transformerJSON5(),
-    transformerBabel(),
+    transformerBabel({
+      version: 7,
+    }),
     transformerJS({
       browser: true,
     }),
