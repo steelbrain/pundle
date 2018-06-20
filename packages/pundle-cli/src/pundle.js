@@ -131,6 +131,8 @@ async function main() {
       --dev.static local::public  Allows mapping local static directories to the dist server. May be specified
                                   multiple times. Paths may be relative to pundle config's root directory.
                                   Use '::' to separate local and server paths. (eg. --dev.static ./static::/assets)
+      --dev.singlepage            Redirects all non-404 requests to /index.html. Useful for react single page
+                                  apps
       --watch.adapter             Choose between nsfw and chokidar. Adapters used to watch filesystem changes
       --cache                     Controls whether to enable or disable caching (enabled by default)
       --cache.reset               Controls whether to reset cache on boot
@@ -229,6 +231,12 @@ async function main() {
   app.use(await middlewarePromise)
   staticMappings.sort((a, b) => b.remote.length - a.remote.length).forEach(item => {
     app.use(item.remote, express.static(item.local))
+  })
+  app.use(function(req, res, next) {
+    if (req.url !== '/index.html') {
+      req.url = '/index.html'
+      middlewarePromise.then(callback => callback(req, res, next)).catch(next)
+    } else next()
   })
   log('Started Successfully')
 }
