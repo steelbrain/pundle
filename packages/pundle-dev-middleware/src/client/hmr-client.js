@@ -53,6 +53,12 @@ function applyHMR(oldModules, moduleIds) {
   updateOrder.forEach(moduleId => {
     const newModule = require.cache[moduleId]
     const oldModule = oldModules[moduleId] || null
+
+    if (!newModule) {
+      console.log('[HMR] Ignoring module because non-js', moduleId)
+      return
+    }
+
     if (oldModule) {
       oldModule.hot.disposeHandlers.forEach(function(callback) {
         callback(newModule.hot.data)
