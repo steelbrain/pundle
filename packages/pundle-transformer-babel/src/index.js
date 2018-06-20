@@ -39,16 +39,16 @@ function createComponent({
         return null
       }
 
-      const babelsToLookFor = []
+      let babelToLookFor = null
       if (version === 6) {
-        babelsToLookFor.push('babel-core')
+        babelToLookFor = 'babel-core'
       } else if (version === 7) {
-        babelsToLookFor.push('@babel/core')
+        babelToLookFor = '@babel/core'
       }
 
-      const { name, exported } = loadLocalFromContext(context, babelsToLookFor)
+      const { name, exported } = loadLocalFromContext(context, babelToLookFor ? [babelToLookFor] : [])
       if (!name) {
-        throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried @babel/core & babel-core)`)
+        throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried ${babelToLookFor})`)
       }
 
       const transformed = await new Promise((resolve, reject) => {
