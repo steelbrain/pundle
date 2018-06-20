@@ -61,6 +61,7 @@ function createComponent({
             sourceType: 'module',
             highlightCode: false,
             sourceFileName: file.filePath,
+            ...(version === 6 ? { quotes: 'single' } : {}),
             ...(version === 7 ? { root: context.config.rootDirectory } : {}),
             ...options,
           },
