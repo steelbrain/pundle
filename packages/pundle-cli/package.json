@@ -2,7 +2,6 @@
   "name": "pundle-cli",
   "version": "3.0.0-alpha6",
   "description": "TODO",
-  "main": "lib/index.js",
   "bin": {
     "pundle": "./lib/pundle.js"
   },

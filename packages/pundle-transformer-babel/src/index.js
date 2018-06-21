@@ -48,7 +48,7 @@ function createComponent({
 
       const { name, exported } = loadLocalFromContext(context, babelToLookFor ? [babelToLookFor] : [])
       if (!name) {
-        throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried ${babelToLookFor})`)
+        throw new Error(`Babel not found in '${context.config.rootDirectory}' (tried ${babelToLookFor || ''})`)
       }
 
       const transformed = await new Promise((resolve, reject) => {

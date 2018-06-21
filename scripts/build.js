@@ -30,7 +30,6 @@ for (const [currentPackage, packageDirectory] of Object.entries(packages)) {
     path.join(packageDirectory, 'src'),
     '-o',
     path.join(packageDirectory, 'lib'),
-    '--write-flow-sources',
     '--root',
     path.dirname(__dirname),
   ]
