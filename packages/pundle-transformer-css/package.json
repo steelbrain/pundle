@@ -1,13 +1,13 @@
 {
   "name": "pundle-transformer-css",
-  "version": "3.0.0-alpha4",
+  "version": "3.0.0-alpha5",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
     "postcss": "^6.0.22",
     "postcss-modules": "^1.1.0",
-    "pundle-api": "^3.0.0-alpha4"
+    "pundle-api": "^3.0.0-alpha5"
   },
   "author": "steelbrain",
   "license": "MIT"

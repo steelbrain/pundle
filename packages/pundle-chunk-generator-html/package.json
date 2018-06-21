@@ -1,12 +1,12 @@
 {
   "name": "pundle-chunk-generator-html",
-  "version": "3.0.0-alpha4",
+  "version": "3.0.0-alpha5",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
     "globrex": "^0.1.1",
-    "pundle-api": "^3.0.0-alpha4",
+    "pundle-api": "^3.0.0-alpha5",
     "toposort": "^2.0.2"
   },
   "author": "steelbrain",

@@ -1,11 +1,11 @@
 {
   "name": "pundle-transformer-sass",
-  "version": "3.0.0-alpha4",
+  "version": "3.0.0-alpha5",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-alpha4"
+    "pundle-api": "^3.0.0-alpha5"
   },
   "author": "steelbrain",
   "license": "MIT"

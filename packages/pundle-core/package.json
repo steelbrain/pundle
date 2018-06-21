@@ -1,6 +1,6 @@
 {
   "name": "pundle-core",
-  "version": "3.0.0-alpha4",
+  "version": "3.0.0-alpha5",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
@@ -11,8 +11,8 @@
     "mkdirp": "^0.5.1",
     "p-map": "^1.2.0",
     "promise.defer": "^1.0.1",
-    "pundle-api": "^3.0.0-alpha4",
-    "pundle-core-load-config": "^3.0.0-alpha4",
+    "pundle-api": "^3.0.0-alpha5",
+    "pundle-core-load-config": "^3.0.0-alpha5",
     "sb-communication": "5",
     "sb-fs": "^3.0.0",
     "sb-promise-queue": "^1.0.1"
