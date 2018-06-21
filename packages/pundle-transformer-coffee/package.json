@@ -1,12 +1,12 @@
 {
   "name": "pundle-transformer-coffee",
-  "version": "3.0.0-alpha5",
+  "version": "3.0.0-alpha6",
   "description": "TODO",
   "main": "lib/index.js",
   "scripts": {},
   "dependencies": {
     "nanomatch": "^1.2.9",
-    "pundle-api": "^3.0.0-alpha5"
+    "pundle-api": "^3.0.0-alpha6"
   },
   "author": "steelbrain",
   "license": "MIT"
