@@ -38,12 +38,7 @@ export default class Master implements PundleWorker {
     this.workersQueue = []
 
     this.resolverWorker = this._createWorker()
-    this.transformWorkers = os
-      .cpus()
-      // Minus two because we have current plus resolver
-      // TODO: See if it's worth doing
-      // .slice(-2)
-      .map(() => this._createWorker())
+    this.transformWorkers = os.cpus().map(() => this._createWorker())
   }
   _createWorker(): WorkerDelegate {
     return new WorkerDelegate({
