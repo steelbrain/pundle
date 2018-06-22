@@ -35,8 +35,6 @@ export default class WorkerDelegate {
     return !!(this.handle && this.bridge)
   }
   processQueue(): void {
-    if (this.busyProcessing > 0) return
-
     const queueItem = this.options.queue.pop()
     if (queueItem) {
       queueItem(this)
