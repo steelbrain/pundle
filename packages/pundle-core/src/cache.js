@@ -12,11 +12,8 @@ import { version } from '../package.json'
 
 const majorVersion = version.split('.')[0]
 
-function msTime(time) {
-  return parseInt(time / 1000, 10)
-}
 function statsToCacheKey(stats) {
-  return stats ? `${msTime(stats.mtime)}::${stats.size}` : `null`
+  return stats ? `${parseInt(stats.mtime / 1000, 10)}::${stats.size}` : `null`
 }
 
 export default class Cache {
@@ -49,20 +46,20 @@ export default class Cache {
       await fs.unlink(filePath)
     }
 
-    const configCacheKey = statsToCacheKey(configFilePath ? await fs.stat(configFilePath) : null)
+    const cacheKey = statsToCacheKey(configFilePath ? await fs.stat(configFilePath) : null)
     const fileAdapter = new FileAsync(filePath, {
       defaultValue: {
-        version: majorVersion,
-        configCacheKey,
         files: {},
+        cacheKey,
+        version: majorVersion,
       },
     })
 
     const adapter = await lowdb(fileAdapter)
-    if (adapter.get('configCacheKey').value() !== configCacheKey) {
+    if (adapter.get('cacheKey').value() !== cacheKey) {
       adapter
         .set('files', {})
-        .set('configCacheKey', configCacheKey)
+        .set('cacheKey', cacheKey)
         .value()
       this.write()
     }
@@ -82,8 +79,8 @@ export default class Cache {
     const fileKey = getFileKey(fileImport)
     const cachedVal = adapter.get(`files.${fileKey}`).value()
     if (!cachedVal) return null
-    const mtime = msTime(stats.mtime)
-    if (mtime !== cachedVal.mtime || stats.size !== cachedVal.size) return null
+    const cacheKey = statsToCacheKey(stats)
+    if (cacheKey !== cachedVal.cacheKey) return null
 
     const fileTransformed = cachedVal.value
     if (typeof fileTransformed.contents === 'object' && fileTransformed.contents) {
@@ -97,7 +94,8 @@ export default class Cache {
 
     fs.stat(fileImport.filePath).then(stats => {
       const fileKey = getFileKey(fileImport)
-      adapter.set(`files.${fileKey}`, { mtime: msTime(stats.mtime), size: stats.size, value: file }).value()
+      const cacheKey = statsToCacheKey(stats)
+      adapter.set(`files.${fileKey}`, { cacheKey, value: file }).value()
       this.write()
     })
   }
