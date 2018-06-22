@@ -12,6 +12,13 @@ import { version } from '../package.json'
 
 const majorVersion = version.split('.')[0]
 
+function msTime(time) {
+  return parseInt(time / 1000, 10)
+}
+function statsToCacheKey(stats) {
+  return stats ? `${msTime(stats.mtime)}::${stats.size}` : `null`
+}
+
 export default class Cache {
   adapter: ?Object
   context: Context
@@ -23,12 +30,12 @@ export default class Cache {
     this.context.invokeIssueReporters(issue)
   }
   async load() {
-    const cacheConfig = this.context.config.cache
+    const { cache: cacheConfig, configFilePath, rootDirectory } = this.context.config
     if (!cacheConfig.enabled) return
 
     const filePath = path.join(
       cacheConfig.rootDirectory,
-      `${getStringHash(`${this.context.config.rootDirectory}-${cacheConfig.cacheKey}`)}.json`,
+      `${getStringHash(`${rootDirectory}-${cacheConfig.cacheKey}`)}.json`,
     )
     await new Promise((resolve, reject) => {
       mkdirp(path.dirname(filePath), err => {
@@ -42,14 +49,24 @@ export default class Cache {
       await fs.unlink(filePath)
     }
 
+    const configCacheKey = statsToCacheKey(configFilePath ? await fs.stat(configFilePath) : null)
     const fileAdapter = new FileAsync(filePath, {
       defaultValue: {
         version: majorVersion,
+        configCacheKey,
         files: {},
       },
     })
 
-    this.adapter = await lowdb(fileAdapter)
+    const adapter = await lowdb(fileAdapter)
+    if (adapter.get('configCacheKey').value() !== configCacheKey) {
+      adapter
+        .set('files', {})
+        .set('configCacheKey', configCacheKey)
+        .value()
+      this.write()
+    }
+    this.adapter = adapter
   }
   async getFile(fileImport: ImportResolved): Promise<?ImportTransformed> {
     const { adapter } = this
@@ -65,7 +82,7 @@ export default class Cache {
     const fileKey = getFileKey(fileImport)
     const cachedVal = adapter.get(`files.${fileKey}`).value()
     if (!cachedVal) return null
-    const mtime = parseInt(stats.mtime / 1000, 10)
+    const mtime = msTime(stats.mtime)
     if (mtime !== cachedVal.mtime || stats.size !== cachedVal.size) return null
 
     const fileTransformed = cachedVal.value
@@ -79,9 +96,8 @@ export default class Cache {
     if (!adapter) return
 
     fs.stat(fileImport.filePath).then(stats => {
-      const mtime = parseInt(stats.mtime / 1000, 10)
       const fileKey = getFileKey(fileImport)
-      adapter.set(`files.${fileKey}`, { mtime, size: stats.size, value: file }).value()
+      adapter.set(`files.${fileKey}`, { mtime: msTime(stats.mtime), size: stats.size, value: file }).value()
       this.write()
     })
   }
