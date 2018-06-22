@@ -6,11 +6,11 @@ import path from 'path'
 import { fromStack } from 'sb-callsite'
 import { PundleError, type Context } from 'pundle-api'
 
-export default async function readConfigFile(context: Context): Promise<Object> {
+export default async function readConfigFile(context: Context): Promise<{ config: Object, configFilePath: ?string }> {
   const { directory, configFilePath, configLoadFile } = context
 
   if (!configLoadFile) {
-    return { rootDirectory: directory }
+    return { config: { rootDirectory: directory }, configFilePath: null }
   }
   const resolvedConfigFilePath = path.resolve(directory, configFilePath)
   if (!(await fs.exists(resolvedConfigFilePath))) {
@@ -48,5 +48,5 @@ export default async function readConfigFile(context: Context): Promise<Object> 
     throw new PundleError('CONFIG', 'INVALID_CONFIG', 'Exported ESM config is not a valid object', configFilePath)
   }
 
-  return config
+  return { config, configFilePath: resolvedConfigFilePath }
 }

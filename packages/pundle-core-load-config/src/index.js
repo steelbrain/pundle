@@ -10,9 +10,12 @@ import validateAndTransformConfig from './validateAndTransformConfig'
 
 export type { Config, AcceptedConfig }
 export default async function loadConfig(context: Context): Promise<Config> {
+  // $FlowFixMe: Flow typing error with await
+  const { configFilePath, config: fileConfigContents } = await readConfigFile(context)
+
   const fileConfig = await validateAndTransformConfig({
     context,
-    config: await readConfigFile(context),
+    config: fileConfigContents,
   })
   const inlineConfig = await validateAndTransformConfig({
     context,
@@ -36,6 +39,7 @@ export default async function loadConfig(context: Context): Promise<Config> {
       rootDirectory: '',
     },
     components: [],
+    configFilePath: null,
   }
   if (typeof fileConfig.cache !== 'undefined') {
     if (fileConfig.cache === false) {
@@ -65,6 +69,9 @@ export default async function loadConfig(context: Context): Promise<Config> {
   }
   if (fileConfig.components) {
     config.components = fileConfig.components.sort((a, b) => b.priority - a.priority)
+  }
+  if (configFilePath) {
+    config.configFilePath = configFilePath
   }
 
   return config

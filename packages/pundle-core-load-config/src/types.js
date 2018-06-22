@@ -32,4 +32,5 @@ export type Config = {|
     rootDirectory: string,
   },
   components: Array<Component<any, any>>,
+  configFilePath: ?string,
 |}
