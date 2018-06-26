@@ -1,12 +1,12 @@
 {
   "name": "pundle-chunk-generator-static",
-  "version": "3.0.0-alpha6",
+  "version": "3.0.0-alpha7",
   "description": "TODO",
   "main": "lib/index.js",
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-alpha6"
+    "pundle-api": "^3.0.0-alpha7"
   },
   "author": "steelbrain",
   "license": "MIT"
