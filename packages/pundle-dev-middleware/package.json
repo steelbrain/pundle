@@ -12,8 +12,8 @@
     "toposort": "^2.0.2"
   },
   "peerDependencies": {
-    "pundle-api": "3.0.0-alpha6",
-    "pundle-core": "3.0.0-alpha6"
+    "pundle-api": "3.0.0-alpha7",
+    "pundle-core": "3.0.0-alpha7"
   },
   "author": "steelbrain",
   "license": "MIT",
