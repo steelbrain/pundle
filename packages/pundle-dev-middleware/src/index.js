@@ -45,12 +45,6 @@ async function getPundleDevMiddleware(options: Payload) {
   if (options.hmr) {
     configEntry = [require.resolve('./client/hmr-client')].concat(configEntry)
   }
-  const configCache = get(options, 'config.cache', {})
-  if (configCache) {
-    configCache.cacheKey = configCache.cacheKey
-      ? `${configCache.cacheKey}-watcher`
-      : `watcher-${process.env.NODE_ENV || 'development'}`
-  }
 
   const pundle = await getPundle({
     ...pick(options, PUNDLE_OPTIONS),
@@ -61,8 +55,6 @@ async function getPundleDevMiddleware(options: Payload) {
         formats: await getOutputFormats(pick(options, PUNDLE_OPTIONS), publicPath),
         rootDirectory: '/tmp',
       },
-
-      cache: configCache,
     },
   })
 
