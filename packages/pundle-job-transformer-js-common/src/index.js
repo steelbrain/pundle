@@ -24,6 +24,8 @@ function createComponent({ name = '_common_' }: { name?: string } = {}) {
       const chunkToFiles = new Map()
 
       job.chunks.forEach(chunk => {
+        if (!chunk.root) return
+
         const relevantFiles = new Set()
 
         function iterateImports(fileImport: ImportResolved, topLevelOnly: boolean) {
