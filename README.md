@@ -43,3 +43,4 @@ This is the Alpha NG branch. See [master](https://github.com/steelbrain/pundle/t
 - Chunk minifers for HTML / CSS
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
+- SSR
