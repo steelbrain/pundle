@@ -187,14 +187,13 @@ async function main() {
     return
   }
 
-  const specifiedDevPort = parseInt(get(argv, 'dev.port', 0), 10)
-  const devPort = specifiedDevPort || 3000
+  const devPort = parseInt(get(argv, 'dev.port', 0), 10) || 3000
   const devHost = get(argv, 'dev.host', '127.0.0.1')
   const staticMappings = getStaticMappings(pundle, argv)
 
-  const devPortToUse = await getNextPort(devPort)
-  if (devPortToUse !== devPort && specifiedDevPort) {
-    log(chalk.yellow(`Unable to listen on port ${specifiedDevPort} - Is another program using that port?`))
+  const devPortToUse = await getNextPort(devPort, devHost)
+  if (devPortToUse !== devPort) {
+    log(chalk.yellow(`Unable to listen on port ${devPort} - Is another program using that port?`))
   }
 
   log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
@@ -224,7 +223,7 @@ async function main() {
     middlewarePromise.then(() => next(), next)
   })
   await new Promise((resolve, reject) => {
-    const server = app.listen(devPort, devHost)
+    const server = app.listen(devPortToUse, devHost)
     server.on('error', reject)
     server.on('listening', resolve)
   })

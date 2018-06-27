@@ -20,8 +20,8 @@ const getPort = options =>
     })
   })
 
-export function getNextPort(port: number): Promise<number> {
-  return getPort({ port }).catch(() => getNextPort(port + 1))
+export function getNextPort(port: number, host: string): Promise<number> {
+  return getPort({ port, host }).catch(() => getPort({ port: port + 1, host }))
 }
 
 export function getStaticMappings(pundle: $FlowFixMe, config: Object): Array<{ local: string, remote: string }> {
