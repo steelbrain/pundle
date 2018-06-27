@@ -1,75 +1,27 @@
 const path = require('path')
-
-const cssnano = require('cssnano')
-const cliReporter = require('pundle-reporter-cli')
-const resolverDefault = require('pundle-resolver-default')
-const transformerJS = require('pundle-transformer-js')
-const transformerCSS = require('pundle-transformer-css')
-const transformerCoffee = require('pundle-transformer-coffee')
-const transformerSass = require('pundle-transformer-sass')
-const transformerLess = require('pundle-transformer-less')
-const transformerCSON = require('pundle-transformer-cson')
-const transformerJSON = require('pundle-transformer-json')
-const transformerJSON5 = require('pundle-transformer-json5')
-const transformerBabel = require('pundle-transformer-babel')
-const transformerStatic = require('pundle-transformer-static')
-const transformerStylus = require('pundle-transformer-stylus')
-const transformerPostcss = require('pundle-transformer-postcss')
-const transformerTypescript = require('pundle-transformer-typescript')
-const chunkGeneratorJs = require('pundle-chunk-generator-js')
-const chunkGeneratorHtml = require('pundle-chunk-generator-html')
-const chunkGeneratorStatic = require('pundle-chunk-generator-static')
-const chunkTransformerJSUglify = require('pundle-chunk-transformer-js-uglify')
-const browserAliases = require('pundle-resolver-aliases-browser')
-const jobTransformerJSCommon = require('pundle-job-transformer-js-common')
+const presetDefault = require('pundle-preset-default')
 
 module.exports = {
   cache: {
     enabled: true,
   },
   entry: ['./src', './index.html'],
-  components: [
-    cliReporter(),
-    resolverDefault({
-      formats: {
-        js: ['.js', '.mjs', '.json', '.ts', '.tsx', '.json5', '.cson', '.coffee'],
-        html: ['.html'],
-        css: ['.css', '.less', '.scss', '.styl'],
-        static: ['.png'],
-      },
-      aliases: browserAliases,
-    }),
-    transformerCSON(),
-    transformerCSS({
-      extensions: ['.css', '.less', '.scss', '.styl'],
-      development: false,
-      // ^ Enables HMR support but for now breaks source maps
-    }),
-    transformerCoffee(),
-    transformerJSON(),
-    transformerJSON5(),
-    transformerBabel({
-      version: 7,
-    }),
-    transformerJS({
-      browser: true,
-    }),
-    transformerLess(),
-    transformerSass(),
-    transformerStatic({
-      extensionsOrMimes: ['.png'],
-    }),
-    transformerStylus(),
-    transformerPostcss({
-      plugins: [cssnano({ preset: 'default' })],
-    }),
-    transformerTypescript(),
-    chunkGeneratorJs(),
-    chunkGeneratorHtml(),
-    chunkGeneratorStatic({ formats: ['css'] }),
-    jobTransformerJSCommon(),
-    ...(process.env.NODE_ENV === 'production' ? [chunkTransformerJSUglify()] : []),
-  ],
+  components: presetDefault({
+    transform: {
+      cson: true,
+      css: true,
+      coffee: true,
+      json: true,
+      json5: true,
+      babel: 7,
+      js: true,
+      less: true,
+      sass: true,
+      stylus: true,
+      postcss: true,
+      typescript: true,
+    },
+  }),
   rootDirectory: __dirname,
   output: {
     rootDirectory: path.join(__dirname, 'dist'),

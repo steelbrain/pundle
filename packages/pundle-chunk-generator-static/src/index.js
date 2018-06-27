@@ -6,9 +6,9 @@ import { createChunkGenerator, getFileKey } from 'pundle-api'
 
 import manifest from '../package.json'
 
-function createComponent({ formats }: { formats: Array<string> }) {
+function createComponent({ formats = [] }: { formats: Array<string> } = {}) {
   return createChunkGenerator({
-    name: 'pundle-chunk-generator-html',
+    name: 'pundle-chunk-generator-static',
     version: manifest.version,
     async callback({ chunk, job, context }) {
       const formatMatch = chunk.format === 'static' || formats.includes(chunk.format)
