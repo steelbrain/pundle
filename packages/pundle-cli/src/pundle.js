@@ -250,8 +250,8 @@ async function main() {
     }
     log('Started Successfully')
   } catch (error) {
-    process.exitCode = 1
     await pundle.report(error)
+    pundle.dispose()
   }
 }
 
