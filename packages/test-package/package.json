@@ -1,6 +1,6 @@
 {
   "name": "--test-package--",
-  "version": "3.0.0-alpha7",
+  "version": "3.0.0-alpha8",
   "private": true,
   "description": "TODO",
   "main": "lib/index.js",
@@ -13,11 +13,11 @@
     "coffeescript": "^2.3.1",
     "less": "^3.0.4",
     "node-sass": "^4.9.0",
+    "pundle-preset-default": "^3.0.0-alpha8",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "stylus": "^0.54.5",
-    "typescript": "^2.9.1",
-    "pundle-preset-default": "3.0.0-alpha7"
+    "typescript": "^2.9.1"
   },
   "author": "steelbrain",
   "license": "MIT"

@@ -1,13 +1,13 @@
 {
   "name": "pundle-reporter-cli",
-  "version": "3.0.0-alpha7",
+  "version": "3.0.0-alpha8",
   "description": "TODO",
   "main": "lib/index.js",
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-alpha7",
-    "pundle-reporter-base": "^3.0.0-alpha7"
+    "pundle-api": "^3.0.0-alpha8",
+    "pundle-reporter-base": "^3.0.0-alpha8"
   },
   "author": "steelbrain",
   "license": "MIT"

@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev-middleware",
-  "version": "3.0.0-alpha7",
+  "version": "3.0.0-alpha8",
   "description": "TODO",
   "main": "lib/index.js",
   "flow:main": "src/index.js",
@@ -18,7 +18,7 @@
   "author": "steelbrain",
   "license": "MIT",
   "devDependencies": {
-    "pundle-api": "^3.0.0-alpha7",
-    "pundle-core": "^3.0.0-alpha7"
+    "pundle-api": "^3.0.0-alpha8",
+    "pundle-core": "^3.0.0-alpha8"
   }
 }

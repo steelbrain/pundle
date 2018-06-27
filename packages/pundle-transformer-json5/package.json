@@ -1,13 +1,13 @@
 {
   "name": "pundle-transformer-json5",
-  "version": "3.0.0-alpha7",
+  "version": "3.0.0-alpha8",
   "description": "TODO",
   "main": "lib/index.js",
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
     "json5": "^1.0.1",
-    "pundle-api": "^3.0.0-alpha7"
+    "pundle-api": "^3.0.0-alpha8"
   },
   "author": "steelbrain",
   "license": "MIT"

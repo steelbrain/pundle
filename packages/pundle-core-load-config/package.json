@@ -1,13 +1,13 @@
 {
   "name": "pundle-core-load-config",
-  "version": "3.0.0-alpha7",
+  "version": "3.0.0-alpha8",
   "description": "TODO",
   "main": "lib/index.js",
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
     "lodash": "^4.17.10",
-    "pundle-api": "^3.0.0-alpha7",
+    "pundle-api": "^3.0.0-alpha8",
     "sb-callsite": "^1.1.2",
     "sb-fs": "^3.0.0"
   },
