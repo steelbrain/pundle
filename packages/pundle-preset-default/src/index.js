@@ -1,8 +1,6 @@
 // @flow
 /* eslint-disable global-require */
 
-import get from 'lodash/get'
-
 const BABEL_ALLOWED_VERSIONS = new Set([6, 7])
 
 function getPresetComponents({
@@ -151,7 +149,7 @@ function getPresetComponents({
   if (resolve) {
     const resolverAliases = {
       ...(target === 'browser' ? require('pundle-resolver-aliases-browser') : {}),
-      ...get(resolve, 'aliases', {}),
+      ...(resolve && resolve.aliases ? resolve.aliases : {}),
     }
     components.push(
       require('pundle-resolver-default')({
