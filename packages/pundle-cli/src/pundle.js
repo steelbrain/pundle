@@ -151,101 +151,108 @@ async function main() {
     config: pundleConfig,
   })
 
-  const isDev = argv.dev === true || Object.keys(argv.dev).length > 0
-  const isWatch = argv.watch === true || Object.keys(argv.watch).length > 0
+  try {
+    const isDev = argv.dev === true || Object.keys(argv.dev).length > 0
+    const isWatch = argv.watch === true || Object.keys(argv.watch).length > 0
 
-  const watchAdapter = get(argv, 'watch.adapter')
-  const watchConfig = { ...(watchAdapter ? { adapter: watchAdapter } : {}) }
+    const watchAdapter = get(argv, 'watch.adapter')
+    const watchConfig = { ...(watchAdapter ? { adapter: watchAdapter } : {}) }
 
-  const headerText = `${pundle.context.config.cache.enabled ? 'with' : 'without'}${
-    pundle.context.config.cache.reset ? ' resetted' : ''
-  } cache${watchAdapter ? ` and with adapter ${watchAdapter}` : ''}`
+    const headerText = `${pundle.context.config.cache.enabled ? 'with' : 'without'}${
+      pundle.context.config.cache.reset ? ' resetted' : ''
+    } cache${watchAdapter ? ` and with adapter ${watchAdapter}` : ''}`
 
-  if (!isDev) {
-    if (isWatch) {
-      log(`Watching (${headerText})`)
-      const { job, initialCompile } = await getWatcher({
-        ...watchConfig,
-        pundle,
-        generate({ changed }) {
-          const changedFiles = uniq(changed.map(i => i.filePath)).map(i =>
-            path.relative(pundle.context.config.rootDirectory, i),
-          )
-          log(`Files affected:\n${changedFiles.map(i => `  - ${i}`).join('\n')}`)
-          return generateForWatcher({ pundle, job, changed })
-        },
-      })
-      try {
-        await initialCompile()
-      } catch (error) {
-        // TODO: Report instead
-        console.error(error)
+    if (!isDev) {
+      if (isWatch) {
+        log(`Watching (${headerText})`)
+        const { job, initialCompile } = await getWatcher({
+          ...watchConfig,
+          pundle,
+          generate({ changed }) {
+            const changedFiles = uniq(changed.map(i => i.filePath)).map(i =>
+              path.relative(pundle.context.config.rootDirectory, i),
+            )
+            log(`Files affected:\n${changedFiles.map(i => `  - ${i}`).join('\n')}`)
+            return generateForWatcher({ pundle, job, changed })
+          },
+        })
+        try {
+          await initialCompile()
+        } catch (error) {
+          // TODO: Report instead
+          console.error(error)
+        }
+        await generateForWatcher({ pundle, job, changed: null })
+        return
       }
-      await generateForWatcher({ pundle, job, changed: null })
+      log(`Compiling (${headerText})`)
+      console.time('Compiled')
+      const result = await pundle.execute()
+      console.timeEnd('Compiled')
+      await writeCompiledChunks(pundle.context, result)
+      pundle.dispose()
       return
     }
-    log(`Compiling (${headerText})`)
-    console.time('Compiled')
-    const result = await pundle.execute()
-    console.timeEnd('Compiled')
-    await writeCompiledChunks(pundle.context, result)
-    pundle.dispose()
-    return
-  }
 
-  const devPort = parseInt(get(argv, 'dev.port', 0), 10) || 3000
-  const devHost = get(argv, 'dev.host', '127.0.0.1')
-  const staticMappings = getStaticMappings(pundle, argv)
+    const devPort = parseInt(get(argv, 'dev.port', 0), 10) || 3000
+    const devHost = get(argv, 'dev.host', '127.0.0.1')
+    const staticMappings = getStaticMappings(pundle, argv)
 
-  const devPortToUse = await getNextPort(devPort, devHost)
-  if (devPortToUse !== devPort) {
-    log(chalk.yellow(`Unable to listen on port ${devPort} - Is another program using that port?`))
-  }
+    const devPortToUse = await getNextPort(devPort, devHost)
+    if (devPortToUse !== devPort) {
+      log(chalk.yellow(`Unable to listen on port ${devPort} - Is another program using that port?`))
+    }
 
-  log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
-  if (staticMappings.length) {
-    log(`Static mappings:`)
-    staticMappings.sort((a, b) => a.remote.length - b.remote.length).forEach(item => {
-      log(`  ${item.remote} ~> ${item.local}`)
+    log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
+    if (staticMappings.length) {
+      log(`Static mappings:`)
+      staticMappings.sort((a, b) => a.remote.length - b.remote.length).forEach(item => {
+        log(`  ${item.remote} ~> ${item.local}`)
+      })
+    }
+
+    const app = express()
+    const middlewarePromise = getPundleDevMiddleware({
+      ...pundleArgs,
+      publicPath: '/',
+      ...argv.dev,
+      config: pundleConfig,
+      watchConfig,
+      changedCallback(changed) {
+        const changedFiles = uniq(changed.map(i => i.filePath)).map(i =>
+          path.relative(pundle.context.config.rootDirectory, i),
+        )
+        log(`  Files affected:\n${changedFiles.map(i => `    - ${i}`).join('\n')}`)
+      },
+      generatedCallback(url, contents) {
+        logFile(url, contents).catch(pundle.report)
+      },
     })
-  }
-
-  const app = express()
-  const middlewarePromise = getPundleDevMiddleware({
-    ...pundleArgs,
-    publicPath: '/',
-    ...argv.dev,
-    config: pundleConfig,
-    watchConfig,
-    changedCallback(changed) {
-      const changedFiles = uniq(changed.map(i => i.filePath)).map(i => path.relative(pundle.context.config.rootDirectory, i))
-      log(`  Files affected:\n${changedFiles.map(i => `    - ${i}`).join('\n')}`)
-    },
-    generatedCallback(url, contents) {
-      logFile(url, contents).catch(pundle.report)
-    },
-  })
-  app.use(function(req, res, next) {
-    middlewarePromise.then(() => next(), next)
-  })
-  await new Promise((resolve, reject) => {
-    const server = app.listen(devPortToUse, devHost)
-    server.on('error', reject)
-    server.on('listening', resolve)
-  })
-  app.use(await middlewarePromise)
-  staticMappings.sort((a, b) => b.remote.length - a.remote.length).forEach(item => {
-    app.use(item.remote, express.static(item.local))
-  })
-  if (get(argv, 'dev.singlepage')) {
     app.use(function(req, res, next) {
-      if (req.url !== '/index.html') {
-        req.url = '/index.html'
-        middlewarePromise.then(callback => callback(req, res, next)).catch(next)
-      } else next()
+      middlewarePromise.then(() => next(), next)
     })
+    await new Promise((resolve, reject) => {
+      const server = app.listen(devPortToUse, devHost)
+      server.on('error', reject)
+      server.on('listening', resolve)
+    })
+    app.use(await middlewarePromise)
+    staticMappings.sort((a, b) => b.remote.length - a.remote.length).forEach(item => {
+      app.use(item.remote, express.static(item.local))
+    })
+    if (get(argv, 'dev.singlepage')) {
+      app.use(function(req, res, next) {
+        if (req.url !== '/index.html') {
+          req.url = '/index.html'
+          middlewarePromise.then(callback => callback(req, res, next)).catch(next)
+        } else next()
+      })
+    }
+    log('Started Successfully')
+  } catch (error) {
+    process.exitCode = 1
+    await pundle.report(error)
   }
-  log('Started Successfully')
 }
 
 main().catch(error => {
