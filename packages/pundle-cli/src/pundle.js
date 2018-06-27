@@ -25,7 +25,7 @@ import manifest from '../package.json'
 import { getNextPort, getStaticMappings } from './helpers'
 
 const PUNDLE_ARGS = ['directory', 'configFilePath', 'configLoadFile']
-const OMIT_ARGS = PUNDLE_ARGS.concat(['_', 'dev', 'watch'])
+const OMIT_ARGS = PUNDLE_ARGS.concat(['_', 'dev', 'watch', 'debug'])
 
 const argv = mapValues(
   minimist(process.argv.slice(2), {
@@ -108,18 +108,19 @@ async function main() {
   }
   if (argv.help || argv.h) {
     log(coolTrim`
-    Usage: pundle [--version] [--help] [--watch] [--dev]
+    Usage: pundle [...options]
 
-    These are the most commonly used option combinations:
-      pundle                      Compile the contents of a project and write to output directory
-      pundle --watch              Just like compile but watches and recompiles on changes
-      pundle --dev                Compile the contents and start an http server on a port (3000 by default)
+    These are the common top level options:
+      < no parameter >            Compile the contents of a project and write to output directory
+      --watch                     Just like compile but watches and recompiles on changes
+      --dev                       Compile the contents and start an http server on a port (3000 by default)
                                   but do not write to output directory
-      pundle --directory <path>   Start Pundle in a specific directory (supports other options)
-
-    These are the most popular used options (but others/all are supported from Pundle in dot notation):
+      --directory <path>          Start Pundle in a specific directory (supports other options)
+      --debug                     Shows detailed error information
       --version                   Print the version of the program
       --help                      Show this help text
+
+    Here are some of Pundle's config parameters (but others/all supported by Pundle can be used in dot notation):
       --directory                 Start pundle in a specific directory (is process.cwd() by default)
       --configFilePath            File path to Pundle config file (by default it's 'pundle.config.js')
                                   resolved from above mentioned directory
@@ -140,6 +141,11 @@ async function main() {
     `)
     process.exit(1)
   }
+
+  if (argv.debug) {
+    process.env.PUNDLE_DEBUG = '1'
+  }
+
   pundle = await getPundle({
     ...pundleArgs,
     config: pundleConfig,
