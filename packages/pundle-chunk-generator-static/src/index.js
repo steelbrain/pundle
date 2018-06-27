@@ -1,46 +1,25 @@
 // @flow
 
-import path from 'path'
 import invariant from 'assert'
 import { createChunkGenerator, getFileKey } from 'pundle-api'
 
 import manifest from '../package.json'
 
-function createComponent({ formats = [] }: { formats: Array<string> } = {}) {
+function createComponent() {
   return createChunkGenerator({
     name: 'pundle-chunk-generator-static',
     version: manifest.version,
-    async callback({ chunk, job, context }) {
-      const formatMatch = chunk.format === 'static' || formats.includes(chunk.format)
-      if (!formatMatch || !chunk.entry) return null
+    async callback({ chunk, job }) {
+      if (chunk.format !== 'static' || !chunk.entry) return null
 
       const file = job.files.get(getFileKey(chunk))
       invariant(file, 'Entry for chunk not found in generator-static')
 
-      let { contents } = file
-      const output = {
-        contents: ('': any),
-        sourceMap: (null: any),
+      return {
         format: chunk.format,
+        sourceMap: null,
+        contents: file.contents,
       }
-      const publicPath = context.getPublicPath(chunk)
-      const sourceMapUrl = context.getPublicPath({ ...chunk, format: 'css.map' })
-
-      if (sourceMapUrl && file.sourceMap) {
-        if (chunk.format === 'css') {
-          contents = `${
-            typeof contents === 'string' ? contents : contents.toString()
-          }\n/*# sourceMappingURL=${path.posix.relative(path.dirname(publicPath), sourceMapUrl)} */`
-        }
-        output.sourceMap = {
-          filePath: sourceMapUrl,
-          contents: JSON.stringify(file.sourceMap),
-        }
-      }
-
-      output.contents = contents
-
-      return output
     },
   })
 }

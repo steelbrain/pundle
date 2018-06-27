@@ -22,7 +22,7 @@ function getPresetComponents({
     typescript = false,
   } = {},
   development = process.env.NODE_ENV !== 'production',
-  generate: { js: generateJS = true, html: generateHTML = true } = {},
+  generate: { js: generateJS = true, css: generateCSS = true, html: generateHTML = true } = {},
   optimize: { js: optimizeJS = !development, css: optimizeCSS = !development, html: optimizeHTML = !development } = {},
   statics = ['.png', '.jpg', '.woff', '.woff2', '.ttf', '.otf', '.eot', '.svg', '.webp', '.jpeg', '.gif', '.apng', '.bmp'],
   resolve = true,
@@ -48,6 +48,7 @@ function getPresetComponents({
   development?: boolean,
   generate?: {
     js?: boolean,
+    csss?: boolean,
     html?: boolean,
   },
   optimize?: {
@@ -147,15 +148,6 @@ function getPresetComponents({
       }),
     )
   }
-  if (generateJS) {
-    components.push(require('pundle-chunk-generator-js')())
-  }
-  if (generateHTML) {
-    components.push(require('pundle-chunk-generator-html')())
-  }
-  if (statics.length) {
-    components.push(require('pundle-chunk-generator-static')())
-  }
   if (resolve) {
     const resolverAliases = {
       ...(target === 'browser' ? require('pundle-resolver-aliases-browser') : {}),
@@ -172,6 +164,18 @@ function getPresetComponents({
         aliases: resolverAliases,
       }),
     )
+  }
+  if (generateJS) {
+    components.push(require('pundle-chunk-generator-js')())
+  }
+  if (generateCSS) {
+    components.push(require('pundle-chunk-generator-css')())
+  }
+  if (generateHTML) {
+    components.push(require('pundle-chunk-generator-html')())
+  }
+  if (statics.length) {
+    components.push(require('pundle-chunk-generator-static')())
   }
   if (optimizeJS) {
     components.push(require('pundle-job-transformer-js-common')())

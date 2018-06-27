@@ -8,6 +8,7 @@
   "dependencies": {
     "lodash": "^4.17.10",
     "pundle-api": "^3.0.0-alpha7",
+    "pundle-chunk-generator-css": "^3.0.0-alpha7",
     "pundle-chunk-generator-html": "^3.0.0-alpha7",
     "pundle-chunk-generator-js": "^3.0.0-alpha7",
     "pundle-chunk-generator-static": "^3.0.0-alpha7",
