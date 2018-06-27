@@ -232,12 +232,14 @@ async function main() {
   staticMappings.sort((a, b) => b.remote.length - a.remote.length).forEach(item => {
     app.use(item.remote, express.static(item.local))
   })
-  app.use(function(req, res, next) {
-    if (req.url !== '/index.html') {
-      req.url = '/index.html'
-      middlewarePromise.then(callback => callback(req, res, next)).catch(next)
-    } else next()
-  })
+  if (get(argv, 'dev.singlepage')) {
+    app.use(function(req, res, next) {
+      if (req.url !== '/index.html') {
+        req.url = '/index.html'
+        middlewarePromise.then(callback => callback(req, res, next)).catch(next)
+      } else next()
+    })
+  }
   log('Started Successfully')
 }
 
