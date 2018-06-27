@@ -10,11 +10,11 @@ function createComponent() {
   return createIssueReporter({
     name: 'pundle-reporter-cli',
     version: manifest.version,
-    callback(issue) {
+    callback({ issue }) {
       if (process.env.PUNDLE_DEBUG === '1') {
-        console.error('Issue Encountered', issue)
+        console.error('Issue Encountered:', issue)
       } else {
-        console.log('Issue Encountered', normalizeError(issue))
+        console.log('Issue Encountered:', normalizeError(issue))
       }
     },
   })
