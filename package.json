@@ -1,6 +1,5 @@
 {
   "name": "pundle",
-  "version": "3.0.0-alpha5",
   "private": true,
   "description": "Pundle root repository",
   "repository": {
