@@ -3,6 +3,10 @@
   "version": "3.0.0-alpha8",
   "private": true,
   "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
   "main": "lib/index.js",
   "scripts": {
     "build": "echo Hi test package!"

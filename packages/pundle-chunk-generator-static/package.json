@@ -2,6 +2,10 @@
   "name": "pundle-chunk-generator-static",
   "version": "3.0.0-alpha8",
   "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
   "main": "lib/index.js",
   "flow:main": "src/index.js",
   "scripts": {},
