@@ -4,7 +4,7 @@ This is the WIP NG branch. See [master](https://github.com/steelbrain/pundle/tre
 
 ## Top Priority
 
-- CLI
+- fs.readFile*()
 - visualize dependency file size
 - create-pundle-app
 - create-pundle-react-app
