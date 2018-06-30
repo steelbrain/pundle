@@ -170,7 +170,7 @@ function getPresetComponents({
         formats: {
           js: Array.from(extensions.js),
           css: Array.from(extensions.css),
-          static: statics,
+          static: statics.concat(DEFAULT_STATICS),
           ...(generateHTML ? { html: ['.html'] } : {}),
         },
         aliases: resolverAliases,
@@ -186,9 +186,7 @@ function getPresetComponents({
   if (generateHTML) {
     components.push(require('pundle-chunk-generator-html')())
   }
-  if (statics.length) {
-    components.push(require('pundle-chunk-generator-static')())
-  }
+  components.push(require('pundle-chunk-generator-static')())
   if (optimizeJS) {
     components.push(require('pundle-job-transformer-js-common')())
     components.push(require('pundle-chunk-transformer-js-uglify')())

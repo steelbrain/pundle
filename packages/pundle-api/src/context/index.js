@@ -231,7 +231,7 @@ export default class Context {
     worker: PundleWorker,
     { job, chunks }: { job: Job, chunks: Array<Chunk> },
   ): Promise<ChunksGenerated> {
-    const everything = []
+    const outputs = []
 
     const generators = this.getComponents('chunk-generator')
     if (!generators.length) {
@@ -249,8 +249,19 @@ export default class Context {
           worker,
         })
         if (generated) {
+          try {
+            await validators.generated(generated)
+          } catch (error) {
+            if (error && error.name === 'ValidationError') {
+              throw new PundleError(
+                'WORK',
+                'GENERATE_FAILED',
+                `Chunk Generator '${generator.name}' returned invalid results: ${error.errors.join(', ')}`,
+              )
+            }
+            throw error
+          }
           break
-          // TODO: Validation
         }
       }
 
@@ -269,7 +280,7 @@ export default class Context {
         )
       }
 
-      everything.push({
+      outputs.push({
         chunk,
         format: generated.format,
         contents: generated.contents,
@@ -280,7 +291,7 @@ export default class Context {
 
     return {
       directory: this.config.output.rootDirectory,
-      outputs: everything,
+      outputs,
     }
   }
   async invokeChunkTransformers(

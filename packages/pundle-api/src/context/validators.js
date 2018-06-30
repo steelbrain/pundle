@@ -12,6 +12,14 @@ function validate(obj: yup.ObjectSchemaConstructor) {
     schema,
   }
 }
+const isStringOrBuffer = yup
+  .mixed()
+  .required()
+  .test(
+    'is-buffer-or-string',
+    'Contents must be valid string or Buffer',
+    val => typeof val === 'string' || Buffer.isBuffer(val),
+  )
 
 const { validate: resolved, schema: resolvedSchema } = validate({
   format: yup.string().required(),
@@ -19,14 +27,7 @@ const { validate: resolved, schema: resolvedSchema } = validate({
   packageRoot: yup.string().nullable(),
 })
 const { validate: transformed } = validate({
-  contents: yup
-    .mixed()
-    .required()
-    .test(
-      'is-buffer-or-string',
-      'Contents must be valid string or Buffer',
-      val => typeof val === 'string' || Buffer.isBuffer(val),
-    ),
+  contents: isStringOrBuffer,
   sourceMap: yup.mixed().nullable(),
 })
 const { validate: chunk } = validate({
@@ -35,5 +36,12 @@ const { validate: chunk } = validate({
   entry: yup.string().nullable(),
   imports: yup.array().of(resolvedSchema),
 })
+const { validate: generated } = validate({
+  format: yup.string().required(),
+  contents: isStringOrBuffer,
+  // TODO: Find a way to define an optional object
+  // without making each individual prop nullable
+  sourceMap: yup.mixed().nullable(),
+})
 
-export { resolved, transformed, chunk }
+export { resolved, transformed, chunk, generated }
