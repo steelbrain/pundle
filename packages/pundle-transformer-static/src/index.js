@@ -16,23 +16,14 @@ import manifest from '../package.json'
 const DEFAULT_INLINE_LIMIT = 8 * 1024 // 8kb
 
 function createComponent({
-  extensionsOrMimes,
+  extensions,
   inlineLimit = DEFAULT_INLINE_LIMIT,
-}: { extensionsOrMimes: Array<string> | { [string]: string }, inlineLimit: number } = {}) {
-  invariant(
-    typeof extensionsOrMimes === 'object' && extensionsOrMimes,
-    'extensionsOrMimes must be provided to transformer-static',
-  )
+}: { extensions: Array<string> | { [string]: string }, inlineLimit: number } = {}) {
+  invariant(Array.isArray(extensions), 'extensions must be provided to transformer-static')
 
   function getMimeTypeByExtension(extension: string): string {
-    if (!Array.isArray(extensionsOrMimes) && extensionsOrMimes[extension]) {
-      return extensionsOrMimes[extension]
-    }
     return mime.getType(extension) || 'application/octet-stream'
   }
-  const recognizedExtensions: Array<string> = Array.isArray(extensionsOrMimes)
-    ? extensionsOrMimes
-    : Object.keys(extensionsOrMimes)
 
   return createFileTransformer({
     name: 'pundle-transformer-static',
@@ -40,7 +31,7 @@ function createComponent({
     priority: 2000,
     async callback({ file, addChunk, context }) {
       const extName = path.extname(file.filePath)
-      if (!recognizedExtensions.includes(extName)) {
+      if (!extensions.includes(extName)) {
         return null
       }
 

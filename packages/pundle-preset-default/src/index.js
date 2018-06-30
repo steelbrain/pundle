@@ -149,7 +149,7 @@ function getPresetComponents({
   }
   components.push(
     require('pundle-transformer-static')({
-      extensionsOrMimes: statics.concat(DEFAULT_STATICS),
+      extensions: statics.concat(DEFAULT_STATICS),
     }),
   )
   if (css) {
