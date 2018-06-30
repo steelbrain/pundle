@@ -45,12 +45,13 @@ function createComponent({
         }),
       )
 
+      const inlineMap = development && file.format === 'js'
       const cssChunk = getChunk('css', null, file.filePath)
       const processed = await postcss(plugins).process(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
         {
           from: file.filePath,
-          map: { inline: false, annotation: false },
+          map: { inline: inlineMap, annotation: false },
         },
       )
 

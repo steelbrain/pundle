@@ -22,7 +22,6 @@ This is the Alpha NG branch. See [master](https://github.com/steelbrain/pundle/t
 
 ## Top Priority
 
-- fs.readFile*()
 - visualize dependency file size
 - create-pundle-app
 - create-pundle-react-app
@@ -31,7 +30,6 @@ This is the Alpha NG branch. See [master](https://github.com/steelbrain/pundle/t
 ## Note to self
 
 - url() in css. Fix it
-- source maps for css in dev
 - "ModuleScopePlugin" to limit direct import of files
 - ESlint to lint files
 - load .graphql files?
