@@ -10,6 +10,7 @@ export default class AdapterChokdiar {
     this.rootDirectory = rootDirectory
 
     this.handle = chokidar.watch([], {
+      ignored: [/(^|[\/\\])\../, /node_modules/],
       ignoreInitial: true,
       awaitWriteFinish: {
         pollInterval: 30,
