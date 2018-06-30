@@ -151,17 +151,17 @@ async function main() {
     config: pundleConfig,
   })
 
+  const isDev = argv.dev === true || Object.keys(argv.dev).length > 0
+  const isWatch = argv.watch === true || Object.keys(argv.watch).length > 0
+
+  const watchAdapter = get(argv, 'watch.adapter')
+  const watchConfig = { ...(watchAdapter ? { adapter: watchAdapter } : {}) }
+
+  const headerText = `${pundle.context.config.cache.enabled ? 'with' : 'without'}${
+    pundle.context.config.cache.reset ? ' resetted' : ''
+  } cache${watchAdapter ? ` and with adapter ${watchAdapter}` : ''}`
+
   try {
-    const isDev = argv.dev === true || Object.keys(argv.dev).length > 0
-    const isWatch = argv.watch === true || Object.keys(argv.watch).length > 0
-
-    const watchAdapter = get(argv, 'watch.adapter')
-    const watchConfig = { ...(watchAdapter ? { adapter: watchAdapter } : {}) }
-
-    const headerText = `${pundle.context.config.cache.enabled ? 'with' : 'without'}${
-      pundle.context.config.cache.reset ? ' resetted' : ''
-    } cache${watchAdapter ? ` and with adapter ${watchAdapter}` : ''}`
-
     if (!isDev) {
       if (isWatch) {
         log(`Watching (${headerText})`)
@@ -179,8 +179,7 @@ async function main() {
         try {
           await initialCompile()
         } catch (error) {
-          // TODO: Report instead
-          console.error(error)
+          await pundle.report(error)
         }
         await generateForWatcher({ pundle, job, changed: null })
         return
@@ -189,8 +188,8 @@ async function main() {
       console.time('Compiled')
       const result = await pundle.execute()
       console.timeEnd('Compiled')
-      await writeCompiledChunks(pundle.context, result)
       pundle.dispose()
+      await writeCompiledChunks(pundle.context, result)
       return
     }
 
