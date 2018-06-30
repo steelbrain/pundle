@@ -2,6 +2,21 @@
 /* eslint-disable global-require */
 
 const BABEL_ALLOWED_VERSIONS = new Set([6, 7])
+const DEFAULT_STATICS = [
+  '.png',
+  '.jpg',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.otf',
+  '.eot',
+  '.svg',
+  '.webp',
+  '.jpeg',
+  '.gif',
+  '.apng',
+  '.bmp',
+]
 
 function getPresetComponents({
   report: { cli: reportCLI = true } = {},
@@ -22,7 +37,7 @@ function getPresetComponents({
   development = process.env.NODE_ENV !== 'production',
   generate: { js: generateJS = true, css: generateCSS = true, html: generateHTML = true } = {},
   optimize: { js: optimizeJS = !development, css: optimizeCSS = !development, html: optimizeHTML = !development } = {},
-  statics = ['.png', '.jpg', '.woff', '.woff2', '.ttf', '.otf', '.eot', '.svg', '.webp', '.jpeg', '.gif', '.apng', '.bmp'],
+  statics = [],
   resolve = true,
   target = 'browser',
 }: {
@@ -132,13 +147,11 @@ function getPresetComponents({
       }),
     )
   }
-  if (statics.length) {
-    components.push(
-      require('pundle-transformer-static')({
-        extensionsOrMimes: statics,
-      }),
-    )
-  }
+  components.push(
+    require('pundle-transformer-static')({
+      extensionsOrMimes: statics.concat(DEFAULT_STATICS),
+    }),
+  )
   if (css) {
     components.push(
       require('pundle-transformer-css')({
