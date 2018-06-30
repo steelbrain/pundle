@@ -49,9 +49,9 @@ export default class Cache {
     const cacheKey = statsToCacheKey(configFilePath ? await fs.stat(configFilePath) : null)
     const fileAdapter = new FileAsync(filePath, {
       defaultValue: {
-        files: {},
         cacheKey,
         version: majorVersion,
+        files: {},
       },
     })
 
