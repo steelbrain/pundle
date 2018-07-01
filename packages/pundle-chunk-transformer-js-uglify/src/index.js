@@ -21,10 +21,6 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
 
       const uglify = uglifier === 'terser' ? processTerser : processUglify
       const { code, error } = uglify(typeof contents === 'string' ? contents : contents.toString(), {
-        compress: {
-          keep_fargs: false,
-          ...(options && options.compress ? options.compress : {}),
-        },
         ...options,
       })
       if (error) {
