@@ -24,7 +24,6 @@ const isStringOrBuffer = yup
 const { validate: resolved, schema: resolvedSchema } = validate({
   format: yup.string().required(),
   filePath: yup.string().required(),
-  packageRoot: yup.string().nullable(),
 })
 const { validate: transformed } = validate({
   contents: isStringOrBuffer,

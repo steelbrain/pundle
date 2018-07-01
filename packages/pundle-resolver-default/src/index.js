@@ -14,7 +14,6 @@ function createComponent({ formats, aliases = {} }: { formats: { [string]: strin
     name: 'pundle-file-resolver',
     version: manifest.version,
     async callback({ request, requestFile, context }) {
-      let packageRoot = null
       const response = await new Promise(function(resolve, reject) {
         browserResolve(
           request,
@@ -22,10 +21,6 @@ function createComponent({ formats, aliases = {} }: { formats: { [string]: strin
             modules: aliases,
             basedir: requestFile ? path.dirname(requestFile) : context.config.rootDirectory,
             extensions: flatten(Object.values(formats)),
-            packageFilter(pkg, pkgroot) {
-              packageRoot = path.dirname(pkgroot)
-              return pkg
-            },
           },
           function(err, res) {
             if (err) reject(err)
@@ -50,7 +45,6 @@ function createComponent({ formats, aliases = {} }: { formats: { [string]: strin
       return {
         format,
         filePath: response,
-        packageRoot,
       }
     },
   })

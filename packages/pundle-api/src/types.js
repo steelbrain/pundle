@@ -101,7 +101,6 @@ export type ComponentIssueReporter = Component<'issue-reporter', ComponentIssueR
 export type ComponentFileResolverResult = {|
   format: string,
   filePath: string,
-  packageRoot: ?string,
 |}
 export type ComponentFileResolverCallback = (params: {
   context: Context,
