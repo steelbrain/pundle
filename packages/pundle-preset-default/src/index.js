@@ -189,7 +189,7 @@ function getPresetComponents({
   components.push(require('pundle-chunk-generator-static')())
   if (optimizeJS) {
     components.push(require('pundle-job-transformer-js-common')())
-    components.push(require('pundle-chunk-transformer-js-uglify')())
+    components.push(require('pundle-chunk-transformer-js-terser')())
   }
   if (optimizeCSS) {
     /* TODO: Implement css chunk transformer */
