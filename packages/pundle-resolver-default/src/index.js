@@ -36,6 +36,10 @@ function createComponent({ formats, aliases = {} }: { formats: { [string]: strin
 
       if (!response) return null
 
+      if (process.env.PUNDLE_DEBUG_RESOLVER === '1') {
+        console.log('From', requestFile, 'processed', request, 'to', response)
+      }
+
       const ext = path.extname(response)
       const format = Object.keys(formats).find(entry => formats[entry].includes(ext))
       if (!format) {
