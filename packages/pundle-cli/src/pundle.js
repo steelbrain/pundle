@@ -138,6 +138,11 @@ async function main() {
       --cache                     Controls whether to enable or disable caching (enabled by default)
       --cache.reset               Controls whether to reset cache on boot
       --output.rootDirectory      Override control defined output directory to use this one
+
+    Environment variables Pundle responds to:
+      NODE_ENV                    Tells Pundle to use debug/production behavior
+      PUNDLE_DEBUG=1              Prints detailed stack traces to console (set by --debug opt)
+      PUNDLE_DEBUG_RESOLVER=1     Prints from/to resolution details for debugging large bundles
     `)
     process.exit(1)
   }
