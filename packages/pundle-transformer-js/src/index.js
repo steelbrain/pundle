@@ -54,7 +54,9 @@ function createComponent({ browser, env = {} }: { browser: boolean, env?: { [str
           const { source } = node
           if (!t.isStringLiteral(source)) return
           promises.push(
-            resolve(source.value, source.loc).then(resolved => {
+            resolve(source.value, source.loc).then(({ filePath }) => {
+              const resolved = { filePath, format: 'js' }
+
               source.value = getUniqueHash(resolved)
               return addImport(resolved)
             }),
@@ -70,7 +72,9 @@ function createComponent({ browser, env = {} }: { browser: boolean, env?: { [str
 
           if (t.isImport(callee)) {
             promises.push(
-              resolve(arg.value, arg.loc).then(resolved => {
+              resolve(arg.value, arg.loc).then(({ filePath }) => {
+                const resolved = { filePath, format: 'js' }
+
                 const chunk = getChunk(resolved.format, null, resolved.filePath, [], false)
                 node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
                 arg.value = context.getPublicPath(chunk)
@@ -88,7 +92,9 @@ function createComponent({ browser, env = {} }: { browser: boolean, env?: { [str
 
           // Handling require + require.resolve
           promises.push(
-            resolve(arg.value, arg.loc).then(resolved => {
+            resolve(arg.value, arg.loc).then(({ filePath }) => {
+              const resolved = { filePath, format: 'js' }
+
               arg.value = getUniqueHash(resolved)
               return addImport(resolved)
             }),

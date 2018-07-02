@@ -17,7 +17,7 @@ function createComponent({
     name: 'pundle-transformer-css',
     version: manifest.version,
     priority: 1500,
-    async callback({ file, resolve, addChunk }) {
+    async callback({ file, resolve, addChunk, context }) {
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) {
         return null
@@ -41,6 +41,7 @@ function createComponent({
         pluginImportResolver({
           file,
           resolve,
+          context,
           addChunk,
         }),
       )

@@ -12,6 +12,7 @@
   "dependencies": {
     "postcss": "^6.0.22",
     "postcss-modules": "^1.1.0",
+    "postcss-value-parser": "^3.3.0",
     "pundle-api": "^3.0.0-alpha8"
   },
   "author": "steelbrain",
