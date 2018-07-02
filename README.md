@@ -29,7 +29,6 @@ This is the Alpha NG branch. See [master](https://github.com/steelbrain/pundle/t
 
 ## Note to self
 
-- url() in css. Fix it
 - "ModuleScopePlugin" to limit direct import of files
 - ESlint to lint files
 - load .graphql files?
