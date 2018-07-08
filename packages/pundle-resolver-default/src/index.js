@@ -1,6 +1,7 @@
 // @flow
 
 import path from 'path'
+import invariant from 'assert'
 import flatten from 'lodash/flatten'
 import browserResolve from 'browser-resolve'
 import { createFileResolver } from 'pundle-api'
@@ -8,7 +9,8 @@ import { createFileResolver } from 'pundle-api'
 import manifest from '../package.json'
 
 function createComponent({ formats, aliases = {} }: { formats: { [string]: string }, aliases: { [string]: string } }) {
-  // TODO: validation of config?
+  invariant(formats && typeof formats === 'object', 'options.formats must be a valid object')
+  invariant(aliases && typeof aliases === 'object', 'options.aliases must be a valid object')
 
   return createFileResolver({
     name: 'pundle-file-resolver',

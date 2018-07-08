@@ -98,7 +98,6 @@ async function generateForWatcher({ pundle, job, changed }) {
   await writeCompiledChunks(pundle.context, await pundle.generate(job, chunksToRegenerate))
 }
 
-// TODO: Use report for all errors
 // TODO: Try to break this with errors in different places
 let pundle
 async function main() {
