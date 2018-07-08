@@ -8,7 +8,6 @@ import { createChunkTransformer } from 'pundle-api'
 
 import manifest from '../package.json'
 
-// TODO: Fix source maps
 const VALID_UGLIFIERS = new Set(['uglify', 'terser'])
 function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Object, uglifier: 'terser' | 'uglify' } = {}) {
   if (!VALID_UGLIFIERS.has(uglifier)) {
