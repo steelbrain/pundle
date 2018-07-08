@@ -43,7 +43,7 @@ function createComponent({
 
       return {
         contents: transformed.js,
-        sourceMap: transformed.v3SourceMap,
+        sourceMap: JSON.stringify(transformed.v3SourceMap),
       }
     },
   })

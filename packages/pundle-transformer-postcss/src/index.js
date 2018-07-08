@@ -27,7 +27,7 @@ function createComponent({ plugins = [] }: { plugins?: Array<any> } = {}) {
 
       return {
         contents: processed.css,
-        sourceMap: processed.map.toJSON(),
+        sourceMap: JSON.stringify(processed.map.toJSON()),
       }
     },
   })

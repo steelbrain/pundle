@@ -79,7 +79,7 @@ function createComponent({
 
         return {
           contents: processed.css,
-          sourceMap: processed.map.toJSON(),
+          sourceMap: JSON.stringify(processed.map.toJSON()),
         }
       }
       throw new Error(`Unknown format for css files '${file.format}' encountered in loader-css`)

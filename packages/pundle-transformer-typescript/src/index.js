@@ -56,7 +56,7 @@ function createComponent({
 
       return {
         contents: transformed.outputText,
-        sourceMap: transformed.sourceMap ? JSON.parse(transformed.sourceMapText) : null,
+        sourceMap: transformed.sourceMap ? transformed.sourceMapText : null,
       }
     },
   })

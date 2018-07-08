@@ -78,7 +78,7 @@ function createComponent({
 
       return {
         contents: transformed.code,
-        sourceMap: transformed.map,
+        sourceMap: JSON.stringify(transformed.map),
       }
     },
   })

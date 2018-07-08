@@ -165,7 +165,7 @@ function createComponent({ browser, env = {} }: { browser: boolean, env?: { [str
 
       return {
         contents: generated.code,
-        sourceMap: generated.map,
+        sourceMap: JSON.stringify(generated.map),
       }
     },
   })
