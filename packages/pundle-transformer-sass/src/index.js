@@ -44,7 +44,7 @@ function createComponent({ extensions = ['.scss'], options = {} }: { extensions?
 
       return {
         contents: css,
-        sourceMap: processed.map,
+        sourceMap: processed.map.toString(),
       }
     },
   })
