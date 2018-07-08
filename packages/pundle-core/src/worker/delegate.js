@@ -82,8 +82,10 @@ export default class WorkerDelegate {
       throw new Error(`Cannot spawn worker is still alive`)
     }
 
-    const spawnedProcess = fork(path.join(__dirname, 'process'), [], {
+    const argv = process.execArgv.filter(v => !v.startsWith('--inspect') && !v.startsWith('--debug'));
+    const spawnedProcess = fork(path.join(__dirname, 'process'), argv, {
       stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
+      execArgv: argv,
     })
     const communication = new Communication({
       listener(callback) {
