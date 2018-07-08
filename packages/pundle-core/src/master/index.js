@@ -114,7 +114,7 @@ export default class Master implements PundleWorker {
       return ({
         ...output,
         ...generated,
-        sourceMap: generated.sourceMap ? {
+        sourceMap: output.sourceMap || generated.sourceMap ? {
           ...output.sourceMap,
           ...generated.sourceMap,
         } : null,
