@@ -56,7 +56,6 @@ export default class Cache {
     })
 
     const adapter = await lowdb(fileAdapter)
-    console.log(adapter.get('version').value(), cacheVersion)
     if (adapter.get('cacheKey').value() !== cacheKey || adapter.get('version').value() !== cacheVersion) {
       adapter
         .set('files', {})
