@@ -1,5 +1,7 @@
 // @flow
 
+import path from 'path'
+import mergeSourceMap from 'merge-source-map'
 import { minify as processUglify } from 'uglify-es'
 import { minify as processTerser } from 'terser'
 import { createChunkTransformer } from 'pundle-api'
@@ -16,11 +18,15 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
   return createChunkTransformer({
     name: 'pundle-chunk-transformer-js-uglify',
     version: manifest.version,
-    async callback({ format, contents }) {
+    async callback({ filePath, format, contents, sourceMap }) {
       if (format !== 'js') return null
 
+      const sourceMapOptions = sourceMap && sourceMap.filePath ? {
+        url: path.posix.relative(path.dirname(filePath), sourceMap.filePath),
+      } : null
       const uglify = uglifier === 'terser' ? processTerser : processUglify
-      const { code, error } = uglify(typeof contents === 'string' ? contents : contents.toString(), {
+      const { code, error, map } = uglify(typeof contents === 'string' ? contents : contents.toString(), {
+        sourceMap: sourceMapOptions,
         ...options,
           compress: {
             defaults: false,
@@ -33,7 +39,9 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
 
       return {
         contents: code,
-        sourceMap: null,
+        sourceMap: map ? {
+          contents: JSON.stringify(mergeSourceMap(sourceMap.contents, map))
+        } : null,
       }
     },
   })
