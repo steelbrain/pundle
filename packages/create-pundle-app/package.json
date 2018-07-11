@@ -1,0 +1,15 @@
+{
+  "name": "create-pundle-app",
+  "version": "3.0.0-alpha9",
+  "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
+  "bin": "./lib/create-pundle-app",
+  "scripts": {},
+  "dependencies": {
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}
