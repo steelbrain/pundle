@@ -14,6 +14,11 @@ function getPackages() {
       const packageDirectoryStats = fs.statSync(packageDirectory)
       if (packageDirectoryStats.isDirectory()) {
         const packageManifest = require(path.join(packageDirectory, 'package.json'))
+        if (packageManifest.name.startsWith('--')) {
+          // Ignore test-package etc
+          return
+        }
+
         packagesMap[packageManifest.name] = packageDirectory
       }
     })
