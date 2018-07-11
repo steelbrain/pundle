@@ -1,6 +1,6 @@
 {
   "name": "pundle-dev-middleware",
-  "version": "3.0.0-alpha8",
+  "version": "3.0.0-alpha9",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
   "author": "steelbrain",
   "license": "MIT",
   "devDependencies": {
-    "pundle-api": "^3.0.0-alpha8",
-    "pundle-core": "^3.0.0-alpha8"
+    "pundle-api": "^3.0.0-alpha9",
+    "pundle-core": "^3.0.0-alpha9"
   }
 }

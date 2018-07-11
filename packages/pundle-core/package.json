@@ -1,6 +1,6 @@
 {
   "name": "pundle-core",
-  "version": "3.0.0-alpha8",
+  "version": "3.0.0-alpha9",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -16,8 +16,8 @@
     "mkdirp": "^0.5.1",
     "p-map": "^1.2.0",
     "promise.defer": "^1.0.1",
-    "pundle-api": "^3.0.0-alpha8",
-    "pundle-core-load-config": "^3.0.0-alpha8",
+    "pundle-api": "^3.0.0-alpha9",
+    "pundle-core-load-config": "^3.0.0-alpha9",
     "sb-communication": "5",
     "sb-fs": "^3.0.0",
     "sb-promise-queue": "^1.0.1"
