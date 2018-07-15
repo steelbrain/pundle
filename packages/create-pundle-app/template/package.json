@@ -1,0 +1,13 @@
+{
+  "name": "",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "pundle-cli": "3.0.0-alpha9",
+    "pundle-preset-default": "3.0.0-alpha9"
+  },
+  "scripts": {
+    "start": "pundle --dev",
+    "build": "NODE_ENV=production pundle"
+  }
+}

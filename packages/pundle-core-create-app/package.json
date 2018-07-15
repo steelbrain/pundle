@@ -12,6 +12,7 @@
     "array-to-sentence": "^2.0.0",
     "chalk": "^2.4.1",
     "command-exists": "^1.2.7",
+    "cool-trim": "^1.1.1",
     "sb-copy": "^1.0.1",
     "sb-exec": "^4.0.0",
     "sb-fs": "^3.0.0",

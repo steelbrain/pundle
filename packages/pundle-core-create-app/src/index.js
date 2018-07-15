@@ -6,6 +6,7 @@ import copy from 'sb-copy'
 import path from 'path'
 import exec from 'sb-exec'
 import chalk from 'chalk'
+import coolTrim from 'cool-trim'
 import stripAnsi from 'strip-ansi'
 import { sync as commandExists } from 'command-exists'
 import arrayToSentence from 'array-to-sentence'
@@ -16,13 +17,11 @@ function log(contents: string): void {
 
 export async function createApp({
   title,
-  welcomeText,
   name,
   directory,
   from,
 }: {
   title: string,
-  welcomeText: string,
   name: string,
   directory: string,
   from: string,
@@ -46,13 +45,10 @@ export async function createApp({
   const manifestExists = await fs.exists(manifestPath)
   const yarnExists = commandExists('yarn')
   if (manifestExists) {
-    let contents = {}
-    try {
-      contents = JSON.parse(await fs.readFile(manifestPath), 'utf8')
-    } catch (_) {
-      /* Ignore Invalid JSON */
-    }
+    const contents = JSON.parse(await fs.readFile(manifestPath), 'utf8')
     const packageNames = Object.keys(contents.dependencies || {}).map(chalk.blue)
+    contents.name = targetName
+    await fs.writeFile(manifestPath, JSON.stringify(contents, null, 2))
 
     log('')
     log('Installing packages. This may take a few minutes.')
@@ -73,13 +69,21 @@ export async function createApp({
     log('')
   }
 
-  log(`Success! Created ${targetName} at ${targetParent}`)
-  log(welcomeText)
-  log('')
-  log('We suggest that you begin by typing:')
-  log('')
-  log(`  cd ${path.relative(process.cwd(), targetDirectory)}`)
-  log(`  ${yarnExists ? 'yarn start' : 'npm run start'}`)
-  log('')
-  log('Happy hacking!')
+  log(coolTrim`
+    Success! Created ${targetName} at ${targetParent}
+    Inside that directory, you can run several commands:
+
+      ${chalk.blue('yarn start')}
+        Starts the development server.
+
+      ${chalk.blue('yarn build')}
+        Bundles the app into static files for production.
+
+    We suggest that you begin by typing:
+
+      ${chalk.blue('cd')} ${path.relative(process.cwd(), targetDirectory)}
+      ${chalk.blue(`${yarnExists ? 'yarn start' : 'npm run start'}`)}
+
+    Happy hacking!
+  `)
 }
