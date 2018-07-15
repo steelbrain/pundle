@@ -29,7 +29,7 @@ function createComponent({ plugins = [], extensions = ['.css'] }: { plugins?: Ar
 
       return {
         contents: processed.css,
-        sourceMap: JSON.stringify(processed.map.toJSON()),
+        sourceMap: processed.map.toJSON(),
       }
     },
   })

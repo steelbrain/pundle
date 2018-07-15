@@ -123,7 +123,7 @@ export type ComponentFileResolver = Component<'file-resolver', ComponentFileReso
 // TODO: Maybe transform original error to have a loc?
 export type ComponentFileTransformerResult = {|
   contents: Buffer | string,
-  sourceMap: ?string | false,
+  sourceMap: ?Object | false,
 |}
 export type ComponentFileTransformerCallback = (params: {
   file: {

@@ -29,7 +29,7 @@ function createComponent({ extensions = ['.styl'], options = {} }: { extensions?
 
       return {
         contents: processed,
-        sourceMap: JSON.stringify(renderer.sourcemap),
+        sourceMap: renderer.sourcemap,
       }
     },
   })

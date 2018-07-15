@@ -187,7 +187,7 @@ export default class Context {
       } else if (result.sourceMap && !transformed.sourceMap) {
         newSourceMap = result.sourceMap
       } else if (result.sourceMap && transformed.sourceMap) {
-        newSourceMap = JSON.stringify(mergeSourceMap(transformed.sourceMap, result.sourceMap))
+        newSourceMap = mergeSourceMap(transformed.sourceMap, result.sourceMap)
       }
       transformed = { sourceMap: newSourceMap, contents: result.contents }
     }
@@ -204,7 +204,7 @@ export default class Context {
       imports: Array.from(fileImports.values()),
       chunks: Array.from(fileChunks.values()),
       contents: transformed.contents,
-      sourceMap: transformed.sourceMap,
+      sourceMap: transformed.sourceMap ? JSON.stringify(transformed.sourceMap) : null,
     }
   }
   async invokeJobTransformers(worker: PundleWorker, { job }: { job: Job }): Promise<Job> {

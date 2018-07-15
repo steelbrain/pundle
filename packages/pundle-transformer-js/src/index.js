@@ -167,7 +167,7 @@ function createComponent({ browser }: { browser: boolean }) {
 
       return {
         contents: generated.code,
-        sourceMap: JSON.stringify(generated.map),
+        sourceMap: generated.map,
       }
     },
   })

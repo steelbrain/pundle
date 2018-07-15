@@ -27,7 +27,7 @@ function createComponent({ extensions = ['.less'], options = {} }: { extensions?
 
       return {
         contents: processed.css,
-        sourceMap: processed.map,
+        sourceMap: JSON.parse(processed.map),
       }
     },
   })
