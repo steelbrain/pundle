@@ -77,6 +77,7 @@ function getPresetComponents({
   const extensions = {
     css: new Set(['.css']),
     js: new Set(['.js', '.mjs']),
+    static: new Set([DEFAULT_STATICS, ...statics]),
   }
 
   if (reportCLI) {
@@ -146,7 +147,7 @@ function getPresetComponents({
   }
   components.push(
     require('pundle-transformer-static')({
-      extensions: statics.concat(DEFAULT_STATICS),
+      extensions: Array.from(extensions.static),
     }),
   )
   if (css) {
@@ -167,7 +168,7 @@ function getPresetComponents({
         formats: {
           js: Array.from(extensions.js),
           css: Array.from(extensions.css),
-          static: statics.concat(DEFAULT_STATICS),
+          static: Array.from(extensions.static),
           ...(generateHTML ? { html: ['.html'] } : {}),
         },
         aliases: resolverAliases,
