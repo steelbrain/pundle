@@ -16,11 +16,16 @@ export type Loc = {
   line: number,
   col: number,
 }
+export type ImportMeta = {
+  specified: boolean,
+}
 export type ImportResolved = {
+  meta: ImportMeta,
   format: string,
   filePath: string,
 }
 export type ImportRequest = {
+  meta: ?ImportMeta,
   request: string,
   requestFile: ?string,
   ignoredResolvers: Array<string>,
@@ -43,6 +48,7 @@ export type ImportTransformed = {
 }
 
 export type TransformRequest = {
+  meta: ImportMeta,
   format: string,
   filePath: string,
   contents: Buffer | string,
@@ -104,6 +110,7 @@ export type ComponentFileResolverResult = {|
 |}
 export type ComponentFileResolverCallback = (params: {
   context: Context,
+  meta: ImportMeta,
   request: string,
   requestFile: ?string,
   ignoredResolvers: Array<string>,

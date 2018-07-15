@@ -91,6 +91,7 @@ export default class Master implements PundleWorker {
     const configChunks = (await Promise.all(
       this.context.config.entry.map(entry =>
         this.resolve({
+          meta: null,
           request: entry,
           requestFile: null,
           ignoredResolvers: [],
@@ -111,14 +112,18 @@ export default class Master implements PundleWorker {
     const { directory, outputs } = await this.context.invokeChunkGenerators(this, { job, chunks })
     const transformedOutputs = await pMap(outputs, async output => {
       const generated = await this.transformChunkGenerated(output)
-      return ({
+      const sourceMap =
+        output.sourceMap || generated.sourceMap
+          ? {
+              ...output.sourceMap,
+              ...generated.sourceMap,
+            }
+          : null
+      return {
         ...output,
         ...generated,
-        sourceMap: output.sourceMap || generated.sourceMap ? {
-          ...output.sourceMap,
-          ...generated.sourceMap,
-        } : null,
-      })
+        sourceMap,
+      }
     })
 
     return { directory, outputs: transformedOutputs }
@@ -153,7 +158,11 @@ export default class Master implements PundleWorker {
 
       const filesToProcess = chunk.imports.slice()
       if (chunk.entry) {
-        filesToProcess.push({ format: chunk.format, filePath: chunk.entry })
+        filesToProcess.push({
+          meta: null,
+          format: chunk.format,
+          filePath: chunk.entry,
+        })
       }
       await pMap(filesToProcess, fileImport =>
         this.transformFileTree({

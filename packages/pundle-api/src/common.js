@@ -9,6 +9,7 @@ import type Context from './context'
 import type { Loc, Chunk, ImportResolved } from './types'
 
 export const NEWLINE_REGEXP = /\r\n|[\n\r\u2028\u2029]/
+export const DEFAULT_IMPORT_META = { specified: true }
 
 export function getStringHash(str: string): string {
   return new Imurmurhash()
@@ -28,6 +29,8 @@ export function getUniqueHash(item: ImportResolved | Chunk): string {
   } else if (Array.isArray(item.imports)) {
     stringKey = `${JSON.stringify(item.imports)}`
   }
+  const { specified } = item.meta || DEFAULT_IMPORT_META
+  stringKey += `specified=${specified}`
 
   return `${item.format}_${getStringHash(stringKey)}`
 }

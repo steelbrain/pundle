@@ -54,8 +54,8 @@ function createComponent({ browser }: { browser: boolean }) {
           const { source } = node
           if (!t.isStringLiteral(source)) return
           promises.push(
-            resolve(source.value, source.loc).then(({ filePath }) => {
-              const resolved = { filePath, format: 'js' }
+            resolve(source.value, source.loc, !!node.specifiers.length).then(givenResolved => {
+              const resolved = { ...givenResolved, format: 'js' }
 
               source.value = getUniqueHash(resolved)
               return addImport(resolved)
@@ -72,8 +72,8 @@ function createComponent({ browser }: { browser: boolean }) {
 
           if (t.isImport(callee)) {
             promises.push(
-              resolve(arg.value, arg.loc).then(({ filePath }) => {
-                const resolved = { filePath, format: 'js' }
+              resolve(arg.value, arg.loc).then(givenResolved => {
+                const resolved = { ...givenResolved, format: 'js' }
 
                 const chunk = getChunk(resolved.format, null, resolved.filePath, [], false)
                 node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
@@ -90,10 +90,13 @@ function createComponent({ browser }: { browser: boolean }) {
             return
           }
 
+          const parent = path.parentPath && path.parentPath.parent
+          const specified = !parent || t.isExpressionStatement(parent) || t.isVariableDeclarator(parent)
+
           // Handling require + require.resolve
           promises.push(
-            resolve(arg.value, arg.loc).then(({ filePath }) => {
-              const resolved = { filePath, format: 'js' }
+            resolve(arg.value, arg.loc, specified).then(givenResolved => {
+              const resolved = { ...givenResolved, format: 'js' }
 
               arg.value = getUniqueHash(resolved)
               return addImport(resolved)

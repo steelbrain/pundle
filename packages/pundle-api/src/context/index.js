@@ -6,7 +6,7 @@ import type { Config } from 'pundle-core-load-config'
 
 import Job from '../job'
 import PundleError from '../pundle-error'
-import { getPublicPath, getFileKey, getChunkKey } from '../common'
+import { getPublicPath, getFileKey, getChunkKey, DEFAULT_IMPORT_META } from '../common'
 import type {
   Loc,
   Chunk,
@@ -65,7 +65,7 @@ export default class Context {
   }
   async invokeFileResolvers(
     worker: PundleWorker,
-    { request, requestFile, ignoredResolvers }: ImportRequest,
+    { request, requestFile, meta: givenMeta, ignoredResolvers }: ImportRequest,
   ): Promise<ImportResolved> {
     const allResolvers = this.getComponents('file-resolver')
     const resolvers = allResolvers.filter(c => !ignoredResolvers.includes(c.name))
@@ -78,10 +78,12 @@ export default class Context {
     }
 
     let resolved
+    const meta = givenMeta || DEFAULT_IMPORT_META
 
     for (const resolver of resolvers) {
       resolved = await resolver.callback({
         context: this,
+        meta,
         request,
         requestFile,
         ignoredResolvers,
@@ -106,11 +108,14 @@ export default class Context {
     if (!resolved) {
       throw new PundleError('WORK', 'RESOLVE_FAILED', `Unable to resolve '${request}'`, requestFile)
     }
-    return resolved
+    return {
+      meta,
+      ...resolved,
+    }
   }
   async invokeFileTransformers(
     worker: PundleWorker,
-    { filePath, format, contents }: TransformRequest,
+    { filePath, format, contents, meta }: TransformRequest,
   ): Promise<TransformResult> {
     const fileChunks = new Map()
     const fileImports = new Map()
@@ -120,13 +125,13 @@ export default class Context {
 
     for (const transformer of transformers) {
       const result = await transformer.callback({
-        file: { ...transformed, filePath, format },
+        file: { ...transformed, filePath, format, meta },
         context: this,
         worker,
         // TODO: Inject loc into errors?
         // eslint-disable-next-line no-unused-vars
-        resolve(request: string, loc: ?Loc = null) {
-          return worker.resolve({ request, requestFile: filePath, ignoredResolvers: [] })
+        resolve(request: string, loc: ?Loc = null, specified: boolean = true) {
+          return worker.resolve({ request, requestFile: filePath, ignoredResolvers: [], meta: { specified } })
         },
         async addImport(fileImport) {
           try {
