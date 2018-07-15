@@ -66,11 +66,11 @@ export default async function loadConfig(context: Context): Promise<Config> {
     config.entry = config.entry.concat(fileConfig.entry)
   }
   if (fileConfig.output) {
-    fileConfig.output.rootDirectory = fileConfig.output.rootDirectory
+    config.output.rootDirectory = fileConfig.output.rootDirectory
     Object.assign(config.output.formats, fileConfig.output.formats)
   }
   if (typeof inlineConfig.output === 'object' && inlineConfig.output !== null) {
-    fileConfig.output.rootDirectory = inlineConfig.output.rootDirectory
+    config.output.rootDirectory = inlineConfig.output.rootDirectory
     Object.assign(config.output.formats, inlineConfig.output.formats)
   }
   if (fileConfig.components) {
