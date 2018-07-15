@@ -5,12 +5,12 @@ import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
 
-const DEFAULT_EXCLUDE = ['node_modules/**']
+const DEFAULT_EXCLUDE = [/node_modules/]
 const ALLOWED_VERSIONS = [6, 7]
 
 function createComponent({
   exclude = DEFAULT_EXCLUDE,
-  processOutsideProjectRoot,
+  processOutsideProjectRoot = false,
   options = {},
   version,
 }: {
