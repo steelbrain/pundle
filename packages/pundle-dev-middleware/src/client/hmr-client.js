@@ -69,23 +69,14 @@ function applyHMR(oldModules, moduleIds) {
         callback(newModule.hot.data)
       })
     }
-    try {
-      if (newModule.invoked) {
-        sbPundleModuleRegister(moduleId, newModule.callback)
-      }
-      sbPundleModuleRequire('$root', moduleId)
-      if (oldModule) {
-        oldModule.hot.successHandlers.forEach(function(callback) {
-          callback()
-        })
-      }
-    } catch (error) {
-      if (oldModule) {
-        oldModule.hot.errorHandlers.forEach(callback => {
-          callback(error)
-        })
-      }
-      throw error
+    if (newModule.invoked) {
+      sbPundleModuleRegister(moduleId, newModule.callback)
+    }
+    sbPundleModuleRequire('$root', moduleId)
+    if (oldModule) {
+      oldModule.hot.successHandlers.forEach(function(callback) {
+        callback()
+      })
     }
   })
 }
@@ -171,7 +162,6 @@ main().catch(console.error)
 sbPundle.moduleHooks.push(function(newModule) {
   const accepted = []
   const declined = []
-  const errorHandlers = []
   const successHandlers = []
   const disposeHandlers = []
 
@@ -194,7 +184,6 @@ sbPundle.moduleHooks.push(function(newModule) {
     data: {},
     accepted,
     declined,
-    errorHandlers,
     successHandlers,
     disposeHandlers,
     status() {
@@ -210,7 +199,7 @@ sbPundle.moduleHooks.push(function(newModule) {
         successHandlers.push(arg2)
       } else {
         if (typeof arg1 === 'function') {
-          errorHandlers.push(arg1)
+          successHandlers.push(arg1)
         }
         accepted.push('*')
       }
