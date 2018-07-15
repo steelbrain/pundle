@@ -31,6 +31,7 @@ export function topologicallySortChunks(chunks: Array<Chunk>, job: Job): Array<C
     if (chunk.entry) {
       iterateImports(
         {
+          meta: chunk.meta,
           format: chunk.format,
           filePath: chunk.entry,
         },

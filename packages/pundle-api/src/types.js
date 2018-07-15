@@ -31,6 +31,7 @@ export type ImportRequest = {
   ignoredResolvers: Array<string>,
 }
 export type Chunk = {
+  meta: ImportMeta,
   root: boolean,
   format: string,
   label: ?string,

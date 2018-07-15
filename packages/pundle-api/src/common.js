@@ -6,7 +6,7 @@ import resolveFrom from 'resolve-from'
 import Imurmurhash from 'imurmurhash'
 
 import type Context from './context'
-import type { Loc, Chunk, ImportResolved } from './types'
+import type { Loc, Chunk, ImportResolved, ImportMeta } from './types'
 
 export const NEWLINE_REGEXP = /\r\n|[\n\r\u2028\u2029]/
 export const DEFAULT_IMPORT_META = { specified: true }
@@ -49,6 +49,7 @@ export function getChunk(
   entry: ?string = null,
   imports: Array<ImportResolved> = [],
   root: boolean = true,
+  meta: ImportMeta = DEFAULT_IMPORT_META,
 ): Chunk {
   return {
     root,
@@ -56,6 +57,7 @@ export function getChunk(
     entry,
     label,
     imports,
+    meta,
   }
 }
 

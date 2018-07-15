@@ -8,7 +8,6 @@ import {
   getChunk,
   getFileKey,
   getChunkKey,
-  DEFAULT_IMPORT_META,
   type Chunk,
   type Context,
   type PundleWorker,
@@ -98,7 +97,7 @@ export default class Master implements PundleWorker {
           ignoredResolvers: [],
         }),
       ),
-    )).map(resolved => getChunk(resolved.format, null, resolved.filePath))
+    )).map(resolved => getChunk(resolved.format, null, resolved.filePath, [], true, resolved.meta))
     await pMap(configChunks, chunk =>
       this.transformChunk({
         job,
@@ -160,7 +159,7 @@ export default class Master implements PundleWorker {
       const filesToProcess = chunk.imports.slice()
       if (chunk.entry) {
         filesToProcess.push({
-          meta: DEFAULT_IMPORT_META,
+          meta: chunk.meta,
           format: chunk.format,
           filePath: chunk.entry,
         })

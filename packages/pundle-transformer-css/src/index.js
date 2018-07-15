@@ -47,7 +47,7 @@ function createComponent({
       )
 
       const inlineMap = development && file.format === 'js'
-      const cssChunk = getChunk('css', null, file.filePath)
+      const cssChunk = getChunk('css', null, file.filePath, [], true, file.meta)
       // TODO: Fix source map paths
       const processed = await postcss(plugins).process(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),

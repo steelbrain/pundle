@@ -42,6 +42,7 @@ function createComponent({ name = '_common_' }: { name?: string } = {}) {
         if (chunk.entry) {
           iterateImports(
             {
+              meta: chunk.meta,
               format: chunk.format,
               filePath: chunk.entry,
             },

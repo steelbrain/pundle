@@ -46,6 +46,7 @@ export function getChunksAffectedByImports(
 
     if (chunk.entry) {
       iterateImports({
+        meta: chunk.meta,
         format: chunk.format,
         filePath: chunk.entry,
       })
