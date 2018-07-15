@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // @flow
 
 import path from 'path'
@@ -24,7 +25,7 @@ async function main() {
     return
   }
 
-  const [name] = process.argv
+  const [name] = argv._
 
   await createApp({
     title: 'Pundle App',

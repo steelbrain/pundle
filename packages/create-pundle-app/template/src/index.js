@@ -1,1 +1,2 @@
-console.log('Hello World')
+const root = document.getElementById('root')
+root.textContent = 'Hello World'

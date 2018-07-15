@@ -4,10 +4,10 @@
 import fs from 'sb-fs'
 import copy from 'sb-copy'
 import path from 'path'
-import exec from 'sb-exec'
 import chalk from 'chalk'
 import coolTrim from 'cool-trim'
 import stripAnsi from 'strip-ansi'
+import { exec } from 'sb-exec'
 import { sync as commandExists } from 'command-exists'
 import arrayToSentence from 'array-to-sentence'
 
@@ -46,7 +46,7 @@ export async function createApp({
   const yarnExists = commandExists('yarn')
   if (manifestExists) {
     const contents = JSON.parse(await fs.readFile(manifestPath), 'utf8')
-    const packageNames = Object.keys(contents.dependencies || {}).map(chalk.blue)
+    const packageNames = Object.keys(contents.dependencies || {}).map(i => chalk.blue(i))
     contents.name = targetName
     await fs.writeFile(manifestPath, JSON.stringify(contents, null, 2))
 
@@ -70,7 +70,7 @@ export async function createApp({
   }
 
   log(coolTrim`
-    Success! Created ${targetName} at ${targetParent}
+    Success! Created ${chalk.green(targetName)} at ${targetParent}
     Inside that directory, you can run several commands:
 
       ${chalk.blue('yarn start')}

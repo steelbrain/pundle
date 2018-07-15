@@ -5,8 +5,10 @@ const pundleConfig = {
   cache: {
     enabled: true,
   },
-  entry: ['./src'],
-  components: presetDefault(),
+  entry: ['./src', './index.html'],
+  components: presetDefault({
+    target: 'node',
+  }),
   rootDirectory: __dirname,
   output: {
     rootDirectory: path.join(__dirname, 'dist'),
