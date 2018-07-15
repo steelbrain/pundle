@@ -2,7 +2,7 @@
   "name": "",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
+  "devDependencies": {
     "pundle-cli": "3.0.0-alpha11",
     "pundle-preset-default": "3.0.0-alpha11"
   },
