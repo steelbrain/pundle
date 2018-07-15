@@ -90,8 +90,7 @@ function createComponent({ browser }: { browser: boolean }) {
             return
           }
 
-          const parent = path.parentPath && path.parentPath.parent
-          const specified = !parent || t.isExpressionStatement(parent) || t.isVariableDeclarator(parent)
+          const specified = path.parent && !t.isExpressionStatement(path.parent)
 
           // Handling require + require.resolve
           promises.push(

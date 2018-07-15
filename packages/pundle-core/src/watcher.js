@@ -106,7 +106,7 @@ export default async function getWatcher({
 
     function processChunk(chunk: Chunk, force: boolean) {
       if (chunk.entry && (chunk.entry === filePath || force)) {
-        const chunkImport = { format: chunk.format, filePath: chunk.entry }
+        const chunkImport = { format: chunk.format, filePath: chunk.entry, meta: chunk.meta }
         changed.set(getFileKey(chunkImport), chunkImport)
       }
       if (chunk.imports.length) {
@@ -120,7 +120,7 @@ export default async function getWatcher({
     function processFile(file: ImportTransformed) {
       if (file.filePath !== filePath && !file.imports.some(item => item.filePath === filePath)) return
 
-      const fileImport = { format: file.format, filePath: file.filePath }
+      const fileImport = { format: file.format, filePath: file.filePath, meta: file.meta }
       const fileKey = getFileKey(fileImport)
       if (changed.has(fileKey)) return
 
