@@ -1,16 +1,18 @@
 // @flow
 
+import path from 'path'
 import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
 
-function createComponent({ plugins = [] }: { plugins?: Array<any> } = {}) {
+function createComponent({ plugins = [], extensions = ['.css'] }: { plugins?: Array<any>, extensions: Array<string> } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-postcss',
     version: manifest.version,
-    priority: 1250,
+    priority: 2000,
     async callback({ file, context }) {
-      if (file.format !== 'css') return null
+      const extName = path.extname(file.filePath)
+      if (!extensions.includes(extName)) return null
 
       const { name, exported } = loadLocalFromContext(context, ['postcss'])
       if (!name) {

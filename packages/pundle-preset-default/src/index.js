@@ -145,6 +145,7 @@ function getPresetComponents({
   if (postcss) {
     components.push(
       require('pundle-transformer-postcss')({
+        extensions: Array.from(extensions.css),
         ...postcss,
       }),
     )
