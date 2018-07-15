@@ -9,18 +9,18 @@ export default function getPluginReplaceProcess(browser: boolean) {
       MemberExpression(path: Object) {
         const name = getName(path.node, ['process'], 3)
         if (name === null || t.isAssignmentExpression(path.parent)) return
-        if (name === 'process.browser') {
-          if (browser) {
-            path.replaceWith(t.booleanLiteral(browser))
-          }
+        let modified = false
+        if (name === 'process.browser' && browser) {
           // NOTE: Leaving unchanged for node envs on purpose
-          return
+          modified = true
+          path.replaceWith(t.booleanLiteral(browser))
         }
         if (name === 'process.env.NODE_ENV') {
+          modified = true
           path.replaceWith(t.stringLiteral(process.env.NODE_ENV || 'development'))
         }
 
-        if (path.parentPath.isBinaryExpression()) {
+        if (modified && path.parentPath.isBinaryExpression()) {
           const evaluated = path.parentPath.evaluate()
           if (evaluated.confident) {
             path.parentPath.replaceWith(t.valueToNode(evaluated.value))
