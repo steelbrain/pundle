@@ -35,7 +35,7 @@ function createComponent() {
         }\n/*# sourceMappingURL=${path.posix.relative(path.dirname(publicPath), sourceMapUrl)} */`
         output.sourceMap = {
           filePath: sourceMapUrl,
-          contents: JSON.stringify(file.sourceMap),
+          contents: file.sourceMap,
         }
       }
 
