@@ -52,11 +52,11 @@ function getPresetComponents({
     json5?: boolean,
     babel?: 6 | 7 | false,
     js?: boolean,
-    less?: boolean,
-    sass?: boolean,
-    stylus?: boolean,
-    postcss?: boolean,
-    typescript?: boolean,
+    less?: boolean | Object,
+    sass?: boolean | Object,
+    stylus?: boolean | Object,
+    postcss?: boolean | Object,
+    typescript?: boolean | Object,
   },
   development?: boolean,
   generate?: {
@@ -120,23 +120,43 @@ function getPresetComponents({
   }
   if (less) {
     extensions.css.add('.less')
-    components.push(require('pundle-transformer-less')())
+    components.push(
+      require('pundle-transformer-less')({
+        ...less,
+      }),
+    )
   }
   if (sass) {
     extensions.css.add('.scss')
-    components.push(require('pundle-transformer-sass')())
+    components.push(
+      require('pundle-transformer-sass')({
+        ...sass,
+      }),
+    )
   }
   if (stylus) {
     extensions.css.add('.styl')
-    components.push(require('pundle-transformer-stylus')())
+    components.push(
+      require('pundle-transformer-stylus')({
+        ...stylus,
+      }),
+    )
   }
   if (postcss) {
-    components.push(require('pundle-transformer-postcss')())
+    components.push(
+      require('pundle-transformer-postcss')({
+        ...postcss,
+      }),
+    )
   }
   if (typescript) {
     extensions.js.add('.ts')
     extensions.js.add('.tsx')
-    components.push(require('pundle-transformer-typescript')())
+    components.push(
+      require('pundle-transformer-typescript')({
+        ...typescript,
+      }),
+    )
   }
   if (js) {
     components.push(
