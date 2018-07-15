@@ -1,6 +1,6 @@
 {
   "name": "pundle-reporter-cli",
-  "version": "3.0.0-alpha9",
+  "version": "3.0.0-alpha10",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -10,8 +10,8 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-alpha9",
-    "pundle-reporter-base": "^3.0.0-alpha9"
+    "pundle-api": "^3.0.0-alpha10",
+    "pundle-reporter-base": "^3.0.0-alpha10"
   },
   "author": "steelbrain",
   "license": "MIT"

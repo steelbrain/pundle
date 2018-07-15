@@ -1,6 +1,6 @@
 {
   "name": "--test-package--",
-  "version": "3.0.0-alpha9",
+  "version": "3.0.0-alpha10",
   "private": true,
   "description": "TODO",
   "repository": {
@@ -17,7 +17,7 @@
     "coffeescript": "^2.3.1",
     "less": "^3.0.4",
     "node-sass": "^4.9.0",
-    "pundle-preset-default": "^3.0.0-alpha9",
+    "pundle-preset-default": "^3.0.0-alpha10",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "stylus": "^0.54.5",
