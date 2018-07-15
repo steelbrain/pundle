@@ -231,7 +231,7 @@ async function getPundleDevMiddleware(options: Payload) {
       }
 
       function respondWith(output) {
-        const mimeType = mime.getType(path.extname(url)) || 'application/octet-stream'
+        const mimeType = mime.getType(path.extname(url) || '.html') || 'application/octet-stream'
         res.set('content-type', mimeType)
         res.end(output)
       }
