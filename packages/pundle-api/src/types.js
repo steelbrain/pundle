@@ -39,6 +39,7 @@ export type Chunk = {
 }
 
 export type ImportTransformed = {
+  meta: ImportMeta,
   format: string,
   filePath: string,
   contents: Buffer | string,

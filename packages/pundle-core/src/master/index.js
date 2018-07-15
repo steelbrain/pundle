@@ -8,6 +8,7 @@ import {
   getChunk,
   getFileKey,
   getChunkKey,
+  DEFAULT_IMPORT_META,
   type Chunk,
   type Context,
   type PundleWorker,
@@ -159,7 +160,7 @@ export default class Master implements PundleWorker {
       const filesToProcess = chunk.imports.slice()
       if (chunk.entry) {
         filesToProcess.push({
-          meta: null,
+          meta: DEFAULT_IMPORT_META,
           format: chunk.format,
           filePath: chunk.entry,
         })

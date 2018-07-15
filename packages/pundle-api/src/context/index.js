@@ -200,6 +200,7 @@ export default class Context {
     }
 
     return {
+      meta,
       imports: Array.from(fileImports.values()),
       chunks: Array.from(fileChunks.values()),
       contents: transformed.contents,
