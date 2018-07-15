@@ -24,8 +24,6 @@ This is the Alpha NG branch. See [master](https://github.com/steelbrain/pundle/t
 
 - parcel like RC files for modules that don't support it
 - toml
-- create-pundle-app
-- create-pundle-react-app
 - create-pundle-vue-app
 - visualize dependency file size
 
