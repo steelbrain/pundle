@@ -1,0 +1,22 @@
+{
+  "name": "pundle-core-create-app",
+  "version": "3.0.0-alpha9",
+  "description": "TODO",
+  "main": "./lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
+  "scripts": {},
+  "dependencies": {
+    "array-to-sentence": "^2.0.0",
+    "chalk": "^2.4.1",
+    "command-exists": "^1.2.7",
+    "sb-copy": "^1.0.1",
+    "sb-exec": "^4.0.0",
+    "sb-fs": "^3.0.0",
+    "strip-ansi": "^4.0.0"
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}
