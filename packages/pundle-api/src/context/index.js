@@ -187,7 +187,7 @@ export default class Context {
       } else if (result.sourceMap && !transformed.sourceMap) {
         newSourceMap = result.sourceMap
       } else if (result.sourceMap && transformed.sourceMap) {
-        newSourceMap = mergeSourceMap(transformed.sourceMap, result.sourceMap)
+        newSourceMap = JSON.stringify(mergeSourceMap(transformed.sourceMap, result.sourceMap))
       }
       transformed = { sourceMap: newSourceMap, contents: result.contents }
     }
