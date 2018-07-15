@@ -1,0 +1,18 @@
+{
+  "name": "",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "pundle-cli": "3.0.0-alpha9",
+    "pundle-preset-default": "3.0.0-alpha9",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1"
+  },
+  "scripts": {
+    "start": "pundle --dev",
+    "build": "NODE_ENV=production pundle"
+  }
+}

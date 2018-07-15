@@ -1,0 +1,18 @@
+{
+  "name": "create-pundle-react-app",
+  "version": "3.0.0-alpha9",
+  "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
+  "bin": "./lib/create-pundle-react-app.js",
+  "scripts": {},
+  "dependencies": {
+    "cool-trim": "^1.1.1",
+    "minimist": "^1.2.0",
+    "pundle-core-create-app": "3.0.0-alpha9"
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}

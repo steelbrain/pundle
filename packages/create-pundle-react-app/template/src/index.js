@@ -1,5 +1,9 @@
+import { render } from 'react-dom'
+import App from './App'
+
 const root = document.getElementById('root')
-root.textContent = 'Hello World'
+
+render(App, root)
 
 // Enables HMR when in dev
 if (process.env.NODE_ENV === 'development' && module.hot) {
