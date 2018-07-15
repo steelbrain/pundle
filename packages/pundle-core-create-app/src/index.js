@@ -46,7 +46,7 @@ export async function createApp({
   const yarnExists = commandExists('yarn')
   if (manifestExists) {
     const contents = JSON.parse(await fs.readFile(manifestPath), 'utf8')
-    const packageNames = Object.keys(contents.dependencies || {}).map(i => chalk.blue(i))
+    const packageNames = Object.keys(contents.devDependencies || {}).map(i => chalk.blue(i))
     contents.name = targetName
     await fs.writeFile(manifestPath, JSON.stringify(contents, null, 2))
 
