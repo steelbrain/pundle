@@ -10,8 +10,6 @@ import { getStringHash, getFileKey, type Context, type ImportResolved, type Impo
 
 import { version } from '../package.json'
 
-const cacheVersion = version.split('.').slice(0, 2).join('.')
-
 function statsToCacheKey(stats) {
   return stats ? `${parseInt(stats.mtime / 1000, 10)}::${stats.size}` : `null`
 }
@@ -50,17 +48,17 @@ export default class Cache {
     const fileAdapter = new FileAsync(filePath, {
       defaultValue: {
         cacheKey,
-        version: cacheVersion,
+        version,
         files: {},
       },
     })
 
     const adapter = await lowdb(fileAdapter)
-    if (adapter.get('cacheKey').value() !== cacheKey || adapter.get('version').value() !== cacheVersion) {
+    if (adapter.get('cacheKey').value() !== cacheKey || adapter.get('version').value() !== version) {
       adapter
         .set('files', {})
         .set('cacheKey', cacheKey)
-        .set('version', cacheVersion)
+        .set('version', version)
         .value()
       this.write()
     }
