@@ -1,6 +1,6 @@
 {
   "name": "pundle-job-transformer-js-common",
-  "version": "3.0.0-alpha11",
+  "version": "3.0.0-beta1",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-alpha11"
+    "pundle-api": "^3.0.0-beta1"
   },
   "author": "steelbrain",
   "license": "MIT"

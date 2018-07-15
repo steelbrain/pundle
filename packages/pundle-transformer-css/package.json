@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-css",
-  "version": "3.0.0-alpha11",
+  "version": "3.0.0-beta1",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
     "postcss": "^6.0.22",
     "postcss-modules": "^1.1.0",
     "postcss-value-parser": "^3.3.0",
-    "pundle-api": "^3.0.0-alpha11"
+    "pundle-api": "^3.0.0-beta1"
   },
   "author": "steelbrain",
   "license": "MIT"
