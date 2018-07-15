@@ -6,9 +6,7 @@ const pundleConfig = {
     enabled: true,
   },
   entry: ['./src', './index.html'],
-  components: presetDefault({
-    target: process.env.PUNDLE_TARGET || 'node',
-  }),
+  components: presetDefault(),
   rootDirectory: __dirname,
   output: {
     rootDirectory: path.join(__dirname, 'dist'),

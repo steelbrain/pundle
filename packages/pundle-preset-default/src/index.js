@@ -39,7 +39,7 @@ function getPresetComponents({
   optimize: { js: optimizeJS = !development, css: optimizeCSS = !development, html: optimizeHTML = !development } = {},
   statics = [],
   resolve = true,
-  target = 'browser',
+  target = process.env.PUNDLE_TARGET || 'browser',
 }: {
   report?: {
     cli?: boolean,
@@ -71,8 +71,8 @@ function getPresetComponents({
   },
   statics?: Array<string>,
   resolve?: boolean | { aliases: Object },
-  target: 'node' | 'browser',
-}) {
+  target?: 'node' | 'browser',
+} = {}) {
   const components = []
   const extensions = {
     css: new Set(['.css']),
