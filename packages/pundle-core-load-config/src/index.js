@@ -35,7 +35,11 @@ export default async function loadConfig(context: Context): Promise<Config> {
     entry: [],
     rootDirectory: fileConfig.rootDirectory,
     output: {
-      formats: {},
+      formats: {
+        static: 'assets/[id][ext]',
+        html: '[name].[format]',
+        '*': 'assets/[id].[format]',
+      },
       rootDirectory: '',
     },
     components: [],
@@ -62,10 +66,12 @@ export default async function loadConfig(context: Context): Promise<Config> {
     config.entry = config.entry.concat(fileConfig.entry)
   }
   if (fileConfig.output) {
-    Object.assign(config.output, fileConfig.output)
+    fileConfig.output.rootDirectory = fileConfig.output.rootDirectory
+    Object.assign(config.output.formats, fileConfig.output.formats)
   }
   if (typeof inlineConfig.output === 'object' && inlineConfig.output !== null) {
-    Object.assign(config.output, inlineConfig.output)
+    fileConfig.output.rootDirectory = inlineConfig.output.rootDirectory
+    Object.assign(config.output.formats, inlineConfig.output.formats)
   }
   if (fileConfig.components) {
     config.components = fileConfig.components.sort((a, b) => b.priority - a.priority)

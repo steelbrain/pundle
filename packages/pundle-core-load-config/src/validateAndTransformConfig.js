@@ -78,25 +78,22 @@ export default async function validateAndTransformConfig({
       const extraConfigOutputKeys = difference(Object.keys(config.output), ALLOWED_CONFIG_FILE_OUTPUT_KEYS)
       if (extraConfigOutputKeys.length) {
         faults.push(`config.output contains unknown keys: '${extraConfigOutputKeys.join(', ')}'`)
-      } else {
-        if (!config.output.formats || typeof config.output.formats !== 'object') {
-          faults.push('config.output.formats must be a Object')
+      }
+      if (!config.output.rootDirectory || typeof config.output.rootDirectory !== 'string') {
+        faults.push('config.output.rootDirectory must be a valid string')
+      }
+      if (config.output.formats) {
+        const resolved = path.resolve(config.output.rootDirectory)
+        const isResolved = resolved !== config.output.rootDirectory
+        if (!(await fs.exists(path.dirname(resolved)))) {
+          faults.push(
+            `config.output.rootDirectory ${
+              isResolved ? 'resolved to ' : ''
+            }'${resolved}' but it's parent directory does not exist`,
+          )
         }
-        if (!config.output.rootDirectory || typeof config.output.rootDirectory !== 'string') {
-          faults.push('config.output.rootDirectory must be a valid string')
-        } else {
-          const resolved = path.resolve(config.output.rootDirectory)
-          const isResolved = resolved !== config.output.rootDirectory
-          if (!(await fs.exists(path.dirname(resolved)))) {
-            faults.push(
-              `config.output.rootDirectory ${
-                isResolved ? 'resolved to ' : ''
-              }'${resolved}' but it's parent directory does not exist`,
-            )
-          }
-          if (isResolved) {
-            config.output.rootDirectory = resolved
-          }
+        if (isResolved) {
+          config.output.rootDirectory = resolved
         }
       }
     }
