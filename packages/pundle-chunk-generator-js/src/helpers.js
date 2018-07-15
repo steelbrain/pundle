@@ -46,7 +46,9 @@ export function getContentForOutput(
 }
 
 export function mergeSourceMap(sourceMap: Object, targetMap: Object, offset: number, filePath: string): Promise<void> {
-  return SourceMapConsumer.with(sourceMap, null, function(entryMap) {
+  const parsedSourceMap = JSON.parse(sourceMap)
+
+  return SourceMapConsumer.with(parsedSourceMap, null, function(entryMap) {
     entryMap.eachMapping(function(mapping) {
       targetMap.addMapping({
         source: filePath,
@@ -55,8 +57,8 @@ export function mergeSourceMap(sourceMap: Object, targetMap: Object, offset: num
       })
     })
 
-    const sources = (sourceMap.sources || []).filter(Boolean)
-    const sourcesContent = (sourceMap.sourcesContent || []).filter(Boolean)
+    const sources = (parsedSourceMap.sources || []).filter(Boolean)
+    const sourcesContent = (parsedSourceMap.sourcesContent || []).filter(Boolean)
     if (sources.length === sourcesContent.length) {
       sources.forEach((item, index) => {
         targetMap.setSourceContent(item, sourcesContent[index])
