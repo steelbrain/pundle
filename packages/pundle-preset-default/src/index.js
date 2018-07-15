@@ -77,7 +77,7 @@ function getPresetComponents({
   const extensions = {
     css: new Set(['.css']),
     js: new Set(['.js', '.mjs']),
-    static: new Set([DEFAULT_STATICS, ...statics]),
+    static: new Set([...DEFAULT_STATICS, ...statics]),
   }
 
   if (reportCLI) {
