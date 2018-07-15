@@ -3,12 +3,7 @@
 import * as t from '@babel/types'
 import { getName } from './helpers'
 
-export default function getPluginReplaceProcess(browser: boolean, givenEnv: Object) {
-  const env = {
-    ...givenEnv,
-    NODE_ENV: givenEnv.NODE_ENV || process.env.NODE_ENV || 'development',
-  }
-
+export default function getPluginReplaceProcess(browser: boolean) {
   return {
     visitor: {
       MemberExpression(path: Object) {
@@ -21,11 +16,8 @@ export default function getPluginReplaceProcess(browser: boolean, givenEnv: Obje
           // NOTE: Leaving unchanged for node envs on purpose
           return
         }
-        if (name.slice(0, 12) === 'process.env.') {
-          const envName = name.slice(12)
-          if (browser || env[envName]) {
-            path.replaceWith(t.valueToNode(env[envName]))
-          } else return
+        if (name === 'process.env.NODE_ENV') {
+          path.replaceWith(t.stringLiteral(process.env.NODE_ENV || 'development'))
         }
 
         if (path.parentPath.isBinaryExpression()) {

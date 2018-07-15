@@ -51,7 +51,7 @@ function getPresetComponents({
     json?: boolean,
     json5?: boolean,
     babel?: 6 | 7 | false,
-    js?: boolean | { env: { [string]: string } },
+    js?: boolean,
     less?: boolean,
     sass?: boolean,
     stylus?: boolean,
@@ -140,7 +140,6 @@ function getPresetComponents({
   if (js) {
     components.push(
       require('pundle-transformer-js')({
-        env: js && js.env ? js.env : {},
         browser: target === 'browser',
       }),
     )

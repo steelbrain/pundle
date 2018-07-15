@@ -23,7 +23,7 @@ INJECTIONS.forEach(function(names, sourceModule) {
 
 const transformAsync = promisify(transform)
 
-function createComponent({ browser, env = {} }: { browser: boolean, env?: { [string]: string } }) {
+function createComponent({ browser }: { browser: boolean }) {
   return createFileTransformer({
     name: 'pundle-transformer-js',
     version: manifest.version,
@@ -41,7 +41,7 @@ function createComponent({ browser, env = {} }: { browser: boolean, env?: { [str
         sourceMaps: false,
         filename: file.filePath,
         highlightCode: false,
-        plugins: [getPluginReplaceProcess(browser, env)],
+        plugins: [getPluginReplaceProcess(browser)],
         sourceType: 'module',
         parserOpts: {
           plugins: ['dynamicImport'],
