@@ -2,9 +2,6 @@ const path = require('path')
 const presetDefault = require('pundle-preset-default')
 
 module.exports = {
-  cache: {
-    enabled: true,
-  },
   entry: ['./src', './index.html'],
   components: presetDefault({
     transform: {
@@ -25,11 +22,5 @@ module.exports = {
   rootDirectory: __dirname,
   output: {
     rootDirectory: path.join(__dirname, 'dist'),
-    formats: {
-      '*.map': 'assets/[id].[format]',
-      static: 'assets/[id][ext]',
-      '*': 'assets/[id].[format]',
-      html: '[name].[format]',
-    },
   },
 }
