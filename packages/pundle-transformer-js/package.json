@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-js",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0-beta2",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
     "@babel/generator": "^7.0.0-beta.49",
     "@babel/traverse": "^7.0.0-beta.51",
     "@babel/types": "^7.0.0-beta.49",
-    "pundle-api": "^3.0.0-beta1"
+    "pundle-api": "^3.0.0-beta2"
   },
   "author": "steelbrain",
   "license": "MIT"

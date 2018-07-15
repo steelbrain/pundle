@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-cson",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0-beta2",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "scripts": {},
   "dependencies": {
     "cson-parser": "^3.0.0",
-    "pundle-api": "^3.0.0-beta1"
+    "pundle-api": "^3.0.0-beta2"
   },
   "author": "steelbrain",
   "license": "MIT"

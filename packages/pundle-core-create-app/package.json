@@ -1,6 +1,6 @@
 {
   "name": "pundle-core-create-app",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0-beta2",
   "description": "TODO",
   "main": "./lib/index.js",
   "repository": {

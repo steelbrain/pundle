@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-sass",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0-beta2",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-beta1"
+    "pundle-api": "^3.0.0-beta2"
   },
   "author": "steelbrain",
   "license": "MIT"
