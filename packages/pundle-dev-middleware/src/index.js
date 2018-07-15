@@ -182,7 +182,7 @@ async function getPundleDevMiddleware(options: Payload) {
     },
     tick({ newFile }) {
       if (options.hmr && !firstTime) {
-        filesChangedHMR.add({ format: newFile.format, filePath: newFile.filePath })
+        filesChangedHMR.add({ format: newFile.format, filePath: newFile.filePath, meta: newFile.meta })
       }
     },
   })
