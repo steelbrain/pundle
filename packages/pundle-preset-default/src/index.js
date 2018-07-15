@@ -95,9 +95,7 @@ function getPresetComponents({
     components.push(require('pundle-transformer-json')())
   }
   if (json5) {
-    if (!json) {
-      extensions.js.add('.json')
-    }
+    extensions.js.add('.json')
     extensions.js.add('.json5')
     components.push(
       require('pundle-transformer-json5')({
