@@ -25,7 +25,7 @@ function createComponent({
 
       let moduleMap = null
       const plugins = []
-      const fileIsModule = !file.meta.specified || file.filePath.endsWith(`.module${extName}`)
+      const fileIsModule = file.meta.specified || file.filePath.endsWith(`.module${extName}`)
 
       if (fileIsModule) {
         plugins.push(
