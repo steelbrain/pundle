@@ -227,7 +227,7 @@ async function getPundleDevMiddleware(options: Payload) {
 
       let { url } = req
       if (url.endsWith('/')) {
-        url = `${url}index.html`
+        url = `${url}index`
       }
 
       function respondWith(output) {
@@ -245,7 +245,7 @@ async function getPundleDevMiddleware(options: Payload) {
       await queue.waitTillIdle()
       await generateJob({ job })
 
-      const contents = urlToContents[url]
+      const contents = urlToContents[url] || urlToContents[`${url}.html`]
       if (contents) {
         respondWith(contents)
         return
