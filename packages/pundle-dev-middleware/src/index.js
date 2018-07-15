@@ -1,5 +1,6 @@
 // @flow
 
+import url from 'url'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 import defaults from 'lodash/defaults'
@@ -209,8 +210,9 @@ async function getPundleDevMiddleware(options: Payload) {
     `${publicPath}*`,
     asyncRoute(async function(req, res, next) {
       await initialCompile()
+      let { pathname } = url.parse(req.url)
 
-      if (req.url.endsWith('.pundle.hmr')) {
+      if (pathname.endsWith('.pundle.hmr')) {
         res.write(JSON.stringify({ type: 'status', enabled: !!options.hmr }))
         if (!options.hmr) {
           res.end()
@@ -225,18 +227,17 @@ async function getPundleDevMiddleware(options: Payload) {
         return
       }
 
-      let { url } = req
-      if (url.endsWith('/')) {
-        url = `${url}index`
+      if (pathname.endsWith('/')) {
+        pathname = `${pathname}index`
       }
 
       function respondWith(output) {
-        const mimeType = mime.getType(path.extname(url) || '.html') || 'application/octet-stream'
+        const mimeType = mime.getType(path.extname(pathname) || '.html') || 'application/octet-stream'
         res.set('content-type', mimeType)
         res.end(output)
       }
 
-      const hmrContents = urlToHMRContents[url]
+      const hmrContents = urlToHMRContents[pathname]
       if (hmrContents) {
         respondWith(hmrContents)
         return
@@ -245,7 +246,7 @@ async function getPundleDevMiddleware(options: Payload) {
       await queue.waitTillIdle()
       await generateJob({ job })
 
-      const contents = urlToContents[url] || urlToContents[`${url}.html`]
+      const contents = urlToContents[pathname] || urlToContents[`${pathname}.html`]
       if (contents) {
         respondWith(contents)
         return
