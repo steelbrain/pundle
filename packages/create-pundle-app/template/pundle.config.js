@@ -7,7 +7,7 @@ const pundleConfig = {
   },
   entry: ['./src', './index.html'],
   components: presetDefault({
-    target: 'node',
+    target: process.env.PUNDLE_TARGET || 'node',
   }),
   rootDirectory: __dirname,
   output: {
