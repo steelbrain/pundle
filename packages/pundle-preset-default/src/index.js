@@ -30,6 +30,7 @@ function getPresetComponents({
     js = true,
     less = false,
     sass = false,
+    statics = {},
     stylus = false,
     postcss = false,
     typescript = false,
@@ -37,7 +38,6 @@ function getPresetComponents({
   development = process.env.NODE_ENV !== 'production',
   generate: { js: generateJS = true, css: generateCSS = true, html: generateHTML = true } = {},
   optimize: { js: optimizeJS = !development, css: optimizeCSS = !development, html: optimizeHTML = !development } = {},
-  statics = [],
   resolve = true,
   target = process.env.PUNDLE_TARGET || 'browser',
 }: {
@@ -45,15 +45,16 @@ function getPresetComponents({
     cli?: boolean,
   },
   transform?: {
-    cson?: boolean,
-    css?: boolean,
-    coffee?: boolean,
-    json?: boolean,
-    json5?: boolean,
-    babel?: 6 | 7 | false,
-    js?: boolean,
+    cson?: boolean | Object,
+    css?: boolean | Object,
+    coffee?: boolean | Object,
+    json?: boolean | Object,
+    json5?: boolean | Object,
+    babel?: 6 | 7 | Object | false,
+    js?: boolean | Object,
     less?: boolean | Object,
     sass?: boolean | Object,
+    statics?: boolean | Object,
     stylus?: boolean | Object,
     postcss?: boolean | Object,
     typescript?: boolean | Object,
@@ -69,7 +70,6 @@ function getPresetComponents({
     css?: boolean,
     html?: boolean,
   },
-  statics?: Array<string>,
   resolve?: boolean | { aliases: Object },
   target?: 'node' | 'browser',
 } = {}) {
@@ -77,7 +77,10 @@ function getPresetComponents({
   const extensions = {
     css: new Set(['.css']),
     js: new Set(['.js', '.mjs']),
-    static: new Set([...DEFAULT_STATICS, ...statics]),
+    static: new Set([]),
+  }
+  if (statics) {
+    DEFAULT_STATICS.concat(statics.extensions || []).forEach(ext => extensions.static.add(ext))
   }
 
   if (reportCLI) {
@@ -85,15 +88,27 @@ function getPresetComponents({
   }
   if (cson) {
     extensions.js.add('.cson')
-    components.push(require('pundle-transformer-cson')())
+    components.push(
+      require('pundle-transformer-cson')({
+        ...cson,
+      }),
+    )
   }
   if (coffee) {
     extensions.js.add('.coffee')
-    components.push(require('pundle-transformer-coffee')())
+    components.push(
+      require('pundle-transformer-coffee')({
+        ...coffee,
+      }),
+    )
   }
   if (json) {
     extensions.js.add('.json')
-    components.push(require('pundle-transformer-json')())
+    components.push(
+      require('pundle-transformer-json')({
+        ...json,
+      }),
+    )
   }
   if (json5) {
     extensions.js.add('.json')
@@ -101,11 +116,12 @@ function getPresetComponents({
     components.push(
       require('pundle-transformer-json5')({
         extensions: json ? ['.json5'] : ['.json', '.json5'],
+        ...json5,
       }),
     )
   }
   if (babel) {
-    if (!BABEL_ALLOWED_VERSIONS.has(babel)) {
+    if (typeof babel === 'number' && !BABEL_ALLOWED_VERSIONS.has(babel)) {
       throw new Error(
         `preset-default expects config.babel to be any of ${Array.from(BABEL_ALLOWED_VERSIONS).join(
           ', ',
@@ -113,9 +129,13 @@ function getPresetComponents({
       )
     }
     components.push(
-      require('pundle-transformer-babel')({
-        version: babel,
-      }),
+      require('pundle-transformer-babel')(
+        typeof babel === 'number'
+          ? {
+              version: babel,
+            }
+          : babel,
+      ),
     )
   }
   if (less) {
@@ -163,19 +183,24 @@ function getPresetComponents({
     components.push(
       require('pundle-transformer-js')({
         browser: target === 'browser',
+        ...js,
       }),
     )
   }
-  components.push(
-    require('pundle-transformer-static')({
-      extensions: Array.from(extensions.static),
-    }),
-  )
+  if (statics) {
+    components.push(
+      require('pundle-transformer-static')({
+        ...statics,
+        extensions: Array.from(extensions.static),
+      }),
+    )
+  }
   if (css) {
     components.push(
       require('pundle-transformer-css')({
         development,
         extensions: Array.from(extensions.css),
+        ...css,
       }),
     )
   }
