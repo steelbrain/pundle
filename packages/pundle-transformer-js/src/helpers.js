@@ -12,6 +12,7 @@ export function getName(givenObj: Object, match: Array<string>, maxLength: numbe
       objName.push(obj.name)
       if (match.length && match.length > currentIndex && objName[currentIndex] !== match[currentIndex]) {
         failed = true
+        return
       }
     }
     if (typeof obj.object === 'object') {
