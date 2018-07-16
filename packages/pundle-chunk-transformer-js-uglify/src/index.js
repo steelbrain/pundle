@@ -20,17 +20,20 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
     async callback({ filePath, format, contents, sourceMap }) {
       if (format !== 'js') return null
 
-      const sourceMapOptions = sourceMap && sourceMap.filePath ? {
-        url: path.posix.relative(path.dirname(filePath), sourceMap.filePath),
-      } : null
+      const sourceMapOptions =
+        sourceMap && sourceMap.filePath
+          ? {
+              url: path.posix.relative(path.dirname(filePath), sourceMap.filePath),
+            }
+          : null
       const uglify = uglifier === 'terser' ? processTerser : processUglify
       const { code, error, map } = uglify(typeof contents === 'string' ? contents : contents.toString(), {
         sourceMap: sourceMapOptions,
         ...options,
-          compress: {
-            defaults: false,
-            ...options.compress,
-          },
+        compress: {
+          defaults: false,
+          ...options.compress,
+        },
       })
       if (error) {
         throw new Error(error)
@@ -38,9 +41,11 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
 
       return {
         contents: code,
-        sourceMap: map ? {
-          contents: JSON.stringify(mergeSourceMap(sourceMap.contents, map))
-        } : null,
+        sourceMap: map
+          ? {
+              contents: JSON.stringify(mergeSourceMap(sourceMap.contents, map)),
+            }
+          : null,
       }
     },
   })
