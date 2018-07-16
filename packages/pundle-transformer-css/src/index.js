@@ -39,7 +39,6 @@ function createComponent({
       }
       plugins.push(
         pluginImportResolver({
-          file,
           resolve,
           context,
           addChunk,

@@ -9,7 +9,7 @@ const EXTERNAL_REGEXP = /^[\w]+:\//
 
 // Maybe don't remove rules and make them non-top level chunks that get imported
 // by the rules themselves in @import css?
-export default plugin('pundle-transformer-css', function({ file, resolve, context, addChunk }) {
+export default plugin('pundle-transformer-css', function({ resolve, context, addChunk }) {
   return function(css) {
     const promises = []
 
