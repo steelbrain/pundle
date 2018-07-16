@@ -4,6 +4,7 @@ import * as t from '@babel/types'
 import invariant from 'assert'
 import traverse from '@babel/traverse'
 import generate from '@babel/generator'
+import pluginCommonJSModules from '@babel/plugin-transform-modules-commonjs'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
 import { createFileTransformer, getChunk, getUniqueHash } from 'pundle-api'
@@ -41,7 +42,7 @@ function createComponent({ browser }: { browser: boolean }) {
         sourceMaps: false,
         filename: file.filePath,
         highlightCode: false,
-        plugins: [getPluginReplaceProcess(browser)],
+        plugins: [getPluginReplaceProcess(browser), pluginCommonJSModules],
         sourceType: 'module',
         parserOpts: {
           plugins: ['dynamicImport'],
