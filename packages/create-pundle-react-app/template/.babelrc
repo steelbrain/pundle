@@ -6,7 +6,7 @@
     [
       "env",
       {
-        "exclude": ["transform-regenerator"]
+        "exclude": ["transform-regenerator", "transform-es2015-modules-commonjs"]
       }
     ],
     "react"
