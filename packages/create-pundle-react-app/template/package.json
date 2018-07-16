@@ -15,5 +15,22 @@
   "scripts": {
     "start": "pundle --dev.singlepage --dev.static ./static::/",
     "build": "NODE_ENV=production pundle"
+  },
+  "babel": {
+    "plugins": [
+      "react-hot-loader/babel"
+    ],
+    "presets": [
+      [
+        "env",
+        {
+          "exclude": [
+            "transform-regenerator",
+            "transform-es2015-modules-commonjs"
+          ]
+        }
+      ],
+      "react"
+    ]
   }
 }
