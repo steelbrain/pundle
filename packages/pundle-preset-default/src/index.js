@@ -209,7 +209,7 @@ function getPresetComponents({
   if (optimizeJS) {
     components.push(require('pundle-job-transformer-js-common')())
     components.push(
-      require('pundle-chunk-transformer-js-uglify')({
+      require('pundle-chunk-transformer-uglify')({
         uglifier: 'terser',
       }),
     )

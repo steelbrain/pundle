@@ -15,7 +15,7 @@
     "pundle-chunk-generator-html": "^3.0.0-beta2",
     "pundle-chunk-generator-js": "^3.0.0-beta2",
     "pundle-chunk-generator-static": "^3.0.0-beta2",
-    "pundle-chunk-transformer-js-uglify": "^3.0.0-beta2",
+    "pundle-chunk-transformer-uglify": "^3.0.0-beta2",
     "pundle-job-transformer-js-common": "^3.0.0-beta2",
     "pundle-reporter-cli": "^3.0.0-beta2",
     "pundle-resolver-aliases-browser": "^3.0.0-beta2",
