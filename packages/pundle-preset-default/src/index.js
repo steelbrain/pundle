@@ -27,6 +27,7 @@ function getPresetComponents({
     json = true,
     json5 = false,
     babel = false,
+    graphql = false,
     js = true,
     less = false,
     sass = false,
@@ -53,6 +54,7 @@ function getPresetComponents({
     json?: boolean | Object,
     json5?: boolean | Object,
     babel?: 6 | 7 | Object | false,
+    graphql?: boolean | Object,
     js?: boolean | Object,
     less?: boolean | Object,
     sass?: boolean | Object,
@@ -199,6 +201,15 @@ function getPresetComponents({
     components.push(
       require('pundle-transformer-yaml')({
         ...yaml,
+      }),
+    )
+  }
+  if (graphql) {
+    extensions.js.add('.gql')
+    extensions.js.add('.graphql')
+    components.push(
+      require('pundle-transformer-graphql')({
+        ...graphql,
       }),
     )
   }

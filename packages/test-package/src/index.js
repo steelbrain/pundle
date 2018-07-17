@@ -36,6 +36,7 @@ console.log('typescript', require('./typescript.ts'))
 console.log('coffeescript', require('./test.coffee'))
 console.log('toml', require('./test.toml'))
 console.log('yaml', require('./test.yaml'))
+console.log('graphql', require('./test.gql'))
 
 console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))
 console.log('photos inline', appendPhotoToBody(require('../photos/small-photo.png')))

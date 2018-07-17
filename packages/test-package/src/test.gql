@@ -1,0 +1,8 @@
+query Hello {
+  world {
+    bro
+    yes {
+      hi
+    }
+  }
+}

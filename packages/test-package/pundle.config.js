@@ -11,6 +11,7 @@ module.exports = {
       json: true,
       json5: true,
       babel: 7,
+      graphql: true,
       js: true,
       less: true,
       sass: true,

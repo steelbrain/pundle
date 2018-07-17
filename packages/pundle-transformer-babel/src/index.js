@@ -53,7 +53,7 @@ function createComponent({
 
       const transformed = await new Promise((resolve, reject) => {
         const response = exported.transform(
-          file.contents,
+          typeof file.contents === 'string' ? file.contents : file.contents.toString(),
           {
             babelrc: true,
             filename: file.filePath,
