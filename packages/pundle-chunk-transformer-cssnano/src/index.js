@@ -3,7 +3,6 @@
 import path from 'path'
 import cssnano from 'cssnano'
 import postcss from 'postcss'
-import mergeSourceMap from 'merge-source-map'
 import { createChunkTransformer } from 'pundle-api'
 
 import manifest from '../package.json'
