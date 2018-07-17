@@ -34,7 +34,8 @@
     "pundle-transformer-static": "^3.0.0-beta2",
     "pundle-transformer-stylus": "^3.0.0-beta2",
     "pundle-transformer-toml": "^3.0.0-beta2",
-    "pundle-transformer-typescript": "^3.0.0-beta2"
+    "pundle-transformer-typescript": "^3.0.0-beta2",
+    "pundle-transformer-yaml": "^3.0.0-beta2"
   },
   "author": "steelbrain",
   "license": "MIT"

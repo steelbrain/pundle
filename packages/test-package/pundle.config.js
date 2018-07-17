@@ -18,6 +18,7 @@ module.exports = {
       toml: true,
       postcss: true,
       typescript: true,
+      yaml: true,
     },
   }),
   rootDirectory: __dirname,

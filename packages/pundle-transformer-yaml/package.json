@@ -1,0 +1,18 @@
+{
+  "name": "pundle-transformer-yaml",
+  "version": "3.0.0-beta2",
+  "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
+  "main": "lib/index.js",
+  "flow:main": "src/index.js",
+  "scripts": {},
+  "dependencies": {
+    "pundle-api": "^3.0.0-beta2",
+    "serialize-to-js": "^1.2.1"
+  },
+  "author": "steelbrain",
+  "license": "MIT"
+}

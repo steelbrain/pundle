@@ -35,6 +35,7 @@ function getPresetComponents({
     toml = false,
     postcss = false,
     typescript = false,
+    yaml = false,
   } = {},
   development = process.env.NODE_ENV !== 'production',
   generate: { js: generateJS = true, css: generateCSS = true, html: generateHTML = true } = {},
@@ -60,6 +61,7 @@ function getPresetComponents({
     toml?: boolean | Object,
     postcss?: boolean | Object,
     typescript?: boolean | Object,
+    yaml?: boolean | Object,
   },
   development?: boolean,
   generate?: {
@@ -188,6 +190,15 @@ function getPresetComponents({
     components.push(
       require('pundle-transformer-toml')({
         ...toml,
+      }),
+    )
+  }
+  if (yaml) {
+    extensions.js.add('.yaml')
+    extensions.js.add('.yml')
+    components.push(
+      require('pundle-transformer-yaml')({
+        ...yaml,
       }),
     )
   }
