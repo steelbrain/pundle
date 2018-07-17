@@ -1,8 +1,7 @@
 // @flow
 
 import path from 'path'
-import JSON5 from 'json5'
-import { createFileTransformer } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
 
@@ -11,13 +10,17 @@ function createComponent({ extensions = ['.json5'] }: { extensions?: Array<strin
     name: 'pundle-transformer-json5',
     version: manifest.version,
     priority: 1500,
-    callback({ file }) {
+    callback({ file, context }) {
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName) || file.format !== 'js') {
         return null
       }
-      // TODO: Error handling
-      const parsed = JSON5.parse(file.contents.toString())
+      const { name, exported } = loadLocalFromContext(context, ['json5'])
+      if (!name) {
+        throw new Error(`'json5' not found in '${context.config.rootDirectory}'`)
+      }
+      // TODO: error handling
+      const parsed = exported.parse(typeof file.contents === 'string' ? file.contents : file.contents.toString())
 
       return {
         contents: `module.exports = ${JSON.stringify(parsed)}`,

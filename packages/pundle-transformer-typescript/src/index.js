@@ -5,7 +5,7 @@ import { PundleError, characterOffsetToLoc, createFileTransformer, loadLocalFrom
 
 import manifest from '../package.json'
 
-const DEFAULT_EXCLUDE = ['node_modules/**']
+const DEFAULT_EXCLUDE = [/node_modules/]
 const DEFAULT_EXTENSIONS = ['.ts', '.tsx']
 
 function createComponent({

@@ -10,7 +10,6 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "json5": "^1.0.1",
     "pundle-api": "^3.0.0-beta2"
   },
   "author": "steelbrain",
