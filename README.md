@@ -22,7 +22,6 @@ This is the NG Beta branch. See [master](https://github.com/steelbrain/pundle/tr
 
 ## Top Priority
 
-- toml
 - create-pundle-vue-app
 - visualize dependency file size
 
