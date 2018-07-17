@@ -66,8 +66,8 @@ function getPresetComponents({
     html?: boolean,
   },
   optimize?: {
-    js?: boolean,
-    css?: boolean,
+    js?: boolean | { uglify?: boolean | Object },
+    css?: boolean | { cssnano?: boolean | Object },
     html?: boolean,
   },
   resolve?: boolean | { aliases: Object },
@@ -236,11 +236,16 @@ function getPresetComponents({
     components.push(
       require('pundle-chunk-transformer-uglify')({
         uglifier: 'terser',
+        ...(optimizeJS && optimizeJS.uglify),
       }),
     )
   }
   if (optimizeCSS) {
-    /* TODO: Implement css chunk transformer */
+    components.push(
+      require('pundle-chunk-transformer-cssnano')({
+        ...(optimizeCSS && optimizeCSS.cssnano),
+      }),
+    )
   }
   if (optimizeHTML) {
     /* TODO: Implement html chunk transformer */
