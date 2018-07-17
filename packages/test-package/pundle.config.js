@@ -15,6 +15,7 @@ module.exports = {
       less: true,
       sass: true,
       stylus: true,
+      toml: true,
       postcss: true,
       typescript: true,
     },

@@ -32,6 +32,7 @@ function getPresetComponents({
     sass = false,
     statics = {},
     stylus = false,
+    toml = false,
     postcss = false,
     typescript = false,
   } = {},
@@ -56,6 +57,7 @@ function getPresetComponents({
     sass?: boolean | Object,
     statics?: boolean | Object,
     stylus?: boolean | Object,
+    toml?: boolean | Object,
     postcss?: boolean | Object,
     typescript?: boolean | Object,
   },
@@ -178,6 +180,14 @@ function getPresetComponents({
     components.push(
       require('pundle-transformer-typescript')({
         ...typescript,
+      }),
+    )
+  }
+  if (toml) {
+    extensions.js.add('.toml')
+    components.push(
+      require('pundle-transformer-toml')({
+        ...toml,
       }),
     )
   }

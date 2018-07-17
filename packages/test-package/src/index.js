@@ -34,6 +34,7 @@ console.log('json', require('./haha'))
 console.log('json5', require('./test.json5'))
 console.log('typescript', require('./typescript.ts'))
 console.log('coffeescript', require('./test.coffee'))
+console.log('toml', require('./test.toml'))
 
 console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))
 console.log('photos inline', appendPhotoToBody(require('../photos/small-photo.png')))
