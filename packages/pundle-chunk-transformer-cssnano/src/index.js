@@ -21,7 +21,10 @@ function createComponent({ options = {} }: { options?: Object } = {}) {
         }),
       ]).process(typeof contents === 'string' ? contents : contents.toString(), {
         from: filePath,
-        map: sourceMap && sourceMap.filePath ? { inline: false, annotation: false, prev: sourceMap.contents } : null,
+        map:
+          sourceMap && sourceMap.filePath
+            ? { inline: false, annotation: false, prev: sourceMap.contents, from: filePath }
+            : null,
       })
       let { css, map } = processed
       if (sourceMap && sourceMap.filePath) {
