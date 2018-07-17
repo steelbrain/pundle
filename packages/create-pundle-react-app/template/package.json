@@ -25,9 +25,9 @@
         "env",
         {
           "exclude": [
-            "transform-regenerator",
-            "transform-es2015-modules-commonjs"
-          ]
+            "transform-regenerator"
+          ],
+          "modules": false
         }
       ],
       "react"
