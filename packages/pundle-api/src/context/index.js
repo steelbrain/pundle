@@ -192,11 +192,14 @@ export default class Context {
       transformed = { sourceMap: newSourceMap, contents: result.contents }
     }
 
-    if (transformed.sourceMap) {
-      Object.assign(transformed.sourceMap, {
-        sources: [filePath],
-        sourcesContent: [typeof contents === 'string' ? contents : contents.toString()],
-      })
+    if (transformed.sourceMap && Array.isArray(transformed.sourceMap.sources)) {
+      const sourceIndex = transformed.sourceMap.sources.findIndex(source => source && filePath.endsWith(source))
+      if (sourceIndex !== -1) {
+        if (!transformed.sourceMap.sourcesContent) {
+          transformed.sourceMap.sourcesContent = []
+        }
+        transformed.sourceMap.sourcesContent[sourceIndex] = typeof contents === 'string' ? contents : contents.toString()
+      }
     }
 
     return {

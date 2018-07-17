@@ -23,7 +23,7 @@ function createComponent({ plugins = [], extensions = ['.css'] }: { plugins?: Ar
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
         {
           from: file.filePath,
-          map: { inline: false, annotation: false },
+          map: { from: file.filePath, inline: false, annotation: false },
         },
       )
 

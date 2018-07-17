@@ -22,19 +22,20 @@ function createComponent({ options = {} }: { options?: Object } = {}) {
         }),
       ]).process(typeof contents === 'string' ? contents : contents.toString(), {
         from: filePath,
-        map: sourceMap && sourceMap.filePath ? { inline: false, annotation: false } : null,
+        map: sourceMap && sourceMap.filePath ? { inline: false, annotation: false, prev: sourceMap.contents } : null,
       })
-      let { css } = processed
+      let { css, map } = processed
       if (sourceMap && sourceMap.filePath) {
         const relativeUrl = path.posix.relative(path.dirname(filePath), sourceMap.filePath)
         css += `/*# sourceMappingURL=${relativeUrl} */`
-      }
+        map = JSON.stringify(map)
+      } else map = null
 
       return {
         contents: css,
-        sourceMap: processed.map
+        sourceMap: map
           ? {
-              contents: JSON.stringify(mergeSourceMap(sourceMap.contents, processed.map.toJSON())),
+              contents: map,
             }
           : null,
       }
