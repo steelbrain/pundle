@@ -5,7 +5,10 @@ import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
 
-function createComponent({ extensions = ['.styl'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
+function createComponent({
+  extensions = ['.styl', '.stylus'],
+  options = {},
+}: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-stylus',
     version: manifest.version,

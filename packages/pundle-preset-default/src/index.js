@@ -148,6 +148,7 @@ function getPresetComponents({
   }
   if (sass) {
     extensions.css.add('.scss')
+    extensions.css.add('.sass')
     components.push(
       require('pundle-transformer-sass')({
         ...sass,
@@ -156,6 +157,7 @@ function getPresetComponents({
   }
   if (stylus) {
     extensions.css.add('.styl')
+    extensions.css.add('.stylus')
     components.push(
       require('pundle-transformer-stylus')({
         ...stylus,
@@ -215,7 +217,7 @@ function getPresetComponents({
           js: Array.from(extensions.js),
           css: Array.from(extensions.css),
           static: Array.from(extensions.static),
-          ...(generateHTML ? { html: ['.html'] } : {}),
+          ...(generateHTML ? { html: ['.html', '.htm'] } : {}),
         },
         aliases: resolverAliases,
       }),

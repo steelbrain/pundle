@@ -5,7 +5,10 @@ import { NEWLINE_REGEXP, createFileTransformer, loadLocalFromContext } from 'pun
 
 import manifest from '../package.json'
 
-function createComponent({ extensions = ['.scss'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
+function createComponent({
+  extensions = ['.scss', '.sass'],
+  options = {},
+}: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-sass',
     version: manifest.version,
