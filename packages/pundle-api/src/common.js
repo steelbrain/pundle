@@ -1,6 +1,5 @@
 // @flow
 
-import fs from 'sb-fs'
 import path from 'path'
 import globrex from 'globrex'
 import resolveFrom from 'resolve-from'
@@ -127,12 +126,13 @@ export async function loadLocalFromContext(context: Context, name: string): Prom
     // $FlowFixMe: Dynamic require :)
     return require(resolved) // eslint-disable-line global-require,import/no-dynamic-require
   } catch (_) {
-    const useYarn = await fs.exists(path.join(rootDirectory, 'yarn.lock'))
     if (!resolved) {
+      let relative = path.relative(process.cwd(), context.config.rootDirectory)
+      if (!relative.startsWith('.')) {
+        relative = `./${relative}`
+      }
       throw new Error(
-        `'${name}' not found in '${context.config.rootDirectory}' (Install it with '${
-          useYarn ? `yarn add --dev ${name}` : `npm install --dev ${name}`
-        }')`,
+        `'${name}' not found in Project Root (${relative}). Pundle needs it to process a filetype you use in your project. You can install it with \`npm install --dev ${name}\` or \`yarn add --dev ${name}\``,
       )
     }
     throw _
