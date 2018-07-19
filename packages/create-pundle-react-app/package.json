@@ -1,6 +1,6 @@
 {
   "name": "create-pundle-react-app",
-  "version": "3.0.0-beta2",
+  "version": "3.0.0-beta3",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "dependencies": {
     "cool-trim": "^1.1.1",
     "minimist": "^1.2.0",
-    "pundle-core-create-app": "3.0.0-beta2"
+    "pundle-core-create-app": "3.0.0-beta3"
   },
   "author": "steelbrain",
   "license": "MIT"
