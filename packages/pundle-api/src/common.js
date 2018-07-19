@@ -1,5 +1,6 @@
 // @flow
 
+import fs from 'sb-fs'
 import path from 'path'
 import globrex from 'globrex'
 import resolveFrom from 'resolve-from'
@@ -117,22 +118,23 @@ export function characterOffsetToLoc(contents: string, characterOffset: number):
   return null
 }
 
-export function loadLocalFromContext(context: Context, names: Array<string>): { name: ?string, exported: any } {
+export async function loadLocalFromContext(context: Context, name: string): Promise<any> {
   const { rootDirectory } = context.config
 
-  for (let i = 0, { length } = names; i < length; i++) {
-    const name = names[i]
-    let resolved
-    try {
-      resolved = resolveFrom(rootDirectory, name)
-    } catch (_) {
-      continue
-    }
+  let resolved
+  try {
+    resolved = resolveFrom(rootDirectory, name)
     // $FlowFixMe: Dynamic require :)
-    const exported = require(resolved) // eslint-disable-line global-require,import/no-dynamic-require
-
-    return { name, exported }
+    return require(resolved) // eslint-disable-line global-require,import/no-dynamic-require
+  } catch (_) {
+    const useYarn = await fs.exists(path.join(rootDirectory, 'yarn.lock'))
+    if (!resolved) {
+      throw new Error(
+        `'${name}' not found in '${context.config.rootDirectory}' (Install it with '${
+          useYarn ? `yarn add --dev ${name}` : `npm install --dev ${name}`
+        }')`,
+      )
+    }
+    throw _
   }
-
-  return { name: null, exported: {} }
 }

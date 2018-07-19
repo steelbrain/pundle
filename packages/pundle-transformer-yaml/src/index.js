@@ -15,11 +15,7 @@ function createComponent({ extensions = ['.yaml', '.yml'] }: { extensions?: Arra
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const { name, exported } = loadLocalFromContext(context, ['js-yaml'])
-      if (!name) {
-        throw new Error(`'js-yaml' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'js-yaml')
       const parsed = exported.safeLoad(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         filename: file.filePath,
       })

@@ -17,11 +17,7 @@ function createComponent({
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const { name, exported } = loadLocalFromContext(context, ['stylus'])
-      if (!name) {
-        throw new Error(`'stylus' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'stylus')
       const renderer = exported(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         sourcemap: true,
         filename: file.filePath,

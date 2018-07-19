@@ -31,11 +31,7 @@ function createComponent({
         return null
       }
 
-      const { name, exported } = loadLocalFromContext(context, ['coffeescript'])
-      if (!name) {
-        throw new Error(`'coffeescript' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'coffeescript')
       const transformed = exported.compile(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         filename: file.filePath,
         sourceMap: true,

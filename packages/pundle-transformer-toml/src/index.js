@@ -15,11 +15,7 @@ function createComponent({ extensions = ['.toml'] }: { extensions?: Array<string
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const { name, exported } = loadLocalFromContext(context, ['toml'])
-      if (!name) {
-        throw new Error(`'toml' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'toml')
       const parsed = exported.parse(typeof file.contents === 'string' ? file.contents : file.contents.toString())
 
       return {

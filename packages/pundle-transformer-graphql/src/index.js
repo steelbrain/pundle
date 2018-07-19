@@ -10,15 +10,12 @@ function createComponent({ extensions = ['.gql', '.graphql'] }: { extensions?: A
     name: 'pundle-transformer-graphql',
     version: manifest.version,
     priority: 1500,
-    callback({ file, context }) {
+    async callback({ file, context }) {
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName) || file.format !== 'js') {
         return null
       }
-      const { name, exported } = loadLocalFromContext(context, ['graphql-tag'])
-      if (!name) {
-        throw new Error(`'graphql-tag' not found in '${context.config.rootDirectory}'`)
-      }
+      const exported = await loadLocalFromContext(context, 'graphql-tag')
       const parsed = exported(typeof file.contents === 'string' ? file.contents : file.contents.toString())
 
       return {

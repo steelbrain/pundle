@@ -31,11 +31,7 @@ function createComponent({
         return null
       }
 
-      const { name, exported } = loadLocalFromContext(context, ['typescript'])
-      if (!name) {
-        throw new Error(`'typescript' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'typescript')
       const transformed = exported.transpileModule(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
         {

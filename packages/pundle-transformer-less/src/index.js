@@ -14,11 +14,7 @@ function createComponent({ extensions = ['.less'], options = {} }: { extensions?
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const { name, exported } = loadLocalFromContext(context, ['less'])
-      if (!name) {
-        throw new Error(`'less' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'less')
       const processed = await exported.render(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         filename: file.filePath,
         sourceMap: {},

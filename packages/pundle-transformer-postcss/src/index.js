@@ -14,11 +14,7 @@ function createComponent({ plugins = [], extensions = ['.css'] }: { plugins?: Ar
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const { name, exported } = loadLocalFromContext(context, ['postcss'])
-      if (!name) {
-        throw new Error(`'postcss' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'postcss')
       const processed = await exported(plugins).process(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
         {

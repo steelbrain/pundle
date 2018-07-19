@@ -17,11 +17,7 @@ function createComponent({
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName)) return null
 
-      const { name, exported } = loadLocalFromContext(context, ['node-sass'])
-      if (!name) {
-        throw new Error(`'node-sass' not found in '${context.config.rootDirectory}'`)
-      }
-
+      const exported = await loadLocalFromContext(context, 'node-sass')
       const processed = await new Promise(function(resolve, reject) {
         exported.render(
           {

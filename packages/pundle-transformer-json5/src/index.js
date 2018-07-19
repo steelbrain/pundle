@@ -10,15 +10,12 @@ function createComponent({ extensions = ['.json5'] }: { extensions?: Array<strin
     name: 'pundle-transformer-json5',
     version: manifest.version,
     priority: 1500,
-    callback({ file, context }) {
+    async callback({ file, context }) {
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName) || file.format !== 'js') {
         return null
       }
-      const { name, exported } = loadLocalFromContext(context, ['json5'])
-      if (!name) {
-        throw new Error(`'json5' not found in '${context.config.rootDirectory}'`)
-      }
+      const exported = await loadLocalFromContext(context, 'json5')
       // TODO: error handling
       const parsed = exported.parse(typeof file.contents === 'string' ? file.contents : file.contents.toString())
 

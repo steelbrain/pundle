@@ -10,15 +10,12 @@ function createComponent({ extensions = ['.cson'] }: { extensions?: Array<string
     name: 'pundle-transformer-cson',
     version: manifest.version,
     priority: 1500,
-    callback({ file, context }) {
+    async callback({ file, context }) {
       const extName = path.extname(file.filePath)
       if (!extensions.includes(extName) || file.format !== 'js') {
         return null
       }
-      const { name, exported } = loadLocalFromContext(context, ['cson-parser'])
-      if (!name) {
-        throw new Error(`'cson-parser' not found in '${context.config.rootDirectory}'`)
-      }
+      const exported = await loadLocalFromContext(context, 'cson-parser')
       // TODO: error handling
       const parsed = exported.parse(typeof file.contents === 'string' ? file.contents : file.contents.toString())
 
