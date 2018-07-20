@@ -10,8 +10,9 @@ export default class AdapterChokdiar {
     this.rootDirectory = rootDirectory
 
     this.handle = chokidar.watch([], {
-      ignored: [/(^|[\/\\])\../, /node_modules/],
+      ignored: [/(^|[/\\])\../, /node_modules/],
       ignoreInitial: true,
+      followSymlinks: true,
       awaitWriteFinish: {
         pollInterval: 30,
         stabilityThreshold: 60,
