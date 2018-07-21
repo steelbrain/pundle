@@ -2,6 +2,7 @@
 // @flow
 
 import fs from 'sb-fs'
+import cors from 'cors'
 import http from 'http'
 import https from 'https'
 import path from 'path'
@@ -139,6 +140,7 @@ async function main() {
                                   apps
       --dev.https.key             Path to private key for https server
       --dev.https.cert            Path to certificate file for https server
+      --dev.cors                  Enables CORS on the dev server for specified origin (by default it's "*")
       --watch.adapter             Choose between nsfw and chokidar. Adapters used to watch filesystem changes
       --cache                     Controls whether to enable or disable caching (enabled by default)
       --cache.reset               Controls whether to reset cache on boot
@@ -206,6 +208,7 @@ async function main() {
     const devPort = parseInt(get(argv, 'dev.port', 0), 10) || 3000
     const devHost = get(argv, 'dev.host', '127.0.0.1')
     const devHttps = get(argv, 'dev.https', null)
+    const devCors = get(argv, 'dev.cors', null)
     const staticMappings = getStaticMappings(pundle, argv)
 
     const devPortToUse = await getNextPort(devPort, devHost)
@@ -232,6 +235,13 @@ async function main() {
     }
 
     const app = express()
+    if (devCors) {
+      app.use(
+        cors({
+          origin: typeof devCors === 'string' || Array.isArray(devCors) ? [].concat(devCors) : true,
+        }),
+      )
+    }
     const middlewarePromise = getPundleDevMiddleware({
       ...pundleArgs,
       publicPath: '/',

@@ -13,6 +13,7 @@
   "dependencies": {
     "chalk": "^2.4.1",
     "cool-trim": "^1.1.1",
+    "cors": "^2.8.4",
     "decamelize": "^2.0.0",
     "express": "^4.16.3",
     "gzip-size": "^4.1.0",
