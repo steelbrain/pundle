@@ -212,14 +212,18 @@ async function main() {
     if (devPortToUse !== devPort) {
       log(chalk.yellow(`Unable to listen on port ${devPort} - Is another program using that port?`))
     }
-    if (devHttps && (typeof devHttps.cert !== 'string' || typeof devHttps.key !== 'string')) {
-      throw new Error('--dev.https.cert & --dev.https.key must be valid strings')
-    } else {
-      devHttps.key = await fs.readFile(devHttps.key)
-      devHttps.cert = await fs.readFile(devHttps.cert)
+    if (devHttps) {
+      if (typeof devHttps.cert !== 'string' || typeof devHttps.key !== 'string') {
+        throw new Error('--dev.https.cert & --dev.https.key must be valid strings')
+      } else {
+        devHttps.key = await fs.readFile(devHttps.key)
+        devHttps.cert = await fs.readFile(devHttps.cert)
+      }
     }
 
-    log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
+    log(
+      `Starting Dev Server at ${chalk.blue(`${devHttps ? 'https' : 'http'}://localhost:${devPortToUse}/`)} (${headerText})`,
+    )
     if (staticMappings.length) {
       log(`Static mappings:`)
       staticMappings.sort((a, b) => a.remote.length - b.remote.length).forEach(item => {
