@@ -66,8 +66,13 @@ function sbPundleModuleGenerate(from) {
         deferred.resolve = resolve
       })
       const script = document.createElement('script')
+      let server = ''
+      if (document.currentScript) {
+        const parsed = new URL(document.currentScript.src)
+        server = `${parsed.protocol}//${parsed.host}`
+      }
       script.type = 'application/javascript'
-      script.src = chunkId
+      script.src = `${server}${chunkId}`
       if (document.body) {
         document.body.appendChild(script)
       } else {

@@ -1,5 +1,7 @@
 import toposort from 'toposort'
 
+const parsedHost = new URL(document.currentScript.src)
+const pundleHost = `${parsedHost.protocol}//${parsedHost.host}`
 const HMR_URL = `${document.currentScript.src}.pundle.hmr`
 
 function isHMRAccepted(oldModules, moduleId, matchAgainst = moduleId) {
@@ -99,7 +101,7 @@ async function handleResponse(response) {
       if (format === 'js') {
         const script = document.createElement('script')
         script.type = 'application/javascript'
-        script.src = url
+        script.src = `${pundleHost}${url}`
         promises.push(
           new Promise((resolve, reject) => {
             script.onload = resolve
@@ -112,7 +114,7 @@ async function handleResponse(response) {
       if (format === 'css') {
         const link = document.createElement('link')
         link.type = 'text/css'
-        link.src = url
+        link.src = `${pundleHost}${url}`
         promises.push(
           new Promise((resolve, reject) => {
             link.onload = resolve
