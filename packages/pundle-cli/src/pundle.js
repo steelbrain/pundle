@@ -2,6 +2,8 @@
 // @flow
 
 import fs from 'sb-fs'
+import http from 'http'
+import https from 'https'
 import path from 'path'
 import pMap from 'p-map'
 import mapValues from 'lodash/mapValues'
@@ -125,6 +127,8 @@ async function main() {
                                   resolved from above mentioned directory
       --configLoadFile            Controls config loading behavior, set to false to disable loading
                                   config file
+      --dev.port                  TCP port to listen for dev server connections on (3000 by default)
+      --dev.host                  Hostname/IP to listen for dev server connections on (localhost by default)
       --dev.hmr                   Controls availability of HMR APIs in dev server (enabled by default)
       --dev.lazy                  Controls if the dev server waits for first request to compile or
                                   compiles instantly
@@ -133,6 +137,8 @@ async function main() {
                                   Use '::' to separate local and server paths. (eg. --dev.static ./static::/assets)
       --dev.singlepage            Redirects all non-404 requests to /index.html. Useful for react single page
                                   apps
+      --dev.https.key             Path to private key for https server
+      --dev.https.cert            Path to certificate file for https server
       --watch.adapter             Choose between nsfw and chokidar. Adapters used to watch filesystem changes
       --cache                     Controls whether to enable or disable caching (enabled by default)
       --cache.reset               Controls whether to reset cache on boot
@@ -199,11 +205,18 @@ async function main() {
 
     const devPort = parseInt(get(argv, 'dev.port', 0), 10) || 3000
     const devHost = get(argv, 'dev.host', '127.0.0.1')
+    const devHttps = get(argv, 'dev.https', null)
     const staticMappings = getStaticMappings(pundle, argv)
 
     const devPortToUse = await getNextPort(devPort, devHost)
     if (devPortToUse !== devPort) {
       log(chalk.yellow(`Unable to listen on port ${devPort} - Is another program using that port?`))
+    }
+    if (devHttps && (typeof devHttps.cert !== 'string' || typeof devHttps.key !== 'string')) {
+      throw new Error('--dev.https.cert & --dev.https.key must be valid strings')
+    } else {
+      devHttps.key = await fs.readFile(devHttps.key)
+      devHttps.cert = await fs.readFile(devHttps.cert)
     }
 
     log(`Starting Dev Server at ${chalk.blue(`http://localhost:${devPortToUse}/`)} (${headerText})`)
@@ -235,7 +248,8 @@ async function main() {
       middlewarePromise.then(() => next(), next)
     })
     await new Promise((resolve, reject) => {
-      const server = app.listen(devPortToUse, devHost)
+      const server = devHttps ? https.createServer(devHttps, app) : http.createServer(app)
+      server.listen(devPortToUse, devHost)
       server.on('error', reject)
       server.on('listening', resolve)
     })
