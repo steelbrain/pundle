@@ -56,7 +56,7 @@ npm init pundle-app my-app
 
 ## Post-initial demo goals
 
-- Chunk minifers for HTML / CSS
+- Chunk minifers for HTML
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
 - SSR
