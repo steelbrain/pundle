@@ -29,7 +29,6 @@ This is the NG Beta branch. See [master](https://github.com/steelbrain/pundle/tr
 
 - "ModuleScopePlugin" to limit direct import of files
 - ESlint to lint files
-- load .graphql files?
 - enforce case sensitivity?
 - FileSizeReporter (or https://github.com/webpack-contrib/webpack-bundle-analyzer?)
 
