@@ -8,8 +8,8 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
-    "pundle-cli": "3.0.0-beta3",
-    "pundle-preset-default": "3.0.0-beta3",
+    "pundle-cli": "3.0.0-beta4",
+    "pundle-preset-default": "3.0.0-beta4",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-hot-loader": "^4.3.3"

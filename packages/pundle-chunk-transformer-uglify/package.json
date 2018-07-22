@@ -1,6 +1,6 @@
 {
   "name": "pundle-chunk-transformer-uglify",
-  "version": "3.0.0-beta3",
+  "version": "3.0.0-beta4",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "scripts": {},
   "dependencies": {
     "merge-source-map": "^1.1.0",
-    "pundle-api": "^3.0.0-beta3",
+    "pundle-api": "^3.0.0-beta4",
     "terser": "^3.7.6",
     "uglify-es": "^3.3.9"
   },
