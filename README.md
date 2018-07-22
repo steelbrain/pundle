@@ -20,6 +20,28 @@ Pundle is a next generation module bundler. It's written with extensibility and 
 
 This is the NG Beta branch. See [master](https://github.com/steelbrain/pundle/tree/master)
 
+## Getting Started
+
+Pundle is still in Beta but it's pretty stable. Here's how you can try it today!
+
+For Yarn users
+
+```sh
+# For a react app with babel + hmr preconfigured
+yarn create pundle-react-app my-app
+# For a pure bare bones app
+yarn create pundle-app my-app
+```
+
+If you have Node v8+
+
+```sh
+# For a react app with babel + hmr preconfigured
+npm init pundle-react-app my-app
+# For a pure bare bones app
+npm init pundle-app my-app
+```
+
 ## Top Priority
 
 - create-pundle-vue-app
