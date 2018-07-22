@@ -55,7 +55,7 @@ function createComponent({
       if (file.format === 'js') {
         // required in a JS file
         return {
-          contents: `module.exports = ${JSON.stringify(url)}`,
+          contents: `module.exports = ${shouldUseDataUrl ? '' : 'sbPundleServer + '}${JSON.stringify(url)}`,
           sourceMap: false,
         }
       }

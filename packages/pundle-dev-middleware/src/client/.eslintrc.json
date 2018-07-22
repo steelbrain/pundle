@@ -1,6 +1,7 @@
 {
   "globals": {
     "sbPundle": true,
+    "sbPundleServer": true,
     "sbPundleModuleRequire": true,
     "sbPundleModuleRegister": true
   },

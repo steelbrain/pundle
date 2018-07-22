@@ -11,6 +11,11 @@ const sbPundle = global.sbPundle || {
 if (!global.sbPundle) {
   global.sbPundle = sbPundle
 }
+let sbPundleServer = ''
+if (document.currentScript) {
+  const parsed = new URL(document.currentScript.src)
+  sbPundleServer = `${parsed.protocol}//${parsed.host}`
+}
 
 const sbPundleCache = sbPundle.cache
 const sbPundleChunks = sbPundle.chunks
@@ -66,13 +71,8 @@ function sbPundleModuleGenerate(from) {
         deferred.resolve = resolve
       })
       const script = document.createElement('script')
-      let server = ''
-      if (document.currentScript) {
-        const parsed = new URL(document.currentScript.src)
-        server = `${parsed.protocol}//${parsed.host}`
-      }
       script.type = 'application/javascript'
-      script.src = `${server}${chunkId}`
+      script.src = `${sbPundleServer}${chunkId}`
       if (document.body) {
         document.body.appendChild(script)
       } else {
