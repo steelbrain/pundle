@@ -95,12 +95,28 @@ function createComponent({ browser }: { browser: boolean }) {
 
           // Handling require + require.resolve
           promises.push(
-            resolve(arg.value, arg.loc, specified).then(givenResolved => {
-              const resolved = { ...givenResolved, format: 'js' }
+            resolve(arg.value, arg.loc, specified)
+              .then(givenResolved => {
+                const resolved = { ...givenResolved, format: 'js' }
 
-              arg.value = getUniqueHash(resolved)
-              return addImport(resolved)
-            }),
+                arg.value = getUniqueHash(resolved)
+                return addImport(resolved)
+              })
+              .catch(error => {
+                let foundTry = false
+                let parent = path
+                do {
+                  if (t.isTryStatement(parent.node)) {
+                    foundTry = true
+                    break
+                  }
+                  parent = parent.parentPath
+                } while (parent)
+
+                if (!foundTry) {
+                  throw error
+                }
+              }),
           )
         },
         ...(browser
