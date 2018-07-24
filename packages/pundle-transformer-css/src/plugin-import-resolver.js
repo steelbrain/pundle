@@ -21,6 +21,10 @@ export default plugin('pundle-transformer-css', function({ resolve, context, add
         return
       }
       let { value } = node
+      if (value.startsWith('data:')) {
+        return
+      }
+
       if (value.slice(0, 1) !== '.') {
         value = `./${value}`
       }
