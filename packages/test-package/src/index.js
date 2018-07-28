@@ -2,7 +2,7 @@ import test2 from './test2'
 
 const test = require('./test')
 
-console.log('imporeted val test2', test2)
+console.log('imported val test2', test2)
 console.log('hi!', test)
 
 import('./test3').then(function(val) {
@@ -38,8 +38,10 @@ console.log('toml', require('./test.toml'))
 console.log('yaml', require('./test.yaml'))
 console.log('graphql', require('./test.gql'))
 
-console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))
-console.log('photos inline', appendPhotoToBody(require('../photos/small-photo.png')))
+if (process.browser) {
+  console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))
+  console.log('photos inline', appendPhotoToBody(require('../photos/small-photo.png')))
+}
 
 if (module.hot) {
   module.hot.accept()

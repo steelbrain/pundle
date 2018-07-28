@@ -232,6 +232,7 @@ function getPresetComponents({
   if (css) {
     components.push(
       require('pundle-transformer-css')({
+        target,
         development,
         extensions: Array.from(extensions.css),
         ...css,
