@@ -11,6 +11,7 @@
   "scripts": {},
   "dependencies": {
     "pundle-api": "^3.0.0-beta4",
+    "sb-fs": "^3.0.0",
     "source-map": "^0.7.2"
   },
   "author": "steelbrain",

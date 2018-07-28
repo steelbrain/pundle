@@ -256,7 +256,11 @@ function getPresetComponents({
     )
   }
   if (generateJS) {
-    components.push(require('pundle-chunk-generator-js')())
+    components.push(
+      require('pundle-chunk-generator-js')({
+        target,
+      }),
+    )
   }
   if (generateCSS) {
     components.push(require('pundle-chunk-generator-css')())

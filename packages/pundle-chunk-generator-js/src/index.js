@@ -1,6 +1,6 @@
 // @flow
 
-import fs from 'fs'
+import fs from 'sb-fs'
 import path from 'path'
 import { SourceMapGenerator } from 'source-map'
 import { createChunkGenerator, getUniqueHash } from 'pundle-api'
@@ -8,10 +8,15 @@ import { createChunkGenerator, getUniqueHash } from 'pundle-api'
 import * as Helpers from './helpers'
 import manifest from '../package.json'
 
-const wrapper = fs.readFileSync(path.join(__dirname, 'wrapper', 'default.js'))
+const VALID_TARGET = new Set(['node', 'browser'])
+function createComponent({ target }: { target: 'node' | 'browser' }) {
+  if (!VALID_TARGET.has(target)) {
+    throw new Error(`Invalid target '${target}' specified`)
+  }
 
-// TODO: have a config?
-function createComponent() {
+  const wrapperNode = fs.readFile(path.join(__dirname, 'wrapper', 'browser.js'), 'utf8')
+  const wrapperBrowser = fs.readFile(path.join(__dirname, 'wrapper', 'browser.js'), 'utf8')
+
   return createChunkGenerator({
     name: 'pundle-chunk-generator-js',
     version: manifest.version,
@@ -27,7 +32,11 @@ function createComponent() {
       })
       const { files } = Helpers.getContentForOutput(chunk, job)
 
-      const contents = [';(function(){', wrapper, `sbPundleChunkLoading(${JSON.stringify(context.getPublicPath(chunk))});`]
+      const contents = [
+        ';(function(){',
+        await (target === 'browser' ? wrapperBrowser : wrapperNode),
+        `sbPundleChunkLoading(${JSON.stringify(context.getPublicPath(chunk))});`,
+      ]
       let sourceMapOffset = Helpers.getLinesCount(contents.join('\n')) + 1
 
       for (const file of files) {
