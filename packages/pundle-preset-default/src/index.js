@@ -76,7 +76,7 @@ function getPresetComponents({
     css?: boolean | { cssnano?: boolean | Object },
     html?: boolean,
   },
-  resolve?: boolean | { aliases: Object },
+  resolve?: boolean | { aliases: Object, external: Array<string> },
   target?: 'node' | 'browser',
 } = {}) {
   const components = []

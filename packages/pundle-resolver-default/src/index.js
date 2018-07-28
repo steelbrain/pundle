@@ -20,6 +20,7 @@ function createComponent({
 }) {
   invariant(formats && typeof formats === 'object', 'options.formats must be a valid object')
   invariant(aliases && typeof aliases === 'object', 'options.aliases must be a valid object')
+  invariant(external && Array.isArray(external), 'options.external must be an Array')
 
   return createFileResolver({
     name: 'pundle-file-resolver',
