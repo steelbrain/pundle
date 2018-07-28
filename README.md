@@ -44,18 +44,17 @@ npm init pundle-app my-app
 
 ## Top Priority
 
-- create-pundle-vue-app
-- visualize dependency file size
+- docs
 
 ## Note to self
 
 - "ModuleScopePlugin" to limit direct import of files
 - ESlint to lint files
 - enforce case sensitivity?
-- FileSizeReporter (or https://github.com/webpack-contrib/webpack-bundle-analyzer?)
 
 ## Post-initial demo goals
 
+- visualize dependency file size
 - Chunk minifers for HTML
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
