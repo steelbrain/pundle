@@ -14,7 +14,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
     throw new Error(`Invalid target '${target}' specified`)
   }
 
-  const wrapperNode = fs.readFile(path.join(__dirname, 'wrapper', 'browser.js'), 'utf8')
+  const wrapperNode = fs.readFile(path.join(__dirname, 'wrapper', 'node.js'), 'utf8')
   const wrapperBrowser = fs.readFile(path.join(__dirname, 'wrapper', 'browser.js'), 'utf8')
 
   return createChunkGenerator({

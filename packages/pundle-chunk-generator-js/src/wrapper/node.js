@@ -1,22 +1,15 @@
-const global = (typeof self !== 'undefined' && self) || {}
-const GLOBAL = global
-const root = global
-
 const sbPundle = global.sbPundle || {
   cache: {},
   chunks: {},
   entries: {},
   moduleHooks: [],
 }
+const sbPundlePath = require('path')
+
 if (!global.sbPundle) {
   global.sbPundle = sbPundle
 }
 let sbChunkId = ''
-let sbPundleServer = ''
-if (typeof document !== 'undefined' && document.currentScript) {
-  const parsed = new URL(document.currentScript.src)
-  sbPundleServer = `${parsed.protocol}//${parsed.host}`
-}
 
 const sbPundleCache = sbPundle.cache
 const sbPundleChunks = sbPundle.chunks
@@ -74,22 +67,10 @@ function sbPundleModuleGenerate(from) {
       deferred.promise = new Promise(function(resolve) {
         deferred.resolve = resolve
       })
-      if (!process.browser && typeof document === 'undefined') {
-        const _path = require('path')
-        let relativeNodePath = _path.relative(_path.dirname(sbChunkId), chunkId)
-        if (relativeNodePath[0] !== '.') relativeNodePath = `./${relativeNodePath}`
-        require(relativeNodePath)
-        deferred.resolve()
-      } else {
-        const script = document.createElement('script')
-        script.type = 'application/javascript'
-        script.src = `${sbPundleServer}${chunkId}`
-        if (document.body) {
-          document.body.appendChild(script)
-        } else {
-          document.appendChild(script)
-        }
-      }
+      let relativeNodePath = sbPundlePath.relative(sbPundlePath.dirname(sbChunkId), chunkId)
+      if (relativeNodePath[0] !== '.') relativeNodePath = `./${relativeNodePath}`
+      require(relativeNodePath)
+      deferred.resolve()
     }
     return deferred.promise.then(() => scopedRequire(fileId))
   }

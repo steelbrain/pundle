@@ -1,8 +1,9 @@
 {
   "rules": {
+    "global-require": "warn",
     "no-unused-vars": "warn",
     "no-restricted-globals": "warn",
     "no-use-before-define": "warn",
-    "import/no-dynamic-require": "off"
+    "import/no-dynamic-require": "warn"
   }
 }

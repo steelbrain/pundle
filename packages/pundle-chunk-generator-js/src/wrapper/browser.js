@@ -74,21 +74,13 @@ function sbPundleModuleGenerate(from) {
       deferred.promise = new Promise(function(resolve) {
         deferred.resolve = resolve
       })
-      if (!process.browser && typeof document === 'undefined') {
-        const _path = require('path')
-        let relativeNodePath = _path.relative(_path.dirname(sbChunkId), chunkId)
-        if (relativeNodePath[0] !== '.') relativeNodePath = `./${relativeNodePath}`
-        require(relativeNodePath)
-        deferred.resolve()
+      const script = document.createElement('script')
+      script.type = 'application/javascript'
+      script.src = `${sbPundleServer}${chunkId}`
+      if (document.body) {
+        document.body.appendChild(script)
       } else {
-        const script = document.createElement('script')
-        script.type = 'application/javascript'
-        script.src = `${sbPundleServer}${chunkId}`
-        if (document.body) {
-          document.body.appendChild(script)
-        } else {
-          document.appendChild(script)
-        }
+        document.appendChild(script)
       }
     }
     return deferred.promise.then(() => scopedRequire(fileId))
