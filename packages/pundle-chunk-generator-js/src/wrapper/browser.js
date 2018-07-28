@@ -23,7 +23,7 @@ const sbPundleChunks = sbPundle.chunks
 function sbPundleModuleRegister(moduleId, callback) {
   const newModule = {
     id: moduleId,
-    invoked: false,
+    loaded: false,
     callback,
     exports: {},
     parents: sbPundleCache[moduleId] ? sbPundleCache[moduleId].parents : [],
@@ -55,8 +55,8 @@ function sbPundleModuleRequire(from, request) {
   if (module.parents.indexOf(from) === -1 && from !== '$root') {
     module.parents.push(from)
   }
-  if (!module.invoked) {
-    module.invoked = true
+  if (!module.loaded) {
+    module.loaded = true
     module.callback.call(module.exports, module.exports, sbPundleModuleGenerate(request), module, module.id, '')
   }
   return module.exports
