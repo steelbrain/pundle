@@ -27,7 +27,7 @@ function createComponent() {
       })
       const { files } = Helpers.getContentForOutput(chunk, job)
 
-      const contents = [';(function(){', wrapper]
+      const contents = [';(function(){', wrapper, `sbPundleChunkLoading(${JSON.stringify(context.getPublicPath(chunk))});`]
       let sourceMapOffset = Helpers.getLinesCount(contents.join('\n')) + 1
 
       for (const file of files) {

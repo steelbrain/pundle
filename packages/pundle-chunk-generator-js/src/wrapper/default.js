@@ -11,8 +11,9 @@ const sbPundle = global.sbPundle || {
 if (!global.sbPundle) {
   global.sbPundle = sbPundle
 }
+let sbChunkId = ''
 let sbPundleServer = ''
-if (document.currentScript) {
+if (typeof document !== 'undefined' && document.currentScript) {
   const parsed = new URL(document.currentScript.src)
   sbPundleServer = `${parsed.protocol}//${parsed.host}`
 }
@@ -33,6 +34,9 @@ function sbPundleModuleRegister(moduleId, callback) {
       moduleHook(newModule)
     })
   }
+}
+function sbPundleChunkLoading(id) {
+  sbChunkId = id
 }
 function sbPundleChunkLoaded(id, entry) {
   if (sbPundleChunks[id]) {
@@ -58,10 +62,10 @@ function sbPundleModuleRequire(from, request) {
   return module.exports
 }
 function sbPundleModuleGenerate(from) {
-  const require = sbPundleModuleRequire.bind(null, from)
-  require.cache = sbPundleCache
-  require.resolve = path => path
-  require.chunk = (chunkId, fileId) => {
+  const scopedRequire = sbPundleModuleRequire.bind(null, from)
+  scopedRequire.cache = sbPundleCache
+  scopedRequire.resolve = path => path
+  scopedRequire.chunk = (chunkId, fileId) => {
     // TOOD: Append as a script to page if not present already
     let deferred = sbPundleChunks[chunkId]
     if (!deferred) {
@@ -70,16 +74,24 @@ function sbPundleModuleGenerate(from) {
       deferred.promise = new Promise(function(resolve) {
         deferred.resolve = resolve
       })
-      const script = document.createElement('script')
-      script.type = 'application/javascript'
-      script.src = `${sbPundleServer}${chunkId}`
-      if (document.body) {
-        document.body.appendChild(script)
+      if (!process.browser && typeof document === 'undefined') {
+        const _path = require('path')
+        let relativeNodePath = _path.relative(_path.dirname(sbChunkId), chunkId)
+        if (relativeNodePath[0] !== '.') relativeNodePath = `./${relativeNodePath}`
+        require(relativeNodePath)
+        deferred.resolve()
       } else {
-        document.appendChild(script)
+        const script = document.createElement('script')
+        script.type = 'application/javascript'
+        script.src = `${sbPundleServer}${chunkId}`
+        if (document.body) {
+          document.body.appendChild(script)
+        } else {
+          document.appendChild(script)
+        }
       }
     }
-    return deferred.promise.then(() => require(fileId))
+    return deferred.promise.then(() => scopedRequire(fileId))
   }
-  return require
+  return scopedRequire
 }

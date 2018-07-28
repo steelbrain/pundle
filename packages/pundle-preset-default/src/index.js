@@ -266,7 +266,9 @@ function getPresetComponents({
   }
   components.push(require('pundle-chunk-generator-static')())
   if (optimizeJS) {
-    components.push(require('pundle-job-transformer-js-common')())
+    if (target === 'browser') {
+      components.push(require('pundle-job-transformer-js-common')())
+    }
     components.push(
       require('pundle-chunk-transformer-uglify')({
         uglifier: 'terser',
