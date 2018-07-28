@@ -52,7 +52,7 @@ function sbPundleModuleRequire(from, request) {
   }
   if (!module.invoked) {
     module.invoked = true
-    module.callback.call(module.exports, module, sbPundleModuleGenerate(request), module.exports, module.id, '')
+    module.callback.call(module.exports, module.exports, sbPundleModuleGenerate(request), module, module.id, '')
   }
   return module.exports
 }

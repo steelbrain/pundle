@@ -42,7 +42,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
       for (const file of files) {
         const fileContents = `sbPundleModuleRegister(${JSON.stringify(
           getUniqueHash(file),
-        )}, function(module, require, exports, __filename, __dirname) {\n${file.contents.toString()}\n});`
+        )}, function(exports, require, module, __filename, __dirname) {\n${file.contents.toString()}\n});`
         if (sourceMapPath) {
           if (file.sourceMap) {
             await Helpers.mergeSourceMap(file.sourceMap, sourceMap, sourceMapOffset, file.filePath)
