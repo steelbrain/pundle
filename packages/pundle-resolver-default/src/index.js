@@ -9,7 +9,15 @@ import { createFileResolver } from 'pundle-api'
 
 import manifest from '../package.json'
 
-function createComponent({ formats, aliases = {} }: { formats: { [string]: string }, aliases: { [string]: string } }) {
+function createComponent({
+  formats,
+  aliases = {},
+  external = [],
+}: {
+  formats: { [string]: string },
+  aliases: { [string]: string },
+  external: Array<string>,
+}) {
   invariant(formats && typeof formats === 'object', 'options.formats must be a valid object')
   invariant(aliases && typeof aliases === 'object', 'options.aliases must be a valid object')
 
@@ -17,6 +25,16 @@ function createComponent({ formats, aliases = {} }: { formats: { [string]: strin
     name: 'pundle-file-resolver',
     version: manifest.version,
     async callback({ request, requestFile, context }) {
+      if (external.length && request[0] !== '.') {
+        const requestModule = request.split('/')[0]
+        if (external.includes(requestModule)) {
+          return {
+            format: null,
+            filePath: false,
+          }
+        }
+      }
+
       const response = await new Promise(function(resolve, reject) {
         browserResolve(
           request,

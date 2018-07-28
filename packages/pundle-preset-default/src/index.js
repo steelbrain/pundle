@@ -246,6 +246,7 @@ function getPresetComponents({
     }
     components.push(
       require('pundle-resolver-default')({
+        ...resolve,
         formats: {
           js: Array.from(extensions.js),
           css: Array.from(extensions.css),
