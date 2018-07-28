@@ -29,6 +29,8 @@ For Yarn users
 ```sh
 # For a react app with babel + hmr preconfigured
 yarn create pundle-react-app my-app
+# For a JS app with babel preconfigured
+yarn create pundle-babel-app my-app
 # For a pure bare bones app
 yarn create pundle-app my-app
 ```
@@ -38,6 +40,8 @@ If you have Node v8+
 ```sh
 # For a react app with babel + hmr preconfigured
 npm init pundle-react-app my-app
+# For a JS app with babel preconfigured
+npm init pundle-babel-app my-app
 # For a pure bare bones app
 npm init pundle-app my-app
 ```
