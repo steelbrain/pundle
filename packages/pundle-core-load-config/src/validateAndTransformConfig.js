@@ -9,6 +9,7 @@ import type { AcceptedConfig } from './types'
 
 const ALLOWED_CONFIG_FILE_KEYS = ['cache', 'entry', 'rootDirectory', 'output', 'components']
 const ALLOWED_CONFIG_FILE_OUTPUT_KEYS = ['formats', 'rootDirectory']
+const ALLOWED_CONFIG_TARGET = ['node', 'browser']
 
 type Payload = {|
   context: Context,
@@ -110,6 +111,10 @@ export default async function validateAndTransformConfig({
         }
       })
     }
+  }
+  if (config.target) {
+    if (!ALLOWED_CONFIG_TARGET.includes(config.target))
+      faults.push(`config.target (${String(config.target)}) must be one of ${ALLOWED_CONFIG_TARGET.join(', ')}`)
   }
 
   if (faults.length) {

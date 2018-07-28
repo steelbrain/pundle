@@ -20,7 +20,11 @@ function createComponent({ name = '_common_' }: { name?: string } = {}) {
   return createJobTransformer({
     name: 'pundle-job-transformer-js-common',
     version: manifest.version,
-    async callback({ job }) {
+    async callback({ context, job }) {
+      if (context.config.target === 'browser') {
+        return null
+      }
+
       const chunkToFiles = new Map()
 
       job.chunks.forEach(chunk => {

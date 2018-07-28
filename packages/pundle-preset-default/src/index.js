@@ -42,7 +42,6 @@ function getPresetComponents({
   generate: { js: generateJS = true, css: generateCSS = true, html: generateHTML = true } = {},
   optimize: { js: optimizeJS = !development, css: optimizeCSS = !development, html: optimizeHTML = !development } = {},
   resolve = true,
-  target = process.env.PUNDLE_TARGET || 'browser',
 }: {
   report?: {
     cli?: boolean,
@@ -77,7 +76,6 @@ function getPresetComponents({
     html?: boolean,
   },
   resolve?: boolean | { aliases: Object, external: Array<string> },
-  target?: 'node' | 'browser',
 } = {}) {
   const components = []
   const extensions = {
@@ -216,7 +214,6 @@ function getPresetComponents({
   if (js) {
     components.push(
       require('pundle-transformer-js')({
-        target,
         ...js,
       }),
     )
@@ -232,7 +229,6 @@ function getPresetComponents({
   if (css) {
     components.push(
       require('pundle-transformer-css')({
-        target,
         development,
         extensions: Array.from(extensions.css),
         ...css,
@@ -240,10 +236,6 @@ function getPresetComponents({
     )
   }
   if (resolve) {
-    const resolverAliases = {
-      ...(target === 'browser' ? require('pundle-resolver-aliases-browser') : {}),
-      ...(resolve && resolve.aliases ? resolve.aliases : {}),
-    }
     components.push(
       require('pundle-resolver-default')({
         ...resolve,
@@ -253,16 +245,11 @@ function getPresetComponents({
           static: Array.from(extensions.static),
           ...(generateHTML ? { html: ['.html', '.htm'] } : {}),
         },
-        aliases: resolverAliases,
       }),
     )
   }
   if (generateJS) {
-    components.push(
-      require('pundle-chunk-generator-js')({
-        target,
-      }),
-    )
+    components.push(require('pundle-chunk-generator-js')())
   }
   if (generateCSS) {
     components.push(require('pundle-chunk-generator-css')())
@@ -272,9 +259,7 @@ function getPresetComponents({
   }
   components.push(require('pundle-chunk-generator-static')())
   if (optimizeJS) {
-    if (target === 'browser') {
-      components.push(require('pundle-job-transformer-js-common')())
-    }
+    components.push(require('pundle-job-transformer-js-common')())
     components.push(
       require('pundle-chunk-transformer-uglify')({
         uglifier: 'terser',

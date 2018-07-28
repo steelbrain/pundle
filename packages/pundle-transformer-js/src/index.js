@@ -24,12 +24,7 @@ INJECTIONS.forEach(function(names, sourceModule) {
 
 const transformAsync = promisify(transform)
 
-const VALID_TARGET = new Set(['node', 'browser'])
-function createComponent({ target }: { target: 'node' | 'browser' }) {
-  if (!VALID_TARGET.has(target)) {
-    throw new Error(`Invalid target '${target}' specified`)
-  }
-
+function createComponent() {
   return createFileTransformer({
     name: 'pundle-transformer-js',
     version: manifest.version,
@@ -47,7 +42,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
         sourceMaps: false,
         filename: file.filePath,
         highlightCode: false,
-        plugins: [getPluginReplaceProcess(target), pluginCommonJSModules],
+        plugins: [getPluginReplaceProcess(context.config.target), pluginCommonJSModules],
         sourceType: 'module',
         parserOpts: {
           plugins: ['dynamicImport'],
@@ -127,7 +122,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
               }),
           )
         },
-        ...(target === 'browser'
+        ...(context.config.target === 'browser'
           ? {
               Identifier(path) {
                 const { node } = path

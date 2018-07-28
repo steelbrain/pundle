@@ -8,12 +8,7 @@ import { createChunkGenerator, getUniqueHash } from 'pundle-api'
 import * as Helpers from './helpers'
 import manifest from '../package.json'
 
-const VALID_TARGET = new Set(['node', 'browser'])
-function createComponent({ target }: { target: 'node' | 'browser' }) {
-  if (!VALID_TARGET.has(target)) {
-    throw new Error(`Invalid target '${target}' specified`)
-  }
-
+function createComponent() {
   const wrapperNode = fs.readFile(path.join(__dirname, 'wrapper', 'node.js'), 'utf8')
   const wrapperBrowser = fs.readFile(path.join(__dirname, 'wrapper', 'browser.js'), 'utf8')
 
@@ -34,7 +29,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
 
       const contents = [
         ';(function(){',
-        await (target === 'browser' ? wrapperBrowser : wrapperNode),
+        await (context.config.target === 'browser' ? wrapperBrowser : wrapperNode),
         `sbPundleChunkLoading(${JSON.stringify(context.getPublicPath(chunk))});`,
       ]
       let sourceMapOffset = Helpers.getLinesCount(contents.join('\n')) + 1
@@ -54,7 +49,9 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
       if (chunk.entry && chunk.root) {
         const chunkEntryId = getUniqueHash(chunk)
         contents.push(
-          `${target === 'node' ? 'module.exports = ' : ''}sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`,
+          `${context.config.target === 'node' ? 'module.exports = ' : ''}sbPundleModuleGenerate('$root')(${JSON.stringify(
+            chunkEntryId,
+          )})`,
         )
       }
       contents.push(`sbPundleChunkLoaded(${JSON.stringify(context.getPublicPath(chunk))});`)

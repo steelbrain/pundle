@@ -19,7 +19,6 @@
     "pundle-chunk-transformer-uglify": "^3.0.0-beta4",
     "pundle-job-transformer-js-common": "^3.0.0-beta4",
     "pundle-reporter-cli": "^3.0.0-beta4",
-    "pundle-resolver-aliases-browser": "^3.0.0-beta4",
     "pundle-resolver-default": "^3.0.0-beta4",
     "pundle-transformer-babel": "^3.0.0-beta4",
     "pundle-transformer-coffee": "^3.0.0-beta4",

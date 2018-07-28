@@ -3,8 +3,9 @@
 import path from 'path'
 import invariant from 'assert'
 import flatten from 'lodash/flatten'
-import { isCore } from 'resolve'
 import browserResolve from 'browser-resolve'
+import browserAliases from 'pundle-resolver-aliases-browser'
+import { isCore } from 'resolve'
 import { createFileResolver } from 'pundle-api'
 
 import manifest from '../package.json'
@@ -40,7 +41,10 @@ function createComponent({
         browserResolve(
           request,
           {
-            modules: aliases,
+            modules: {
+              ...(context.config.target === 'browser' ? browserAliases : {}),
+              ...aliases,
+            },
             basedir: requestFile ? path.dirname(requestFile) : context.config.rootDirectory,
             extensions: flatten(Object.values(formats)),
           },

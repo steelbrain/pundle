@@ -33,6 +33,7 @@ export default async function loadConfig(context: Context): Promise<Config> {
       rootDirectory: path.join(os.tmpdir(), '.pundle'),
     },
     entry: [],
+    target: process.env.PUNDLE_TARGET || 'browser',
     rootDirectory: fileConfig.rootDirectory,
     output: {
       formats: {
@@ -64,6 +65,12 @@ export default async function loadConfig(context: Context): Promise<Config> {
   }
   if (fileConfig.entry) {
     config.entry = config.entry.concat(fileConfig.entry)
+  }
+  if (fileConfig.target) {
+    config.target = fileConfig.target
+  }
+  if (inlineConfig.target) {
+    config.target = inlineConfig.target
   }
   if (fileConfig.output) {
     config.output.rootDirectory = fileConfig.output.rootDirectory

@@ -11,6 +11,7 @@ export type AcceptedConfig = {|
         rootDirectory?: string,
       },
   entry?: Array<string> | string,
+  target?: 'node' | 'browser',
   rootDirectory: string,
   output: {
     formats: { [string]: string | false },
@@ -26,6 +27,7 @@ export type Config = {|
     rootDirectory: string,
   },
   entry: Array<string>,
+  target: 'node' | 'browser',
   rootDirectory: string,
   output: {
     formats: { [string]: string | false },

@@ -9,16 +9,10 @@ import manifest from '../package.json'
 import pluginImportResolver from './plugin-import-resolver'
 import { getDevelopmentContents } from './helpers'
 
-const VALID_TARGET = new Set(['node', 'browser'])
 function createComponent({
-  target,
   extensions = ['.css'],
   development = process.env.NODE_ENV !== 'production',
-}: { extensions?: Array<string>, target: 'node' | 'browser', development?: boolean } = {}) {
-  if (!VALID_TARGET.has(target)) {
-    throw new Error(`Invalid target '${target}' specified`)
-  }
-
+}: { extensions?: Array<string>, development?: boolean } = {}) {
   return createFileTransformer({
     name: 'pundle-transformer-css',
     version: manifest.version,
@@ -51,7 +45,7 @@ function createComponent({
         }),
       )
 
-      const inlineCss = target === 'browser' && development && file.format === 'js'
+      const inlineCss = context.config.target === 'browser' && development && file.format === 'js'
       const cssChunk = getChunk('css', null, file.filePath, [], true, file.meta)
       const processed = await postcss(plugins).process(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
