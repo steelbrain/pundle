@@ -21,7 +21,6 @@ module.exports = {
       typescript: true,
       yaml: true,
     },
-    target: 'node',
   }),
   rootDirectory: __dirname,
   output: {
