@@ -26,10 +26,10 @@ function sbPundleChunkLoaded(id, entry) {
 function sbPundleModuleRequire(from, request) {
   const cached = sbPundleModule._cache[request]
   if (cached) {
-    if (cached.loaded) {
-      return cached.exports
-    } else if (cached.pundle) {
-      cached.load()
+    if (cached.pundle) {
+      if (!cached.loaded) {
+        cached.load()
+      }
       return cached.exports
     }
   }
