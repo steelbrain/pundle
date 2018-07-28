@@ -61,7 +61,6 @@ function sbPundleModuleGenerate(from) {
   scopedRequire.cache = sbPundleCache
   scopedRequire.resolve = path => path
   scopedRequire.chunk = (chunkId, fileId) => {
-    // TOOD: Append as a script to page if not present already
     let deferred = sbPundleChunks[chunkId]
     if (!deferred) {
       deferred = {}
@@ -73,7 +72,6 @@ function sbPundleModuleGenerate(from) {
       if (relativeNodePath[0] !== '.') relativeNodePath = `./${relativeNodePath}`
       process.nextTick(function() {
         require(relativeNodePath)
-        deferred.resolve()
       })
     }
     return deferred.promise.then(() => scopedRequire(fileId))

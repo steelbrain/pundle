@@ -51,7 +51,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
         }
         contents.push(fileContents)
       }
-      if (chunk.entry) {
+      if (chunk.entry && chunk.root) {
         const chunkEntryId = getUniqueHash(chunk)
         contents.push(
           `${target === 'node' ? 'module.exports = ' : ''}sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`,
