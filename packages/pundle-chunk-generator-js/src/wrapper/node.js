@@ -69,8 +69,10 @@ function sbPundleModuleGenerate(from) {
       })
       let relativeNodePath = sbPundlePath.relative(sbPundlePath.dirname(sbChunkId), chunkId)
       if (relativeNodePath[0] !== '.') relativeNodePath = `./${relativeNodePath}`
-      require(relativeNodePath)
-      deferred.resolve()
+      process.nextTick(function() {
+        require(relativeNodePath)
+        deferred.resolve()
+      })
     }
     return deferred.promise.then(() => scopedRequire(fileId))
   }
