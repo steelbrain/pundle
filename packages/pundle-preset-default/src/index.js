@@ -216,7 +216,7 @@ function getPresetComponents({
   if (js) {
     components.push(
       require('pundle-transformer-js')({
-        browser: target === 'browser',
+        target,
         ...js,
       }),
     )

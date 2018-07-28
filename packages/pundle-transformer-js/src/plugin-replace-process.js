@@ -3,17 +3,17 @@
 import * as t from '@babel/types'
 import { getName } from './helpers'
 
-export default function getPluginReplaceProcess(browser: boolean) {
+export default function getPluginReplaceProcess(target: 'browser' | 'node') {
   return {
     visitor: {
       MemberExpression(path: Object) {
         const name = getName(path.node, ['process'], 3)
         if (name === null || t.isAssignmentExpression(path.parent)) return
         let modified = false
-        if (name === 'process.browser' && browser) {
+        if (name === 'process.browser' && target === 'browser') {
           // NOTE: Leaving unchanged for node envs on purpose
           modified = true
-          path.replaceWith(t.booleanLiteral(browser))
+          path.replaceWith(t.booleanLiteral(true))
         }
         if (name === 'process.env.NODE_ENV') {
           modified = true
