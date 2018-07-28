@@ -37,6 +37,7 @@ console.log('coffeescript', require('./test.coffee'))
 console.log('toml', require('./test.toml'))
 console.log('yaml', require('./test.yaml'))
 console.log('graphql', require('./test.gql'))
+console.log('path', require('path'))
 
 if (process.browser) {
   console.log('big photo', appendPhotoToBody(require('../photos/big-photo.png')))
@@ -46,3 +47,5 @@ if (process.browser) {
 if (module.hot) {
   module.hot.accept()
 }
+
+module.exports = { exported: 'magic' }

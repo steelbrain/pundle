@@ -89,7 +89,7 @@ export default class Context {
         ignoredResolvers,
         worker,
       })
-      if (!resolved) continue
+      if (!resolved || resolved.filePath === false) continue
 
       try {
         await validators.resolved(resolved)

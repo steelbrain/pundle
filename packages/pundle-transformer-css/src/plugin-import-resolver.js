@@ -31,6 +31,8 @@ export default plugin('pundle-transformer-css', function({ resolve, context, add
 
       nodePromises.push(
         resolve(value, referenceNode.source.start).then(function(resolved) {
+          if (resolved.filePath === false) return null
+
           const chunk = getChunk(resolved.format, null, resolved.filePath, [], topLevel)
           node.value = context.getPublicPath(chunk)
           return addChunk(chunk)

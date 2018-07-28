@@ -1,4 +1,5 @@
 // @flow
+/* eslint-disable no-use-before-define */
 
 import type Job from './job'
 import type Context from './context'
@@ -77,7 +78,7 @@ export type ChunksGenerated = {
 }
 
 export interface PundleWorker {
-  resolve(payload: ImportRequest): Promise<ImportResolved>;
+  resolve(payload: ImportRequest): Promise<ComponentFileResolverResult>;
   transformFile(payload: ImportResolved): Promise<ImportTransformed>;
   report(issue: any): Promise<void>;
 }
@@ -106,10 +107,15 @@ export type ComponentIssueReporterCallback = (params: {
 }) => void | Promise<void>
 export type ComponentIssueReporter = Component<'issue-reporter', ComponentIssueReporterCallback>
 
-export type ComponentFileResolverResult = {|
-  format: string,
-  filePath: string,
-|}
+export type ComponentFileResolverResult =
+  | {|
+      format: string,
+      filePath: string,
+    |}
+  | {|
+      format: null,
+      filePath: false,
+    |}
 export type ComponentFileResolverCallback = (params: {
   context: Context,
   meta: ImportMeta,
@@ -134,7 +140,7 @@ export type ComponentFileTransformerCallback = (params: {
   },
   context: Context,
   worker: PundleWorker,
-  resolve(request: string, loc: ?Loc): Promise<ImportResolved>,
+  resolve(request: string, loc: ?Loc): Promise<ComponentFileResolverResult>,
   addImport(fileImport: ImportResolved): Promise<void>,
   addChunk(chunk: Chunk): Promise<void>,
 }) => Promise<?ComponentFileTransformerResult> | ?ComponentFileTransformerResult

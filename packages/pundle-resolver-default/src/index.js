@@ -3,6 +3,7 @@
 import path from 'path'
 import invariant from 'assert'
 import flatten from 'lodash/flatten'
+import { isCore } from 'resolve'
 import browserResolve from 'browser-resolve'
 import { createFileResolver } from 'pundle-api'
 
@@ -35,6 +36,12 @@ function createComponent({ formats, aliases = {} }: { formats: { [string]: strin
 
       if (process.env.PUNDLE_DEBUG_RESOLVER === '1') {
         console.log('From', requestFile, 'processed', request, 'to', response)
+      }
+      if (isCore(response)) {
+        return {
+          format: null,
+          filePath: false,
+        }
       }
 
       const ext = path.extname(response)

@@ -43,7 +43,9 @@ function sbPundleChunkLoaded(id, entry) {
 function sbPundleModuleRequire(from, request) {
   const module = sbPundleCache[request]
   if (!module) {
-    throw new Error(`Module '${request}' not found. Did you forget to load the parent chunks before this one?`)
+    // In case it's core, it'll work
+    // Otherwise it'll throw - what we want
+    return require(request)
   }
   if (module.parents.indexOf(from) === -1 && from !== '$root') {
     module.parents.push(from)

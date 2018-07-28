@@ -61,6 +61,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
           if (!t.isStringLiteral(source)) return
           promises.push(
             resolve(source.value, source.loc, !!node.specifiers.length).then(givenResolved => {
+              if (givenResolved.filePath === false) return null
               const resolved = { ...givenResolved, format: 'js' }
 
               source.value = getUniqueHash(resolved)
@@ -79,6 +80,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
           if (t.isImport(callee)) {
             promises.push(
               resolve(arg.value, arg.loc).then(givenResolved => {
+                if (givenResolved.filePath === false) return null
                 const resolved = { ...givenResolved, format: 'js' }
 
                 const chunk = getChunk(resolved.format, null, resolved.filePath, [], false)
@@ -102,6 +104,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
           promises.push(
             resolve(arg.value, arg.loc, specified)
               .then(givenResolved => {
+                if (givenResolved.filePath === false) return null
                 const resolved = { ...givenResolved, format: 'js' }
 
                 arg.value = getUniqueHash(resolved)
@@ -147,6 +150,7 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
         invariant(sourceModule, 'sourceModule for Injection was not found?')
         promises.push(
           resolve(sourceModule).then(resolved => {
+            if (resolved.filePath === false) return null
             injectionImports.set(sourceModule, getUniqueHash(resolved))
             return addImport(resolved)
           }),

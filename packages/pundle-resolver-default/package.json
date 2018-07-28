@@ -12,7 +12,8 @@
   "dependencies": {
     "browser-resolve": "^1.11.2",
     "lodash": "^4.17.10",
-    "pundle-api": "^3.0.0-beta4"
+    "pundle-api": "^3.0.0-beta4",
+    "resolve": "^1.8.1"
   },
   "author": "steelbrain",
   "license": "MIT"
