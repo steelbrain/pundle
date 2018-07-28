@@ -30,7 +30,7 @@ export default async function loadConfig(context: Context): Promise<Config> {
       reset: false,
       enabled: true,
       cacheKey: process.env.NODE_ENV || 'development',
-      rootDirectory: path.join(os.homedir(), '.pundle'),
+      rootDirectory: path.join(os.tmpdir(), '.pundle'),
     },
     entry: [],
     rootDirectory: fileConfig.rootDirectory,
