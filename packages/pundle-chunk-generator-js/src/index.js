@@ -53,7 +53,9 @@ function createComponent({ target }: { target: 'node' | 'browser' }) {
       }
       if (chunk.entry) {
         const chunkEntryId = getUniqueHash(chunk)
-        contents.push(`sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`)
+        contents.push(
+          `${target === 'node' ? 'module.exports = ' : ''}sbPundleModuleGenerate('$root')(${JSON.stringify(chunkEntryId)})`,
+        )
       }
       contents.push(`sbPundleChunkLoaded(${JSON.stringify(context.getPublicPath(chunk))});`)
 
