@@ -58,4 +58,3 @@ npm init pundle-app my-app
 - Chunk minifers for HTML
 - Make tool to analyze cost of imports in app
 - Fork browser field resolver, it's so wasteful of fs
-- SSR
