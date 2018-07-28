@@ -2,6 +2,7 @@ const global = (typeof self !== 'undefined' && self) || {}
 const GLOBAL = global
 const root = global
 
+let sbChunkId = ''
 const sbPundle = global.sbPundle || {
   cache: {},
   chunks: {},
@@ -11,7 +12,6 @@ const sbPundle = global.sbPundle || {
 if (!global.sbPundle) {
   global.sbPundle = sbPundle
 }
-let sbChunkId = ''
 let sbPundleServer = ''
 if (typeof document !== 'undefined' && document.currentScript) {
   const parsed = new URL(document.currentScript.src)

@@ -1,64 +1,43 @@
-const sbPundle = global.sbPundle || {
-  cache: {},
+const sbPundle = {
   chunks: {},
   entries: {},
-  moduleHooks: [],
 }
-const sbPundlePath = require('path')
 
-if (!global.sbPundle) {
-  global.sbPundle = sbPundle
-}
 let sbChunkId = ''
+const sbPundlePath = require('path')
+const sbPundleModule = require('module')
 
-const sbPundleCache = sbPundle.cache
 const sbPundleChunks = sbPundle.chunks
 function sbPundleModuleRegister(moduleId, callback) {
-  const newModule = {
-    id: moduleId,
-    invoked: false,
-    callback,
-    exports: {},
-    parents: sbPundleCache[moduleId] ? sbPundleCache[moduleId].parents : [],
+  const newModule = new sbPundleModule(moduleId, '.')
+  newModule.load = function() {
+    callback.call(newModule.exports, newModule.exports, sbPundleModuleGenerate(moduleId), newModule, newModule.id, '')
+    newModule.loaded = true
   }
-  sbPundleCache[moduleId] = newModule
-  if (sbPundle.moduleHooks.length) {
-    sbPundle.moduleHooks.forEach(moduleHook => {
-      moduleHook(newModule)
-    })
-  }
+  newModule.pundle = true
+  sbPundleModule._cache[moduleId] = newModule
 }
 function sbPundleChunkLoading(id) {
   sbChunkId = id
 }
 function sbPundleChunkLoaded(id, entry) {
-  if (sbPundleChunks[id]) {
-    sbPundleChunks[id].resolve(entry)
-  } else {
-    sbPundleChunks[id] = {
-      promise: Promise.resolve(entry),
-    }
-  }
+  /* No op */
 }
 function sbPundleModuleRequire(from, request) {
-  const module = sbPundleCache[request]
-  if (!module) {
-    // In case it's core, it'll work
-    // Otherwise it'll throw - what we want
-    return require(request)
+  const cached = sbPundleModule._cache[request]
+  if (cached) {
+    if (cached.loaded) {
+      return cached.exports
+    } else if (cached.pundle) {
+      cached.load()
+      return cached.exports
+    }
   }
-  if (module.parents.indexOf(from) === -1 && from !== '$root') {
-    module.parents.push(from)
-  }
-  if (!module.invoked) {
-    module.invoked = true
-    module.callback.call(module.exports, module.exports, sbPundleModuleGenerate(request), module, module.id, '')
-  }
-  return module.exports
+  return require(request)
 }
 function sbPundleModuleGenerate(from) {
   const scopedRequire = sbPundleModuleRequire.bind(null, from)
-  scopedRequire.cache = sbPundleCache
+  scopedRequire.cache = sbPundleModule.cache
   scopedRequire.resolve = path => path
   scopedRequire.chunk = (chunkId, fileId) => {
     let deferred = sbPundleChunks[chunkId]
@@ -72,9 +51,10 @@ function sbPundleModuleGenerate(from) {
       if (relativeNodePath[0] !== '.') relativeNodePath = `./${relativeNodePath}`
       process.nextTick(function() {
         require(relativeNodePath)
+        deferred.resolve(scopedRequire(fileId))
       })
     }
-    return deferred.promise.then(() => scopedRequire(fileId))
+    return deferred.promise
   }
   return scopedRequire
 }

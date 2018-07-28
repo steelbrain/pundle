@@ -1,5 +1,6 @@
 {
   "rules": {
+    "new-cap": "warn",
     "global-require": "warn",
     "no-unused-vars": "warn",
     "no-restricted-globals": "warn",
