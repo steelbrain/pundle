@@ -49,11 +49,11 @@ function createComponent({
             extensions: flatten(Object.values(formats)),
             /* eslint-disable no-param-reassign */
             packageFilter(packageManifest) {
-              if (typeof packageManifest.module === 'string') {
-                packageManifest.main = packageManifest.module
-              }
               if (typeof packageManifest['jsnext:main'] === 'string') {
                 packageManifest.main = packageManifest['jsnext:main']
+              }
+              if (typeof packageManifest.module === 'string') {
+                packageManifest.main = packageManifest.module
               }
               return packageManifest
             },
