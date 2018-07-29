@@ -47,6 +47,17 @@ function createComponent({
             },
             basedir: requestFile ? path.dirname(requestFile) : context.config.rootDirectory,
             extensions: flatten(Object.values(formats)),
+            /* eslint-disable no-param-reassign */
+            packageFilter(packageManifest) {
+              if (typeof packageManifest.module === 'string') {
+                packageManifest.main = packageManifest.module
+              }
+              if (typeof packageManifest['jsnext:main'] === 'string') {
+                packageManifest.main = packageManifest['jsnext:main']
+              }
+              return packageManifest
+            },
+            /* eslint-enable no-param-reassign */
           },
           function(err, res) {
             if (err) reject(err)
