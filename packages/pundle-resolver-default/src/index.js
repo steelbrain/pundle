@@ -14,14 +14,21 @@ function createComponent({
   formats,
   aliases = {},
   external = [],
+  mainFields = ['jsxnext:main', 'module'],
 }: {
   formats: { [string]: string },
   aliases: { [string]: string },
   external: Array<string>,
+  mainFields: Array<string>,
 }) {
   invariant(formats && typeof formats === 'object', 'options.formats must be a valid object')
   invariant(aliases && typeof aliases === 'object', 'options.aliases must be a valid object')
   invariant(external && Array.isArray(external), 'options.external must be an Array')
+  invariant(mainFields && Array.isArray(mainFields), 'options.mainFields must be an Array')
+
+  if (mainFields.includes('browser')) {
+    throw new Error("options.mainFields must not include 'browser'")
+  }
 
   return createFileResolver({
     name: 'pundle-file-resolver',
@@ -49,12 +56,11 @@ function createComponent({
             extensions: flatten(Object.values(formats)),
             /* eslint-disable no-param-reassign */
             packageFilter(packageManifest) {
-              if (typeof packageManifest['jsnext:main'] === 'string') {
-                packageManifest.main = packageManifest['jsnext:main']
-              }
-              if (typeof packageManifest.module === 'string') {
-                packageManifest.main = packageManifest.module
-              }
+              mainFields.forEach(function(mainField) {
+                if (typeof packageManifest[mainField] === 'string') {
+                  packageManifest.main = packageManifest[mainField]
+                }
+              })
               return packageManifest
             },
             /* eslint-enable no-param-reassign */
