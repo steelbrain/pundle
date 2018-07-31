@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-less",
-  "version": "3.0.0-beta4",
+  "version": "3.0.0-beta5",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-beta4"
+    "pundle-api": "^3.0.0-beta5"
   },
   "author": "steelbrain",
   "license": "MIT"
