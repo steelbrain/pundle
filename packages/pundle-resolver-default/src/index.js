@@ -44,7 +44,7 @@ function createComponent({
         }
       }
 
-      const response = await new Promise(function(resolve, reject) {
+      let response = await new Promise(function(resolve, reject) {
         browserResolve(
           request,
           {
@@ -77,11 +77,15 @@ function createComponent({
       if (process.env.PUNDLE_DEBUG_RESOLVER === '1') {
         console.log('From', requestFile, 'processed', request, 'to', response)
       }
+
       if (isCore(response)) {
-        return {
-          format: null,
-          filePath: false,
+        if (context.config.target === 'node') {
+          return {
+            format: null,
+            filePath: false,
+          }
         }
+        response = browserAliases._pundle_empty
       }
 
       const ext = path.extname(response)
