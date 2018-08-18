@@ -1,6 +1,6 @@
 {
   "name": "pundle-chunk-generator-css",
-  "version": "3.0.0-beta5",
+  "version": "3.0.0-beta6",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-beta5"
+    "pundle-api": "^3.0.0-beta6"
   },
   "author": "steelbrain",
   "license": "MIT"
