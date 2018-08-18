@@ -22,6 +22,7 @@ const isStringOrBuffer = yup
   )
 
 const { validate: resolved, schema: resolvedSchema } = validate({
+  meta: yup.object().required(),
   format: yup.string().required(),
   filePath: yup.string().required(),
 })

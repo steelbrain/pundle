@@ -33,11 +33,12 @@ function createComponent({
   return createFileResolver({
     name: 'pundle-file-resolver',
     version: manifest.version,
-    async callback({ request, requestFile, context }) {
-      if (external.length && request[0] !== '.') {
+    async callback({ request, requestFile, context, meta }) {
+      if (external.length > 0 && request[0] !== '.') {
         const requestModule = request.split('/')[0]
         if (external.includes(requestModule)) {
           return {
+            meta,
             format: null,
             filePath: false,
           }
@@ -81,6 +82,7 @@ function createComponent({
       if (isCore(response)) {
         if (context.config.target === 'node') {
           return {
+            meta,
             format: null,
             filePath: false,
           }
@@ -95,10 +97,11 @@ function createComponent({
         return null
       }
 
-      return {
+      return ({
+        meta,
         format,
         filePath: response,
-      }
+      }: Object)
     },
   })
 }

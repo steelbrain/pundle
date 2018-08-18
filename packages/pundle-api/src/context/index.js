@@ -108,10 +108,7 @@ export default class Context {
     if (!resolved) {
       throw new PundleError('WORK', 'RESOLVE_FAILED', `Unable to resolve '${request}'`, requestFile)
     }
-    return {
-      meta,
-      ...resolved,
-    }
+    return resolved
   }
   async invokeFileTransformers(
     worker: PundleWorker,

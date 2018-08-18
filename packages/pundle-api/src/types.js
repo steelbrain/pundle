@@ -111,10 +111,12 @@ export type ComponentFileResolverResult =
   | {|
       format: string,
       filePath: string,
+      meta: ImportMeta,
     |}
   | {|
       format: null,
       filePath: false,
+      meta: ImportMeta,
     |}
 export type ComponentFileResolverCallback = (params: {
   context: Context,
@@ -133,6 +135,7 @@ export type ComponentFileTransformerResult = {|
 |}
 export type ComponentFileTransformerCallback = (params: {
   file: {
+    meta: ImportMeta,
     filePath: string,
     format: string,
     contents: Buffer | string,

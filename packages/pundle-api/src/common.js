@@ -30,7 +30,7 @@ export function getUniqueHash(item: ImportResolved | Chunk): string {
     stringKey = `${JSON.stringify(item.imports)}`
   }
   const { specified } = item.meta || DEFAULT_IMPORT_META
-  stringKey += `specified=${specified}`
+  stringKey += `specified=${specified.toString()}`
 
   return `${item.format}_${getStringHash(stringKey)}`
 }

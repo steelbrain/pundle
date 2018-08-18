@@ -87,7 +87,7 @@ async function getPundleDevMiddleware(options: Payload) {
     })
   }
   async function generateForHMR({ job }: { job: Job }) {
-    if (!(filesChangedHMR.size && options.hmr && hmrConnectedClients.size)) {
+    if (!(filesChangedHMR.size > 0 && options.hmr && hmrConnectedClients.size > 0)) {
       return
     }
 
