@@ -7,7 +7,7 @@ import { PundleError, validateComponent, type Context } from 'pundle-api'
 
 import type { AcceptedConfig } from './types'
 
-const ALLOWED_CONFIG_FILE_KEYS = ['cache', 'entry', 'rootDirectory', 'output', 'components']
+const ALLOWED_CONFIG_FILE_KEYS = ['cache', 'target', 'entry', 'rootDirectory', 'output', 'components']
 const ALLOWED_CONFIG_FILE_OUTPUT_KEYS = ['formats', 'rootDirectory']
 const ALLOWED_CONFIG_TARGET = ['node', 'browser']
 

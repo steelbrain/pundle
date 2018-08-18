@@ -25,12 +25,12 @@ export default class Cache {
     this.context.invokeIssueReporters(issue)
   }
   async load() {
-    const { cache: cacheConfig, configFilePath, rootDirectory } = this.context.config
+    const { cache: cacheConfig, target, configFilePath, rootDirectory } = this.context.config
     if (!cacheConfig.enabled) return
 
     const filePath = path.join(
       cacheConfig.rootDirectory,
-      `${getStringHash(`${rootDirectory}-${cacheConfig.cacheKey}`)}.json`,
+      `${getStringHash(`${rootDirectory}-${target}-${cacheConfig.cacheKey}`)}.json`,
     )
     await new Promise((resolve, reject) => {
       mkdirp(path.dirname(filePath), err => {
