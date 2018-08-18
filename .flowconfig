@@ -1,6 +1,7 @@
 [ignore]
 <PROJECT_ROOT>/node_modules/eslint-plugin-jsx-a11y
 <PROJECT_ROOT>/node_modules/config-chain/test/broken.json
+<PROJECT_ROOT>/packages/pundle-preset-default
 
 [include]
 
