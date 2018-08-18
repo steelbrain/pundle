@@ -24,6 +24,7 @@ jobs:
           key: yarn-packages-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - node_modules/
+            - packages/*/lib
   test:
     working_directory: ~/pundle
     docker:
