@@ -73,10 +73,10 @@ export async function createApp({
     Success! Created ${chalk.green(targetName)} at ${targetParent}
     Inside that directory, you can run several commands:
 
-      ${chalk.blue('yarn start')}
+      ${chalk.blue(yarnExists ? 'yarn start' : 'npm start')}
         Starts the development server.
 
-      ${chalk.blue('yarn build')}
+      ${chalk.blue(yarnExists ? 'yarn build' : 'npm run build')}
         Bundles the app into static files for production.
 
     We suggest that you begin by typing:
