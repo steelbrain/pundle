@@ -24,7 +24,5 @@
   },
   "author": "steelbrain",
   "license": "MIT",
-  "optionalDependencies": {
-    "nsfw": "^1.0.16"
-  }
+  "optionalDependencies": {}
 }

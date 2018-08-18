@@ -22,7 +22,7 @@ import type { WatchOptions, InternalChangedFiles as ChangedFiles } from './types
 
 // Dangerous territory beyond this point. May God help us all
 export default async function getWatcher({
-  adapter = 'nsfw',
+  adapter = 'chokidar',
   tick,
   generate,
   pundle,

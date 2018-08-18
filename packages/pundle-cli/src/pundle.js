@@ -141,7 +141,7 @@ async function main() {
       --dev.https.key             Path to private key for https server
       --dev.https.cert            Path to certificate file for https server
       --dev.cors                  Enables CORS on the dev server for specified origin (by default it's "*")
-      --watch.adapter             Choose between nsfw and chokidar. Adapters used to watch filesystem changes
+      --watch.adapter             Adapters used to watch filesystem changes. ("chokidar" by default)
       --cache                     Controls whether to enable or disable caching (enabled by default)
       --cache.reset               Controls whether to reset cache on boot
       --output.rootDirectory      Override control defined output directory to use this one
