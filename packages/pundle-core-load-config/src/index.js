@@ -25,6 +25,12 @@ export default async function loadConfig(context: Context): Promise<Config> {
     throw new PundleError('CONFIG', 'INVALID_CONFIG', 'config.components is not allowed in inline config')
   }
 
+  let defaultTarget = 'browser'
+
+  if (process.env.PUNDLE_TARGET === 'node') {
+    defaultTarget = 'node'
+  }
+
   const config = {
     cache: {
       reset: false,
@@ -33,7 +39,7 @@ export default async function loadConfig(context: Context): Promise<Config> {
       rootDirectory: path.join(os.tmpdir(), '.pundle'),
     },
     entry: [],
-    target: process.env.PUNDLE_TARGET || 'browser',
+    target: defaultTarget,
     rootDirectory: fileConfig.rootDirectory,
     output: {
       formats: {

@@ -144,7 +144,7 @@ export type ComponentFileTransformerCallback = (params: {
   },
   context: Context,
   worker: PundleWorker,
-  resolve(request: string, loc: ?Loc): Promise<ComponentFileResolverResult>,
+  resolve(request: string, loc: ?Loc, specified?: boolean): Promise<ComponentFileResolverResult>,
   addImport(fileImport: ImportResolved): Promise<void>,
   addChunk(chunk: Chunk): Promise<void>,
 }) => Promise<?ComponentFileTransformerResult> | ?ComponentFileTransformerResult

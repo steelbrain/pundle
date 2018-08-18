@@ -22,12 +22,12 @@ function createComponent({ options = {} }: { options?: Object } = {}) {
       ]).process(typeof contents === 'string' ? contents : contents.toString(), {
         from: filePath,
         map:
-          sourceMap && sourceMap.filePath
+          filePath && sourceMap && sourceMap.filePath
             ? { inline: false, annotation: false, prev: sourceMap.contents, from: filePath }
             : null,
       })
       let { css, map } = processed
-      if (sourceMap && sourceMap.filePath) {
+      if (filePath && sourceMap && sourceMap.filePath) {
         const relativeUrl = path.posix.relative(path.dirname(filePath), sourceMap.filePath)
         css += `/*# sourceMappingURL=${relativeUrl} */`
         map = JSON.stringify(map)

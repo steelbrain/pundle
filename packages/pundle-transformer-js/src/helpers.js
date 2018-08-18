@@ -10,7 +10,7 @@ export function getName(givenObj: Object, match: Array<string>, maxLength: numbe
     if (typeof obj.name === 'string') {
       const currentIndex = objName.length
       objName.push(obj.name)
-      if (match.length && match.length > currentIndex && objName[currentIndex] !== match[currentIndex]) {
+      if (match.length > 0 && match.length > currentIndex && objName[currentIndex] !== match[currentIndex]) {
         failed = true
         return
       }

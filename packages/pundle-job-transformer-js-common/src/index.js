@@ -13,7 +13,7 @@ import {
 import manifest from '../package.json'
 
 function fileToImport(file: ImportTransformed): ImportResolved {
-  return { filePath: file.filePath, format: file.format }
+  return { filePath: file.filePath, format: file.format, meta: file.meta }
 }
 
 function createComponent({ name = '_common_' }: { name?: string } = {}) {

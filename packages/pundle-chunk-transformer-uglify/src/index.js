@@ -21,7 +21,7 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
       if (format !== 'js') return null
 
       const sourceMapOptions =
-        sourceMap && sourceMap.filePath
+        filePath && sourceMap && sourceMap.filePath
           ? {
               url: path.posix.relative(path.dirname(filePath), sourceMap.filePath),
             }
@@ -41,11 +41,12 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
 
       return {
         contents: code,
-        sourceMap: map
-          ? {
-              contents: JSON.stringify(mergeSourceMap(sourceMap.contents, map)),
-            }
-          : null,
+        sourceMap:
+          sourceMap && map
+            ? {
+                contents: JSON.stringify(mergeSourceMap(sourceMap.contents, map)),
+              }
+            : null,
       }
     },
   })
