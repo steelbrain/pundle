@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/pundle
     docker:
-      - image: circleci/node:8
+      - image: node:8-jessie
     steps:
       - checkout
       - restore_cache:
@@ -25,10 +25,14 @@ jobs:
           paths:
             - node_modules/
   test:
+    working_directory: ~/pundle
     docker:
-      - image: circleci/node:8
+      - image: node:8-jessie
     steps:
       - checkout
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          key: yarn-packages-{{ .Branch }}-{{ checksum "yarn.lock" }}
       - run:
           name: Test
           command: yarn test
