@@ -57,6 +57,7 @@ export type TransformRequest = {
   contents: Buffer | string,
 }
 export type TransformResult = {|
+  meta: ImportMeta,
   contents: Buffer | string,
   sourceMap: ?string | false,
   chunks: Array<Chunk>,
@@ -139,7 +140,7 @@ export type ComponentFileTransformerCallback = (params: {
     filePath: string,
     format: string,
     contents: Buffer | string,
-    sourceMap: ?string | false,
+    sourceMap: Object | false | null,
   },
   context: Context,
   worker: PundleWorker,

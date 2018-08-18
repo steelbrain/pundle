@@ -40,7 +40,7 @@ function createComponent({
 
       return {
         contents: transformed.js,
-        sourceMap: JSON.stringify(transformed.v3SourceMap),
+        sourceMap: JSON.parse(transformed.v3SourceMap),
       }
     },
   })
