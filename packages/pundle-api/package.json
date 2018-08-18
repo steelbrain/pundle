@@ -15,7 +15,7 @@
     "merge-source-map": "^1.1.0",
     "p-map": "^1.2.0",
     "resolve-from": "^4.0.0",
-    "yup": "^0.25.1"
+    "yup": "^0.26.2"
   },
   "author": "steelbrain",
   "license": "MIT"

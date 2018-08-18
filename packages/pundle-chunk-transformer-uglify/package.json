@@ -12,7 +12,7 @@
   "dependencies": {
     "merge-source-map": "^1.1.0",
     "pundle-api": "^3.0.0-beta5",
-    "terser": "^3.7.6",
+    "terser": "^3.8.1",
     "uglify-es": "^3.3.9"
   },
   "author": "steelbrain",

@@ -19,7 +19,7 @@
     "@babel/preset-flow": "^7.0.0-rc.1",
     "eslint-config-steelbrain": "^5.0.2",
     "flow-bin": "^0.79.1",
-    "lerna": "^2.11.0",
+    "lerna": "^3.1.1",
     "minimist": "^1.2.0",
     "rimraf": "^2.6.2",
     "sb-babel-cli": "0.2.x"

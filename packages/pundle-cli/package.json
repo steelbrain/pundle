@@ -16,7 +16,7 @@
     "cors": "^2.8.4",
     "decamelize": "^2.0.0",
     "express": "^4.16.3",
-    "gzip-size": "^4.1.0",
+    "gzip-size": "^5.0.0",
     "lodash": "^4.17.10",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
