@@ -14,6 +14,9 @@ jobs:
             - yarn-packages-master
             - yarn-packages-
       - run:
+          name: Packager Version
+          command: yarn --version
+      - run:
           name: Install Dependencies
           command: yarn install
       - save_cache:
