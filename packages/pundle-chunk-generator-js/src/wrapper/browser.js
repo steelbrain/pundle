@@ -15,7 +15,7 @@ if (!global.sbPundle) {
 let sbPundleServer = ''
 if (typeof document !== 'undefined' && document.currentScript) {
   const parsed = new URL(document.currentScript.src)
-  sbPundleServer = `${parsed.protocol}//${parsed.host}`
+  sbPundleServer = `${parsed.protocol}//${parsed.host}/`
 }
 
 const sbPundleCache = sbPundle.cache

@@ -38,8 +38,8 @@ async function getPundleDevMiddleware(options: Payload) {
   const router = new Router()
 
   let { publicPath = '/' } = options
-  if (!publicPath.endsWith('/')) {
-    publicPath = `${publicPath}/`
+  if (publicPath.endsWith('/')) {
+    publicPath = publicPath.slice(0, -1)
   }
 
   let configEntry = get(options, 'config.entry', []).slice()
@@ -212,6 +212,12 @@ async function getPundleDevMiddleware(options: Payload) {
       await initialCompile()
       let { pathname } = url.parse(req.url)
 
+      if (!pathname) return
+
+      if (pathname.startsWith('/')) {
+        pathname = pathname.slice(1)
+      }
+
       if (pathname.endsWith('.pundle.hmr')) {
         res.write(JSON.stringify({ type: 'status', enabled: !!options.hmr }))
         if (!options.hmr) {
@@ -227,19 +233,19 @@ async function getPundleDevMiddleware(options: Payload) {
         return
       }
 
-      if (pathname.endsWith('/')) {
+      if (pathname.endsWith('/') || pathname === '') {
         pathname = `${pathname}index`
       }
 
-      function respondWith(output) {
-        const mimeType = mime.getType(path.extname(pathname) || '.html') || 'application/octet-stream'
+      function respondWith(output, givenPathname) {
+        const mimeType = mime.getType(path.extname(givenPathname) || '.html') || 'application/octet-stream'
         res.set('content-type', mimeType)
         res.end(output)
       }
 
       const hmrContents = urlToHMRContents[pathname]
       if (hmrContents) {
-        respondWith(hmrContents)
+        respondWith(hmrContents, pathname)
         return
       }
 
@@ -248,7 +254,7 @@ async function getPundleDevMiddleware(options: Payload) {
 
       const contents = urlToContents[pathname] || urlToContents[`${pathname}.html`]
       if (contents) {
-        respondWith(contents)
+        respondWith(contents, pathname)
         return
       }
       next()
