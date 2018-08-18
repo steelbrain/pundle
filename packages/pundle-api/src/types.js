@@ -159,7 +159,7 @@ export type ComponentJobTransformer = Component<'job-transformer', ComponentJobT
 export type ComponentChunkGeneratorResult = {
   format: string,
   contents: string | Buffer,
-  sourceMap?: {
+  sourceMap?: ?{
     filePath: string | false,
     contents: string,
   },

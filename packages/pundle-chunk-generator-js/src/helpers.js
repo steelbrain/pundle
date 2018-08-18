@@ -45,7 +45,7 @@ export function getContentForOutput(
   }
 }
 
-export function mergeSourceMap(sourceMap: Object, targetMap: Object, offset: number, filePath: string): Promise<void> {
+export function mergeSourceMap(sourceMap: string, targetMap: Object, offset: number, filePath: string): Promise<void> {
   const parsedSourceMap = JSON.parse(sourceMap)
 
   return SourceMapConsumer.with(parsedSourceMap, null, function(entryMap) {
