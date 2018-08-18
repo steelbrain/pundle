@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/pundle
     docker:
-      - image: node:8-jessie
+      - image: node:10-jessie
     steps:
       - checkout
       - restore_cache:
@@ -27,7 +27,7 @@ jobs:
   test:
     working_directory: ~/pundle
     docker:
-      - image: node:8-jessie
+      - image: node:10-jessie
     steps:
       - checkout
       - restore_cache:
