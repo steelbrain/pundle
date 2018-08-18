@@ -6,7 +6,8 @@ import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
 
-const DEFAULT_EXCLUDE = ['node_modules/**']
+const DEFAULT_EXCLUDE = [/node_modules/]
+
 function createComponent({
   exclude = DEFAULT_EXCLUDE,
   extensions = ['.coffee'],

@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "browser-resolve": "^1.11.2",
+    "browser-resolve": "^1.11.3",
     "lodash": "^4.17.10",
     "pundle-api": "^3.0.0-beta5",
     "pundle-resolver-aliases-browser": "^3.0.0-beta5",

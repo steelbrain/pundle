@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "chokidar": "^2.0.3",
+    "chokidar": "^2.0.4",
     "lodash": "^4.17.10",
     "lowdb": "^1.0.0",
     "mkdirp": "^0.5.1",
