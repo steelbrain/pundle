@@ -189,13 +189,14 @@ export default class Context {
       transformed = { sourceMap: newSourceMap, contents: result.contents }
     }
 
-    if (transformed.sourceMap && Array.isArray(transformed.sourceMap.sources)) {
-      const sourceIndex = transformed.sourceMap.sources.findIndex(source => source && filePath.endsWith(source))
+    const transformedSourceMap = transformed.sourceMap
+    if (transformedSourceMap && Array.isArray(transformedSourceMap.sources)) {
+      const sourceIndex = transformedSourceMap.sources.findIndex(source => source && filePath.endsWith(source))
       if (sourceIndex !== -1) {
-        if (!transformed.sourceMap.sourcesContent) {
-          transformed.sourceMap.sourcesContent = []
+        if (!transformedSourceMap.sourcesContent) {
+          transformedSourceMap.sourcesContent = []
         }
-        transformed.sourceMap.sourcesContent[sourceIndex] = typeof contents === 'string' ? contents : contents.toString()
+        transformedSourceMap.sourcesContent[sourceIndex] = typeof contents === 'string' ? contents : contents.toString()
       }
     }
 

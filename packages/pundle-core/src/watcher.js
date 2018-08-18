@@ -41,7 +41,8 @@ export default async function getWatcher({
 
   const configChunks = (await Promise.all(
     context.config.entry.map(entry =>
-      pundle.resolve({
+      pundle.resolveStrict({
+        meta: null,
         request: entry,
         requestFile: null,
         ignoredResolvers: [],

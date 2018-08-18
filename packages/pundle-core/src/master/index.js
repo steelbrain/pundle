@@ -16,6 +16,7 @@ import {
   type ImportTransformed,
   type ChunksGenerated,
   type ChunkGenerated,
+  type ComponentFileResolverResult,
   type ComponentChunkTransformerResult,
 } from 'pundle-api'
 
@@ -90,7 +91,7 @@ export default class Master implements PundleWorker {
     const job = new Job()
     const configChunks = (await Promise.all(
       this.context.config.entry.map(entry =>
-        this.resolve({
+        this.resolveStrict({
           meta: null,
           request: entry,
           requestFile: null,
@@ -246,8 +247,15 @@ export default class Master implements PundleWorker {
   async transformChunkGenerated(chunkGenerated: ChunkGenerated): Promise<ComponentChunkTransformerResult> {
     return this._queuedProcess(worker => worker.transformChunkGenerated(chunkGenerated))
   }
+  async resolveStrict(request: ImportRequest): Promise<ImportResolved> {
+    const { meta, format, filePath } = await this.resolve(request)
+    if (format === false || filePath === false) {
+      throw new Error(`Resolution refused for '${request.request}' from '${request.requestFile || 'root'}'`)
+    }
+    return { meta, format, filePath }
+  }
   // PundleWorker methods below
-  async resolve(request: ImportRequest): Promise<ImportResolved> {
+  async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
     return this.resolverWorker.resolve(request)
   }
   async transformFile(payload: ImportResolved): Promise<ImportTransformed> {

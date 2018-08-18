@@ -10,6 +10,7 @@ import type {
   ImportTransformed,
   ImportRequest,
   ChunkGenerated,
+  ComponentFileResolverResult,
   ComponentChunkTransformerResult,
 } from 'pundle-api'
 import { processPayload, processReceived } from '../helpers'
@@ -18,7 +19,7 @@ type Payload = {|
   // eslint-disable-next-line no-use-before-define
   queue: Array<(worker: WorkerDelegate) => void>,
   context: Context,
-  handleResolve: (request: ImportRequest) => Promise<ImportResolved>,
+  handleResolve: (request: ImportRequest) => Promise<ComponentFileResolverResult>,
 |}
 
 export default class WorkerDelegate {
@@ -70,7 +71,7 @@ export default class WorkerDelegate {
       this.processQueue()
     }
   }
-  async resolve(request: ImportRequest): Promise<ImportResolved> {
+  async resolve(request: ImportRequest): Promise<ComponentFileResolverResult> {
     const { bridge } = this
     invariant(bridge, 'Cannot send job to dead worker')
 

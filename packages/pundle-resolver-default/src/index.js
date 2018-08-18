@@ -39,7 +39,7 @@ function createComponent({
         if (external.includes(requestModule)) {
           return {
             meta,
-            format: null,
+            format: false,
             filePath: false,
           }
         }
@@ -83,7 +83,7 @@ function createComponent({
         if (context.config.target === 'node') {
           return {
             meta,
-            format: null,
+            format: false,
             filePath: false,
           }
         }

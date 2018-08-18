@@ -115,7 +115,7 @@ export type ComponentFileResolverResult =
       meta: ImportMeta,
     |}
   | {|
-      format: null,
+      format: false,
       filePath: false,
       meta: ImportMeta,
     |}
