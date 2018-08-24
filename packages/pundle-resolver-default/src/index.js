@@ -1,5 +1,6 @@
 // @flow
 
+import fs from 'sb-fs'
 import path from 'path'
 import invariant from 'assert'
 import flatten from 'lodash/flatten'
@@ -88,6 +89,8 @@ function createComponent({
           }
         }
         response = browserAliases._pundle_empty
+      } else {
+        response = await fs.readlink(response)
       }
 
       const ext = path.extname(response)

@@ -14,7 +14,8 @@
     "lodash": "^4.17.10",
     "pundle-api": "^3.0.0-beta6",
     "pundle-resolver-aliases-browser": "^3.0.0-beta6",
-    "resolve": "^1.8.1"
+    "resolve": "^1.8.1",
+    "sb-fs": "^3.0.0"
   },
   "author": "steelbrain",
   "license": "MIT"
