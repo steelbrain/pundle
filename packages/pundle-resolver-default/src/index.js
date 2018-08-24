@@ -90,7 +90,14 @@ function createComponent({
         }
         response = browserAliases._pundle_empty
       } else {
-        response = await fs.readlink(response)
+        try {
+          response = await fs.readlink(response)
+        } catch (error) {
+          // Node.js throws EINVAL when it's not a symlink
+          if (error.code !== 'EINVAL') {
+            throw error
+          }
+        }
       }
 
       const ext = path.extname(response)
