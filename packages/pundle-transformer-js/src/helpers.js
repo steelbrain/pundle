@@ -1,5 +1,7 @@
 // @flow
 
+import * as t from '@babel/types'
+
 export function getName(givenObj: Object, match: Array<string>, maxLength: number = Infinity): string | null {
   let failed = false
   const objName = []
@@ -30,4 +32,27 @@ export function getName(givenObj: Object, match: Array<string>, maxLength: numbe
   }
 
   return objName.join('.')
+}
+
+export function getStringFromLiteralOrTemplate(node: Object) {
+  if (t.isStringLiteral(node)) {
+    return node
+  }
+  if (!t.isTemplateLiteral(node)) {
+    return null
+  }
+  if (node.expressions.length !== 0) {
+    return null
+  }
+  if (node.quasis.length !== 1) {
+    return null
+  }
+  const [item] = node.quasis
+  if (!t.isTemplateElement(item)) {
+    return null
+  }
+  if (item.value.raw !== item.value.cooked) {
+    return null
+  }
+  return item
 }

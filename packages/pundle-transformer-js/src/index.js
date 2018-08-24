@@ -9,7 +9,7 @@ import { promisify } from 'util'
 import { transform } from '@babel/core'
 import { createFileTransformer, getChunk, getUniqueHash } from 'pundle-api'
 
-import { getName } from './helpers'
+import { getName, getStringFromLiteralOrTemplate } from './helpers'
 import manifest from '../package.json'
 import pluginRemoveDeadNodes from './plugin-remove-dead-nodes'
 import getPluginReplaceProcess from './plugin-replace-process'
@@ -43,7 +43,7 @@ function createComponent() {
         filename: file.filePath,
         highlightCode: false,
         plugins: [getPluginReplaceProcess(context.config.target), pluginCommonJSModules],
-        sourceType: 'module',
+        sourceType: 'unambiguous',
         parserOpts: {
           plugins: ['dynamicImport'],
         },
@@ -68,20 +68,20 @@ function createComponent() {
         CallExpression(path) {
           const { node } = path
           const { callee } = node
-          const [arg] = node.arguments
+          const [givenArg] = node.arguments
 
-          if (!t.isStringLiteral(arg)) return
+          const arg = getStringFromLiteralOrTemplate(givenArg)
+          if (!arg) return
 
           if (t.isImport(callee)) {
             promises.push(
-              resolve(arg.value, arg.loc).then(givenResolved => {
+              resolve(arg.value.raw || arg.value, arg.loc).then(givenResolved => {
                 if (givenResolved.filePath === false) return null
                 const resolved = { ...givenResolved, format: 'js' }
 
                 const chunk = getChunk(resolved.format, null, resolved.filePath, [], false)
                 node.callee = t.memberExpression(t.identifier('require'), t.identifier('chunk'))
-                arg.value = context.getPublicPath(chunk)
-                node.arguments.splice(1, 0, t.stringLiteral(getUniqueHash(resolved)))
+                node.arguments = [t.stringLiteral(context.getPublicPath(chunk)), t.stringLiteral(getUniqueHash(resolved))]
                 return addChunk(chunk)
               }),
             )
@@ -97,12 +97,12 @@ function createComponent() {
 
           // Handling require + require.resolve
           promises.push(
-            resolve(arg.value, arg.loc, specified)
+            resolve(arg.value.raw || arg.value, arg.loc, specified)
               .then(givenResolved => {
                 if (givenResolved.filePath === false) return null
                 const resolved = { ...givenResolved, format: 'js' }
 
-                arg.value = getUniqueHash(resolved)
+                node.arguments = [t.stringLiteral(getUniqueHash(resolved))]
                 return addImport(resolved)
               })
               .catch(error => {
