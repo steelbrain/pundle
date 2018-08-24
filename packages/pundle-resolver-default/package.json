@@ -1,6 +1,6 @@
 {
   "name": "pundle-resolver-default",
-  "version": "3.0.0-beta6",
+  "version": "3.0.0-beta7",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -12,8 +12,8 @@
   "dependencies": {
     "browser-resolve": "^1.11.3",
     "lodash": "^4.17.10",
-    "pundle-api": "^3.0.0-beta6",
-    "pundle-resolver-aliases-browser": "^3.0.0-beta6",
+    "pundle-api": "^3.0.0-beta7",
+    "pundle-resolver-aliases-browser": "^3.0.0-beta7",
     "resolve": "^1.8.1",
     "sb-fs": "^3.0.0"
   },

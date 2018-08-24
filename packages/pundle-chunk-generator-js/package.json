@@ -1,6 +1,6 @@
 {
   "name": "pundle-chunk-generator-js",
-  "version": "3.0.0-beta6",
+  "version": "3.0.0-beta7",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-beta6",
+    "pundle-api": "^3.0.0-beta7",
     "sb-fs": "^3.0.0",
     "source-map": "^0.7.2"
   },
