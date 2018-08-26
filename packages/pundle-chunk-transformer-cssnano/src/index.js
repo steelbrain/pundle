@@ -9,7 +9,7 @@ import manifest from '../package.json'
 
 function createComponent({ options = {} }: { options?: Object } = {}) {
   return createChunkTransformer({
-    name: 'pundle-chunk-transformer-cssnano',
+    name: manifest.name,
     version: manifest.version,
     async callback({ filePath, format, contents, sourceMap }) {
       if (format !== 'css') return null

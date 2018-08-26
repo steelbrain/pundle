@@ -24,7 +24,7 @@ function createComponent({
   }
 
   return createFileTransformer({
-    name: 'pundle-transformer-babel',
+    name: manifest.name,
     version: manifest.version,
     priority: 1250,
     async callback({ file, context }) {

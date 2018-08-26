@@ -11,7 +11,7 @@ const CHUNK_INJECTION_REGEXP = / *<!-- chunk-import(.*)? -->/gi
 // TODO: have a config?
 function createComponent() {
   return createChunkGenerator({
-    name: 'pundle-chunk-generator-html',
+    name: manifest.name,
     version: manifest.version,
     async callback({ chunk, job, context }) {
       if (chunk.format !== 'html') return null

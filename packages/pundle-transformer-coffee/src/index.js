@@ -14,7 +14,7 @@ function createComponent({
   processOutsideProjectRoot,
 }: { exclude?: Array<string | RegExp>, extensions?: Array<string>, processOutsideProjectRoot?: boolean } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-coffee',
+    name: manifest.name,
     version: manifest.version,
     priority: 1250,
     async callback({ file, context }) {

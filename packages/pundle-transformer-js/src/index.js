@@ -26,7 +26,7 @@ const transformAsync = promisify(transform)
 
 function createComponent() {
   return createFileTransformer({
-    name: 'pundle-transformer-js',
+    name: manifest.name,
     version: manifest.version,
     priority: 1000,
     async callback({ file, resolve, context, addImport, addChunk }) {

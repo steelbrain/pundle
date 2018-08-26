@@ -32,7 +32,7 @@ function createComponent({
   }
 
   return createFileResolver({
-    name: 'pundle-file-resolver',
+    name: manifest.name,
     version: manifest.version,
     async callback({ request, requestFile, context, meta }) {
       if (external.length > 0 && request[0] !== '.') {

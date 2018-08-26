@@ -10,7 +10,7 @@ function createComponent({
   options = {},
 }: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-stylus',
+    name: manifest.name,
     version: manifest.version,
     priority: 2000,
     async callback({ file, context }) {

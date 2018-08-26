@@ -7,7 +7,7 @@ import manifest from '../package.json'
 
 function createComponent({ extensions = ['.json5'] }: { extensions?: Array<string> } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-json5',
+    name: manifest.name,
     version: manifest.version,
     priority: 1500,
     async callback({ file, context }) {

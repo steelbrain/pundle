@@ -7,7 +7,7 @@ import manifest from '../package.json'
 
 function createComponent({ extensions = ['.less'], options = {} }: { extensions?: Array<string>, options?: Object } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-less',
+    name: manifest.name,
     version: manifest.version,
     priority: 2000,
     async callback({ file, context }) {

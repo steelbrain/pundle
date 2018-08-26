@@ -13,7 +13,7 @@ function createComponent() {
   const wrapperBrowser = fs.readFile(path.join(__dirname, 'wrapper', 'browser.js'), 'utf8')
 
   return createChunkGenerator({
-    name: 'pundle-chunk-generator-js',
+    name: manifest.name,
     version: manifest.version,
     async callback({ chunk, job, context }) {
       if (chunk.format !== 'js') return null

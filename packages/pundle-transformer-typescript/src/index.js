@@ -14,7 +14,7 @@ function createComponent({
   processOutsideProjectRoot,
 }: { exclude?: Array<string | RegExp>, extensions: Array<string>, processOutsideProjectRoot?: boolean } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-typescript',
+    name: manifest.name,
     version: manifest.version,
     priority: 1500,
     async callback({ file, context }) {

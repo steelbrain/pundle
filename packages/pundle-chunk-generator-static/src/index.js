@@ -7,7 +7,7 @@ import manifest from '../package.json'
 
 function createComponent() {
   return createChunkGenerator({
-    name: 'pundle-chunk-generator-static',
+    name: manifest.name,
     version: manifest.version,
     async callback({ chunk, job }) {
       if (chunk.format !== 'static' || !chunk.filePath) return null

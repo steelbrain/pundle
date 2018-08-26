@@ -15,7 +15,7 @@ function createComponent({ options = {}, uglifier = 'uglify' }: { options?: Obje
   }
 
   return createChunkTransformer({
-    name: 'pundle-chunk-transformer-uglify',
+    name: manifest.name,
     version: manifest.version,
     async callback({ filePath, format, contents, sourceMap }) {
       if (format !== 'js') return null

@@ -7,7 +7,7 @@ import manifest from '../package.json'
 
 function createComponent({ plugins = [], extensions = ['.css'] }: { plugins?: Array<any>, extensions: Array<string> } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-postcss',
+    name: manifest.name,
     version: manifest.version,
     priority: 2000,
     async callback({ file, context }) {

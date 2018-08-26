@@ -26,7 +26,7 @@ function createComponent({
   }
 
   return createFileTransformer({
-    name: 'pundle-transformer-static',
+    name: manifest.name,
     version: manifest.version,
     priority: 2000,
     async callback({ file, addChunk, context }) {

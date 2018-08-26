@@ -8,7 +8,7 @@ import manifest from '../package.json'
 
 function createComponent({ extensions = ['.yaml', '.yml'] }: { extensions?: Array<string> }) {
   return createFileTransformer({
-    name: 'pundle-transformer-yaml',
+    name: manifest.name,
     version: manifest.version,
     priority: 2000,
     async callback({ file, context }) {

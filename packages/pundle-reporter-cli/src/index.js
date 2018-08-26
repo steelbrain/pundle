@@ -8,7 +8,7 @@ import manifest from '../package.json'
 // TODO: have a config?
 function createComponent() {
   return createIssueReporter({
-    name: 'pundle-reporter-cli',
+    name: manifest.name,
     version: manifest.version,
     callback({ issue }) {
       if (process.env.PUNDLE_DEBUG === '1') {

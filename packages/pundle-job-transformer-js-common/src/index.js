@@ -18,7 +18,7 @@ function fileToImport(file: ImportTransformed): ImportResolved {
 
 function createComponent({ name = '_common_' }: { name?: string } = {}) {
   return createJobTransformer({
-    name: 'pundle-job-transformer-js-common',
+    name: manifest.name,
     version: manifest.version,
     async callback({ context, job }) {
       if (context.config.target === 'browser') {

@@ -7,7 +7,7 @@ import manifest from '../package.json'
 
 function createComponent({ extensions = ['.gql', '.graphql'] }: { extensions?: Array<string> } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-graphql',
+    name: manifest.name,
     version: manifest.version,
     priority: 1500,
     async callback({ file, context }) {

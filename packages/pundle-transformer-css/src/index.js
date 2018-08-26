@@ -14,7 +14,7 @@ function createComponent({
   development = process.env.NODE_ENV !== 'production',
 }: { extensions?: Array<string>, development?: boolean } = {}) {
   return createFileTransformer({
-    name: 'pundle-transformer-css',
+    name: manifest.name,
     version: manifest.version,
     priority: 1500,
     async callback({ file, resolve, addChunk, context }) {
