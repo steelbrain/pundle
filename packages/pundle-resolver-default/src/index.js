@@ -1,6 +1,5 @@
 // @flow
 
-import fs from 'sb-fs'
 import path from 'path'
 import invariant from 'assert'
 import flatten from 'lodash/flatten'
@@ -89,15 +88,6 @@ function createComponent({
           }
         }
         response = browserAliases._pundle_empty
-      } else {
-        try {
-          response = await fs.readlink(response)
-        } catch (error) {
-          // Node.js throws EINVAL when it's not a symlink
-          if (error.code !== 'EINVAL') {
-            throw error
-          }
-        }
       }
 
       const ext = path.extname(response)
