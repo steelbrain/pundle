@@ -21,7 +21,7 @@ function createComponent({ name = '_common_' }: { name?: string } = {}) {
     name: manifest.name,
     version: manifest.version,
     async callback({ context, job }) {
-      if (context.config.target === 'browser') {
+      if (context.config.target === 'node') {
         return null
       }
 
