@@ -36,6 +36,9 @@ for (const [currentPackage, packageDirectory] of Object.entries(packages)) {
   if (argv.w || argv.watch) {
     args.push('-w')
   }
+  if (argv['disable-cache']) {
+    args.push('--disable-cache')
+  }
   const spawnedProcess = childProcess.spawn(`sb-babel-cli`, args, {
     stdio: [process.stdin, 'pipe', 'pipe'],
   })
