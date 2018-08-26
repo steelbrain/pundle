@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-static",
-  "version": "3.0.0-beta7",
+  "version": "3.0.0-beta8",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "scripts": {},
   "dependencies": {
     "mime": "^2.3.1",
-    "pundle-api": "^3.0.0-beta7"
+    "pundle-api": "^3.0.0-beta8"
   },
   "author": "steelbrain",
   "license": "MIT"

@@ -1,6 +1,6 @@
 {
   "name": "pundle-reporter-cli",
-  "version": "3.0.0-beta7",
+  "version": "3.0.0-beta8",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -10,8 +10,8 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-beta7",
-    "pundle-reporter-base": "^3.0.0-beta7"
+    "pundle-api": "^3.0.0-beta8",
+    "pundle-reporter-base": "^3.0.0-beta8"
   },
   "author": "steelbrain",
   "license": "MIT"
