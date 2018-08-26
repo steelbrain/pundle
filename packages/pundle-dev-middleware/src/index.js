@@ -184,9 +184,17 @@ async function getPundleDevMiddleware(options: Payload) {
         options.changedCallback(changed)
       }
     },
-    tick({ newFile }) {
-      if (options.hmr && !firstTimeGenerating) {
+    tick({ newFile, oldFile }) {
+      if (firstTimeGenerating) return
+      if (options.hmr) {
         filesChangedHMR.add({ format: newFile.format, filePath: newFile.filePath, meta: newFile.meta })
+      }
+      if (!oldFile && newFile) {
+        filesChanged.add({
+          meta: newFile.meta,
+          format: newFile.format,
+          filePath: newFile.filePath,
+        })
       }
     },
   })
