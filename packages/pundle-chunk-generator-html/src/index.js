@@ -16,8 +16,8 @@ function createComponent() {
     async callback({ chunk, job, context }) {
       if (chunk.format !== 'html') return null
 
-      const { entry } = chunk
-      if (!entry) return null
+      const { filePath } = chunk
+      if (!filePath) return null
 
       function getChunkImportLine(chunkToWrite): string {
         const outputPath = context.getPublicPath(chunkToWrite)
@@ -31,11 +31,11 @@ function createComponent() {
         } else {
           // TODO: For chunks that don't want to be written, what do we do?
         }
-        throw new Error(`Invalid chunk format: ${chunkToWrite.format} to include in html file '${entry}'`)
+        throw new Error(`Invalid chunk format: ${chunkToWrite.format} to include in html file '${filePath}'`)
       }
 
       const file = job.files.get(getFileKey(chunk))
-      invariant(file, 'entry file not found')
+      invariant(file, 'filePath file not found')
 
       const chunks = Array.from(job.chunks.values()).filter(
         i => i.root && i.filePath !== chunk.filePath && i.format !== chunk.format,
@@ -51,7 +51,10 @@ function createComponent() {
         const prefix = ' '.repeat(spacesBefore)
 
         const filter = g1.trim()
-        const chunksToWrite = topologicallySortChunks(filter ? getChunksMatchingFilter(chunks, filter, entry) : chunks, job)
+        const chunksToWrite = topologicallySortChunks(
+          filter ? getChunksMatchingFilter(chunks, filter, filePath) : chunks,
+          job,
+        )
 
         return chunksToWrite.map(item => `${prefix}${getChunkImportLine(item)}`).join('\n')
       })

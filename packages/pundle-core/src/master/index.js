@@ -159,11 +159,11 @@ export default class Master implements PundleWorker {
       job.chunks.set(lockKey, chunk)
 
       const filesToProcess = chunk.imports.slice()
-      if (chunk.entry) {
+      if (chunk.filePath) {
         filesToProcess.push({
           meta: chunk.meta,
           format: chunk.format,
-          filePath: chunk.entry,
+          filePath: chunk.filePath,
         })
       }
       await pMap(filesToProcess, fileImport =>

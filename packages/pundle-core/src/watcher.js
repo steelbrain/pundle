@@ -9,6 +9,7 @@ import {
   getChunk,
   getFileKey,
   getChunkKey,
+  getDependencyOrder,
   type Chunk,
   type Context,
   type ImportResolved,
@@ -94,7 +95,7 @@ export default async function getWatcher({
     }
   }
 
-  const changed = new Map()
+  let changed = new Map()
   const onChange = async (event, filePath, newPath) => {
     job.files.forEach(function(file) {
       if (file.filePath === filePath || file.filePath === newPath) {
@@ -112,34 +113,35 @@ export default async function getWatcher({
 
     await initialCompilePromise
 
-    const currentChanged = new Map(changed)
-    const currentChangedVals = Array.from(currentChanged.values())
-    console.log('currentChangedVals', currentChangedVals)
+    const changedImports = Array.from(changed.values())
     changed.clear()
 
-    try {
-      const locks = new Set()
-      lastProcessError = null
-      try {
-        await Promise.all(
-          currentChangedVals.map(request =>
-            pundle.transformFileTree({
-              job,
-              locks,
-              request,
-              tickCallback,
-              changedImports: currentChanged,
-            }),
-          ),
-        )
-      } catch (error) {
-        lastProcessError = error
-        throw error
-      }
-      queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(pundle.report)
-    } catch (error) {
-      pundle.report(error)
-    }
+    const graph = getDependencyOrder(changedImports.map(item => item.file), job.files)
+    console.log('graph result', graph)
+
+    // try {
+    //   const locks = new Set()
+    //   lastProcessError = null
+    //   try {
+    //     await Promise.all(
+    //       currentChangedVals.map(request =>
+    //         pundle.transformFileTree({
+    //           job,
+    //           locks,
+    //           request,
+    //           tickCallback,
+    //           changedImports: currentChanged,
+    //         }),
+    //       ),
+    //     )
+    //   } catch (error) {
+    //     lastProcessError = error
+    //     throw error
+    //   }
+    //   queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(pundle.report)
+    // } catch (error) {
+    //   pundle.report(error)
+    // }
   })
 
   const watcher = getFileWatcher(adapter, context.config.rootDirectory, (...args) => {

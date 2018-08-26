@@ -2,6 +2,8 @@
 
 import path from 'path'
 import globrex from 'globrex'
+import toposort from 'toposort'
+import invariant from 'assert'
 import resolveFrom from 'resolve-from'
 import murmurHash from 'node-murmurhash'
 
@@ -134,20 +136,32 @@ export async function loadLocalFromContext(context: Context, name: string): Prom
   }
 }
 
+// Returns deepest dependency first of all
 export function getDependencyOrder(rootFiles: Array<ImportResolved | Chunk>, knownFiles: Map<string, ImportTransformed>) {
   const graph = []
   const processedFiles = new Set()
 
-  function iterateImports(fileImport: ImportResolved | Chunk, chunkHash: string) {
-    const file = files.get(getFileKey(fileImport))
-    invariant(file, `File referenced in chunk ('${fileImport.filePath || ''}') not found in local cache!?`)
+  function iterateImports(entry: ImportResolved | Chunk, from: ?string = '$root') {
+    const entryKey = getFileKey(entry)
+    const file = knownFiles.get(entryKey)
+    invariant(file, `File referenced in chunk ('${entry.filePath || ''}') not found in local cache!?`)
 
-    if (processedFiles.has(file)) return
-    processedFiles.add(file)
+    if (processedFiles.has(entryKey)) return
+    processedFiles.add(entryKey)
+    graph.push([from, entryKey])
 
-    file.imports.forEach(item => iterateImports(item, chunkHash))
-    file.chunks.forEach(function(relevantChunk) {
-      graph.push([chunkHash, getChunkKey(relevantChunk)])
-    })
+    file.imports.forEach(item => iterateImports(item, entryKey))
+    file.chunks.forEach(item => iterateImports(item, entryKey))
   }
+
+  rootFiles.forEach(item => {
+    iterateImports(item)
+  })
+
+  return (
+    toposort(graph)
+      .reverse()
+      // Remove $root
+      .slice(0, -1)
+  )
 }
