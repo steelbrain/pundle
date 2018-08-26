@@ -14,5 +14,3 @@ export type WatchOptions = {
     changed: Array<ImportResolved>,
   }) => Promise<void> | void,
 }
-
-export type InternalChangedFiles = Map<string, ImportResolved>

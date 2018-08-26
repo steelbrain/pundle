@@ -22,7 +22,8 @@ import {
 
 import Cache from '../cache'
 import WorkerDelegate from '../worker/delegate'
-import type { InternalChangedFiles as ChangedImports } from '../types'
+
+type ChangedImports = Set<string>
 
 type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed) => Promise<void>
 
@@ -138,7 +139,7 @@ export default class Master implements PundleWorker {
     chunk,
     locks,
     tickCallback,
-    changedImports = new Map(),
+    changedImports = new Set(),
   }: {
     job: Job,
     chunk: Chunk,
@@ -185,7 +186,7 @@ export default class Master implements PundleWorker {
     locks,
     request,
     tickCallback,
-    changedImports = new Map(),
+    changedImports = new Set(),
   }: {
     job: Job,
     locks: Set<string>,

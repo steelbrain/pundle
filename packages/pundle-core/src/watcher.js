@@ -1,6 +1,5 @@
 // @flow
 
-import path from 'path'
 import pMap from 'p-map'
 import PromiseQueue from 'sb-promise-queue'
 import differenceBy from 'lodash/differenceBy'
@@ -19,7 +18,19 @@ import {
 import getFileWatcher from './file-watcher'
 
 import type Master from './master'
-import type { WatchOptions, InternalChangedFiles as ChangedImports } from './types'
+import type { WatchOptions } from './types'
+
+function getWeightForChangedItem({ event, key }, graph) {
+  let eventWeight = 0
+  if (event === 'add') {
+    eventWeight = 100000
+  } else if (event === 'delete') {
+    eventWeight = 200000
+  }
+  const indexWeight = graph.indexOf(key)
+
+  return eventWeight + indexWeight
+}
 
 // Dangerous territory beyond this point. May God help us all
 export default async function getWatcher({
@@ -37,7 +48,6 @@ export default async function getWatcher({
   const job = new Job()
   const { context } = pundle
   const queue = new PromiseQueue()
-  let lastProcessError = null
   let initialCompilePromise = null
 
   const configChunks = (await Promise.all(
@@ -95,13 +105,14 @@ export default async function getWatcher({
     }
   }
 
-  let changed = new Map()
+  const changed = new Map()
   const onChange = async (event, filePath, newPath) => {
     job.files.forEach(function(file) {
       if (file.filePath === filePath || file.filePath === newPath) {
-        changed.set(getFileKey(file), {
+        const key = getFileKey(file)
+        changed.set(key, {
+          key,
           event,
-          path: newPath || filePath,
           file,
         })
       }
@@ -113,35 +124,34 @@ export default async function getWatcher({
 
     await initialCompilePromise
 
-    const changedImports = Array.from(changed.values())
+    const currentChanged = Array.from(changed.values())
+    const changedImports = new Set(currentChanged.map(item => item.key))
     changed.clear()
 
-    const graph = getDependencyOrder(changedImports.map(item => item.file), job.files)
-    console.log('graph result', graph)
+    const graph = getDependencyOrder(currentChanged.map(item => item.file), job.files)
+    currentChanged.sort(function(a, b) {
+      return getWeightForChangedItem(b, graph) - getWeightForChangedItem(a, graph)
+    })
 
-    // try {
-    //   const locks = new Set()
-    //   lastProcessError = null
-    //   try {
-    //     await Promise.all(
-    //       currentChangedVals.map(request =>
-    //         pundle.transformFileTree({
-    //           job,
-    //           locks,
-    //           request,
-    //           tickCallback,
-    //           changedImports: currentChanged,
-    //         }),
-    //       ),
-    //     )
-    //   } catch (error) {
-    //     lastProcessError = error
-    //     throw error
-    //   }
-    //   queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(pundle.report)
-    // } catch (error) {
-    //   pundle.report(error)
-    // }
+    try {
+      const locks = new Set()
+      try {
+        await pMap(currentChanged, ({ file: request }) =>
+          pundle.transformFileTree({
+            job,
+            locks,
+            request,
+            tickCallback,
+            changedImports,
+          }),
+        )
+      } catch (error) {
+        throw error
+      }
+      queue.add(() => generate({ context, job, changed: currentChanged.map(item => item.file) })).catch(pundle.report)
+    } catch (error) {
+      pundle.report(error)
+    }
   })
 
   const watcher = getFileWatcher(adapter, context.config.rootDirectory, (...args) => {
