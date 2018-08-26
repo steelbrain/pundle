@@ -26,7 +26,7 @@ export function getUniqueHash(item: ImportResolved | Chunk): string {
   } else if (Array.isArray(item.imports)) {
     stringKey = `${JSON.stringify(item.imports)}`
   }
-  const { specified } = item.meta || DEFAULT_IMPORT_META
+  const { specified } = item.meta
   stringKey += `specified=${specified.toString()}`
 
   return `${item.format}_${getStringHash(stringKey)}`
