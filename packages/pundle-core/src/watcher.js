@@ -37,7 +37,7 @@ export default async function getWatcher({
   const queue = new PromiseQueue()
 
   let isFirstCompile = true
-  let lastProcessError = null
+  let needsRecompilation = false
 
   const configChunks = (await Promise.all(
     context.config.entry.map(entry =>
@@ -94,18 +94,37 @@ export default async function getWatcher({
     }
   }
 
-  async function compile(changedImports = new Set()) {
-    const locks = new Set()
-    await pMap(configChunks, chunk =>
-      pundle.transformChunk({
-        job,
-        chunk,
-        locks,
-        tickCallback,
-        changedImports,
-      }),
-    )
+  let lastChangedImports = new Set()
+  async function compile({ changedImports = new Set() }: { changedImports?: Set<string> } = {}) {
+    if (!needsRecompilation && !isFirstCompile) {
+      return
+    }
+    const oldIsFirstCompile = isFirstCompile
     isFirstCompile = false
+    needsRecompilation = false
+
+    const locks = new Set()
+    const changedImportsCombined = new Set([...changedImports, ...lastChangedImports])
+
+    try {
+      const changedImportsRef = new Set(changedImportsCombined)
+      await pMap(configChunks, chunk =>
+        pundle.transformChunk({
+          job,
+          chunk,
+          locks,
+          tickCallback,
+          changedImports: changedImportsRef,
+        }),
+      )
+      lastChangedImports.clear()
+    } catch (error) {
+      isFirstCompile = oldIsFirstCompile
+      needsRecompilation = !isFirstCompile
+      lastChangedImports = changedImportsCombined
+
+      throw error
+    }
   }
 
   const changed = new Map()
@@ -123,7 +142,7 @@ export default async function getWatcher({
   }
 
   queue.onIdle(async () => {
-    if (!generate || isFirstCompile || (!changed.size && !lastProcessError)) {
+    if (!generate || isFirstCompile || (!changed.size && !needsRecompilation)) {
       return
     }
     changed.forEach(function(item) {
@@ -133,18 +152,14 @@ export default async function getWatcher({
     })
 
     const currentChanged = Array.from(changed.values())
-
     changed.clear()
-    lastProcessError = null
 
     try {
       const changedImports = new Set(currentChanged.map(item => item.key))
-      try {
-        await compile(changedImports)
-      } catch (error) {
-        lastProcessError = error
-        throw error
-      }
+      needsRecompilation = true
+      await compile({
+        changedImports,
+      })
       queue.add(() => generate({ context, job, changed: currentChanged.map(item => item.file) })).catch(pundle.report)
     } catch (error) {
       pundle.report(error)

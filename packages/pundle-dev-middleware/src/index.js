@@ -63,7 +63,6 @@ async function getPundleDevMiddleware(options: Payload) {
   await pundle.initialize()
 
   let generated = null
-  let firstTimeCompiling = true
   let firstTimeGenerating = true
   const filesChanged: Set<ImportResolved> = new Set()
   const filesChangedHMR: Set<ImportResolved> = new Set()
@@ -195,7 +194,6 @@ async function getPundleDevMiddleware(options: Payload) {
   try {
     if (!options.lazy) {
       await compile()
-      firstTimeCompiling = false
     }
   } catch (_) {
     // Pre-compile if you can, otherwise move on
@@ -214,10 +212,7 @@ async function getPundleDevMiddleware(options: Payload) {
   router.get(
     `${publicPath}*`,
     asyncRoute(async function(req, res, next) {
-      if (firstTimeCompiling) {
-        await compile()
-        firstTimeCompiling = false
-      }
+      await compile()
       let { pathname } = url.parse(req.url)
 
       if (!pathname) return
