@@ -1,5 +1,6 @@
 // @flow
 
+import fs from 'sb-fs'
 import pMap from 'p-map'
 import mergeSourceMap from 'merge-source-map'
 import type { Config } from 'pundle-core-load-config'
@@ -112,10 +113,20 @@ export default class Context {
   }
   async invokeFileTransformers(
     worker: PundleWorker,
-    { filePath, format, contents, meta }: TransformRequest,
+    { filePath, format, meta }: TransformRequest,
   ): Promise<TransformResult> {
     const fileChunks = new Map()
     const fileImports = new Map()
+
+    let contents
+    try {
+      contents = await fs.readFile(filePath)
+    } catch (error) {
+      if (error && error.code === 'ENOENT') {
+        throw new PundleError('WORK', 'TRANSFORM_FAILED', `Cannot find file '${filePath}'`)
+      }
+      throw error
+    }
 
     const transformers = this.getComponents('file-transformer')
     let transformed: { contents: string | Buffer, sourceMap: ?Object | false } = { contents, sourceMap: null }

@@ -54,7 +54,6 @@ export type TransformRequest = {
   meta: ImportMeta,
   format: string,
   filePath: string,
-  contents: Buffer | string,
 }
 export type TransformResult = {|
   meta: ImportMeta,

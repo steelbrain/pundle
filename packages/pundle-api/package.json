@@ -15,6 +15,7 @@
     "node-murmurhash": "^2.1.0",
     "p-map": "^1.2.0",
     "resolve-from": "^4.0.0",
+    "sb-fs": "^3.0.0",
     "toposort": "^2.0.2",
     "yup": "^0.26.2"
   },
