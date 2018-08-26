@@ -33,7 +33,9 @@ function createComponent({
   return createFileResolver({
     name: manifest.name,
     version: manifest.version,
-    async callback({ request, requestFile, context, meta }) {
+    async callback({ request, requestFile, context, meta: givenMeta }) {
+      const meta = { ...givenMeta }
+
       if (external.length > 0 && request[0] !== '.') {
         const requestModule = request.split('/')[0]
         if (external.includes(requestModule)) {
@@ -56,7 +58,8 @@ function createComponent({
             basedir: requestFile ? path.dirname(requestFile) : context.config.rootDirectory,
             extensions: flatten(Object.values(formats)),
             /* eslint-disable no-param-reassign */
-            packageFilter(packageManifest) {
+            packageFilter(packageManifest, packageDirectory) {
+              meta.directory = path.dirname(packageDirectory)
               mainFields.forEach(function(mainField) {
                 if (typeof packageManifest[mainField] === 'string') {
                   packageManifest.main = packageManifest[mainField]

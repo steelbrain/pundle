@@ -18,6 +18,7 @@ export type Loc = {
   col: number,
 }
 export type ImportMeta = {
+  directory?: string,
   specified: boolean,
 }
 export type ImportResolved = {
