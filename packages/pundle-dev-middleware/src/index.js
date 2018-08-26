@@ -58,6 +58,7 @@ async function getPundleDevMiddleware(options: Payload) {
       },
     },
   })
+  await pundle.initialize()
 
   let firstTime = true
   let generated = null

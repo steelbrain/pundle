@@ -41,7 +41,6 @@ export async function getPundle({
   })
   context.config = await loadConfig(context)
   const master = new Master(context)
-  await master.initialize()
   return master
 }
 export { getWatcher }

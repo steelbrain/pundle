@@ -72,6 +72,7 @@ export default class Master implements PundleWorker {
       this.cache.load(),
       ...this.getAllWorkers().map(async worker => {
         if (worker.isAlive()) return
+
         try {
           await worker.spawn()
         } catch (error) {

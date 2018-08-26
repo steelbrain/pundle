@@ -175,6 +175,8 @@ async function main() {
 
   try {
     if (!isDev) {
+      await pundle.initialize()
+
       if (isWatch) {
         log(`Watching (${headerText})`)
         const { job, initialCompile } = await getWatcher({
