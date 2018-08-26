@@ -125,7 +125,6 @@ export default async function getWatcher({
     await initialCompilePromise
 
     const currentChanged = Array.from(changed.values())
-    const changedImports = new Set(currentChanged.map(item => item.key))
     changed.clear()
 
     const graph = getDependencyOrder(currentChanged.map(item => item.file), job.files)
@@ -135,19 +134,16 @@ export default async function getWatcher({
 
     try {
       const locks = new Set()
-      try {
-        await pMap(currentChanged, ({ file: request }) =>
-          pundle.transformFileTree({
-            job,
-            locks,
-            request,
-            tickCallback,
-            changedImports,
-          }),
-        )
-      } catch (error) {
-        throw error
-      }
+      const changedImports = new Set(currentChanged.map(item => item.key))
+      await pMap(currentChanged, ({ file: request }) =>
+        pundle.transformFileTree({
+          job,
+          locks,
+          request,
+          tickCallback,
+          changedImports,
+        }),
+      )
       queue.add(() => generate({ context, job, changed: currentChanged.map(item => item.file) })).catch(pundle.report)
     } catch (error) {
       pundle.report(error)
