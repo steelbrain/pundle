@@ -179,7 +179,7 @@ async function main() {
 
       if (isWatch) {
         log(`Watching (${headerText})`)
-        const { job, initialCompile } = await getWatcher({
+        const { job, compile } = await getWatcher({
           ...watchConfig,
           pundle,
           generate({ changed }) {
@@ -191,7 +191,7 @@ async function main() {
           },
         })
         try {
-          await initialCompile()
+          await compile()
         } catch (error) {
           await pundle.report(error)
         }

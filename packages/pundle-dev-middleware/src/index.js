@@ -62,8 +62,9 @@ async function getPundleDevMiddleware(options: Payload) {
   })
   await pundle.initialize()
 
-  let firstTime = true
   let generated = null
+  let firstTimeCompiling = true
+  let firstTimeGenerating = true
   const filesChanged: Set<ImportResolved> = new Set()
   const filesChangedHMR: Set<ImportResolved> = new Set()
   const hmrConnectedClients = new Set()
@@ -151,8 +152,8 @@ async function getPundleDevMiddleware(options: Payload) {
   async function generateJobAsync({ job, changed }) {
     const transformedJob = await pundle.transformJob(job)
     const chunks = Array.from(transformedJob.chunks.values())
-    if (firstTime) {
-      firstTime = false
+    if (firstTimeGenerating) {
+      firstTimeGenerating = false
       await regenerateUrlCache({ job: transformedJob, chunks })
       return
     }
@@ -171,7 +172,7 @@ async function getPundleDevMiddleware(options: Payload) {
     return generated
   }
 
-  const { queue, job, initialCompile } = await getWatcher({
+  const { queue, job, compile } = await getWatcher({
     ...(options.watchConfig || {}),
     pundle,
     async generate({ changed }) {
@@ -185,7 +186,7 @@ async function getPundleDevMiddleware(options: Payload) {
       }
     },
     tick({ newFile }) {
-      if (options.hmr && !firstTime) {
+      if (options.hmr && !firstTimeGenerating) {
         filesChangedHMR.add({ format: newFile.format, filePath: newFile.filePath, meta: newFile.meta })
       }
     },
@@ -193,7 +194,8 @@ async function getPundleDevMiddleware(options: Payload) {
 
   try {
     if (!options.lazy) {
-      await initialCompile()
+      await compile()
+      firstTimeCompiling = false
     }
   } catch (_) {
     // Pre-compile if you can, otherwise move on
@@ -212,7 +214,10 @@ async function getPundleDevMiddleware(options: Payload) {
   router.get(
     `${publicPath}*`,
     asyncRoute(async function(req, res, next) {
-      await initialCompile()
+      if (firstTimeCompiling) {
+        await compile()
+        firstTimeCompiling = false
+      }
       let { pathname } = url.parse(req.url)
 
       if (!pathname) return

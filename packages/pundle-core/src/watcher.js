@@ -8,7 +8,6 @@ import {
   getChunk,
   getFileKey,
   getChunkKey,
-  getDependencyOrder,
   type Chunk,
   type Context,
   type ImportResolved,
@@ -20,18 +19,6 @@ import getFileWatcher from './file-watcher'
 import type Master from './master'
 import type { WatchOptions } from './types'
 
-function getWeightForChangedItem({ event, key }, graph) {
-  let eventWeight = 0
-  if (event === 'add') {
-    eventWeight = 100000
-  } else if (event === 'delete') {
-    eventWeight = 200000
-  }
-  const indexWeight = graph.indexOf(key)
-
-  return eventWeight + indexWeight
-}
-
 // Dangerous territory beyond this point. May God help us all
 export default async function getWatcher({
   adapter = 'chokidar',
@@ -42,13 +29,15 @@ export default async function getWatcher({
   job: Job,
   queue: Object,
   context: Context,
-  initialCompile(): Promise<void>,
+  compile(): Promise<void>,
   dispose(): void,
 }> {
   const job = new Job()
   const { context } = pundle
   const queue = new PromiseQueue()
-  let initialCompilePromise = null
+
+  let isFirstCompile = true
+  let lastProcessError = null
 
   const configChunks = (await Promise.all(
     context.config.entry.map(entry =>
@@ -105,6 +94,20 @@ export default async function getWatcher({
     }
   }
 
+  async function compile(changedImports = new Set()) {
+    const locks = new Set()
+    await pMap(configChunks, chunk =>
+      pundle.transformChunk({
+        job,
+        chunk,
+        locks,
+        tickCallback,
+        changedImports,
+      }),
+    )
+    isFirstCompile = false
+  }
+
   const changed = new Map()
   const onChange = async (event, filePath, newPath) => {
     job.files.forEach(function(file) {
@@ -120,30 +123,28 @@ export default async function getWatcher({
   }
 
   queue.onIdle(async () => {
-    if (!generate || !changed.size || !initialCompilePromise) return
-
-    await initialCompilePromise
-
-    const currentChanged = Array.from(changed.values())
-    changed.clear()
-
-    const graph = getDependencyOrder(currentChanged.map(item => item.file), job.files)
-    currentChanged.sort(function(a, b) {
-      return getWeightForChangedItem(b, graph) - getWeightForChangedItem(a, graph)
+    if (!generate || isFirstCompile || (!changed.size && !lastProcessError)) {
+      return
+    }
+    changed.forEach(function(item) {
+      if (item.event === 'delete') {
+        job.files.delete(item.file)
+      }
     })
 
+    const currentChanged = Array.from(changed.values())
+
+    changed.clear()
+    lastProcessError = null
+
     try {
-      const locks = new Set()
       const changedImports = new Set(currentChanged.map(item => item.key))
-      await pMap(currentChanged, ({ file: request }) =>
-        pundle.transformFileTree({
-          job,
-          locks,
-          request,
-          tickCallback,
-          changedImports,
-        }),
-      )
+      try {
+        await compile(changedImports)
+      } catch (error) {
+        lastProcessError = error
+        throw error
+      }
       queue.add(() => generate({ context, job, changed: currentChanged.map(item => item.file) })).catch(pundle.report)
     } catch (error) {
       pundle.report(error)
@@ -160,22 +161,7 @@ export default async function getWatcher({
     job,
     queue,
     context,
-    initialCompile: () => {
-      if (!initialCompilePromise) {
-        initialCompilePromise = pMap(configChunks, chunk =>
-          pundle.transformChunk({
-            job,
-            chunk,
-            locks: new Set(),
-            tickCallback,
-          }),
-        ).catch(error => {
-          initialCompilePromise = null
-          throw error
-        })
-      }
-      return initialCompilePromise
-    },
+    compile,
     dispose() {
       watcher.close()
     },
