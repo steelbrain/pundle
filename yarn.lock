@@ -4799,6 +4799,10 @@ node-gyp@^3.8.0:
     tar "^2.0.0"
     which "1"
 
+node-murmurhash@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/node-murmurhash/-/node-murmurhash-2.1.0.tgz#26939a971056b77f8132e35715b316d6eeebc040"
+
 node-pre-gyp@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.10.0.tgz#6e4ef5bb5c5203c6552448828c852c40111aac46"

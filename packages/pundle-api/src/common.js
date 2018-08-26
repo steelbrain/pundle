@@ -3,7 +3,7 @@
 import path from 'path'
 import globrex from 'globrex'
 import resolveFrom from 'resolve-from'
-import Imurmurhash from 'imurmurhash'
+import murmurHash from 'node-murmurhash'
 
 import type Context from './context'
 import type { Loc, Chunk, ImportResolved, ImportMeta } from './types'
@@ -12,10 +12,7 @@ export const NEWLINE_REGEXP = /\r\n|[\n\r\u2028\u2029]/
 export const DEFAULT_IMPORT_META = { specified: true }
 
 export function getStringHash(str: string): string {
-  return new Imurmurhash()
-    .hash(str)
-    .result()
-    .toString()
+  return murmurHash(Buffer.from(str, 'ascii'))
 }
 
 export function getUniqueHash(item: ImportResolved | Chunk): string {
