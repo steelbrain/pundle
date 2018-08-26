@@ -36,7 +36,7 @@ export type Chunk = {
   root: boolean,
   format: string,
   label: ?string,
-  entry: ?string,
+  filePath: ?string,
   imports: Array<ImportResolved>,
 }
 
@@ -54,7 +54,6 @@ export type TransformRequest = {
   meta: ImportMeta,
   format: string,
   filePath: string,
-  contents: Buffer | string,
 }
 export type TransformResult = {|
   meta: ImportMeta,

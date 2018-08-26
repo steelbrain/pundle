@@ -28,12 +28,12 @@ export function topologicallySortChunks(chunks: Array<Chunk>, job: Job): Array<C
     // NOTE: Fix for when an item is not required or requires anything else
     graph.push([chunkHash, null])
     chunksMap[chunkHash] = chunk
-    if (chunk.entry) {
+    if (chunk.filePath) {
       iterateImports(
         {
           meta: chunk.meta,
           format: chunk.format,
-          filePath: chunk.entry,
+          filePath: chunk.filePath,
         },
         chunkHash,
       )

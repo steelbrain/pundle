@@ -1,6 +1,5 @@
 // @flow
 
-import fs from 'sb-fs'
 import type {
   PundleWorker,
   Context,
@@ -35,7 +34,6 @@ export default class Worker implements PundleWorker {
       meta,
       format,
       filePath,
-      contents: await fs.readFile(filePath),
     })
 
     return {

@@ -1,6 +1,5 @@
 // @flow
 
-import path from 'path'
 import pMap from 'p-map'
 import PromiseQueue from 'sb-promise-queue'
 import differenceBy from 'lodash/differenceBy'
@@ -18,7 +17,7 @@ import {
 import getFileWatcher from './file-watcher'
 
 import type Master from './master'
-import type { WatchOptions, InternalChangedFiles as ChangedFiles } from './types'
+import type { WatchOptions } from './types'
 
 // Dangerous territory beyond this point. May God help us all
 export default async function getWatcher({
@@ -30,14 +29,15 @@ export default async function getWatcher({
   job: Job,
   queue: Object,
   context: Context,
-  initialCompile(): Promise<void>,
+  compile(): Promise<void>,
   dispose(): void,
 }> {
   const job = new Job()
   const { context } = pundle
   const queue = new PromiseQueue()
-  let lastProcessError = null
-  let initialCompilePromise = null
+
+  let isFirstCompile = true
+  let needsRecompilation = false
 
   const configChunks = (await Promise.all(
     context.config.entry.map(entry =>
@@ -94,90 +94,73 @@ export default async function getWatcher({
     }
   }
 
-  const changed: ChangedFiles = new Map()
-  // eslint-disable-next-line no-unused-vars
-  const onChange = async (event, filePath, newPath) => {
-    if (event === 'delete') {
-      job.files.forEach((file, key) => {
-        if (file.filePath === filePath) {
-          job.files.delete(key)
-        }
-      })
+  let lastChangedImports = new Set()
+  async function compile({ changedImports = new Set() }: { changedImports?: Set<string> } = {}) {
+    if (!needsRecompilation && !isFirstCompile) {
+      return
     }
+    const oldIsFirstCompile = isFirstCompile
+    isFirstCompile = false
+    needsRecompilation = false
 
-    function processChunk(chunk: Chunk, force: boolean) {
-      if (chunk.entry && (chunk.entry === filePath || force)) {
-        const chunkImport = { format: chunk.format, filePath: chunk.entry, meta: chunk.meta }
-        changed.set(getFileKey(chunkImport), chunkImport)
-      }
-      if (chunk.imports.length) {
-        chunk.imports.forEach(chunkImport => {
-          if (chunkImport.filePath === filePath || force) {
-            changed.set(getFileKey(chunkImport), chunkImport)
-          }
-        })
-      }
-    }
-    function processFile(file: ImportTransformed) {
-      if (file.filePath !== filePath && !file.imports.some(item => item.filePath === filePath)) return
+    const locks = new Set()
+    const changedImportsCombined = new Set([...changedImports, ...lastChangedImports])
 
-      const fileImport = { format: file.format, filePath: file.filePath, meta: file.meta }
-      const fileKey = getFileKey(fileImport)
-      if (changed.has(fileKey)) return
+    try {
+      const changedImportsRef = new Set(changedImportsCombined)
+      await pMap(configChunks, chunk =>
+        pundle.transformChunk({
+          job,
+          chunk,
+          locks,
+          tickCallback,
+          changedImports: changedImportsRef,
+        }),
+      )
+      lastChangedImports.clear()
+    } catch (error) {
+      isFirstCompile = oldIsFirstCompile
+      needsRecompilation = !isFirstCompile
+      lastChangedImports = changedImportsCombined
 
-      changed.set(fileKey, fileImport)
-      file.chunks.forEach(chunk => processChunk(chunk, false))
-    }
-
-    configChunks.forEach(chunk => processChunk(chunk, false))
-    job.files.forEach(file => {
-      file.chunks.forEach(chunk => {
-        processChunk(chunk, false)
-      })
-      processFile(file)
-    })
-
-    if (
-      event === 'modify' &&
-      lastProcessError &&
-      filePath.endsWith('package.json') &&
-      filePath === path.join(context.config.rootDirectory, 'package.json')
-    ) {
-      // Root level package.json modified, an unresolved resolved could have been npm installed?
-      lastProcessError = null
-      configChunks.forEach(chunk => processChunk(chunk, true))
+      throw error
     }
   }
 
+  const changed = new Map()
+  const onChange = async (event, filePath, newPath) => {
+    job.files.forEach(function(file) {
+      if (file.filePath === filePath || file.filePath === newPath) {
+        const key = getFileKey(file)
+        changed.set(key, {
+          key,
+          event,
+          file,
+        })
+      }
+    })
+  }
+
   queue.onIdle(async () => {
-    if (!generate || !changed.size || !initialCompilePromise) return
+    if (!generate || isFirstCompile || (!changed.size && !needsRecompilation)) {
+      return
+    }
+    changed.forEach(function(item) {
+      if (item.event === 'delete') {
+        job.files.delete(item.file)
+      }
+    })
 
-    await initialCompilePromise
-
-    const currentChanged = new Map(changed)
-    const currentChangedVals = Array.from(currentChanged.values())
+    const currentChanged = Array.from(changed.values())
     changed.clear()
 
     try {
-      const locks = new Set()
-      lastProcessError = null
-      try {
-        await Promise.all(
-          currentChangedVals.map(request =>
-            pundle.transformFileTree({
-              job,
-              locks,
-              request,
-              tickCallback,
-              changedImports: currentChanged,
-            }),
-          ),
-        )
-      } catch (error) {
-        lastProcessError = error
-        throw error
-      }
-      queue.add(() => generate({ context, job, changed: currentChangedVals })).catch(pundle.report)
+      const changedImports = new Set(currentChanged.map(item => item.key))
+      needsRecompilation = true
+      await compile({
+        changedImports,
+      })
+      queue.add(() => generate({ context, job, changed: currentChanged.map(item => item.file) })).catch(pundle.report)
     } catch (error) {
       pundle.report(error)
     }
@@ -193,22 +176,7 @@ export default async function getWatcher({
     job,
     queue,
     context,
-    initialCompile: () => {
-      if (!initialCompilePromise) {
-        initialCompilePromise = pMap(configChunks, chunk =>
-          pundle.transformChunk({
-            job,
-            chunk,
-            locks: new Set(),
-            tickCallback,
-          }),
-        ).catch(error => {
-          initialCompilePromise = null
-          throw error
-        })
-      }
-      return initialCompilePromise
-    },
+    compile,
     dispose() {
       watcher.close()
     },

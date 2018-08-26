@@ -11,7 +11,7 @@ function createComponent() {
     name: 'pundle-chunk-generator-static',
     version: manifest.version,
     async callback({ chunk, job, context }) {
-      if (chunk.format !== 'css' || !chunk.entry) return null
+      if (chunk.format !== 'css' || !chunk.filePath) return null
 
       const file = job.files.get(getFileKey(chunk))
       invariant(file, 'Entry for chunk not found in generator-static')
