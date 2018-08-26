@@ -1,5 +1,6 @@
 // @flow
 
+import os from 'os'
 import url from 'url'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
@@ -41,6 +42,7 @@ async function getPundleDevMiddleware(options: Payload) {
   if (publicPath.endsWith('/')) {
     publicPath = publicPath.slice(0, -1)
   }
+  const pundleOptions = pick(options, PUNDLE_OPTIONS)
 
   let configEntry = get(options, 'config.entry', []).slice()
   if (options.hmr) {
@@ -48,13 +50,13 @@ async function getPundleDevMiddleware(options: Payload) {
   }
 
   const pundle = await getPundle({
-    ...pick(options, PUNDLE_OPTIONS),
+    ...pundleOptions,
     config: {
       ...get(options, 'config', {}),
       entry: configEntry,
       output: {
-        formats: await getOutputFormats(pick(options, PUNDLE_OPTIONS), publicPath),
-        rootDirectory: '/tmp',
+        formats: await getOutputFormats(pundleOptions, publicPath),
+        rootDirectory: os.tmpdir(),
       },
     },
   })
