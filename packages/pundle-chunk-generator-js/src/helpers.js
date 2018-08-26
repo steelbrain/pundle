@@ -28,12 +28,12 @@ export function getContentForOutput(
     }
   }
 
-  if (chunk.entry) {
+  if (chunk.filePath) {
     iterateImports(
       {
         meta: chunk.meta,
         format: chunk.format,
-        filePath: chunk.entry,
+        filePath: chunk.filePath,
       },
       !!chunk.imports.length,
     )

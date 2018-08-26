@@ -38,7 +38,7 @@ function createComponent() {
       invariant(file, 'entry file not found')
 
       const chunks = Array.from(job.chunks.values()).filter(
-        i => i.root && i.entry !== chunk.entry && i.format !== chunk.format,
+        i => i.root && i.filePath !== chunk.filePath && i.format !== chunk.format,
       )
 
       const contents = typeof file.contents === 'string' ? file.contents : file.contents.toString()

@@ -22,7 +22,7 @@ import {
 
 import Cache from '../cache'
 import WorkerDelegate from '../worker/delegate'
-import type { InternalChangedFiles as ChangedFiles } from '../types'
+import type { InternalChangedFiles as ChangedImports } from '../types'
 
 type TickCallback = (oldFile: ?ImportTransformed, newFile: ImportTransformed) => Promise<void>
 
@@ -144,7 +144,7 @@ export default class Master implements PundleWorker {
     chunk: Chunk,
     locks: Set<string>,
     tickCallback?: ?TickCallback,
-    changedImports?: ChangedFiles,
+    changedImports?: ChangedImports,
   }): Promise<void> {
     const lockKey = getChunkKey(chunk)
     if (locks.has(lockKey)) {
@@ -191,7 +191,7 @@ export default class Master implements PundleWorker {
     locks: Set<string>,
     request: ImportResolved,
     tickCallback?: ?TickCallback,
-    changedImports?: ChangedFiles,
+    changedImports?: ChangedImports,
   }): Promise<void> {
     const lockKey = getFileKey(request)
     const fileChanged = changedImports.has(lockKey)

@@ -18,7 +18,7 @@ import {
 import getFileWatcher from './file-watcher'
 
 import type Master from './master'
-import type { WatchOptions, InternalChangedFiles as ChangedFiles } from './types'
+import type { WatchOptions, InternalChangedFiles as ChangedImports } from './types'
 
 // Dangerous territory beyond this point. May God help us all
 export default async function getWatcher({
@@ -94,59 +94,17 @@ export default async function getWatcher({
     }
   }
 
-  const changed: ChangedFiles = new Map()
-  // eslint-disable-next-line no-unused-vars
+  const changed = new Map()
   const onChange = async (event, filePath, newPath) => {
-    if (event === 'delete') {
-      job.files.forEach((file, key) => {
-        if (file.filePath === filePath) {
-          job.files.delete(key)
-        }
-      })
-    }
-
-    function processChunk(chunk: Chunk, force: boolean) {
-      if (chunk.entry && (chunk.entry === filePath || force)) {
-        const chunkImport = { format: chunk.format, filePath: chunk.entry, meta: chunk.meta }
-        changed.set(getFileKey(chunkImport), chunkImport)
-      }
-      if (chunk.imports.length) {
-        chunk.imports.forEach(chunkImport => {
-          if (chunkImport.filePath === filePath || force) {
-            changed.set(getFileKey(chunkImport), chunkImport)
-          }
+    job.files.forEach(function(file) {
+      if (file.filePath === filePath || file.filePath === newPath) {
+        changed.set(getFileKey(file), {
+          event,
+          path: newPath || filePath,
+          file,
         })
       }
-    }
-    function processFile(file: ImportTransformed) {
-      if (file.filePath !== filePath && !file.imports.some(item => item.filePath === filePath)) return
-
-      const fileImport = { format: file.format, filePath: file.filePath, meta: file.meta }
-      const fileKey = getFileKey(fileImport)
-      if (changed.has(fileKey)) return
-
-      changed.set(fileKey, fileImport)
-      file.chunks.forEach(chunk => processChunk(chunk, false))
-    }
-
-    configChunks.forEach(chunk => processChunk(chunk, false))
-    job.files.forEach(file => {
-      file.chunks.forEach(chunk => {
-        processChunk(chunk, false)
-      })
-      processFile(file)
     })
-
-    if (
-      event === 'modify' &&
-      lastProcessError &&
-      filePath.endsWith('package.json') &&
-      filePath === path.join(context.config.rootDirectory, 'package.json')
-    ) {
-      // Root level package.json modified, an unresolved resolved could have been npm installed?
-      lastProcessError = null
-      configChunks.forEach(chunk => processChunk(chunk, true))
-    }
   }
 
   queue.onIdle(async () => {
@@ -156,6 +114,7 @@ export default async function getWatcher({
 
     const currentChanged = new Map(changed)
     const currentChangedVals = Array.from(currentChanged.values())
+    console.log('currentChangedVals', currentChangedVals)
     changed.clear()
 
     try {

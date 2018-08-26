@@ -46,7 +46,7 @@ function createComponent() {
         }
         contents.push(fileContents)
       }
-      if (chunk.entry && chunk.root) {
+      if (chunk.filePath && chunk.root) {
         const chunkEntryId = getUniqueHash(chunk)
         contents.push(
           `${context.config.target === 'node' ? 'module.exports = ' : ''}sbPundleModuleGenerate('$root')(${JSON.stringify(

@@ -271,8 +271,8 @@ export default class Context {
 
       if (!generated) {
         const ps = []
-        if (chunk.entry) {
-          ps.push(`with entry '${chunk.entry}'`)
+        if (chunk.filePath) {
+          ps.push(`with entry '${chunk.filePath}'`)
         }
         if (chunk.label) {
           ps.push(`with label '${chunk.label}'`)
