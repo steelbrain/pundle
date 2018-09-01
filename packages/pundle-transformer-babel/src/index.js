@@ -5,22 +5,28 @@ import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
 
 import manifest from '../package.json'
 
-const DEFAULT_EXCLUDE = [/node_modules/]
 const ALLOWED_VERSIONS = [6, 7]
 
 function createComponent({
-  exclude = DEFAULT_EXCLUDE,
-  processOutsideProjectRoot = false,
+  exclude: givenExclude,
+  ignoreInNodeModules = false,
+  ignoreOutsideProjectRoot = true,
   options = {},
   version,
 }: {
   exclude?: Array<string | RegExp>,
-  processOutsideProjectRoot?: boolean,
+  ignoreInNodeModules?: boolean,
+  ignoreOutsideProjectRoot?: boolean,
   options?: Object,
   version: 6 | 7,
 } = {}) {
   if (!ALLOWED_VERSIONS.includes(version)) {
     throw new Error(`options.version is required to be one of: ${ALLOWED_VERSIONS.join(', ')} got: ${version}`)
+  }
+
+  const exclude = Array.from(givenExclude || []).filter(Boolean)
+  if (ignoreInNodeModules) {
+    exclude.push(/node_modules/)
   }
 
   return createFileTransformer({
@@ -34,7 +40,7 @@ function createComponent({
         // Excluded
         return null
       }
-      if (!processOutsideProjectRoot && !file.filePath.startsWith(context.config.rootDirectory)) {
+      if (ignoreOutsideProjectRoot && !file.filePath.startsWith(context.config.rootDirectory)) {
         // Outside project root
         return null
       }
