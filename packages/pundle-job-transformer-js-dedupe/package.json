@@ -1,0 +1,22 @@
+{
+  "name": "pundle-job-transformer-js-dedupe",
+  "version": "3.0.0-beta8",
+  "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steelbrain/pundle.git"
+  },
+  "main": "lib/index.js",
+  "flow:main": "src/index.js",
+  "scripts": {},
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "pundle-api": "3.0.0-beta8"
+  },
+  "author": "steelbrain",
+  "license": "MIT",
+  "devDependencies": {
+    "pundle-api": "^3.0.0-beta8"
+  }
+}

@@ -21,10 +21,6 @@ function createComponent({ name = '_common_' }: { name?: string } = {}) {
     name: manifest.name,
     version: manifest.version,
     async callback({ context, job }) {
-      if (context.config.target === 'node') {
-        return null
-      }
-
       const chunkToFiles = new Map()
 
       job.chunks.forEach(chunk => {
