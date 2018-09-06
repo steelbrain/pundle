@@ -1,6 +1,6 @@
 {
   "name": "pundle-transformer-babel",
-  "version": "3.0.0-beta8",
+  "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "scripts": {},
   "dependencies": {
     "nanomatch": "^1.2.13",
-    "pundle-api": "^3.0.0-beta8"
+    "pundle-api": "^3.0.0-beta9"
   },
   "author": "steelbrain",
   "license": "MIT"

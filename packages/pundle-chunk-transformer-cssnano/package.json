@@ -1,6 +1,6 @@
 {
   "name": "pundle-chunk-transformer-cssnano",
-  "version": "3.0.0-beta8",
+  "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   "dependencies": {
     "cssnano": "^4.0.5",
     "postcss": "^7.0.2",
-    "pundle-api": "^3.0.0-beta8"
+    "pundle-api": "^3.0.0-beta9"
   },
   "author": "steelbrain",
   "license": "MIT"
