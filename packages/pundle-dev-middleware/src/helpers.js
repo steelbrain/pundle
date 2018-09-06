@@ -6,12 +6,14 @@ import { getPundleConfig } from 'pundle-core'
 import { getFileKey, type Job, type Chunk, type ImportResolved } from 'pundle-api'
 
 export async function getOutputFormats(pundleOptions: Object, publicPath: string): { [string]: string | false } {
+  invariant(publicPath.length, 'publicPath must never be empty')
+
   const pundleConfig = await getPundleConfig(pundleOptions)
   const { formats } = pundleConfig.output
 
   const newFormats = {}
   Object.keys(formats).forEach(function(key) {
-    const value = formats[key]
+    const value: string | false = formats[key]
     if (value) {
       newFormats[key] = path.join(publicPath, value)
     } else {

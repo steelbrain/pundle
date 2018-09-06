@@ -39,7 +39,7 @@ async function getPundleDevMiddleware(options: Payload) {
   const router = new Router()
 
   let { publicPath = '/' } = options
-  if (publicPath.endsWith('/')) {
+  if (publicPath.length > 1 && publicPath.endsWith('/')) {
     publicPath = publicPath.slice(0, -1)
   }
   const pundleOptions = pick(options, PUNDLE_OPTIONS)
@@ -225,10 +225,6 @@ async function getPundleDevMiddleware(options: Payload) {
 
       if (!pathname) return
 
-      if (pathname.startsWith('/')) {
-        pathname = pathname.slice(1)
-      }
-
       if (pathname.endsWith('.pundle.hmr')) {
         res.write(JSON.stringify({ type: 'status', enabled: !!options.hmr }))
         if (!options.hmr) {
@@ -244,7 +240,7 @@ async function getPundleDevMiddleware(options: Payload) {
         return
       }
 
-      if (pathname.endsWith('/') || pathname === '') {
+      if (pathname.endsWith('/')) {
         pathname = `${pathname}index`
       }
 
