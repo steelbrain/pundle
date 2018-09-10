@@ -149,6 +149,7 @@ async function main() {
     Environment variables Pundle responds to:
       NODE_ENV                    Tells Pundle to use debug/production behavior
       PUNDLE_DEBUG=1              Prints detailed stack traces to console (set by --debug opt)
+      PUNDLE_DEBUG_DEDUPE=1       Prints detailed information about deduped packages
       PUNDLE_DEBUG_RESOLVER=1     Prints from/to resolution details for debugging large bundles
     `)
     process.exit(1)
