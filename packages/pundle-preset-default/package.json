@@ -18,6 +18,7 @@
     "pundle-chunk-transformer-cssnano": "^3.0.0-beta9",
     "pundle-chunk-transformer-uglify": "^3.0.0-beta9",
     "pundle-job-transformer-js-common": "^3.0.0-beta9",
+    "pundle-job-transformer-js-dedupe": "^3.0.0-beta9",
     "pundle-reporter-cli": "^3.0.0-beta9",
     "pundle-resolver-default": "^3.0.0-beta9",
     "pundle-transformer-babel": "^3.0.0-beta9",

@@ -71,7 +71,7 @@ function getPresetComponents({
     html?: boolean,
   },
   optimize?: {
-    js?: boolean | { uglify?: boolean | Object },
+    js?: boolean | { uglify?: boolean | Object, common?: boolean | Object, dedupe?: boolean | Object },
     css?: boolean | { cssnano?: boolean | Object },
     html?: boolean,
   },
@@ -258,14 +258,26 @@ function getPresetComponents({
     components.push(require('pundle-chunk-generator-html')())
   }
   components.push(require('pundle-chunk-generator-static')())
+
   if (optimizeJS) {
-    components.push(require('pundle-job-transformer-js-common')())
-    components.push(
-      require('pundle-chunk-transformer-uglify')({
-        uglifier: 'terser',
-        ...(optimizeJS && optimizeJS.uglify),
-      }),
-    )
+    if (typeof optimizeJS === 'boolean' || optimizeJS.common) {
+      components.push(require('pundle-job-transformer-js-common')())
+    }
+    if (typeof optimizeJS === 'boolean' || optimizeJS.uglify) {
+      components.push(
+        require('pundle-chunk-transformer-uglify')({
+          uglifier: 'terser',
+          ...(optimizeJS && optimizeJS.uglify),
+        }),
+      )
+    }
+    if (typeof optimizeJS === 'boolean' || optimizeJS.dedupe) {
+      components.push(
+        require('pundle-job-transformer-js-dedupe')({
+          ...(optimizeJS && optimizeJS.dedupe),
+        }),
+      )
+    }
   }
   if (optimizeCSS) {
     components.push(
