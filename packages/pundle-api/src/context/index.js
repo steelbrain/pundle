@@ -139,7 +139,7 @@ export default class Context {
         // TODO: Inject loc into errors?
         // eslint-disable-next-line no-unused-vars
         resolve(request: string, loc: ?Loc = null, specified: boolean = true) {
-          return worker.resolve({ request, requestFile: filePath, ignoredResolvers: [], meta: { specified } })
+          return worker.resolve({ request, requestFile: filePath, ignoredResolvers: [], meta: { ...meta, specified } })
         },
         async addImport(fileImport) {
           try {
