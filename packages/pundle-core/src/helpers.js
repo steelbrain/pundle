@@ -1,7 +1,5 @@
 // @flow
 
-/* eslint-disable no-param-reassign */
-
 import get from 'lodash/get'
 import set from 'lodash/set'
 
