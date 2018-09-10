@@ -9,7 +9,7 @@ const ALLOWED_VERSIONS = [6, 7]
 
 function createComponent({
   exclude: givenExclude,
-  ignoreInNodeModules = false,
+  ignoreInNodeModules = true,
   ignoreOutsideProjectRoot = true,
   options = {},
   version,

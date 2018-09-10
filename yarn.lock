@@ -2773,6 +2773,10 @@ escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
 
+escape-regexp@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/escape-regexp/-/escape-regexp-0.0.1.tgz#f44bda12d45bbdf9cb7f862ee7e4827b3dd32254"
+
 escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
@@ -6374,6 +6378,10 @@ sb-memoize@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/sb-memoize/-/sb-memoize-1.0.2.tgz#128375c62ddb9cc4ffa905d0c5a597c19baead8e"
 
+sb-memoize@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/sb-memoize/-/sb-memoize-2.1.0.tgz#f68d92a9a7afd95c76403d316002e91008b2ea2f"
+
 sb-npm-path@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/sb-npm-path/-/sb-npm-path-2.0.0.tgz#0f6cc2cf371debca7d936ed76b7d4c3cc1eb3d58"
@@ -6404,7 +6412,7 @@ scss-tokenizer@^0.2.3:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
 
-"semver@2.x || 3.x || 4 || 5":
+"semver@2.x || 3.x || 4 || 5", semver@^5.5.1:
   version "5.5.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.1.tgz#7dfdd8814bdb7cabc7be0fb1d734cfb66c940477"
 

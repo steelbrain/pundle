@@ -10,8 +10,12 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
+    "escape-regexp": "^0.0.1",
+    "lodash": "^4.17.10",
     "p-map": "^1.2.0",
-    "sb-fs": "^3.0.0"
+    "sb-fs": "^3.0.0",
+    "sb-memoize": "^2.1.0",
+    "semver": "^5.5.1"
   },
   "peerDependencies": {
     "pundle-api": "3.0.0-beta8"

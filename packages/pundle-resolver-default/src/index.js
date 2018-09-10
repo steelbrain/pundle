@@ -30,6 +30,8 @@ function createComponent({
     throw new Error("options.mainFields must not include 'browser'")
   }
 
+  const DEBUG = process.env.PUNDLE_DEBUG_RESOLVER === '1'
+
   return createFileResolver({
     name: manifest.name,
     version: manifest.version,
@@ -78,7 +80,7 @@ function createComponent({
 
       if (!response) return null
 
-      if (process.env.PUNDLE_DEBUG_RESOLVER === '1') {
+      if (DEBUG) {
         console.log('From', requestFile, 'processed', request, 'to', response)
       }
 
