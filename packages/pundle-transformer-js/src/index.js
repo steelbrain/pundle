@@ -51,20 +51,6 @@ function createComponent() {
 
       traverse(ast, {
         ...pluginRemoveDeadNodes,
-        ImportDeclaration({ node }) {
-          const { source } = node
-          if (!t.isStringLiteral(source)) return
-          promises.push(
-            resolve(source.value, source.loc, !!node.specifiers.length).then(givenResolved => {
-              if (givenResolved.filePath === false) return null
-              const resolved = { ...givenResolved, format: 'js' }
-
-              source.value = getUniqueHash(resolved)
-              return addImport(resolved)
-            }),
-          )
-        },
-        // TODO: Support module.hot.accept etc in resolutions
         CallExpression(path) {
           const { node } = path
           const { callee } = node
