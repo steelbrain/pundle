@@ -1,7 +1,6 @@
 // @flow
 
 import * as t from '@babel/types'
-import invariant from 'assert'
 import traverse from '@babel/traverse'
 import generate from '@babel/generator'
 import pluginCommonJSModules from '@babel/plugin-transform-modules-commonjs'
@@ -13,18 +12,12 @@ import { getName, getStringFromLiteralOrTemplate } from './helpers'
 import manifest from '../package.json'
 import pluginRemoveDeadNodes from './plugin-remove-dead-nodes'
 import getPluginReplaceProcess from './plugin-replace-process'
-
-const INJECTIONS = new Map([['timers', ['setImmediate', 'clearImmediate']], ['buffer', ['Buffer']], ['process', 'process']])
-const INJECTIONS_NAMES = new Map()
-INJECTIONS.forEach(function(names, sourceModule) {
-  ;[].concat(names).forEach(function(name) {
-    INJECTIONS_NAMES.set(name, sourceModule)
-  })
-})
+import getPluginInjectNodeGlobals from './plugin-inject-node-globals'
 
 const transformAsync = promisify(transform)
 
-function createComponent() {
+// $FlowFixMe: Flow doesn't like mixing booleans and a string in default parameters
+function createComponent({ injectNodeGlobals = 'auto' }: { injectNodeGlobals: true | false | 'auto' } = {}) {
   return createFileTransformer({
     name: manifest.name,
     version: manifest.version,
@@ -32,8 +25,15 @@ function createComponent() {
     async callback({ file, resolve, context, addImport, addChunk }) {
       if (file.format !== 'js') return null
 
+      const { target } = context.config
+
+      const plugins = [getPluginReplaceProcess(target), pluginCommonJSModules]
       const promises = []
-      const injectionNames = new Set()
+
+      if ((injectNodeGlobals === 'auto' && target === 'browser') || injectNodeGlobals === true) {
+        plugins.push(getPluginInjectNodeGlobals())
+      }
+
       const { ast } = await transformAsync(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
         ast: true,
         code: false,
@@ -42,7 +42,7 @@ function createComponent() {
         sourceMaps: false,
         filename: file.filePath,
         highlightCode: false,
-        plugins: [getPluginReplaceProcess(context.config.target), pluginCommonJSModules],
+        plugins,
         sourceType: 'unambiguous',
         parserOpts: {
           plugins: ['dynamicImport'],
@@ -108,64 +108,9 @@ function createComponent() {
               }),
           )
         },
-        ...(context.config.target === 'browser'
-          ? {
-              Identifier(path) {
-                const { node } = path
-                if (
-                  INJECTIONS_NAMES.has(node.name) &&
-                  !injectionNames.has(node.name) &&
-                  path.isReferencedIdentifier() &&
-                  !path.scope.hasBinding(node.name)
-                ) {
-                  injectionNames.add(node.name)
-                }
-              },
-            }
-          : {}),
-      })
-
-      const injectionImports = new Map()
-      injectionNames.forEach(item => {
-        const sourceModule = INJECTIONS_NAMES.get(item)
-        invariant(sourceModule, 'sourceModule for Injection was not found?')
-        promises.push(
-          resolve(sourceModule).then(resolved => {
-            if (resolved.filePath === false) return null
-            injectionImports.set(sourceModule, getUniqueHash(resolved))
-            return addImport(resolved)
-          }),
-        )
       })
 
       await Promise.all(promises)
-
-      if (injectionImports.size) {
-        const wrapper = t.callExpression(t.functionExpression(null, [], t.blockStatement([])), [])
-        injectionImports.forEach((resolved, importName) => {
-          wrapper.arguments.push(t.callExpression(t.identifier('require'), [t.stringLiteral(resolved)]))
-          let names = INJECTIONS.get(importName)
-          if (typeof names === 'string') {
-            wrapper.callee.params.push(t.identifier(names))
-          } else if (Array.isArray(names)) {
-            names = names.filter(item => injectionNames.has(item))
-            const refName = `__$sb$pundle${importName}`
-            wrapper.callee.params.push(t.identifier(refName))
-            ast.program.body = [
-              t.variableDeclaration(
-                'var',
-                names.map(name =>
-                  t.variableDeclarator(t.identifier(name), t.memberExpression(t.identifier(refName), t.identifier(name))),
-                ),
-              ),
-            ].concat(ast.program.body)
-          }
-        })
-        wrapper.callee.body.body = ast.program.body
-        wrapper.callee.body.directives = ast.program.directives
-        ast.program.body = [t.expressionStatement(wrapper)]
-        ast.program.directives = []
-      }
 
       const generated = generate(ast, {
         sourceMaps: true,
