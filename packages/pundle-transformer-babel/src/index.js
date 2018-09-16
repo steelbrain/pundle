@@ -62,7 +62,7 @@ function createComponent({
             babelrc: true,
             filename: file.filePath,
             sourceMaps: true,
-            sourceType: 'module',
+            sourceType: version === 7 ? 'unambiguous' : 'module',
             highlightCode: false,
             sourceFileName: file.filePath,
             ...(version === 7 ? { root: context.config.rootDirectory } : {}),
