@@ -23,34 +23,39 @@ const getTimersInjection = makeTemplate(
 const getBufferInjection = makeTemplate(`var Buffer = require('buffer').Buffer`)
 const getProcessInjection = makeTemplate(`var process = require('process')`)
 
-export default function getPluginInjectNodeGlobals({ template }: Object) {
-  const injectionNames = new Set()
+const INJECTIONS = Symbol('Node Global Injections')
 
+export default function getPluginInjectNodeGlobals({ template }: Object) {
   return {
     visitor: {
       Identifier(path: Object) {
         const { node } = path
         if (
           INJECTION_NAMES.has(node.name) &&
-          !injectionNames.has(node.name) &&
+          !path.hub[INJECTIONS].has(node.name) &&
           path.isReferencedIdentifier() &&
           !path.scope.hasBinding(node.name)
         ) {
-          injectionNames.add(node.name)
+          path.hub[INJECTIONS].add(node.name)
         }
       },
       Program: {
+        enter(path: Object) {
+          path.hub[INJECTIONS] = new Set()
+        },
         exit(path: Object) {
-          if (!injectionNames.size) return
+          const injections = path.hub[INJECTIONS]
+
+          if (!injections.size) return
 
           const statements = []
-          if (injectionNames.has('setImmediate') || injectionNames.has('clearImmediate')) {
+          if (injections.has('setImmediate') || injections.has('clearImmediate')) {
             statements.push(getTimersInjection({ template }))
           }
-          if (injectionNames.has('Buffer')) {
+          if (injections.has('Buffer')) {
             statements.push(getBufferInjection({ template }))
           }
-          if (injectionNames.has('process')) {
+          if (injections.has('process')) {
             statements.push(getProcessInjection({ template }))
           }
           path.node.body = statements.concat(path.node.body)
