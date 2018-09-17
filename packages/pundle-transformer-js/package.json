@@ -16,6 +16,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.0.0",
     "@babel/traverse": "^7.0.0",
     "@babel/types": "^7.0.0",
+    "babel-plugin-inject-node-globals": "^3.0.0-beta9",
     "pundle-api": "^3.0.0-beta9"
   },
   "author": "steelbrain",

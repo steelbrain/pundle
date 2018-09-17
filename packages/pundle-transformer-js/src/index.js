@@ -4,6 +4,7 @@ import * as t from '@babel/types'
 import traverse from '@babel/traverse'
 import generate from '@babel/generator'
 import pluginCommonJSModules from '@babel/plugin-transform-modules-commonjs'
+import pluginInjectNodeGlobals from 'babel-plugin-inject-node-globals'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
 import { createFileTransformer, getChunk, getUniqueHash } from 'pundle-api'
@@ -12,7 +13,6 @@ import { getName, getStringFromLiteralOrTemplate } from './helpers'
 import manifest from '../package.json'
 import pluginRemoveDeadNodes from './plugin-remove-dead-nodes'
 import getPluginReplaceProcess from './plugin-replace-process'
-import getPluginInjectNodeGlobals from './plugin-inject-node-globals'
 
 const transformAsync = promisify(transform)
 
@@ -31,7 +31,7 @@ function createComponent({ injectNodeGlobals = 'auto' }: { injectNodeGlobals: tr
       const promises = []
 
       if ((injectNodeGlobals === 'auto' && target === 'browser') || injectNodeGlobals === true) {
-        plugins.push(getPluginInjectNodeGlobals())
+        plugins.push(pluginInjectNodeGlobals)
       }
 
       const { ast } = await transformAsync(typeof file.contents === 'string' ? file.contents : file.contents.toString(), {
