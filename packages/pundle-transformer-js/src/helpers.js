@@ -38,20 +38,11 @@ export function getStringFromLiteralOrTemplate(node: Object) {
   if (t.isStringLiteral(node)) {
     return node
   }
-  if (!t.isTemplateLiteral(node)) {
-    return null
-  }
-  if (node.expressions.length !== 0) {
-    return null
-  }
-  if (node.quasis.length !== 1) {
+  if (!t.isTemplateLiteral(node) || node.expressions.length !== 0 || node.quasis.length !== 1) {
     return null
   }
   const [item] = node.quasis
-  if (!t.isTemplateElement(item)) {
-    return null
-  }
-  if (item.value.raw !== item.value.cooked) {
+  if (!t.isTemplateElement(item) || item.value.raw !== item.value.cooked) {
     return null
   }
   return item
