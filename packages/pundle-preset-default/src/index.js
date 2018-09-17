@@ -214,6 +214,7 @@ function getPresetComponents({
   if (js) {
     components.push(
       require('pundle-transformer-js')({
+        injectNodeGlobals: 'auto',
         ...js,
       }),
     )
