@@ -1,15 +1,17 @@
 // @flow
 /* eslint-disable no-param-reassign,prefer-destructuring */
 
+import cloneDeep from 'lodash/cloneDeep'
+
 const INJECTION_NAMES = new Set(['setImmediate', 'clearImmediate', 'Buffer', 'process'])
 
-function makeTemplate(template: string) {
+function makeTemplate(content: string) {
   let cachedValue
-  return function({ parseSync }) {
+  return function({ template }) {
     if (!cachedValue) {
-      cachedValue = parseSync(template).program.body[0]
+      cachedValue = template.ast(content)
     }
-    return cachedValue
+    return cloneDeep(cachedValue)
   }
 }
 
@@ -21,7 +23,7 @@ const getTimersInjection = makeTemplate(
 const getBufferInjection = makeTemplate(`var Buffer = require('buffer').Buffer`)
 const getProcessInjection = makeTemplate(`var process = require('process')`)
 
-export default function getPluginInjectNodeGlobals({ parseSync }: Object) {
+export default function getPluginInjectNodeGlobals({ template }: Object) {
   const injectionNames = new Set()
 
   return {
@@ -43,13 +45,13 @@ export default function getPluginInjectNodeGlobals({ parseSync }: Object) {
 
           const statements = []
           if (injectionNames.has('setImmediate') || injectionNames.has('clearImmediate')) {
-            statements.push(getTimersInjection({ parseSync }))
+            statements.push(getTimersInjection({ template }))
           }
           if (injectionNames.has('Buffer')) {
-            statements.push(getBufferInjection({ parseSync }))
+            statements.push(getBufferInjection({ template }))
           }
           if (injectionNames.has('process')) {
-            statements.push(getProcessInjection({ parseSync }))
+            statements.push(getProcessInjection({ template }))
           }
           path.node.body = statements.concat(path.node.body)
         },
