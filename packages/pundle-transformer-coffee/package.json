@@ -1,5 +1,5 @@
 {
-  "name": "pundle-transformer-coffee",
+  "name": "@pundle/transformer-coffee",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -11,7 +11,7 @@
   "scripts": {},
   "dependencies": {
     "nanomatch": "^1.2.13",
-    "pundle-api": "^3.0.0-beta9"
+    "@pundle/api": "^3.0.0-beta9"
   },
   "author": "steelbrain",
   "license": "MIT"

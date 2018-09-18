@@ -3,7 +3,7 @@
 import fs from 'sb-fs'
 import path from 'path'
 import { SourceMapGenerator } from 'source-map'
-import { createChunkGenerator, getUniqueHash } from 'pundle-api'
+import { createChunkGenerator, getUniqueHash } from '@pundle/api'
 
 import * as Helpers from './helpers'
 import manifest from '../package.json'

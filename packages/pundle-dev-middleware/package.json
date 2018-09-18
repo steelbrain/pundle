@@ -1,5 +1,5 @@
 {
-  "name": "pundle-dev-middleware",
+  "name": "@pundle/dev-middleware",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -16,13 +16,13 @@
     "toposort": "^2.0.2"
   },
   "peerDependencies": {
-    "pundle-api": "3.0.0-beta9",
-    "pundle-core": "3.0.0-beta9"
+    "@pundle/api": "3.0.0-beta9",
+    "@pundle/core": "3.0.0-beta9"
   },
   "author": "steelbrain",
   "license": "MIT",
   "devDependencies": {
-    "pundle-api": "^3.0.0-beta9",
-    "pundle-core": "^3.0.0-beta9"
+    "@pundle/api": "^3.0.0-beta9",
+    "@pundle/core": "^3.0.0-beta9"
   }
 }

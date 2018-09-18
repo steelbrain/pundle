@@ -1,7 +1,7 @@
 // @flow
 
 import invariant from 'assert'
-import { createChunkGenerator, getFileKey } from 'pundle-api'
+import { createChunkGenerator, getFileKey } from '@pundle/api'
 
 import manifest from '../package.json'
 

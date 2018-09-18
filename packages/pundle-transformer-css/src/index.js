@@ -3,7 +3,7 @@
 import path from 'path'
 import postcss from 'postcss'
 import postcssModules from 'postcss-modules'
-import { createFileTransformer, getChunk } from 'pundle-api'
+import { createFileTransformer, getChunk } from '@pundle/api'
 
 import manifest from '../package.json'
 import pluginImportResolver from './plugin-import-resolver'

@@ -2,7 +2,7 @@
 
 import path from 'path'
 import invariant from 'assert'
-import { createChunkGenerator, getFileKey, type ComponentChunkGeneratorResult } from 'pundle-api'
+import { createChunkGenerator, getFileKey, type ComponentChunkGeneratorResult } from '@pundle/api'
 
 import manifest from '../package.json'
 

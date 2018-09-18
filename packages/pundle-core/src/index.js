@@ -1,7 +1,7 @@
 // @flow
 
-import { Context } from 'pundle-api'
-import loadConfig, { type Config } from 'pundle-core-load-config'
+import { Context } from '@pundle/api'
+import loadConfig, { type Config } from '@pundle/core-load-config'
 
 import Master from './master'
 import getWatcher from './watcher'

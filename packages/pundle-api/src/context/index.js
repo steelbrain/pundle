@@ -3,7 +3,7 @@
 import fs from 'sb-fs'
 import pMap from 'p-map'
 import mergeSourceMap from 'merge-source-map'
-import type { Config } from 'pundle-core-load-config'
+import type { Config } from '@pundle/core-load-config'
 
 import Job from '../job'
 import PundleError from '../pundle-error'

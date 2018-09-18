@@ -4,7 +4,7 @@ import fs from 'sb-fs'
 import path from 'path'
 // eslint-disable-next-line
 import { fromStack } from 'sb-callsite'
-import { PundleError, type Context } from 'pundle-api'
+import { PundleError, type Context } from '@pundle/api'
 
 export default async function readConfigFile(context: Context): Promise<{ config: Object, configFilePath: ?string }> {
   const { directory, configFilePath, configLoadFile } = context

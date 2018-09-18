@@ -1,5 +1,5 @@
 {
-  "name": "pundle-core",
+  "name": "@pundle/core",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -16,8 +16,8 @@
     "mkdirp": "^0.5.1",
     "p-map": "^1.2.0",
     "promise.defer": "^1.0.1",
-    "pundle-api": "^3.0.0-beta9",
-    "pundle-core-load-config": "^3.0.0-beta9",
+    "@pundle/api": "^3.0.0-beta9",
+    "@pundle/core-load-config": "^3.0.0-beta9",
     "sb-communication": "5",
     "sb-fs": "^3.0.0",
     "sb-promise-queue": "^1.0.1"

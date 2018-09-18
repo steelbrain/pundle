@@ -3,7 +3,7 @@
 import globrex from 'globrex'
 import invariant from 'assert'
 import toposort from 'toposort'
-import { getFileKey, getChunkKey, type Job, type Chunk, type ImportResolved } from 'pundle-api'
+import { getFileKey, getChunkKey, type Job, type Chunk, type ImportResolved } from '@pundle/api'
 
 export function topologicallySortChunks(chunks: Array<Chunk>, job: Job): Array<Chunk> {
   const graph = []

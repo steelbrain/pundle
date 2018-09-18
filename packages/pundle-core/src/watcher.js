@@ -12,7 +12,7 @@ import {
   type Context,
   type ImportResolved,
   type ImportTransformed,
-} from 'pundle-api'
+} from '@pundle/api'
 
 import getFileWatcher from './file-watcher'
 

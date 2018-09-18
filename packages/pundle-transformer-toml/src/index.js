@@ -2,7 +2,7 @@
 
 import path from 'path'
 import { serialize } from 'serialize-to-js'
-import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from '@pundle/api'
 
 import manifest from '../package.json'
 

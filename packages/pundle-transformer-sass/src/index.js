@@ -1,7 +1,7 @@
 // @flow
 
 import path from 'path'
-import { NEWLINE_REGEXP, createFileTransformer, loadLocalFromContext } from 'pundle-api'
+import { NEWLINE_REGEXP, createFileTransformer, loadLocalFromContext } from '@pundle/api'
 
 import manifest from '../package.json'
 

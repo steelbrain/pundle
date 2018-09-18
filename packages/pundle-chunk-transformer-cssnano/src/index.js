@@ -3,7 +3,7 @@
 import path from 'path'
 import cssnano from 'cssnano'
 import postcss from 'postcss'
-import { createChunkTransformer } from 'pundle-api'
+import { createChunkTransformer } from '@pundle/api'
 
 import manifest from '../package.json'
 

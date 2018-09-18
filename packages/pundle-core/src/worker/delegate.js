@@ -12,7 +12,7 @@ import type {
   ChunkGenerated,
   ComponentFileResolverResult,
   ComponentChunkTransformerResult,
-} from 'pundle-api'
+} from '@pundle/api'
 import { processPayload, processReceived } from '../helpers'
 
 type Payload = {|

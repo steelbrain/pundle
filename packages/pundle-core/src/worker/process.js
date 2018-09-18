@@ -1,9 +1,9 @@
 // @flow
 
-import { Context } from 'pundle-api'
+import { Context } from '@pundle/api'
 import promiseDefer from 'promise.defer'
 import Communication from 'sb-communication'
-import loadConfig from 'pundle-core-load-config'
+import loadConfig from '@pundle/core-load-config'
 
 import Worker from './'
 import { processPayload, processReceived } from '../helpers'

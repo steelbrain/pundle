@@ -1,6 +1,6 @@
 // @flow
 
-import type { Component } from 'pundle-api'
+import type { Component } from '@pundle/api'
 
 export type AcceptedConfig = {|
   cache?:

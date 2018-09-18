@@ -1,7 +1,7 @@
 // @flow
 import path from 'path'
 import nanomatch from 'nanomatch'
-import { PundleError, characterOffsetToLoc, createFileTransformer, loadLocalFromContext } from 'pundle-api'
+import { PundleError, characterOffsetToLoc, createFileTransformer, loadLocalFromContext } from '@pundle/api'
 
 import manifest from '../package.json'
 

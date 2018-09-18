@@ -4,7 +4,7 @@
 import path from 'path'
 import minimist from 'minimist'
 import coolTrim from 'cool-trim'
-import { createApp } from 'pundle-core-create-app'
+import { createApp } from '@pundle/core-create-app'
 import manifest from '../package.json'
 
 async function main() {
