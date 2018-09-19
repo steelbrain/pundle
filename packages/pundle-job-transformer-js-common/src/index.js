@@ -20,7 +20,7 @@ function createComponent({ name = '_common_' }: { name?: string } = {}) {
   return createJobTransformer({
     name: manifest.name,
     version: manifest.version,
-    async callback({ context, job }) {
+    async callback({ job }) {
       const chunkToFiles = new Map()
 
       job.chunks.forEach(chunk => {
