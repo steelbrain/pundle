@@ -1,6 +1,6 @@
 {
   "name": "@pundle/job-transformer-js-dedupe",
-  "version": "3.0.0-beta9",
+  "version": "3.0.0-beta10",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -18,11 +18,11 @@
     "semver": "^5.5.1"
   },
   "peerDependencies": {
-    "@pundle/api": "3.0.0-beta9"
+    "@pundle/api": "3.0.0-beta10"
   },
   "author": "steelbrain",
   "license": "MIT",
   "devDependencies": {
-    "@pundle/api": "^3.0.0-beta9"
+    "@pundle/api": "^3.0.0-beta10"
   }
 }

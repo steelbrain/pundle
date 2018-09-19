@@ -12,8 +12,8 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-1": "^6.24.1",
-    "@pundle/cli": "3.0.0-beta9",
-    "@pundle/preset-default": "3.0.0-beta9"
+    "@pundle/cli": "3.0.0-beta10",
+    "@pundle/preset-default": "3.0.0-beta10"
   },
   "scripts": {
     "start": "pundle --dev.singlepage --dev.static ./static::/",
