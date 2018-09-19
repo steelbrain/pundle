@@ -1,5 +1,5 @@
 {
-  "name": "pundle-resolver-default",
+  "name": "@pundle/resolver-default",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -12,8 +12,8 @@
   "dependencies": {
     "browser-resolve": "^1.11.3",
     "lodash": "^4.17.10",
-    "pundle-api": "^3.0.0-beta9",
-    "pundle-resolver-aliases-browser": "^3.0.0-beta9",
+    "@pundle/api": "^3.0.0-beta9",
+    "@pundle/resolver-aliases-browser": "^3.0.0-beta9",
     "resolve": "^1.8.1"
   },
   "author": "steelbrain",

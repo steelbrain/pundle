@@ -22,7 +22,7 @@
     "json5": "^2.0.0",
     "less": "^3.8.1",
     "node-sass": "^4.9.3",
-    "pundle-preset-default": "^3.0.0-beta9",
+    "@pundle/preset-default": "^3.0.0-beta9",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "stylus": "^0.54.5",

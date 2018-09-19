@@ -10,8 +10,8 @@ import mime from 'mime/lite'
 import invariant from 'assert'
 import { Router } from 'express'
 
-import { getPundle, getWatcher } from 'pundle-core'
-import { getChunk, getUniqueHash, type Job, type ImportResolved } from 'pundle-api'
+import { getPundle, getWatcher } from '@pundle/core'
+import { getChunk, getUniqueHash, type Job, type ImportResolved } from '@pundle/api'
 
 import { getOutputFormats, getChunksAffectedByImports } from './helpers'
 

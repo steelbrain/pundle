@@ -2,8 +2,8 @@
 
 import invariant from 'assert'
 import { posix as path } from 'path'
-import { getPundleConfig } from 'pundle-core'
-import { getFileKey, type Job, type Chunk, type ImportResolved } from 'pundle-api'
+import { getPundleConfig } from '@pundle/core'
+import { getFileKey, type Job, type Chunk, type ImportResolved } from '@pundle/api'
 
 export async function getOutputFormats(pundleOptions: Object, publicPath: string): { [string]: string | false } {
   invariant(publicPath.length, 'publicPath must never be empty')

@@ -6,7 +6,7 @@ import lowdb from 'lowdb'
 import mkdirp from 'mkdirp'
 import debounce from 'lodash/debounce'
 import FileAsync from 'lowdb/adapters/FileAsync'
-import { getStringHash, getFileKey, type Context, type ImportResolved, type ImportTransformed } from 'pundle-api'
+import { getStringHash, getFileKey, type Context, type ImportResolved, type ImportTransformed } from '@pundle/api'
 
 import { version } from '../package.json'
 

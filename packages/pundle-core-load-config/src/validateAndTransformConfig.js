@@ -3,7 +3,7 @@
 import fs from 'sb-fs'
 import path from 'path'
 import difference from 'lodash/difference'
-import { PundleError, validateComponent, type Context } from 'pundle-api'
+import { PundleError, validateComponent, type Context } from '@pundle/api'
 
 import type { AcceptedConfig } from './types'
 

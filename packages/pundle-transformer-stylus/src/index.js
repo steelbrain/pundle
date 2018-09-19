@@ -1,7 +1,7 @@
 // @flow
 
 import path from 'path'
-import { createFileTransformer, loadLocalFromContext } from 'pundle-api'
+import { createFileTransformer, loadLocalFromContext } from '@pundle/api'
 
 import manifest from '../package.json'
 

@@ -18,7 +18,7 @@ import {
   type ChunkGenerated,
   type ComponentFileResolverResult,
   type ComponentChunkTransformerResult,
-} from 'pundle-api'
+} from '@pundle/api'
 
 import Cache from '../cache'
 import WorkerDelegate from '../worker/delegate'

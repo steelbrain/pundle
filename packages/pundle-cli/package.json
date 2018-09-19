@@ -1,5 +1,5 @@
 {
-  "name": "pundle-cli",
+  "name": "@pundle/cli",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -22,9 +22,9 @@
     "mkdirp": "^0.5.1",
     "p-map": "^1.2.0",
     "pretty-bytes": "^5.1.0",
-    "pundle-api": "^3.0.0-beta9",
-    "pundle-core": "^3.0.0-beta9",
-    "pundle-dev-middleware": "^3.0.0-beta9",
+    "@pundle/api": "^3.0.0-beta9",
+    "@pundle/core": "^3.0.0-beta9",
+    "@pundle/dev-middleware": "^3.0.0-beta9",
     "sb-fs": "^3.0.0",
     "strip-ansi": "^4.0.0"
   },

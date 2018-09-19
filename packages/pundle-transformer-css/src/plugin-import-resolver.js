@@ -2,14 +2,14 @@
 /* eslint-disable no-param-reassign */
 
 import { plugin } from 'postcss'
-import { getChunk } from 'pundle-api'
+import { getChunk } from '@pundle/api'
 import parse from 'postcss-value-parser'
 
 const EXTERNAL_REGEXP = /^[\w]+:\//
 
 // Maybe don't remove rules and make them non-top level chunks that get imported
 // by the rules themselves in @import css?
-export default plugin('pundle-transformer-css', function({ resolve, context, addChunk }) {
+export default plugin('@pundle/transformer-css', function({ resolve, context, addChunk }) {
   return function(css) {
     const promises = []
 

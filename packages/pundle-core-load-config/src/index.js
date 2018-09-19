@@ -3,7 +3,7 @@
 import os from 'os'
 import path from 'path'
 
-import { PundleError, type Context } from 'pundle-api'
+import { PundleError, type Context } from '@pundle/api'
 import type { Config, AcceptedConfig } from './types'
 import readConfigFile from './readConfigFile'
 import validateAndTransformConfig from './validateAndTransformConfig'

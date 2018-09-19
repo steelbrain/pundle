@@ -1,6 +1,6 @@
 // @flow
 
-import type { Job, Context, ImportResolved, ImportTransformed } from 'pundle-api'
+import type { Job, Context, ImportResolved, ImportTransformed } from '@pundle/api'
 
 export type WatchAdapter = 'chokidar'
 export type WatchOptions = {

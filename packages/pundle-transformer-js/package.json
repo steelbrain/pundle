@@ -1,5 +1,5 @@
 {
-  "name": "pundle-transformer-js",
+  "name": "@pundle/transformer-js",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -17,7 +17,7 @@
     "@babel/traverse": "^7.0.0",
     "@babel/types": "^7.0.0",
     "babel-plugin-inject-node-globals": "^3.0.0-beta9",
-    "pundle-api": "^3.0.0-beta9"
+    "@pundle/api": "^3.0.0-beta9"
   },
   "author": "steelbrain",
   "license": "MIT"

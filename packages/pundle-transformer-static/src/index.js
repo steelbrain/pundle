@@ -3,7 +3,7 @@
 import path from 'path'
 import mime from 'mime/lite'
 import invariant from 'assert'
-import { getChunk, createFileTransformer } from 'pundle-api'
+import { getChunk, createFileTransformer } from '@pundle/api'
 
 import manifest from '../package.json'
 

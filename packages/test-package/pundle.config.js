@@ -1,5 +1,5 @@
 const path = require('path')
-const presetDefault = require('pundle-preset-default')
+const presetDefault = require('@pundle/preset-default')
 
 module.exports = {
   entry: ['./src', './index.html'],

@@ -7,7 +7,7 @@ import pluginCommonJSModules from '@babel/plugin-transform-modules-commonjs'
 import pluginInjectNodeGlobals from 'babel-plugin-inject-node-globals'
 import { promisify } from 'util'
 import { transform } from '@babel/core'
-import { createFileTransformer, getChunk, getUniqueHash } from 'pundle-api'
+import { createFileTransformer, getChunk, getUniqueHash } from '@pundle/api'
 
 import { getName, getStringFromLiteralOrTemplate } from './helpers'
 import manifest from '../package.json'

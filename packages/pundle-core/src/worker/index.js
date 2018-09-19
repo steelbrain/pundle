@@ -8,7 +8,7 @@ import type {
   ImportTransformed,
   ChunkGenerated,
   ComponentChunkTransformerResult,
-} from 'pundle-api'
+} from '@pundle/api'
 import type Communication from 'sb-communication'
 
 export default class Worker implements PundleWorker {

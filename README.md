@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="http://badge.fury.io/js/pundle"><img alt="npm version" src="https://badge.fury.io/js/pundle.svg"></a>
-  <a href="https://npmjs.org/package/pundle-core"><img alt="Downloads" src="http://img.shields.io/npm/dm/pundle-core.svg"></a>
+  <a href="https://npmjs.org/package/@pundle/core"><img alt="Downloads" src="http://img.shields.io/npm/dm/@pundle/core.svg"></a>
   <a href="https://circleci.com/gh/steelbrain/pundle/tree/master">
     <img src="https://img.shields.io/circleci/project/steelbrain/pundle/master.svg" alt="CircleCI Build Status">
   </a>

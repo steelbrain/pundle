@@ -2,7 +2,7 @@
 
 import invariant from 'assert'
 import { SourceMapConsumer } from 'source-map'
-import { NEWLINE_REGEXP, getFileKey, type Chunk, type Job, type ImportResolved, type ImportTransformed } from 'pundle-api'
+import { NEWLINE_REGEXP, getFileKey, type Chunk, type Job, type ImportResolved, type ImportTransformed } from '@pundle/api'
 
 export function getLinesCount(text: string): number {
   return text.split(NEWLINE_REGEXP).length

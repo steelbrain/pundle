@@ -88,12 +88,12 @@ function getPresetComponents({
   }
 
   if (reportCLI) {
-    components.push(require('pundle-reporter-cli')())
+    components.push(require('@pundle/reporter-cli')())
   }
   if (cson) {
     extensions.js.add('.cson')
     components.push(
-      require('pundle-transformer-cson')({
+      require('@pundle/transformer-cson')({
         ...cson,
       }),
     )
@@ -101,7 +101,7 @@ function getPresetComponents({
   if (coffee) {
     extensions.js.add('.coffee')
     components.push(
-      require('pundle-transformer-coffee')({
+      require('@pundle/transformer-coffee')({
         ...coffee,
       }),
     )
@@ -109,7 +109,7 @@ function getPresetComponents({
   if (json && !json5) {
     extensions.js.add('.json')
     components.push(
-      require('pundle-transformer-json')({
+      require('@pundle/transformer-json')({
         ...json,
       }),
     )
@@ -118,7 +118,7 @@ function getPresetComponents({
     extensions.js.add('.json')
     extensions.js.add('.json5')
     components.push(
-      require('pundle-transformer-json5')({
+      require('@pundle/transformer-json5')({
         extensions: ['.json', '.json5'],
         ...json5,
       }),
@@ -133,7 +133,7 @@ function getPresetComponents({
       )
     }
     components.push(
-      require('pundle-transformer-babel')(
+      require('@pundle/transformer-babel')(
         typeof babel === 'number'
           ? {
               version: babel,
@@ -145,7 +145,7 @@ function getPresetComponents({
   if (less) {
     extensions.css.add('.less')
     components.push(
-      require('pundle-transformer-less')({
+      require('@pundle/transformer-less')({
         ...less,
       }),
     )
@@ -154,7 +154,7 @@ function getPresetComponents({
     extensions.css.add('.scss')
     extensions.css.add('.sass')
     components.push(
-      require('pundle-transformer-sass')({
+      require('@pundle/transformer-sass')({
         ...sass,
       }),
     )
@@ -163,14 +163,14 @@ function getPresetComponents({
     extensions.css.add('.styl')
     extensions.css.add('.stylus')
     components.push(
-      require('pundle-transformer-stylus')({
+      require('@pundle/transformer-stylus')({
         ...stylus,
       }),
     )
   }
   if (postcss) {
     components.push(
-      require('pundle-transformer-postcss')({
+      require('@pundle/transformer-postcss')({
         extensions: Array.from(extensions.css),
         ...postcss,
       }),
@@ -180,7 +180,7 @@ function getPresetComponents({
     extensions.js.add('.ts')
     extensions.js.add('.tsx')
     components.push(
-      require('pundle-transformer-typescript')({
+      require('@pundle/transformer-typescript')({
         ...typescript,
       }),
     )
@@ -188,7 +188,7 @@ function getPresetComponents({
   if (toml) {
     extensions.js.add('.toml')
     components.push(
-      require('pundle-transformer-toml')({
+      require('@pundle/transformer-toml')({
         ...toml,
       }),
     )
@@ -197,7 +197,7 @@ function getPresetComponents({
     extensions.js.add('.yaml')
     extensions.js.add('.yml')
     components.push(
-      require('pundle-transformer-yaml')({
+      require('@pundle/transformer-yaml')({
         ...yaml,
       }),
     )
@@ -206,14 +206,14 @@ function getPresetComponents({
     extensions.js.add('.gql')
     extensions.js.add('.graphql')
     components.push(
-      require('pundle-transformer-graphql')({
+      require('@pundle/transformer-graphql')({
         ...graphql,
       }),
     )
   }
   if (js) {
     components.push(
-      require('pundle-transformer-js')({
+      require('@pundle/transformer-js')({
         injectNodeGlobals: 'auto',
         ...js,
       }),
@@ -221,7 +221,7 @@ function getPresetComponents({
   }
   if (statics) {
     components.push(
-      require('pundle-transformer-static')({
+      require('@pundle/transformer-static')({
         ...statics,
         extensions: Array.from(extensions.static),
       }),
@@ -229,7 +229,7 @@ function getPresetComponents({
   }
   if (css) {
     components.push(
-      require('pundle-transformer-css')({
+      require('@pundle/transformer-css')({
         development,
         extensions: Array.from(extensions.css),
         ...css,
@@ -238,7 +238,7 @@ function getPresetComponents({
   }
   if (resolve) {
     components.push(
-      require('pundle-resolver-default')({
+      require('@pundle/resolver-default')({
         ...resolve,
         formats: {
           js: Array.from(extensions.js),
@@ -250,23 +250,23 @@ function getPresetComponents({
     )
   }
   if (generateJS) {
-    components.push(require('pundle-chunk-generator-js')())
+    components.push(require('@pundle/chunk-generator-js')())
   }
   if (generateCSS) {
-    components.push(require('pundle-chunk-generator-css')())
+    components.push(require('@pundle/chunk-generator-css')())
   }
   if (generateHTML) {
-    components.push(require('pundle-chunk-generator-html')())
+    components.push(require('@pundle/chunk-generator-html')())
   }
-  components.push(require('pundle-chunk-generator-static')())
+  components.push(require('@pundle/chunk-generator-static')())
 
   if (optimizeJS) {
     if (typeof optimizeJS === 'boolean' || optimizeJS.common) {
-      components.push(require('pundle-job-transformer-js-common')())
+      components.push(require('@pundle/job-transformer-js-common')())
     }
     if (typeof optimizeJS === 'boolean' || optimizeJS.uglify) {
       components.push(
-        require('pundle-chunk-transformer-uglify')({
+        require('@pundle/chunk-transformer-uglify')({
           uglifier: 'terser',
           ...(optimizeJS && optimizeJS.uglify),
         }),
@@ -274,7 +274,7 @@ function getPresetComponents({
     }
     if (typeof optimizeJS === 'boolean' || optimizeJS.dedupe) {
       components.push(
-        require('pundle-job-transformer-js-dedupe')({
+        require('@pundle/job-transformer-js-dedupe')({
           ...(optimizeJS && optimizeJS.dedupe),
         }),
       )
@@ -282,7 +282,7 @@ function getPresetComponents({
   }
   if (optimizeCSS) {
     components.push(
-      require('pundle-chunk-transformer-cssnano')({
+      require('@pundle/chunk-transformer-cssnano')({
         ...(optimizeCSS && optimizeCSS.cssnano),
       }),
     )

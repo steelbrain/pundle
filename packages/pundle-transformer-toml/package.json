@@ -1,5 +1,5 @@
 {
-  "name": "pundle-transformer-toml",
+  "name": "@pundle/transformer-toml",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -10,7 +10,7 @@
   "flow:main": "src/index.js",
   "scripts": {},
   "dependencies": {
-    "pundle-api": "^3.0.0-beta9",
+    "@pundle/api": "^3.0.0-beta9",
     "serialize-to-js": "^1.2.1"
   },
   "author": "steelbrain",

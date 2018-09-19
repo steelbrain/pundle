@@ -4,7 +4,7 @@ import path from 'path'
 import mergeSourceMap from 'merge-source-map'
 import { minify as processUglify } from 'uglify-es'
 import { minify as processTerser } from 'terser'
-import { createChunkTransformer } from 'pundle-api'
+import { createChunkTransformer } from '@pundle/api'
 
 import manifest from '../package.json'
 

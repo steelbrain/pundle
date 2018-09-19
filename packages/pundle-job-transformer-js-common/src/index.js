@@ -8,7 +8,7 @@ import {
   getChunkKey,
   type ImportResolved,
   type ImportTransformed,
-} from 'pundle-api'
+} from '@pundle/api'
 
 import manifest from '../package.json'
 

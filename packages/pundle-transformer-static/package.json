@@ -1,5 +1,5 @@
 {
-  "name": "pundle-transformer-static",
+  "name": "@pundle/transformer-static",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -11,7 +11,7 @@
   "scripts": {},
   "dependencies": {
     "mime": "^2.3.1",
-    "pundle-api": "^3.0.0-beta9"
+    "@pundle/api": "^3.0.0-beta9"
   },
   "author": "steelbrain",
   "license": "MIT"

@@ -4,9 +4,9 @@ import path from 'path'
 import invariant from 'assert'
 import flatten from 'lodash/flatten'
 import browserResolve from 'browser-resolve'
-import browserAliases from 'pundle-resolver-aliases-browser'
+import browserAliases from '@pundle/resolver-aliases-browser'
 import { isCore } from 'resolve'
-import { createFileResolver } from 'pundle-api'
+import { createFileResolver } from '@pundle/api'
 
 import manifest from '../package.json'
 

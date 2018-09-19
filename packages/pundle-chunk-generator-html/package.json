@@ -1,5 +1,5 @@
 {
-  "name": "pundle-chunk-generator-html",
+  "name": "@pundle/chunk-generator-html",
   "version": "3.0.0-beta9",
   "description": "TODO",
   "repository": {
@@ -11,7 +11,7 @@
   "scripts": {},
   "dependencies": {
     "globrex": "^0.1.1",
-    "pundle-api": "^3.0.0-beta9",
+    "@pundle/api": "^3.0.0-beta9",
     "toposort": "^2.0.2"
   },
   "author": "steelbrain",

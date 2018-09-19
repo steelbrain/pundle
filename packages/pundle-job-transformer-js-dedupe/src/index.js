@@ -3,7 +3,7 @@
 import path from 'path'
 import escapeRegexp from 'escape-regexp'
 import cloneDeep from 'lodash/cloneDeep'
-import { createJobTransformer, getUniqueHash } from 'pundle-api'
+import { createJobTransformer, getUniqueHash } from '@pundle/api'
 
 import { name, version } from '../package.json'
 import ManifestRegistry from './manifest-registry'

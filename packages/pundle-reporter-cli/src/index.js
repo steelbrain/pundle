@@ -1,7 +1,7 @@
 // @flow
 
-import { createIssueReporter } from 'pundle-api'
-import normalizeError from 'pundle-reporter-base'
+import { createIssueReporter } from '@pundle/api'
+import normalizeError from '@pundle/reporter-base'
 
 import manifest from '../package.json'
 
