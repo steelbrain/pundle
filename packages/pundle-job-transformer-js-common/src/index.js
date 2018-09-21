@@ -23,7 +23,15 @@ function createComponent({
   return createJobTransformer({
     name: manifest.name,
     version: manifest.version,
-    async callback({ job }) {
+    async callback({ job, context }) {
+      if (context.config.target === 'node') {
+        // Unlike the browser, node.js does NOT have a "index.html"
+        // file where we can push a new script tag.
+        // We could ideally push a require for the commons chunk but
+        // it's not a top priority.
+        return
+      }
+
       const chunkToFiles = new Map()
 
       job.chunks.forEach(chunk => {
