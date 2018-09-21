@@ -1,4 +1,4 @@
-# Pundle - NG (Beta)
+# Pundle
 
 <p align="center">
   <img height="100px" src="https://user-images.githubusercontent.com/4278113/41994587-f737ebf8-7a5f-11e8-8547-c60531960a05.png">
@@ -18,11 +18,9 @@
 
 Pundle is a next generation module bundler. It's written with extensibility and performance in mind.
 
-This is the NG Beta branch. See [master](https://github.com/steelbrain/pundle/tree/master)
-
 ## Getting Started
 
-Pundle is still in Beta but it's pretty stable. Here's how you can try it today!
+Pundle is still in beta but it's pretty stable. Here's how you can try it today!
 
 For Yarn users
 
