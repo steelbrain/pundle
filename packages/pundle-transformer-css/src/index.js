@@ -46,7 +46,7 @@ function createComponent({
       )
 
       const inlineCss = context.config.target === 'browser' && development && file.format === 'js'
-      const cssChunk = getChunk('css', null, file.filePath, [], true, file.meta)
+      const cssChunk = getChunk('css', null, file.filePath, [], true, false, file.meta)
       const processed = await postcss(plugins).process(
         typeof file.contents === 'string' ? file.contents : file.contents.toString(),
         {

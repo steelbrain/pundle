@@ -27,7 +27,7 @@ function createComponent({
       const chunkToFiles = new Map()
 
       job.chunks.forEach(chunk => {
-        if (!chunk.root && !processNonRootChunks) return
+        if ((!chunk.root && !processNonRootChunks) || chunk.flat) return
 
         const relevantFiles = new Set()
 
@@ -75,7 +75,7 @@ function createComponent({
 
       const clonedJob = job.clone()
       const clonedChunks = new Map()
-      const commonChunk = getChunk('js', name, null, duplicateFiles.map(fileToImport))
+      const commonChunk = getChunk('js', name, null, duplicateFiles.map(fileToImport), false, true)
 
       chunkToFiles.forEach((files, chunk) => {
         let hadOne = false
@@ -89,7 +89,7 @@ function createComponent({
 
         let clonedChunk = chunk
         if (hadOne) {
-          clonedChunk = { ...clonedChunk, imports: files.map(fileToImport) }
+          clonedChunk = { ...clonedChunk, imports: files.map(fileToImport), flat: true }
         }
         clonedChunks.set(getChunkKey(clonedChunk), clonedChunk)
       })

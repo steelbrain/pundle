@@ -16,29 +16,26 @@ export function getContentForOutput(
 } {
   const relevantFiles = new Set()
 
-  function iterateImports(fileImport: ImportResolved, topLevelOnly: boolean) {
+  function iterateImports(fileImport: ImportResolved) {
     const file = job.files.get(getFileKey(fileImport))
     invariant(file, `File referenced in chunk ('${fileImport.filePath}') not found in local cache!?`)
 
     if (relevantFiles.has(file)) return
     relevantFiles.add(file)
 
-    if (!topLevelOnly) {
-      file.imports.forEach(item => iterateImports(item, false))
+    if (!chunk.flat) {
+      file.imports.forEach(item => iterateImports(item))
     }
   }
 
   if (chunk.filePath) {
-    iterateImports(
-      {
-        meta: chunk.meta,
-        format: chunk.format,
-        filePath: chunk.filePath,
-      },
-      !!chunk.imports.length,
-    )
+    iterateImports({
+      meta: chunk.meta,
+      format: chunk.format,
+      filePath: chunk.filePath,
+    })
   }
-  chunk.imports.forEach(item => iterateImports(item, true))
+  chunk.imports.forEach(item => iterateImports(item))
 
   return {
     files: Array.from(relevantFiles),

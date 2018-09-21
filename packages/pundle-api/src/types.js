@@ -33,12 +33,13 @@ export type ImportRequest = {
   ignoredResolvers: Array<string>,
 }
 export type Chunk = {
-  meta: ImportMeta,
-  root: boolean,
   format: string,
   label: ?string,
   filePath: ?string,
   imports: Array<ImportResolved>,
+  root: boolean,
+  flat: boolean,
+  meta: ImportMeta,
 }
 
 export type ImportTransformed = {

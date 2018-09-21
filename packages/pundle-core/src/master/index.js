@@ -98,7 +98,7 @@ export default class Master implements PundleWorker {
           ignoredResolvers: [],
         }),
       ),
-    )).map(resolved => getChunk(resolved.format, null, resolved.filePath, [], true, resolved.meta))
+    )).map(resolved => getChunk(resolved.format, null, resolved.filePath, [], true, false, resolved.meta))
     await pMap(configChunks, chunk =>
       this.transformChunk({
         job,

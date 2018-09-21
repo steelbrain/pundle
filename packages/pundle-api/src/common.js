@@ -46,14 +46,16 @@ export function getChunk(
   filePath: ?string = null,
   imports: Array<ImportResolved> = [],
   root: boolean = true,
+  flat: boolean = false,
   meta: ImportMeta = DEFAULT_IMPORT_META,
 ): Chunk {
   return {
-    root,
     format,
-    filePath,
     label,
+    filePath,
     imports,
+    root,
+    flat,
     meta,
   }
 }
