@@ -262,7 +262,11 @@ function getPresetComponents({
 
   if (optimizeJS) {
     if (typeof optimizeJS === 'boolean' || optimizeJS.common) {
-      components.push(require('@pundle/job-transformer-js-common')())
+      components.push(
+        require('@pundle/job-transformer-js-common')({
+          ...optimizeJS.common,
+        }),
+      )
     }
     if (typeof optimizeJS === 'boolean' || optimizeJS.uglify) {
       components.push(

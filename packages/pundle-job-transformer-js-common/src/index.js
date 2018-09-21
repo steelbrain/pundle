@@ -16,7 +16,10 @@ function fileToImport(file: ImportTransformed): ImportResolved {
   return { filePath: file.filePath, format: file.format, meta: file.meta }
 }
 
-function createComponent({ name = '_common_' }: { name?: string } = {}) {
+function createComponent({
+  name = '_common_',
+  processNonRootChunks = false,
+}: { name: string, processNonRootChunks: boolean } = {}) {
   return createJobTransformer({
     name: manifest.name,
     version: manifest.version,
@@ -24,7 +27,7 @@ function createComponent({ name = '_common_' }: { name?: string } = {}) {
       const chunkToFiles = new Map()
 
       job.chunks.forEach(chunk => {
-        if (!chunk.root) return
+        if (!chunk.root && !processNonRootChunks) return
 
         const relevantFiles = new Set()
 
