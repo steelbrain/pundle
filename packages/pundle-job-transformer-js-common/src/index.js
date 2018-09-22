@@ -29,7 +29,7 @@ function createComponent({
         // file where we can push a new script tag.
         // We could ideally push a require for the commons chunk but
         // it's not a top priority.
-        return
+        return null
       }
 
       const chunkToFiles = new Map()
