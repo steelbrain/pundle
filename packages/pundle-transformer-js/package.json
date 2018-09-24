@@ -1,6 +1,6 @@
 {
   "name": "@pundle/transformer-js",
-  "version": "3.0.0-beta10",
+  "version": "3.0.0-beta11",
   "description": "TODO",
   "repository": {
     "type": "git",
@@ -16,8 +16,8 @@
     "@babel/plugin-transform-modules-commonjs": "^7.0.0",
     "@babel/traverse": "^7.0.0",
     "@babel/types": "^7.0.0",
-    "babel-plugin-inject-node-globals": "^3.0.0-beta10",
-    "@pundle/api": "^3.0.0-beta10"
+    "babel-plugin-inject-node-globals": "^3.0.0-beta11",
+    "@pundle/api": "^3.0.0-beta11"
   },
   "author": "steelbrain",
   "license": "MIT"
