@@ -22,7 +22,10 @@
           "exclude": [
             "transform-regenerator"
           ],
-          "modules": false
+          "modules": false,
+          "targets": {
+            "browsers": "> 0.25%, not dead"
+          }
         }
       ],
       "stage-1"
