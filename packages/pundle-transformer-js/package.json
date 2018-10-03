@@ -13,11 +13,12 @@
     "@babel/core": "^7.0.0",
     "@babel/generator": "^7.0.0",
     "@babel/parser": "^7.0.0",
+    "@babel/plugin-transform-flow-strip-types": "^7.0.0",
     "@babel/plugin-transform-modules-commonjs": "^7.0.0",
     "@babel/traverse": "^7.0.0",
     "@babel/types": "^7.0.0",
-    "babel-plugin-inject-node-globals": "^3.0.0-beta11",
-    "@pundle/api": "^3.0.0-beta11"
+    "@pundle/api": "^3.0.0-beta11",
+    "babel-plugin-inject-node-globals": "^3.0.0-beta11"
   },
   "author": "steelbrain",
   "license": "MIT"

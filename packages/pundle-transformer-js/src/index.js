@@ -3,6 +3,7 @@
 import * as t from '@babel/types'
 import traverse from '@babel/traverse'
 import generate from '@babel/generator'
+import pluginStripFlowTypes from '@babel/plugin-transform-flow-strip-types'
 import pluginCommonJSModules from '@babel/plugin-transform-modules-commonjs'
 import pluginInjectNodeGlobals from 'babel-plugin-inject-node-globals'
 import { promisify } from 'util'
@@ -27,7 +28,7 @@ function createComponent({ injectNodeGlobals = 'auto' }: { injectNodeGlobals: tr
 
       const { target } = context.config
 
-      const plugins = [getPluginReplaceProcess(target), pluginCommonJSModules]
+      const plugins = [getPluginReplaceProcess(target), pluginCommonJSModules, pluginStripFlowTypes]
       const promises = []
 
       if ((injectNodeGlobals === 'auto' && target === 'browser') || injectNodeGlobals === true) {
@@ -45,7 +46,7 @@ function createComponent({ injectNodeGlobals = 'auto' }: { injectNodeGlobals: tr
         plugins,
         sourceType: 'unambiguous',
         parserOpts: {
-          plugins: ['dynamicImport'],
+          plugins: ['dynamicImport', 'flow'],
         },
       })
 
